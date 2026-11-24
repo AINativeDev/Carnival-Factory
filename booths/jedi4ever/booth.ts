@@ -53,6 +53,27 @@ export const PLACES = {
 export const HAMMER_X = 42;
 export const PAINT_X = 56;
 
+/** The toys the sign already counts when the page opens. */
+export const TOYS_AT_DAWN = 120;
+
+/** The sign counts one more toy every `TALLY` milliseconds. */
+export const TALLY = 3_000;
+
+/** How long the number bounces after it ticks up, in milliseconds. */
+export const BOUNCE = 500;
+
+/** How many toys the sign shows at `time`: one more every `TALLY`. */
+export function toysMade(time: number): number {
+  return TOYS_AT_DAWN + Math.floor(Math.max(0, time) / TALLY);
+}
+
+/** How high the number hops, 0 to 1, `since` ms after it last ticked: up fast, then settling. */
+export function bounceOf(since: number): number {
+  if (since < 0 || since >= BOUNCE) return 0;
+  const t = since / BOUNCE;
+  return Math.abs(Math.sin(t * Math.PI * 2)) * (1 - t);
+}
+
 /** Wraps `value` into [0, `span`), negative values included. */
 function wrap(value: number, span: number) {
   return ((value % span) + span) % span;
@@ -619,6 +640,21 @@ const booth: NorthPoleSquare = {
     ctx.fillStyle = colors.aurora;
     circle(ctx, 67 * u, 32 * u, 2.4 * u);
     ctx.globalAlpha = 1;
+
+    // The wooden sign by the door, counting the toys made today.
+    const hop = bounceOf(wrap(time, TALLY)) * 1.8;
+    ctx.fillStyle = colors.cocoa;
+    ctx.fillRect(65 * u, 34.5 * u, 0.7 * u, 2 * u);
+    ctx.fillRect(76.3 * u, 34.5 * u, 0.7 * u, 2 * u);
+    ctx.fillStyle = colors.wood;
+    ctx.fillRect(63 * u, 36 * u, 16 * u, 10 * u);
+    ctx.strokeStyle = colors.gold;
+    ctx.lineWidth = 0.5 * u;
+    ctx.strokeRect(63.8 * u, 36.8 * u, 14.4 * u, 8.4 * u);
+    ctx.fillStyle = colors.cream;
+    words(ctx, 'toys today', 71 * u, 39 * u, 2.4 * u, 12 * u);
+    ctx.fillStyle = colors.glow;
+    words(ctx, String(toysMade(time)), 71 * u, (42.6 - hop) * u, 3.8 * u, 12 * u);
 
     // The sorting elf, looking letters over with a magnifying glass.
     const sorting = letters.find((l) => l.stage === 'sort');

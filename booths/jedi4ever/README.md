@@ -36,3 +36,5 @@ and of the penguins (`shuffleOf`, `blinking`, `hopHeight`, `penguinAt`) are
 plain functions in `booth.ts`, tested in `booth.test.ts`.
 
 Preview it at `#/booth/jedi4ever`.
+
+By the door hangs a small wooden sign, "toys today", whose number ticks up by one every 3 seconds with a little bounce.
