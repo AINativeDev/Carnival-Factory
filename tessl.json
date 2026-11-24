@@ -26,6 +26,22 @@
         ]
       }
     },
+    "implement-booth": {
+      "tags": [
+        "Ticket to PR"
+      ],
+      "agent": "claude",
+      "model": "claude-sonnet-5-5",
+      "skill": "tessl/factory#implement-github-issue",
+      "concurrency": {
+        "keys": [
+          {
+            "key": "implement:github-issue:{{ inputs.GITHUB_ISSUE_NUMBER }}",
+            "limit": 1
+          }
+        ]
+      }
+    },
     "merge-conflict-sweep": {
       "tags": [
         "Ticket to PR"
@@ -245,7 +261,7 @@
         "event.sender.id": "{{ github.tesslApp.userId }}"
       },
       "action": {
-        "use": "implement",
+        "use": "implement-booth",
         "inputs": {
           "GITHUB_ISSUE_LABEL": "tessl",
           "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
