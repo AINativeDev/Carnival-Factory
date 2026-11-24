@@ -85,6 +85,8 @@ jobs:
           persist-credentials: false
           ref: ${{ github.event.repository.default_branch }}
           path: main
+          # The whole history, so the build can tell when each booth first appeared.
+          fetch-depth: 0
       - name: Check out gh-pages, or start it
         env:
           GH_TOKEN: ${{ github.token }}
@@ -114,6 +116,15 @@ jobs:
         run: |
           node scripts/write-square-history.ts ||
             echo "::warning title=No square history::Couldn't read the issues and pull requests, so the squares' timelines are empty in this build."
+
+      # Every booth owner's avatar, for the signs and the booths' insides,
+      # bundled into the site so visitors make no requests to GitHub. An owner
+      # without one gets the elf-silhouette fallback.
+      - name: Download the booth owners' avatars
+        working-directory: main
+        run: |
+          node scripts/download-avatars.ts ||
+            echo "::warning title=No avatars::Couldn't download the booth owners' avatars, so this build shows the fallback."
 
       # Every run rebuilds the root from main, not only a push: GitHub keeps one
       # pending run per group and drops the rest, so a push's run can be

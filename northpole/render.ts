@@ -640,13 +640,76 @@ function faceText(
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = color;
-  const measured = ctx.measureText(text).width;
-  if (measured > width) ctx.scale(width / measured, width / measured);
-  ctx.fillText(text, 0, 0);
+  // A long name shrinks a little, then is shortened with an ellipsis: its tag shows it whole.
+  let shown = text;
+  const fit = Math.max(MIN_TEXT_SCALE, Math.min(1, width / ctx.measureText(text).width));
+  const chars = Array.from(text);
+  while (chars.length > 1 && ctx.measureText(shown).width * fit > width) {
+    chars.pop();
+    shown = `${chars.join('').trimEnd()}…`;
+  }
+  ctx.scale(fit, fit);
+  ctx.fillText(shown, 0, 0);
   ctx.restore();
 }
 
-/** A name board along a face: the name, and whose it is under it, or the name alone when `by` is empty. */
+/** The smallest a sign's text shrinks to before it's shortened instead. */
+const MIN_TEXT_SCALE = 0.8;
+
+/**
+ * Who owns a booth, as its stall shows it: their colour on the pennant and the
+ * sign's trim, their avatar on the sign (undefined for the elf fallback), and
+ * whether they are the visitor, whose own booth says "You".
+ */
+export interface Owner {
+  color: string;
+  avatar?: CanvasImageSource;
+  you: boolean;
+}
+
+/**
+ * A round portrait of radius `r` at (0, 0), in whatever transform the caller
+ * set: the owner's avatar, or an elf's silhouette when there is none.
+ */
+export function portrait(ctx: CanvasRenderingContext2D, r: number, avatar?: CanvasImageSource) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fillStyle = colors.pine;
+  ctx.fill();
+  ctx.clip();
+  if (avatar) {
+    ctx.drawImage(avatar, -r, -r, r * 2, r * 2);
+  } else {
+    // The elf: a head, a pointed hat with its tip falling to one side, and shoulders.
+    ctx.fillStyle = colors.snowShade;
+    ctx.beginPath();
+    ctx.arc(0, r * 0.05, r * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(0, r * 0.95, r * 0.7, r * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = colors.berry;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.4, -r * 0.12);
+    ctx.lineTo(r * 0.4, -r * 0.12);
+    ctx.quadraticCurveTo(r * 0.2, -r * 0.6, r * 0.55, -r * 0.7);
+    ctx.quadraticCurveTo(-r * 0.05, -r * 0.75, -r * 0.4, -r * 0.12);
+    ctx.fill();
+  }
+  ctx.restore();
+  ctx.strokeStyle = colors.cocoa;
+  ctx.lineWidth = Math.max(1, r / 6);
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+/**
+ * A name board along a face: the name, and whose it is under it, or the name
+ * alone when `by` is empty. A booth's board has its owner's portrait at the
+ * left and a trim in their colour.
+ */
 function faceSign(
   ctx: CanvasRenderingContext2D,
   face: Face,
@@ -655,22 +718,41 @@ function faceSign(
   name: string,
   by: string,
   outward = 0,
+  owner?: Owner,
 ) {
   const width = Math.abs(face.b.x - face.a.x);
   ctx.fillStyle = colors.cocoa;
   band(ctx, face, 0.04, 0.96, low, high, outward);
   ctx.fill();
+  if (owner) {
+    ctx.fillStyle = owner.color;
+    band(ctx, face, 0.055, 0.945, low + 1, high - 1, outward);
+    ctx.fill();
+  }
   ctx.fillStyle = colors.cream;
-  band(ctx, face, 0.07, 0.93, low + 2, high - 2, outward);
+  band(ctx, face, 0.07, 0.93, low + 2.5, high - 2.5, outward);
   ctx.fill();
   const line = (high - low) / 2;
+  // With a portrait, the words move right of it.
+  const r = Math.min(line - 3.5, width * 0.09);
+  const pictured = owner && r > 2;
+  const along = pictured ? 0.58 : 0.5;
+  const room = pictured ? width * 0.62 : width * 0.8;
+  if (pictured) {
+    const at = onFace(face, 0.08 + r / width + 0.02, low + line, outward);
+    const slope = (face.b.y - face.a.y) / (face.b.x - face.a.x);
+    ctx.save();
+    ctx.transform(1, slope, 0, 1, at.x, at.y);
+    portrait(ctx, r, owner.avatar);
+    ctx.restore();
+  }
   faceText(
     ctx,
     face,
     name,
-    0.5,
+    along,
     by ? high - line * 0.62 : low + line,
-    width * 0.8,
+    room,
     canvasFont('small', 'bold'),
     colors.ink,
     outward,
@@ -680,9 +762,9 @@ function faceSign(
     ctx,
     face,
     by,
-    0.5,
+    along,
     low + line * 0.5,
-    width * 0.8,
+    room,
     canvasFont('small'),
     colors.berry,
     outward,
@@ -731,6 +813,8 @@ function drawStall(
   plot: Plot,
   square: NorthPoleSquare,
   paint: PaintSquare,
+  time: number,
+  owner: Owner,
 ): Box {
   const { x, y } = middle(plot);
   const face = faceOf(plot);
@@ -744,7 +828,7 @@ function drawStall(
   ctx.fill();
   paintOnFace(paint, square, face, 0.08, 0.92, STALL.art);
   const signLow = STALL.art + art + 5;
-  faceSign(ctx, face, signLow, STALL.wall - 2, square.name, `@${square.id}`);
+  faceSign(ctx, face, signLow, STALL.wall - 2, square.name, `@${square.id}`, 0, owner);
   // The counter, standing out in front of the drawing.
   const counter: Box =
     face.out.x > 0
@@ -770,7 +854,37 @@ function drawStall(
   ctx.fillStyle = colors.snow;
   band(ctx, face, -0.02, 1.02, STALL.wall + 20, STALL.wall + 25, -0.5);
   ctx.fill();
-  return standing(plot, STALL.wall + 30);
+  // The owner's pennant, on a pole at the awning's far corner, waving gently.
+  const foot = onFace(face, 0.96, STALL.wall + 22, -0.5);
+  const pole = 30;
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(foot.x - 1, foot.y - pole, 2, pole);
+  const wave = Math.sin(time / 500 + plot.number) * 2;
+  ctx.fillStyle = owner.color;
+  quad(ctx, [
+    { x: foot.x + 1, y: foot.y - pole },
+    { x: foot.x + 20, y: foot.y - pole + 6 + wave },
+    { x: foot.x + 1, y: foot.y - pole + 12 },
+  ]);
+  ctx.fill();
+  if (owner.you) youTag(ctx, onFace(face, 0.5, STALL.wall + 38, -0.5));
+  return standing(plot, STALL.wall + (owner.you ? 52 : 30));
+}
+
+/** The "You" tag over the visitor's own booth, centred on `at`. */
+function youTag(ctx: CanvasRenderingContext2D, at: Tile) {
+  const w = 40;
+  const h = 20;
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(at.x - w / 2 - 2, at.y - h / 2 - 2, w + 4, h + 4);
+  ctx.fillStyle = colors.gold;
+  ctx.fillRect(at.x - w / 2, at.y - h / 2, w, h);
+  ctx.fillStyle = colors.ink;
+  ctx.font = canvasFont('small', 'bold');
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('You', at.x, at.y + 1, w - 4);
+  ctx.textBaseline = 'alphabetic';
 }
 
 const ROOFS = [
@@ -979,10 +1093,11 @@ export function drawPlot(
   paint: PaintSquare,
   time: number,
   near = false,
+  owner?: Owner,
 ): Box {
   if (plot.kind === 'open' || !square) return drawOpenPlot(ctx, plot, time, near);
   if (plot.kind === 'attraction') return drawAttraction(ctx, plot, square, paint, time);
-  return drawStall(ctx, plot, square, paint);
+  return drawStall(ctx, plot, square, paint, time, owner ?? { color: colors.gold, you: false });
 }
 
 /** A glow round a plot, for the one you are standing at or the one a link opened on. */
@@ -1004,6 +1119,88 @@ export function drawPlotGlow(ctx: CanvasRenderingContext2D, plot: Plot, strength
         ? STALL.wall
         : CLAIM_SIGN.post;
   glow(ctx, x, y - tall / 2, tall, strength);
+}
+
+/**
+ * A ring of string lights round a picked plot, on the snow, in steady warm
+ * colours that never flash. `strength` fades it in and out.
+ */
+export function drawSelectionRing(ctx: CanvasRenderingContext2D, plot: Plot, strength: number) {
+  if (strength <= 0) return;
+  const c = corners(plot);
+  const edges = [
+    [c.top, c.right],
+    [c.right, c.bottom],
+    [c.bottom, c.left],
+    [c.left, c.top],
+  ] as const;
+  ctx.save();
+  ctx.globalAlpha = 0.5 * strength;
+  ctx.strokeStyle = colors.cocoa;
+  ctx.lineWidth = 1.5;
+  diamond(ctx, c, 0);
+  ctx.stroke();
+  ctx.restore();
+  let n = 0;
+  for (const [from, to] of edges)
+    for (let k = 0; k < 8; k++) {
+      const at = {
+        x: from.x + ((to.x - from.x) * k) / 8,
+        y: from.y + ((to.y - from.y) * k) / 8,
+      };
+      bulb(ctx, at.x, at.y, LIGHTS[n++ % LIGHTS.length], strength);
+    }
+  ctx.globalAlpha = 1;
+}
+
+/**
+ * What marks a picked plot over everything in front of it: a soft beam of
+ * light rising from it, seen even when something taller hides the stall, and
+ * an arrow over `top`, the top of what stands on it, bouncing by `bounce`.
+ */
+export function drawSelectionBeam(
+  ctx: CanvasRenderingContext2D,
+  plot: Plot,
+  top: number,
+  strength: number,
+  bounce: number,
+) {
+  if (strength <= 0) return;
+  const c = corners(plot);
+  const { x, y } = middle(plot);
+  const height = y - top + 160;
+  ctx.save();
+  const beam = ctx.createLinearGradient(0, y, 0, y - height);
+  beam.addColorStop(0, colors.glow);
+  beam.addColorStop(1, `${colors.glow}00`);
+  ctx.fillStyle = beam;
+  ctx.globalAlpha = 0.3 * strength;
+  ctx.beginPath();
+  ctx.moveTo(c.left.x + 12, c.left.y);
+  ctx.lineTo(c.bottom.x, c.bottom.y);
+  ctx.lineTo(c.right.x - 12, c.right.y);
+  ctx.lineTo(c.right.x - 26, y - height);
+  ctx.lineTo(c.left.x + 26, y - height);
+  ctx.closePath();
+  ctx.fill();
+  // The arrow, pointing down at the sign.
+  const tip = top - 8 - bounce;
+  ctx.globalAlpha = strength;
+  ctx.fillStyle = colors.cocoa;
+  quad(ctx, [
+    { x: x - 15, y: tip - 25 },
+    { x: x + 15, y: tip - 25 },
+    { x, y: tip + 2 },
+  ]);
+  ctx.fill();
+  ctx.fillStyle = colors.gold;
+  quad(ctx, [
+    { x: x - 11, y: tip - 23 },
+    { x: x + 11, y: tip - 23 },
+    { x, y: tip - 2 },
+  ]);
+  ctx.fill();
+  ctx.restore();
 }
 
 /** How a person looks: their coat and hat. */
