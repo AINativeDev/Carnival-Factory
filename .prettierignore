@@ -14,3 +14,6 @@ tessl.json
 screenshots/
 test-results/
 playwright-report/
+
+# Every square's history, written by scripts/write-square-history.ts before a build
+square-history.json

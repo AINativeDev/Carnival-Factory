@@ -3,12 +3,15 @@ import {
   CLAIM_URL,
   HOW_IT_WORKS_URL,
   KEEP_POSTED_URL,
+  OWN_REPO_URL,
   keepPostedHref,
+  signupOffer,
 } from '../northpole/links';
 import type { SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { shareLink, shareText } from '../northpole/visit';
+import { SQUARE_HISTORY, emptyHistoryText, historyOf, renderHistory } from './history';
 import { deepLink } from './route';
 
 export interface VisitHudOptions {
@@ -68,6 +71,16 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       <button class="visit-claim" type="button">Claim the plot next door</button>
       <a class="visit-how" href="${HOW_IT_WORKS_URL}" target="_blank" rel="noopener">How was this built?</a>
     </div>
+    <details class="visit-history">
+      <summary>How was this built?</summary>
+      <ol class="history-list"></ol>
+      <p class="history-empty" hidden></p>
+      <p class="history-own"><a class="history-own-link" href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run this on your own repo</a>: set up a Tessl factory on a repository of yours.</p>
+      <div class="history-offer" hidden>
+        <p><span class="history-offer-tag">Offer</span> <a class="history-offer-link" target="_blank" rel="noopener"></a></p>
+        <p class="history-terms">Terms apply, as set out on Tessl's sign-up page. Tessl makes this offer, not the carnival.</p>
+      </div>
+    </details>
     <p class="visit-help">Want to hear about the next North Pole event? ${KEEP_POSTED_LINK}</p>`;
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
 
@@ -75,6 +88,21 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   $('.visit-owner').textContent = owner;
   $<HTMLElement>('.visit-owner').hidden = !owner;
   $<HTMLAnchorElement>('.visit-map').href = deepLink(kind, square.id);
+
+  // How was this built: open beside the room, collapsed on a phone, where it sits below it.
+  const entries = historyOf(SQUARE_HISTORY, kind, square.id);
+  renderHistory($('.history-list'), entries);
+  const empty = $<HTMLElement>('.history-empty');
+  empty.textContent = emptyHistoryText(SQUARE_HISTORY);
+  empty.hidden = entries.length > 0;
+  $<HTMLDetailsElement>('.visit-history').open = !matchMedia('(max-width: 719px)').matches;
+  const offer = signupOffer();
+  if (offer) {
+    const offerLink = $<HTMLAnchorElement>('.history-offer-link');
+    offerLink.href = offer.url;
+    offerLink.textContent = offer.text;
+    $<HTMLElement>('.history-offer').hidden = false;
+  }
 
   const help = $('.visit-help');
   if (kind === 'booth') {

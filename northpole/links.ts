@@ -25,3 +25,22 @@ export const keepPostedHref = (url: string = KEEP_POSTED_URL) => url || '#/keep-
 
 /** How a booth request becomes a booth on the map, for visitors who wonder. */
 export const HOW_IT_WORKS_URL = `${REPO_URL}/blob/main/docs/how-it-works.md`;
+
+/** "Run this on your own repo": how to set up a Tessl factory on a repository of your own. */
+export const OWN_REPO_URL = `${REPO_URL}#try-it-on-your-own`;
+
+/**
+ * The free credits offer for people who sign up for Tessl, shown beside the
+ * "own repo" link: where it goes, and its one short line. Both empty until a
+ * maintainer fills them in, and until then the offer stays hidden.
+ */
+export const TESSL_SIGNUP_URL = '';
+export const TESSL_SIGNUP_OFFER = '';
+
+/** The offer to show, or nothing while either half is missing or the link isn't https. */
+export function signupOffer(
+  url: string = TESSL_SIGNUP_URL,
+  text: string = TESSL_SIGNUP_OFFER,
+): { url: string; text: string } | undefined {
+  return /^https:\/\//i.test(url) && text.trim() ? { url, text: text.trim() } : undefined;
+}
