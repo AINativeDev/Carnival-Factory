@@ -273,6 +273,34 @@ body[data-view='map'] .map {
   font-weight: bold;
 }
 
+/* Inside a square or on the factory's numbers, the way back to the map takes the pill's corner. */
+.hud-back {
+  top: 12px;
+  left: 12px;
+  display: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font: bold 14px var(--font-family);
+  cursor: pointer;
+}
+
+.map-frame[data-visiting] .hud-back,
+.map-frame[data-factory] .hud-back {
+  display: block;
+}
+
+.map-frame[data-visiting] .hud-tessl,
+.map-frame[data-factory] .hud-tessl {
+  display: none;
+}
+
+.hud-back:hover,
+.hud-back:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
 /* The pill opens the factory's numbers. */
 a.hud-tessl {
   color: var(--color-ink);
