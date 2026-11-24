@@ -1201,6 +1201,8 @@ export function startMap(
       // A site's tag says its stage, which may have changed.
       tagged = undefined;
       if (!build(list)) return;
+      // Which construction sites are up, for the smoke test.
+      canvas.dataset.sites = this.sites.join(' ');
       // The new world's plots are new objects: keep hold of the same squares in it.
       const same = (plot: Plot | undefined) =>
         plot &&
