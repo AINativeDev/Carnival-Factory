@@ -10,6 +10,7 @@ import {
   isFactory,
   linkedIssue,
   boothFolder,
+  levelFolder,
   approvedByMaintainer,
   boothOwner,
   isMaintainer,
@@ -111,12 +112,12 @@ const outside = filesOutsideBooth(owner, files);
 if (outside.length > 0) {
   for (const file of outside) {
     console.log(
-      `::error file=${escapeCommand(file)},title=Outside your booth::This pull request is for @${owner.login}, who may only change files in ${boothFolder(owner.login)}`,
+      `::error file=${escapeCommand(file)},title=Outside your booth::This pull request is for @${owner.login}, who may only change files in ${boothFolder(owner.login)} and ${levelFolder(owner.login)}`,
     );
   }
   process.exit(1);
 }
 
 console.log(
-  `Every change is inside the booth of @${owner.login}, or @${owner.login} is a maintainer.`,
+  `Every change is inside the booth or level of @${owner.login}, or @${owner.login} is a maintainer.`,
 );

@@ -45,6 +45,24 @@
       "instructions": "This is a booth request: the change lives only in booths/<the issue author's login, in lower case>/. Everything you need is in AGENTS.md (the booth section), docs/style.md and northpole/square.ts, northpole/theme.ts and northpole/diorama.ts; don't explore further. For a new booth, write a compact first version (aim for 300 lines or fewer in booth.ts) in a few edits rather than one huge file, then improve it if time allows. Change nothing outside the booth's folder, and keep checks to that folder: npx eslint booths/<login>, npx tsc --noEmit, and npx vitest run booths/<login> northpole/booths.test.ts scripts/square-code.test.ts scripts/square-size.test.ts. The factory's sandbox can't start a browser: never run npm run smoke or install Playwright here, even if the issue lists it. CI runs the smoke test on the pull request. Post issue and pull request comments from a file (gh ... --body-file), so line breaks are real, never a literal \\n. A new booth (no booths/<login>/ yet) lands on the plot its construction site held: read the live site's pending.json (the site is `gh api repos/<owner>/<repo>/pages --jq .html_url`), and if it has an entry for the login, write {\"plot\": <its plot>, \"issue\": <its issue>} to booths/<login>/plot.json; if it doesn't, or can't be read, write no plot.json. Never add or change plot.json when changing an existing booth.",
       "snapshotFamily": "dev"
     },
+    "implement-level": {
+      "tags": [
+        "Ticket to PR"
+      ],
+      "agent": "claude",
+      "model": "claude-sonnet-5-5",
+      "skill": "tessl/factory#implement-github-issue",
+      "concurrency": {
+        "keys": [
+          {
+            "key": "implement:github-issue:{{ inputs.GITHUB_ISSUE_NUMBER }}",
+            "limit": 1
+          }
+        ]
+      },
+      "instructions": "This is a level request: the change lives only in levels/<the issue author's login, in lower case>/. Everything you need is in AGENTS.md (the level section), docs/style.md, northpole/level.ts (the NorthPoleLevel shape, its catalogue and its validation), levels/jedi4ever/ (the starter level to copy) and, for its squares, northpole/square.ts, northpole/theme.ts and northpole/diorama.ts; don't explore further. level.ts is plain data: one NorthPoleLevel object and `import type` only. Each of the level's own squares is squares/<id>/square.ts, built like a booth. Change nothing outside the level's folder, and keep checks to that folder: npx eslint levels/<login>, npx tsc --noEmit, and npx vitest run levels/<login> northpole/level.test.ts scripts/square-size.test.ts. The factory's sandbox can't start a browser: never run npm run smoke or install Playwright here, even if the issue lists it. CI runs the smoke test on the pull request. Post issue and pull request comments from a file (gh ... --body-file), so line breaks are real, never a literal \\n.",
+      "snapshotFamily": "dev"
+    },
     "merge-conflict-sweep": {
       "tags": [
         "Ticket to PR"
@@ -323,10 +341,36 @@
       ],
       "when": {
         "event.label.name": "tessl",
-        "event.sender.id": "{{ github.tesslApp.userId }}"
+        "event.sender.id": "{{ github.tesslApp.userId }}",
+        "event.issue.labels.*.name": {
+          "none": {
+            "equals": "level-request"
+          }
+        }
       },
       "action": {
         "use": "implement-booth",
+        "inputs": {
+          "GITHUB_ISSUE_LABEL": "tessl",
+          "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
+        }
+      }
+    },
+    "implement-level-after-assessment": {
+      "on": [
+        "github:issues.labeled"
+      ],
+      "when": {
+        "event.label.name": "tessl",
+        "event.sender.id": "{{ github.tesslApp.userId }}",
+        "event.issue.labels.*.name": {
+          "any": {
+            "equals": "level-request"
+          }
+        }
+      },
+      "action": {
+        "use": "implement-level",
         "inputs": {
           "GITHUB_ISSUE_LABEL": "tessl",
           "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
@@ -513,6 +557,25 @@
         "event.issue.labels.*.name": {
           "any": {
             "equals": "booth-request"
+          }
+        },
+        "event.sender.type": "User"
+      },
+      "action": {
+        "use": "assess-booth-request",
+        "inputs": {
+          "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
+        }
+      }
+    },
+    "assess-level-request-opened": {
+      "on": [
+        "github:issues.opened"
+      ],
+      "when": {
+        "event.issue.labels.*.name": {
+          "any": {
+            "equals": "level-request"
           }
         },
         "event.sender.type": "User"

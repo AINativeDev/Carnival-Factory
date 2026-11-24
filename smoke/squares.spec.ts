@@ -1,4 +1,4 @@
-import { mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { CLAIM_URL, REPO_URL } from '../northpole/links';
@@ -41,6 +41,7 @@ const PLAY_MS = 3000;
 const disabled = JSON.parse(readFileSync(join(root, 'northpole/disabled.json'), 'utf8')) as {
   booths: string[];
   attractions: string[];
+  levels: string[];
 };
 const squares = (['booth', 'attraction'] as const).flatMap((kind) => {
   const dir = join(root, `${kind}s`);
@@ -365,12 +366,16 @@ for (const viewport of [
 const booths = squares.filter((square) => square.kind === 'booth').map((square) => square.id);
 const attractions = squares.filter((s) => s.kind === 'attraction').map((s) => s.id);
 const pinned = JSON.parse(readFileSync(join(root, 'northpole/plots.json'), 'utf8')) as PinnedPlots;
+/** Every level, each with its platform at the sleigh station, as the map lays them out. */
+const levelLogins = readdirSync(join(root, 'levels'))
+  .filter((name) => existsSync(join(root, 'levels', name, 'level.ts')))
+  .sort();
 
 test('the player walks the world with the keyboard, and it stays quiet', async ({ page }) => {
   const problems = watch(page);
   await page.goto('#/');
   const canvas = page.locator('.map-canvas');
-  const { start } = buildWorld(attractions, booths, pinned);
+  const { start } = buildWorld(attractions, booths, pinned, { levels: levelLogins });
   await expect(canvas).toHaveAttribute('data-player', `${start.x},${start.y}`);
   await canvas.focus();
   for (const key of ['ArrowRight', 'd', 'ArrowDown', 's']) {
@@ -485,7 +490,7 @@ test('clicking an open plot opens the form to claim a booth', async ({ page, con
   await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever');
   await page.waitForTimeout(500);
   // The map says where its camera is, so the open plot's sign is found from that.
-  const world = buildWorld(attractions, booths, pinned);
+  const world = buildWorld(attractions, booths, pinned, { levels: levelLogins });
   const open = world.plots.find((plot) => plot.kind === 'open')!;
   const [x, y, zoom] = (await canvas.getAttribute('data-camera'))!.split(',').map(Number);
   const sign = toScreen({ x: open.x + (open.w - 1) / 2, y: open.y + (open.h - 1) / 2 });
@@ -505,7 +510,9 @@ test('an accepted booth request shows a construction site, its stage and a link,
   await context.route('https://github.com/**', (route) => route.fulfill({ body: 'the request' }));
   // The first open plot today, as the deploy would hold it. The title and body
   // are what a request's author wrote: the page must never show them.
-  const first = buildWorld(attractions, booths, pinned).plots.find((p) => p.kind === 'open')!;
+  const first = buildWorld(attractions, booths, pinned, { levels: levelLogins }).plots.find(
+    (p) => p.kind === 'open',
+  )!;
   const entry = { login: 'snowelf', issue: 4242, plot: first.number, stage: 'checks' };
   const hostile = {
     ...entry,
@@ -518,6 +525,7 @@ test('an accepted booth request shows a construction site, its stage and a link,
   await expect(canvas).toHaveAttribute('data-sites', 'snowelf');
   await page.waitForTimeout(500);
   const world = buildWorld(attractions, booths, pinned, {
+    levels: levelLogins,
     pending: [{ ...entry, stage: 'checks' }],
   });
   const site = world.plots.find((plot) => plot.kind === 'site')!;
@@ -702,7 +710,7 @@ for (const viewport of [
  */
 async function pointAtSquare(page: Page, kind: 'booth' | 'attraction', id: string) {
   const canvas = page.locator('.map-canvas');
-  const plot = buildWorld(attractions, booths, pinned).plots.find(
+  const plot = buildWorld(attractions, booths, pinned, { levels: levelLogins }).plots.find(
     (p) => p.kind === kind && p.id === id,
   )!;
   const box = (await canvas.boundingBox())!;
@@ -801,4 +809,14 @@ test("inside a square, the pill's corner is a way back to the map", async ({ pag
   await expect(page.locator('.hud-back')).toBeHidden();
   expect(page.url()).not.toContain('#/booth/');
   expect(problems).toEqual([]);
+});
+
+test('the banner links to the repository, where every booth starts', async ({ page }) => {
+  await page.goto('#/');
+  const link = page.getByRole('link', { name: "See how it's built on GitHub" });
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAttribute(
+    'href',
+    'https://github.com/AINativeDev/Northpole-Carnival-Factory',
+  );
 });

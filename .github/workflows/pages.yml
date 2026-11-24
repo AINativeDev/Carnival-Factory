@@ -102,6 +102,8 @@ jobs:
       pull-requests: read
       # The checks on the booth requests' pull requests, for their stage.
       checks: read
+      # The People's Choice votes, and a comment in its discussion for each new entry.
+      discussions: write
     outputs:
       placed: ${{ steps.files.outputs.placed }}
     steps:
@@ -197,6 +199,20 @@ jobs:
             echo '{}' > "$RUNNER_TEMP/advent.json"
           }
 
+      # The People's Choice standings, from the 👍 in its discussion, for the
+      # build to bake into the page. It also adds a comment for every new booth
+      # and home factory. Without the discussion, the map shows no standings.
+      - name: Count the People's Choice votes
+        working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BADGE_HOLDERS_FILE: ${{ runner.temp }}/badge-holders.json
+        run: |
+          timeout 2m node scripts/write-peoples-choice.ts "$RUNNER_TEMP/peoples-choice.json" || {
+            rm -f "$RUNNER_TEMP/peoples-choice.json"
+            echo "::warning title=No People's Choice standings::Couldn't read the votes, so this build shows no standings."
+          }
+
       # Every run rebuilds the root from main, not only a push: GitHub keeps one
       # pending run per group and drops the rest, so a push's run can be
       # replaced by the next event, and that run must still publish main.
@@ -204,7 +220,9 @@ jobs:
         working-directory: main
         run: |
           npm ci
-          BADGE_HOLDERS_FILE="$RUNNER_TEMP/badge-holders.json" ADVENT_FILE="$RUNNER_TEMP/advent.json" npm run build
+          BADGE_HOLDERS_FILE="$RUNNER_TEMP/badge-holders.json" \
+            PEOPLES_CHOICE_FILE="$RUNNER_TEMP/peoples-choice.json" \
+            ADVENT_FILE="$RUNNER_TEMP/advent.json" npm run build
           # Pages lets caches keep a page for up to 10 minutes, so a visitor can
           # still be on the last build, asking for its files. Built files have
           # a hash in their name, so old and new never clash: keep the old ones
@@ -345,10 +363,10 @@ jobs:
             pr=${entry%%:*}
             sha=${entry#*:}
             url="${site%/}/previews/pr-$pr/"
-            # A direct link to every booth and attraction the pull request changes,
+            # A direct link to every booth, attraction and level the pull request changes,
             # and their screenshots side by side under the map's, each opening its square.
             squares=$(gh api "repos/$GH_REPO/pulls/$pr/files" --paginate --jq '.[].filename' |
-              sed -nE 's#^(booth|attraction)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
+              sed -nE 's#^(booth|attraction|level)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
             links=""
             row=""
             shots="${url}screenshots"
