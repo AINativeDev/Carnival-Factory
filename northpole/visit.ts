@@ -95,11 +95,24 @@ export function targetAt<T extends { box: Box }>(
   return undefined;
 }
 
-/** What a hover tag says: its name, who it belongs to (nobody, for an attraction), a line of its description and a hint. */
+/**
+ * What a hover tag says: its name, who it belongs to (nobody, for an
+ * attraction), a line of its description and a hint. A construction site says
+ * who it's being built for and `stage`, how far along it is, and nothing from
+ * the request itself.
+ */
 export function tagText(
   plot: Pick<Plot, 'kind' | 'id'>,
   square: { name: string; description: string } | undefined,
+  stage = '',
 ): { name: string; owner: string; line: string; hint: string } {
+  if (plot.kind === 'site')
+    return {
+      name: 'A booth under construction',
+      owner: '',
+      line: `Being built for @${plot.id ?? ''}: ${stage}`,
+      hint: 'E or click to see the request',
+    };
   if (plot.kind === 'open')
     return {
       name: 'An open plot',

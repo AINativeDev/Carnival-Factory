@@ -44,6 +44,7 @@ src/
   booths-hud.ts             the Booths panel: search, Featured, Near you, Recently added,
                             Attractions, All booths a page at a time, and "This is me"
   booth-panel.ts            the panel's searching, sorting and sections (plain functions)
+  pending.ts                reading pending.json, the booths being built, every 2 minutes
   history.ts                the "How was this built?" panel: each square's requests and
                             pull requests, bundled from square-history.json at build time
   factory.ts                the factory's numbers page, #/factory: its counts and figures
@@ -58,6 +59,9 @@ northpole/                  the map itself
   world.ts                  the isometric world: its tiles, where each square's plot
                             is, walking and pathfinding (plain functions)
   plots.json                the maintainers' pins: which plot each square keeps
+  plots.ts                  which plot each booth gets from the pins, its own plot.json
+                            and the booths being built, and reading pending.json
+                            (plain functions)
   camera.ts                 framing the island: its outline, the zoom and where the
                             camera looks on a laptop and a phone (plain functions)
   render.ts                 drawing the diorama: sky, island, fence and lights, cabins,
@@ -114,6 +118,9 @@ scripts/
   write-square-history.ts   reads them from the GitHub API and writes square-history.json,
                             with the factory's numbers, before the deploy's build
                             (previews have none)
+  pending.ts                each booth request's stage and held plot (plain functions)
+  write-pending.ts          reads the accepted booth requests from the GitHub API and
+                            writes pending.json before the deploy's build (previews have none)
   booth-dates.ts            when each booth's folder first appeared, from git history,
                             for Recently added (the build reads it)
   avatars.ts                the build-time avatars' rules (plain functions)
@@ -233,6 +240,9 @@ uses any of it:
 6. A `README.md` that says what the booth shows and stays true to the code.
 7. Within the size budget in `scripts/square-size.ts`: 50 KB of code gzipped,
    and 200 KB of other files.
+8. Optionally, for a new booth, a `plot.json` with the plot its construction
+   site held (see **Construction sites**). It's the only JSON file a booth
+   has, and the gate checks it holds just those two numbers.
 
 Pure logic a booth has, such as movement, goes in plain exported functions with
 a `booth.test.ts` next to them. A test may import `vitest` and its own folder,
@@ -258,10 +268,27 @@ loads shows "Under construction" without touching anything else.
 
 **Plots stay put.** The map is an isometric world, and each square stands on a
 numbered plot: attractions round the town square, booths along the lanes. A
-plot's number always means the same place. `northpole/plots.json` pins each
-square to its number, and a square not in it yet takes the next free number,
-so a new booth needs no change outside its folder. Once a new booth merges, a
-maintainer pins it in `plots.json` so later booths can never move it.
+plot's number always means the same place. A booth's plot comes from, in
+order: its pin in `northpole/plots.json`, which holds the attractions and the
+booths that were there before construction sites, and only maintainers change;
+else its own `booths/<login>/plot.json`, `{ "plot": <number>, "issue": <its
+request's issue number> }`; else the next free plot (`northpole/plots.ts`). A
+booth with a pin or a `plot.json` never moves. If two booths' `plot.json`s
+claim one plot, the lower issue number keeps it and the other takes the next
+free plot.
+
+**Construction sites.** While an accepted booth request is being built, the map
+shows a construction site on the plot held for it, with `@login` and its
+stage. Nothing about it is committed: every deploy reads the open requests
+labelled `booth-request` and `tessl` from the API (`scripts/write-pending.ts`)
+and writes `pending.json` beside the page, holding the next free plots in order
+of issue number. **When you build a new booth** (no `booths/<login>/` yet),
+read the live site's `pending.json` (the site is `gh api
+repos/<owner>/<repo>/pages --jq .html_url`), find the entry for the login, and
+write its `plot` and `issue` to `booths/<login>/plot.json`, so the booth lands
+where its site stood. If the login isn't there, or the file can't be read,
+write no `plot.json`: the booth takes the next free plot. A change to an
+existing booth never adds or changes its `plot.json`.
 
 **The kill switch**, `northpole/disabled.json`, has a list of booth logins and
 a separate list of attraction ids. A square in either shows "Closed for

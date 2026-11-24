@@ -9,6 +9,7 @@ import {
   findPathToFirst,
   key,
   moveBy,
+  nearestStand,
   OPEN_PLOTS,
   plotAtDoor,
   plotNumbers,
@@ -125,6 +126,57 @@ describe('buildWorld', () => {
       expect(world.plots.filter((p) => p.kind === 'open')).toHaveLength(OPEN_PLOTS);
       expect(world.plots.filter((p) => p.kind === 'booth')).toHaveLength(count);
     }
+  });
+
+  it('puts construction sites on their held plots, with open plots on top of them', () => {
+    const pending = [
+      { login: 'amy', issue: 7, plot: 4, stage: 'building' as const },
+      { login: 'bob', issue: 9, plot: 5, stage: 'checks' as const },
+    ];
+    const world = buildWorld(ATTRACTIONS, booths(4), undefined, { pending });
+    const sites = world.plots.filter((p) => p.kind === 'site');
+    expect(sites.map((p) => [p.id, p.number])).toEqual([
+      ['amy', 4],
+      ['bob', 5],
+    ]);
+    expect(world.plots.filter((p) => p.kind === 'open').map((p) => p.number)).toEqual([6, 7, 8]);
+    // The site stands where the booth will, and nothing else moves.
+    const landed = buildWorld(ATTRACTIONS, [...booths(4), 'amy'], undefined, {
+      files: { amy: { plot: 4, issue: 7 } },
+      pending: pending.slice(1),
+    });
+    expect(placeOf(landed, 'amy')).toEqual(placeOf(world, 'amy'));
+    for (const id of [...ATTRACTIONS, ...booths(4), 'bob'])
+      expect(placeOf(landed, id)).toEqual(placeOf(world, id));
+  });
+
+  it('shows a change to an existing booth on that booth, not on a new plot', () => {
+    const pending = [{ login: 'elf-1', issue: 7, plot: 1, stage: 'almost' as const }];
+    const world = buildWorld(ATTRACTIONS, booths(3), undefined, { pending });
+    expect(world.plots.filter((p) => p.kind === 'site')).toEqual([]);
+    expect(world.plots.filter((p) => p.id === 'elf-1')).toHaveLength(1);
+  });
+
+  it('keeps the island small when a plot.json or a site claims a far plot', () => {
+    const small = buildWorld(ATTRACTIONS, booths(4));
+    const world = buildWorld(ATTRACTIONS, [...booths(4), 'amy'], undefined, {
+      files: { amy: { plot: 9999 } },
+      pending: [{ login: 'bob', issue: 9, plot: 9998, stage: 'building' }],
+    });
+    expect(world.extent).toBe(small.extent);
+  });
+
+  it('finds the nearest place to stand when a site went up where the player was', () => {
+    const world = buildWorld(ATTRACTIONS, booths(4), undefined, {
+      pending: [{ login: 'amy', issue: 7, plot: 4, stage: 'building' }],
+    });
+    const site = world.plots.find((p) => p.kind === 'site')!;
+    const inside = { x: site.x + site.w / 2, y: site.y + site.h / 2 };
+    expect(canStand(world, inside)).toBe(false);
+    const stand = nearestStand(world, inside);
+    expect(canStand(world, stand)).toBe(true);
+    expect(Math.hypot(stand.x - inside.x, stand.y - inside.y)).toBeLessThan(site.w + site.h);
+    expect(nearestStand(world, world.start)).toBe(world.start);
   });
 
   it('keeps growing for a big event: open plots, no overlaps, every plot reachable', () => {

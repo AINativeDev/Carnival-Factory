@@ -8,11 +8,13 @@ import type { NorthPoleSquare } from '../northpole/square';
 import { applyTheme } from '../northpole/theme';
 import { boothRegistry } from '../northpole/booths';
 import { avatarPath } from '../northpole/owners';
+import { sitesToRemember } from '../northpole/plots';
 import { BOOTHS_PANEL, startBoothsPanel, type BoothsPanel } from './booths-hud';
 import { openFactoryHud, readFactoryStats, squareCounts } from './factory';
 import { SQUARE_HISTORY } from './history';
 import { parseHash } from './route';
 import { openVisitHud, type VisitHud } from './visit-hud';
+import { followPending, knownPending, loadSites, saveSites } from './pending';
 import { keepUpToDate } from './updates';
 
 applyTheme();
@@ -119,10 +121,20 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
       onSelect: (selected) => panel?.showSelected(selected),
       avatars: AVATARS,
       focus,
+      pending: knownPending(),
+      wereSites: loadSites(),
     },
   );
+  const boothIds = new Set(boothRegistry.all().map((square) => square.id));
+  const stopPending = followPending((pending) => {
+    started.setPending(pending);
+    // A page from before a booth landed keeps its site in mind, so the page
+    // that knows the booth still greets it.
+    saveSites(sitesToRemember(loadSites(), started.sites, boothIds));
+  });
   stop = () => {
     closeCard(false);
+    stopPending();
     started.stop();
     panel?.stop();
     panel = undefined;
