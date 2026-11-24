@@ -25,6 +25,10 @@ export interface VisitHudOptions {
   onClose(): void;
   /** Claim the plot next door. */
   onClaim(): void;
+  /** The owner's build-time avatar, for a booth whose owner has one. */
+  avatar?: string;
+  /** Says the visitor shared this booth as theirs, so the map knows who they are. */
+  onMine?(): void;
 }
 
 /** The "Keep me posted" link: to the real form once it's set, or to the placeholder page. */
@@ -57,7 +61,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   card.innerHTML = `
     <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>
     <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
-    <p class="visit-owner"></p>
+    <p class="visit-owner"><a class="visit-profile" target="_blank" rel="noopener"></a></p>
     <p class="visit-factory" hidden><a target="_blank" rel="noopener"></a></p>
     <p class="visit-description" id="visit-description"></p>
     <div class="visit-share">
@@ -88,7 +92,18 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
 
   const owner = kind === 'attraction' ? '' : `@${square.id}`;
-  $('.visit-owner').textContent = owner;
+  // The owner, linking to their GitHub profile, with their portrait when the build has it.
+  const profile = $<HTMLAnchorElement>('.visit-profile');
+  profile.href = `https://github.com/${encodeURIComponent(square.id)}`;
+  if (options.avatar) {
+    const picture = document.createElement('img');
+    picture.className = 'visit-avatar';
+    picture.src = options.avatar;
+    picture.alt = '';
+    picture.width = picture.height = 32;
+    profile.append(picture, ' ');
+  }
+  profile.append(owner);
   $<HTMLElement>('.visit-owner').hidden = !owner;
   $<HTMLAnchorElement>('.visit-map').href = deepLink(kind, square.id);
 
@@ -144,6 +159,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
 
   card.querySelector('.visit-mine')?.addEventListener('click', () => {
     mine = true;
+    options.onMine?.();
     edited = false;
     showText();
     text.focus();

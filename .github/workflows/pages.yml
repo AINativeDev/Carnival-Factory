@@ -87,6 +87,8 @@ jobs:
           persist-credentials: false
           ref: ${{ github.event.repository.default_branch }}
           path: main
+          # The whole history, so the build can tell when each booth first appeared.
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version-file: main/.nvmrc
@@ -117,6 +119,15 @@ jobs:
         run: |
           node scripts/write-square-history.ts ||
             echo "::warning title=No square history::Couldn't read the issues and pull requests, so the squares' timelines are empty in this build."
+
+      # Every booth owner's avatar, for the signs and the booths' insides,
+      # bundled into the site so visitors make no requests to GitHub. An owner
+      # without one gets the elf-silhouette fallback.
+      - name: Download the booth owners' avatars
+        working-directory: main
+        run: |
+          node scripts/download-avatars.ts ||
+            echo "::warning title=No avatars::Couldn't download the booth owners' avatars, so this build shows the fallback."
 
       # The Elf Engineer badge holders, from the accepted badge requests, for
       # the build to bake into the page: the page itself never asks the network.

@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vitest/config';
 import { cleanHolders } from './northpole/badges.ts';
 import { BADGE_REQUEST_URL } from './northpole/links.ts';
+import { readBoothAddedDates } from './scripts/booth-dates.ts';
 import { badgePage } from './scripts/elf-engineer.ts';
 import { readSquareInfo, sharePage, siteUrl, type ShareKind } from './scripts/share-pages.ts';
 
@@ -60,7 +61,7 @@ const sharePages: Plugin = {
       for (const id of readdirSync(dir)) {
         const file = join(dir, id, `${kind}.ts`);
         if (!existsSync(file)) continue;
-        const info = readSquareInfo(readFileSync(file, 'utf8'));
+        const info = readSquareInfo(readFileSync(file, 'utf8'), id);
         const name = info.name ?? (kind === 'booth' ? `@${id}'s booth` : id);
         const description = off.has(id) ? 'Closed for repairs.' : (info.description ?? '');
         this.emitFile({
@@ -96,11 +97,42 @@ const badgePages: Plugin = {
   },
 };
 
+/**
+ * Every square's name, read from its source as the share pages read it, so the
+ * Booths panel can search and sort them before their frames have opened.
+ */
+function squareNames(): Record<string, string> {
+  const root = import.meta.dirname;
+  const names: Record<string, string> = {};
+  for (const kind of ['booth', 'attraction'] as ShareKind[]) {
+    const dir = join(root, `${kind}s`);
+    for (const id of readdirSync(dir)) {
+      const file = join(dir, id, `${kind}.ts`);
+      if (!existsSync(file)) continue;
+      const name = readSquareInfo(readFileSync(file, 'utf8'), id).name;
+      if (name) names[`${kind}/${id}`] = name.slice(0, 80);
+    }
+  }
+  return names;
+}
+
 export default defineConfig(({ command }) => ({
   plugins: [versionFile, sharePages, badgePages],
   define: {
     __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev'),
     __BADGE_HOLDERS__: JSON.stringify(BADGE_HOLDERS),
+    // When each booth's folder first appeared, for the Booths panel's Recently added.
+    __BOOTH_ADDED__: JSON.stringify(readBoothAddedDates(import.meta.dirname)),
+    // Every square's name, for searching and sorting the Booths panel.
+    __SQUARE_NAMES__: JSON.stringify(squareNames()),
+    // The owners whose avatars scripts/download-avatars.ts fetched, so the page asks only for those.
+    __AVATARS__: JSON.stringify(
+      existsSync(join(import.meta.dirname, 'public/avatars'))
+        ? readdirSync(join(import.meta.dirname, 'public/avatars'))
+            .filter((file) => /^[a-z0-9-]+\.png$/.test(file))
+            .map((file) => file.slice(0, -4))
+        : [],
+    ),
   },
   // Relative asset paths, so the build works on any fork's GitHub Pages URL.
   base: './',

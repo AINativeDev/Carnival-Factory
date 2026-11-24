@@ -14,3 +14,6 @@ playwright-report/
 
 # Every square's history, written by scripts/write-square-history.ts before a build
 square-history.json
+
+# Booth owners' avatars, downloaded by scripts/download-avatars.ts before a deploy's build
+public/avatars/

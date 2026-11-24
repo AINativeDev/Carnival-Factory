@@ -35,6 +35,23 @@ export function nearestOpenPlot(
   return { plot, path: [start, ...way] };
 }
 
+/**
+ * The `count` squares whose doors are nearest the player, nearest first, in
+ * tiles. Squares at the same distance keep the order they came in.
+ */
+export function nearYou<T extends { door: { x: number; y: number } }>(
+  squares: readonly T[],
+  player: { x: number; y: number },
+  count = 5,
+): T[] {
+  const far = (square: T) => Math.hypot(square.door.x - player.x, square.door.y - player.y);
+  return squares
+    .map((square, n) => ({ square, n, far: far(square) }))
+    .sort((a, b) => a.far - b.far || a.n - b.n)
+    .slice(0, count)
+    .map(({ square }) => square);
+}
+
 /** What Share copies for a square: a short, friendly line, and the link. */
 export function shareText(
   square: { kind: 'booth' | 'attraction'; id: string; name: string },

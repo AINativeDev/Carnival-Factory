@@ -141,19 +141,51 @@ body[data-view='map'] .map {
   outline-offset: -3px;
 }
 
-/* What you can do where you stand: visit a square, or claim a plot. */
+/*
+ * The call to action over a square: visit it, or claim a plot. The map places
+ * it with translate over the picked square or the one you stand at, and
+ * fades it in; its arrow points down at the square, and it bobs gently.
+ */
 .map-prompt {
   position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 20px;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 280px;
+  padding: 8px 14px;
   border: 2px solid var(--color-gold);
   border-radius: var(--radius);
   background: var(--color-surface);
   color: var(--color-text);
-  font: bold 16px var(--font-family);
+  font: bold 15px var(--font-family);
+  white-space: nowrap;
   cursor: pointer;
+  opacity: 0;
+  animation: prompt-bob 2.4s ease-in-out infinite;
+}
+
+.map-prompt .prompt-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-prompt::after {
+  position: absolute;
+  bottom: -9px;
+  left: calc(50% - 8px);
+  border-top: 8px solid var(--color-gold);
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
+  content: '';
+}
+
+@keyframes prompt-bob {
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 .map-prompt[hidden] {
@@ -260,6 +292,68 @@ body[data-view='map'] .map {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+summary.hud-group {
+  margin-top: 10px;
+}
+
+.hud-section[hidden],
+.hud-sections[hidden],
+.hud-results[hidden] {
+  display: none;
+}
+
+.hud-search-input {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-slabShade);
+  border-radius: 6px;
+  background: var(--color-snow);
+  color: var(--color-ink);
+  font: inherit;
+}
+
+.hud-search-input:focus-visible {
+  outline: 2px solid var(--color-gold);
+}
+
+.hud-more {
+  margin: 4px 0 0 6px;
+  padding: 3px 8px;
+  border: 1px solid var(--color-slabShade);
+  border-radius: 6px;
+  background: var(--color-snow);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hud-me {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 2px;
+  color: var(--color-slabShade);
+  font-size: 12px;
+}
+
+.hud-me-select {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+}
+
+.hud-go.selected {
+  background: var(--color-glow);
+  box-shadow: inset 3px 0 var(--color-gold);
+}
+
+.hud-go .name {
+  overflow-wrap: anywhere;
 }
 
 .hud-featured .label {
@@ -381,8 +475,21 @@ kbd {
   }
 
   .map-prompt {
-    bottom: 104px;
     max-width: calc(100% - 24px);
+  }
+
+  /* On a phone the Booths panel folds to a button, and opens as a sheet. */
+  .hud-booths[open] {
+    position: absolute;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 6;
+    width: auto;
+    max-width: none;
+    max-height: 70vh;
+    border-radius: var(--radius) var(--radius) 0 0;
   }
 }
 
@@ -490,6 +597,18 @@ kbd {
 .visit-help {
   margin: 4px 0;
   font-size: 14px;
+}
+
+.visit-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+}
+
+.visit-avatar {
+  border: 2px solid var(--color-gold);
+  border-radius: 50%;
 }
 
 .visit-owner {
@@ -684,6 +803,10 @@ kbd {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .map-prompt {
+    animation: none;
+  }
+
   .map-tag,
   .map-tag.shown {
     transition: none;

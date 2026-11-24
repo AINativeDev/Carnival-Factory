@@ -29,6 +29,8 @@ jobs:
         with:
           # Keep the token out of .git/config, where the code that runs next could read it.
           persist-credentials: false
+          # The whole history, so the build can tell when each booth first appeared.
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
