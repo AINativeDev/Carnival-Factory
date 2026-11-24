@@ -112,9 +112,10 @@ jobs:
         working-directory: main
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        # A failed read publishes the map without pins rather than not at all.
+        # A failed or slow read publishes the map without pins rather than
+        # holding up the deploy.
         run: |
-          node scripts/badge-holders.ts "$RUNNER_TEMP/badge-holders.json" || {
+          timeout 2m node scripts/badge-holders.ts "$RUNNER_TEMP/badge-holders.json" || {
             echo "::warning title=No badge holders::Couldn't read the Elf Engineer badge requests, so this build has no badge pins."
             echo '[]' > "$RUNNER_TEMP/badge-holders.json"
           }

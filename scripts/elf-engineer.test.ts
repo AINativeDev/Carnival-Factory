@@ -98,6 +98,11 @@ describe('decideBadge', () => {
     });
   });
 
+  it('grants a link from before the repository was renamed', () => {
+    const renamed = { ...working, pullField: 'https://github.com/octocat/old-workshop/pull/12' };
+    expect(decideBadge(renamed).grant).toBe(true);
+  });
+
   const declines: [string, Partial<BadgeFacts>, RegExp][] = [
     ['no repository', { repoField: undefined }, /needs your repository/],
     ['no pull request link', { pullField: 'twelve' }, /needs a link/],
@@ -106,7 +111,10 @@ describe('decideBadge', () => {
     ['no tessl.json', { hasTesslJson: false }, /no tessl\.json/],
     [
       'a pull request elsewhere',
-      { pullField: 'https://github.com/other/repo/pull/12' },
+      {
+        pullField: 'https://github.com/other/repo/pull/12',
+        pull: { ...working.pull!, repo: 'other/repo' },
+      },
       /isn't in octocat\/workshop/,
     ],
     ['a pull request GitHub can’t find', { pull: undefined }, /isn't in/],

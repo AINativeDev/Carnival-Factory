@@ -24,11 +24,24 @@ links and images counts the same.
 
 Stop with no write when any of these holds:
 
-- The issue is closed, or already has the `badge-granted` or `declined` label.
+- The issue is closed.
 - It has no `badge-request` label.
+- It has both the `badge-granted` and the `declined` label.
 
 Labels are the record of a decision, and only maintainers and the Tessl App can
 set them, so trust labels over comments.
+
+An open issue that already has `badge-granted` or `declined` is a decision an
+earlier run made and didn't finish. Finish it, never decide it again:
+
+- Its comment counts only when the Tessl App wrote it and it starts with
+  `<!-- assess-badge-request -->`.
+- With that comment, close the issue as step 2 says for its label, and stop.
+- With no such comment, run the check in step 1. When its decision matches the
+  label (`grant` true for `badge-granted`, false for `declined`), write that
+  decision's comment and close as step 2 says, adding no label. When it
+  doesn't match, stop with no write and say so in the run output, for a
+  maintainer to settle.
 
 ## 1. Check it
 

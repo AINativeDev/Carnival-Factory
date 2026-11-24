@@ -47,24 +47,35 @@ if (repo) {
     (await exists(
       `orgs/${encodeURIComponent(owner)}/public_members/${encodeURIComponent(facts.author)}`,
     ));
-  facts.hasTesslJson = await exists(`${repoPath(repo.full_name)}/contents/tessl.json`);
+  // A directory answers with a list of its entries, so only a file counts.
+  const config = await get<{ type?: string } | unknown[]>(
+    `${repoPath(repo.full_name)}/contents/tessl.json`,
+  );
+  facts.hasTesslJson = !Array.isArray(config) && config?.type === 'file';
+  // The link's repository as GitHub resolves it, which follows a rename.
   const pullAt = parsePullRequest(facts.pullField);
-  const pull = pullAt
-    ? await get<{ number: number; user: { login: string; type: string } }>(
-        `${repoPath(repo.full_name)}/pulls/${pullAt.number}`,
-      )
-    : undefined;
-  if (pull && pullAt) {
+  const pullRepo = pullAt ? await get<{ full_name: string }>(repoPath(pullAt.repo)) : undefined;
+  const pull =
+    pullAt && pullRepo
+      ? await get<{ number: number; user: { login: string; type: string } }>(
+          `${repoPath(pullRepo.full_name)}/pulls/${pullAt.number}`,
+        )
+      : undefined;
+  if (pull && pullRepo) {
     facts.pull = {
-      repo: pullAt.repo,
+      repo: pullRepo.full_name,
       number: pull.number,
       author: pull.user.login,
       authorIsBot: pull.user.type === 'Bot',
     };
   }
-  const merged = await get<{ total_count: number }>(
+  const merged = await get<{ total_count: number; incomplete_results: boolean }>(
     `search/issues?q=${encodeURIComponent(`repo:${repo.full_name} is:pr is:merged author:app/tessl-app`)}`,
   );
+  // A partial count could give a lower tier than earned, so it decides nothing.
+  if (merged?.incomplete_results) {
+    throw new Error(`GitHub's search of ${repo.full_name}'s merged pull requests was incomplete`);
+  }
   facts.merged = merged?.total_count ?? 0;
 }
 

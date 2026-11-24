@@ -74,6 +74,10 @@ export interface BadgeFacts {
   authorIsMember?: boolean;
   /** Whether the repository has a `tessl.json` at its root. */
   hasTesslJson?: boolean;
+  /**
+   * The linked pull request, its repository as GitHub resolves the link's, so a
+   * link from before the repository was renamed still names it.
+   */
   pull?: { repo: string; number: number; author: string; authorIsBot: boolean };
   /** How many pull requests the factory opened there have merged. */
   merged?: number;
@@ -105,11 +109,8 @@ export function decideBadge(facts: BadgeFacts): BadgeDecision {
   if (!facts.hasTesslJson) {
     return { grant: false, reason: `${repo.fullName} has no tessl.json at its root` };
   }
-  if (!same(pullAt.repo, repo.fullName)) {
-    return { grant: false, reason: `that pull request isn't in ${repo.fullName}` };
-  }
   const pull = facts.pull;
-  if (!pull || pull.number !== pullAt.number) {
+  if (!pull || !same(pull.repo, repo.fullName) || pull.number !== pullAt.number) {
     return { grant: false, reason: `that pull request isn't in ${repo.fullName}` };
   }
   if (!pull.authorIsBot || !FACTORY_BOTS.includes(pull.author.toLowerCase())) {
