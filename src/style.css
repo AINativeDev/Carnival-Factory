@@ -18,6 +18,7 @@ a {
 }
 
 .banner {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,6 +41,43 @@ a {
   font-weight: bold;
   white-space: nowrap;
   text-decoration: none;
+}
+
+/* The way to the repository: every booth starts there, as an issue. */
+.repo-link {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-night);
+  color: var(--color-snow);
+  font-size: 14px;
+  font-weight: bold;
+  text-decoration: none;
+  transform: translateY(-50%);
+}
+
+.repo-link:hover,
+.repo-link:focus-visible {
+  color: var(--color-gold);
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* On a phone, just the mark, so the title keeps the middle. */
+@media (max-width: 719px) {
+  .repo-link {
+    right: 8px;
+    padding: 5px;
+  }
+
+  .repo-link-text {
+    display: none;
+  }
 }
 
 /* On the map, the diorama fills the window below the banner, and the page never scrolls. */
