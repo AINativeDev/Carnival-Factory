@@ -8,7 +8,7 @@ name: Deploy to GitHub Pages
 # removed once its pull request closes, and replaced by the successful
 # "Preview build" of the pull request's current head commit. So a run GitHub
 # drops from the queue, or a build that finishes late, is put right by the
-# next one. A push to main also rebuilds the root. Nothing here checks out or
+# next one. Every run also rebuilds the root from main. Nothing here checks out or
 # runs a pull request's code: it only copies the files its build made.
 on:
   push:
@@ -96,8 +96,10 @@ jobs:
           fi
           touch site/.nojekyll
 
+      # Every run rebuilds the root from main, not only a push: GitHub keeps one
+      # pending run per group and drops the rest, so a push's run can be
+      # replaced by the next event, and that run must still publish main.
       - name: Build main into the root
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         working-directory: main
         run: |
           npm ci
