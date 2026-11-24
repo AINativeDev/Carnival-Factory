@@ -38,11 +38,12 @@ it, so look for the indirect routes that reach the same things:
 ## The drawing contract (Major unless noted)
 
 - The default export is a `NorthPoleSquare` whose `id` is the folder name.
-- `draw(ctx, size, time)` scales everything by `size` and stays inside the
+- `draw(ctx, size, time, pointer?)` scales everything by `size` and stays inside the
   `size` by `size` square. Hard-coded pixel sizes are Minor.
 - Animation comes from `time`, not from state kept between calls or from
   `Math.random()` in `draw` (which flickers). A seeded or time-derived value is
-  fine.
+  fine. A booth that plays with `pointer` may remember what it did, such as
+  when a tap happened or a score, as long as it stays small.
 - `draw` is cheap enough to run every frame for every square: no big loops over
   pixels, no `getImageData` per frame, no allocation of large arrays per call.
 - Colours and fonts come from `theme` and `canvasFont` in

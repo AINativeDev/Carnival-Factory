@@ -30,7 +30,8 @@ agent checks the request, builds it on a branch and opens a pull request with a
 preview, and code review checks the result before it lands on the map.
 
 Each booth runs sandboxed in its own frame, so the worst a booth can do is
-break itself.
+break itself. A booth can react to the mouse or a finger over it, hover and
+taps, so it can be something people play with, not just watch.
 
 There are two ways to play:
 
@@ -170,6 +171,11 @@ To add a maintainer, find their numeric GitHub user id
 `MAINTAINERS` in `scripts/ownership.ts` with that id, and add the id to each
 `event.sender.id` list in `tessl.json`. Maintainers are checked by id, because
 a login can be renamed and taken by someone else.
+
+To let the factory build a participant's issue that changes more than their
+booth, such as the map's scenery, add `tessl` to it yourself: the **Booth
+ownership** check treats an issue a maintainer labelled, by user id, like a
+maintainer's own.
 
 To switch a misbehaving square off, add its login to `booths`, or its id to
 `attractions`, in `northpole/disabled.json`: it shows "Closed for repairs" and
