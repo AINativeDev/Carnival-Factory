@@ -2,8 +2,10 @@
  * Writes square-history.json, every square's history (scripts/square-history.ts),
  * for the build to put in the page.
  *
- * Run by "Deploy to GitHub Pages" and "Preview build" with GITHUB_TOKEN and
- * GITHUB_REPOSITORY set, before `npm run build`. It only reads public issues
+ * Run by "Deploy to GitHub Pages", which only runs main's own code, with
+ * GITHUB_TOKEN and GITHUB_REPOSITORY set, before `npm run build`. "Preview
+ * build" runs a pull request's code, so it never runs this with a token, and
+ * previews have no history. It only reads public issues
  * and pull requests from the GitHub API. The page itself never reaches the
  * network: the build bundles the file.
  */

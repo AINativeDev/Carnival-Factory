@@ -11,7 +11,7 @@ import type { SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { shareLink, shareText } from '../northpole/visit';
-import { SQUARE_HISTORY, historyOf, renderHistory } from './history';
+import { SQUARE_HISTORY, emptyHistoryText, historyOf, renderHistory } from './history';
 import { deepLink } from './route';
 
 export interface VisitHudOptions {
@@ -74,7 +74,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     <details class="visit-history">
       <summary>How was this built?</summary>
       <ol class="history-list"></ol>
-      <p class="history-empty" hidden>No requests for this square are on record in this build.</p>
+      <p class="history-empty" hidden></p>
       <p class="history-own"><a class="history-own-link" href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run this on your own repo</a>: set up a Tessl factory on a repository of yours.</p>
       <div class="history-offer" hidden>
         <p><span class="history-offer-tag">Offer</span> <a class="history-offer-link" target="_blank" rel="noopener"></a></p>
@@ -92,7 +92,9 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   // How was this built: open beside the room, collapsed on a phone, where it sits below it.
   const entries = historyOf(SQUARE_HISTORY, kind, square.id);
   renderHistory($('.history-list'), entries);
-  $<HTMLElement>('.history-empty').hidden = entries.length > 0;
+  const empty = $<HTMLElement>('.history-empty');
+  empty.textContent = emptyHistoryText(SQUARE_HISTORY);
+  empty.hidden = entries.length > 0;
   $<HTMLDetailsElement>('.visit-history').open = !matchMedia('(max-width: 719px)').matches;
   const offer = signupOffer();
   if (offer) {

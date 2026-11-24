@@ -24,11 +24,6 @@ jobs:
     # their previews would publish code nobody here wrote.
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    # Reads the public issues and pull requests for the squares' history.
-    permissions:
-      contents: read
-      issues: read
-      pull-requests: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -38,12 +33,6 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - name: Read every square's history
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          node scripts/write-square-history.ts ||
-            echo "::warning title=No square history::Couldn't read the issues and pull requests, so the squares' timelines are empty in this preview."
       - run: npm ci
       - run: npm run build
       - uses: actions/upload-artifact@v7

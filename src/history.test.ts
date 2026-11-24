@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { HistoryPull, SquareHistory } from '../scripts/square-history';
-import { day, historyOf, pullState, pullSummary, requestLine, safeHref } from './history';
+import {
+  day,
+  emptyHistoryText,
+  historyOf,
+  pullState,
+  pullSummary,
+  requestLine,
+  safeHref,
+} from './history';
 
 const merged: HistoryPull = {
   number: 79,
@@ -18,6 +26,15 @@ describe('historyOf', () => {
     expect(historyOf(data, 'booth', 'Ana')).toBe(data.squares['booth/ana']);
     expect(historyOf(data, 'attraction', 'ferris-wheel')).toEqual([]);
     expect(historyOf(undefined, 'booth', 'ana')).toEqual([]);
+  });
+});
+
+describe('emptyHistoryText', () => {
+  it('says why a square has no timeline', () => {
+    expect(emptyHistoryText({ builtAt: '', squares: {} })).toBe(
+      'No requests for this square are on record in this build.',
+    );
+    expect(emptyHistoryText(undefined)).toBe('Timelines appear once this is on the live map.');
   });
 });
 

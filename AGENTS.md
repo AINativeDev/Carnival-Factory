@@ -91,7 +91,7 @@ scripts/
   square-history.ts         every square's history from its issues and pull requests
                             (plain functions), for the credits (#32) to reuse
   write-square-history.ts   reads them from the GitHub API and writes square-history.json
-                            before the deploy's and the preview's build
+                            before the deploy's build (previews have none)
 ```
 
 ## Working on an issue

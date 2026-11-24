@@ -9,8 +9,8 @@ import type {
 /**
  * Every square's history, read from the repository when the site was built
  * (scripts/write-square-history.ts) and bundled into the page, so showing it
- * never reaches the network. A build without the file, such as `npm run dev`,
- * has no history.
+ * never reaches the network. A build without the file, such as a preview or
+ * `npm run dev`, has no history.
  */
 const files = import.meta.glob<SquareHistory>('../square-history.json', {
   eager: true,
@@ -21,6 +21,12 @@ export const SQUARE_HISTORY: SquareHistory | undefined = Object.values(files)[0]
 /** A square's requests, newest first; empty when the build has none. */
 export const historyOf = (data: SquareHistory | undefined, kind: HistoryKind, id: string) =>
   data?.squares[`${kind}/${id.toLowerCase()}`] ?? [];
+
+/** What the panel says when a square has no requests to show. */
+export const emptyHistoryText = (data: SquareHistory | undefined) =>
+  data
+    ? 'No requests for this square are on record in this build.'
+    : 'Timelines appear once this is on the live map.';
 
 /** What the assessment decided, in words. */
 export const DECISIONS: Record<Decision, string> = {
