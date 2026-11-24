@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   blinking,
+  BOUNCE,
+  bounceOf,
+  TALLY,
+  TOYS_AT_DAWN,
+  toysMade,
   globeFlake,
   onGlobe,
   swirlOf,
@@ -207,5 +212,21 @@ describe('the snow globe', () => {
     expect(Number.isFinite(globeFlake(3, Infinity).x)).toBe(true);
     expect(onGlobe(60, 76)).toBe(true);
     expect(onGlobe(10, 10)).toBe(false);
+  });
+});
+
+describe('the toy counter sign', () => {
+  it('ticks up by one every 3 seconds', () => {
+    expect(toysMade(0)).toBe(TOYS_AT_DAWN);
+    expect(toysMade(TALLY - 1)).toBe(TOYS_AT_DAWN);
+    expect(toysMade(TALLY)).toBe(TOYS_AT_DAWN + 1);
+    expect(toysMade(10 * TALLY)).toBe(TOYS_AT_DAWN + 10);
+  });
+
+  it('bounces after a tick and then rests', () => {
+    expect(bounceOf(0)).toBe(0);
+    expect(bounceOf(BOUNCE / 4)).toBeGreaterThan(0.5);
+    expect(bounceOf(BOUNCE)).toBe(0);
+    expect(bounceOf(TALLY - 1)).toBe(0);
   });
 });
