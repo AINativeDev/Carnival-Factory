@@ -66,11 +66,14 @@ northpole/                  the map itself
   pointer.ts                where the pointer is inside a square, through its
                             stall's front or the back wall inside (plain functions)
   theme.ts                  colours, fonts and sizes
+  badges.ts                 the Elf Engineer badge: its holders, baked in at build
+                            time, its images and its README snippet (plain functions)
   disabled.json             the maintainers' kill switch: closed booths and attractions
   links.ts                  links to the repository's issue forms
 docs/
   style.md                  the diorama style every square follows by default
   booth-ideas.md            ideas and tips for a booth request
+  elf-engineer.md           the Elf Engineer badge, and how to get it
 booths/
   jedi4ever/                a finished booth, and the pattern to copy
     booth.ts
@@ -80,8 +83,8 @@ attractions/
     attraction.ts
     attraction.test.ts
     README.md
-plugins/north-pole/         the factory's own skills: assessing booth requests,
-                            and the house-rules review lens
+plugins/north-pole/         the factory's own skills: assessing booth and badge
+                            requests, and the house-rules review lens
 plugins/north-pole-gifts/   the gift shelf: small factory loops anyone can install
                             on their own repository, shown at the Gift shop
 scripts/
@@ -94,6 +97,8 @@ scripts/
                             (plain functions), for the credits (#32) to reuse
   write-square-history.ts   reads them from the GitHub API and writes square-history.json
                             before the deploy's build (previews have none)
+  elf-engineer.ts           the Elf Engineer badge's rules: the form, the check,
+                            the tiers and the holders (plain functions)
 ```
 
 ## Working on an issue

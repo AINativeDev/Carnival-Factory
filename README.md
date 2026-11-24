@@ -71,6 +71,11 @@ starter repo for the "Build your own software factory with context" workshop.
    request is the one that counts, so a new one closes any older one you still
    have open.
 
+**Built a factory of your own?** Set up Tessl on a repository of yours, then
+ask for the [Elf Engineer badge](docs/elf-engineer.md) with **Issues → New
+issue → Elf Engineer badge**. Once it's granted, your booth gets an elf-hat pin
+and a link to your factory, and you get a badge for your README.
+
 Booths are drawn in the [diorama style](docs/style.md) by default, the same
 as the North Pole's attractions: a little isometric scene at dusk, lit warm.
 A booth built before that keeps its own look until its owner asks for a
@@ -99,7 +104,7 @@ yours to change.
    `environment`). Then run `tessl doctor --automations` and fix what it
    reports.
 4. **Create the labels** the loops use: `tessl`, `booth-request`,
-   `needs-info` and `declined`.
+   `badge-request`, `badge-granted`, `needs-info` and `declined`.
 5. **File your first issue** and watch it come back as a pull request. Then go
    further: ask for a new attraction, tighten the assessment rules in
    `plugins/north-pole/skills/assess-booth-request/`, or add a loop of your own
