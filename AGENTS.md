@@ -328,10 +328,12 @@ squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
 
 1. `level.ts`, whose default export is a `NorthPoleLevel` from
    `northpole/level.ts`, with `id` set to the folder name. It is **plain
-   data**, which the page reads itself: one object literal, and only
-   `import type { NorthPoleLevel } from '../../northpole/level'`. ESLint
-   bans calls, functions, getters, spreads, property reads and every other
-   import in it. It holds:
+   data**, which the page reads itself: only
+   `import type { NorthPoleLevel } from '../../northpole/level'`,
+   `const level: NorthPoleLevel = { ... }` and `export default level`, with
+   nothing inside but objects, arrays, strings, numbers and booleans. ESLint
+   allows nothing else in it: no other statements, names, calls, functions,
+   getters, spreads, property reads or imports. It holds:
    - `name`, a one-sentence `description`, and a `theme`, one of
      `LEVEL_THEMES` (`dusk`, `aurora-night`, `candy-cane`, `frozen-lake`,
      `gingerbread`), which tints its sky and colours its signs;

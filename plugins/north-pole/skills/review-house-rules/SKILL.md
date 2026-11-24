@@ -39,9 +39,11 @@ it, so look for the indirect routes that reach the same things:
 ## A level is plain data (Major)
 
 The page reads `levels/<login>/level.ts` itself, so it must be one
-`NorthPoleLevel` object and nothing that runs. ESLint bans calls, functions,
-getters, spreads, property reads and any import but `import type` from
-`../../northpole/level`. Look for what gets around that: values that aren't
+`NorthPoleLevel` object and nothing that runs. ESLint allows only `import
+type` from `../../northpole/level`, `const level = { ... }` and `export
+default level`, with only objects, arrays, strings, numbers and booleans
+inside: no other statements (no `if`, loops or blocks), no names as values,
+and no calls, functions, getters, spreads or property reads. Look for what gets around that: values that aren't
 plain literals, an object reached through a type assertion, top-level code
 in another file of the level's folder, or a `.ts` file beside `level.ts`
 that a square imports to share code with the page. A level's squares follow

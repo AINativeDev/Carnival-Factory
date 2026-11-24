@@ -113,6 +113,27 @@ const levelData = [
   ['AwaitExpression', 'no await'],
   ['UpdateExpression, AssignmentExpression[left.type!="Identifier"]', 'no changing anything'],
   ['ExportNamedDeclaration', 'only its default export'],
+  // What may be there at all, so nothing else runs when the page imports it:
+  // `import type`, `const level = { ... }` and `export default level`, with
+  // only objects, arrays and plain values inside.
+  [
+    'Program > :not(ImportDeclaration, VariableDeclaration, ExportDefaultDeclaration)',
+    'only its import, its `const level` and `export default level`',
+  ],
+  ['VariableDeclaration[kind!="const"]', 'only `const`'],
+  [
+    'VariableDeclarator:matches([id.name!="level"], [init.type!="ObjectExpression"])',
+    'only `const level = { ... }`',
+  ],
+  ['ExportDefaultDeclaration > :not(Identifier[name="level"])', 'only `export default level`'],
+  [
+    ':expression:not(ObjectExpression, ArrayExpression, Literal, TemplateLiteral, Identifier, UnaryExpression[operator="-"][argument.type="Literal"])',
+    'only objects, arrays, strings, numbers and booleans',
+  ],
+  [
+    ':matches(Property[value.type="Identifier"], ArrayExpression > Identifier.elements)',
+    'no names of anything as values',
+  ],
 ].map(([selector, what]) => ({ selector, message: `${LEVEL_DATA} ${what}.` }));
 
 export default tseslint.config(

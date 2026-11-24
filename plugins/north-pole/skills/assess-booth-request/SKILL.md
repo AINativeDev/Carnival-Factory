@@ -171,6 +171,12 @@ snow, ice, path, water and bridges, props from the catalogue in
 `LEVEL_PROPS` (`northpole/level.ts`), where visitors arrive, at least one
 sleigh back to the North Pole, and its own squares.
 
+A level holds several ideas by design, so the one-idea rule above applies to
+each of its squares, not to the level: a fair with a skate rental, a cocoa hut
+and ice fishing is one level with three squares, never a reason to propose a
+single scene. Narrow only a square that itself asks for more than one idea,
+and propose cutting the level down only when it asks for more than 8 squares.
+
 **Propose** the closest buildable version when it asks for something a level
 can't be: a prop not in the catalogue (offer the nearest one, or a square
 that draws it), more than 8 squares, a level bigger than 41 tiles, rules or

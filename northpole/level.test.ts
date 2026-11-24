@@ -71,6 +71,17 @@ describe('validateLevel', () => {
     ]);
   });
 
+  it('finds a prop under the pond whichever comes first', () => {
+    const pine = { kind: 'pine', x: 6, y: 5 } as const;
+    const pond = { kind: 'pond', x: 5, y: 4 } as const;
+    expect(validateLevel({ ...small(), props: [pine, pond] }, 'someone', ['hut'])).toEqual([
+      'the pond is over prop 0, a pine, at 6, 5',
+    ]);
+    expect(validateLevel({ ...small(), props: [pond, pine] }, 'someone', ['hut'])).toEqual([
+      'prop 1, a pine, stands on the pond at 6, 5',
+    ]);
+  });
+
   it('needs every square folder placed, and every placed square to have a folder', () => {
     expect(validateLevel(small(), 'someone', ['shed'])).toEqual([
       'square "hut" has no squares/hut/square.ts',

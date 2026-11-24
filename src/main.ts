@@ -253,11 +253,7 @@ function renderLevel(login: string, focus?: string) {
   app.querySelector('.level-owner')!.textContent = `A level by @${login}`;
   app.querySelector('.level-description')!.textContent = level.description;
   const known = focus && entry.squares.some((square) => square.id === focus);
-  if (focus && !known) {
-    const note = app.querySelector<HTMLElement>('.map-note')!;
-    note.textContent = `${level.name} has no square called "${focus.slice(0, 40)}".`;
-    note.hidden = false;
-  }
+  if (focus && !known) renderUnknownInLevel(login, focus);
   const started = startMap(
     app.querySelector('.map-frame')!,
     canvas,
@@ -282,6 +278,21 @@ function renderLevel(login: string, focus?: string) {
     started.stop();
   };
   map = started;
+}
+
+/** A level's note for a link to one of its squares that isn't there. The id is only ever set as text. */
+function renderUnknownInLevel(login: string, id: string) {
+  const note = app.querySelector<HTMLElement>('.map-note')!;
+  note.textContent = `${levelOf(login)?.name ?? login} has no square called "${id.slice(0, 40)}".`;
+  note.hidden = false;
+}
+
+/** In the level on screen, puts the player in front of one of its squares, or says it isn't there. */
+function jumpInLevel(login: string, id: string) {
+  if (!levelOf(login)?.squares.some((square) => square.id === id))
+    return renderUnknownInLevel(login, id);
+  app.querySelector<HTMLElement>('.map-note')!.hidden = true;
+  map?.jumpTo('attraction', id);
 }
 
 /** The map's note for a deep link to a square that isn't there. The id is only ever set as text. */
@@ -369,7 +380,8 @@ function visit(kind: SquareKind, id: string, fromHistory: boolean) {
   const fromMap = fromHistory && !card;
   closeCard(false);
   if (!square || !map?.visit(kind, id)) {
-    if (!shown) renderUnknown(app.querySelector('.map-note')!, { kind, id });
+    if (shown) renderUnknownInLevel(shown, id);
+    else renderUnknown(app.querySelector('.map-note')!, { kind, id });
     return;
   }
   app.querySelector<HTMLElement>('.map-note')!.hidden = true;
@@ -433,9 +445,9 @@ function route(event?: HashChangeEvent) {
       renderLevel(route.login, route.focus);
     } else if (!route.inside && card) {
       closeCard(false);
-      if (route.focus) map.jumpTo('attraction', route.focus);
+      if (route.focus) jumpInLevel(route.login, route.focus);
     } else if (route.focus) {
-      map.jumpTo('attraction', route.focus);
+      jumpInLevel(route.login, route.focus);
     }
     if (route.inside && shown === route.login) visit('attraction', route.inside, fromHistory);
     return;

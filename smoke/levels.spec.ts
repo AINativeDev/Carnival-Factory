@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { worldToScreen } from '../northpole/camera';
 import { levelWorld, validateLevel, type NorthPoleLevel } from '../northpole/level';
-import { canStand, toScreen, type Plot, type Tile, type World } from '../northpole/world';
+import { canStand, findPath, toScreen, type Plot, type Tile, type World } from '../northpole/world';
 
 /**
  * Walks every level: from its arrival point to each of its squares, inside
@@ -50,26 +50,42 @@ async function stillCamera(page: Page) {
 }
 
 /**
- * Walks the player to a plot's door: a click on the ground just past it, which
- * the map walks to, then a step back along the tile row to the door. Clicking
- * the door itself would land on the stall in front of it.
+ * The tiles beside a door the player can step onto it from, each with the
+ * keys for that one step: from the east up and left on screen, from the south
+ * up and right, and from the north down and left. West of a door is its stall.
+ */
+const APPROACHES: { dx: number; dy: number; keys: [string, string] }[] = [
+  { dx: 1, dy: 0, keys: ['w', 'a'] },
+  { dx: 0, dy: 1, keys: ['w', 'd'] },
+  { dx: 0, dy: -1, keys: ['s', 'a'] },
+];
+
+/**
+ * Walks the player to a plot's door: a click on the ground beside it, which
+ * the map walks to, then a step onto the door. Clicking the door itself would
+ * land on the stall in front of it.
  */
 async function walkToDoor(page: Page, world: World, plot: Plot) {
   const canvas = page.locator('.map-canvas');
-  const past: Tile = { x: plot.door.x + 1, y: plot.door.y };
-  expect(canStand(world, past), `the tile past ${plot.kind} ${plot.id}'s door is clear`).toBe(true);
+  const approach = APPROACHES.map(({ dx, dy, keys }) => ({
+    beside: { x: plot.door.x + dx, y: plot.door.y + dy } as Tile,
+    keys,
+  })).find(
+    ({ beside }) => canStand(world, beside) && findPath(world, world.start, beside) !== undefined,
+  );
+  expect(approach, `a tile beside ${plot.kind} ${plot.id}'s door is clear`).toBeDefined();
+  const { beside, keys } = approach!;
   const camera = await stillCamera(page);
   const box = (await canvas.boundingBox())!;
-  const at = worldToScreen(toScreen(past), box.width, box.height, camera, camera.zoom);
+  const at = worldToScreen(toScreen(beside), box.width, box.height, camera, camera.zoom);
   await canvas.click({ position: at });
-  await expect(canvas).toHaveAttribute('data-player', `${past.x},${past.y}`, { timeout: 15_000 });
-  // One tile back toward the door: up and left on screen together.
+  await expect(canvas).toHaveAttribute('data-player', `${beside.x},${beside.y}`, {
+    timeout: 15_000,
+  });
   await page.waitForTimeout(300);
-  await page.keyboard.down('w');
-  await page.keyboard.down('a');
+  for (const key of keys) await page.keyboard.down(key);
   await page.waitForTimeout(200);
-  await page.keyboard.up('w');
-  await page.keyboard.up('a');
+  for (const key of keys) await page.keyboard.up(key);
   await expect(canvas).toHaveAttribute('data-near', `${plot.kind}:${plot.id}`);
 }
 
@@ -84,9 +100,11 @@ for (const login of logins) {
     const { default: level } = (await import(`../levels/${login}/level.ts`)) as {
       default: NorthPoleLevel;
     };
-    const ids = readdirSync(join(root, 'levels', login, 'squares'), { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name);
+    // The same squares the page finds: every squares/<id>/square.ts, if any.
+    const folder = join(root, 'levels', login, 'squares');
+    const ids = existsSync(folder)
+      ? readdirSync(folder).filter((id) => existsSync(join(folder, id, 'square.ts')))
+      : [];
     expect(validateLevel(level, login, ids)).toEqual([]);
     const world = levelWorld(level);
     await page.goto(`#/level/${login}`);
@@ -127,6 +145,9 @@ test("a level's deep links say when a level or square isn't there", async ({ pag
   const [login] = logins;
   await page.goto(`#/level/${login}?square=nowhere`);
   await expect(page.locator('.map-note')).toContainText('has no square called "nowhere"');
+  await page.goto(`#/level/${login}/nowhere`);
+  await expect(page.locator('.map-note')).toContainText('has no square called "nowhere"');
+  await expect(page.locator('.visit')).toHaveCount(0);
   await page.goto('#/level/no-such-level-here');
   await expect(page.locator('.map-note')).toContainText("There's no level for @no-such-level-here");
   await page.locator('.map-canvas').focus();

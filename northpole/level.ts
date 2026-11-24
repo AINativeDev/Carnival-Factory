@@ -306,7 +306,13 @@ export function validateLevel(
     }
     if (look.thing === undefined) {
       if (++ponds > 1) problems.push('it has more than one pond');
-      for (const t of tilesOf(box)) taken.set(key(t.x, t.y), `the pond`);
+      // A prop listed before the pond may not stand where the pond goes.
+      const under = tilesOf(box).find((t) => taken.has(key(t.x, t.y)));
+      if (under)
+        problems.push(
+          `the pond is over ${taken.get(key(under.x, under.y))} at ${under.x}, ${under.y}`,
+        );
+      else for (const t of tilesOf(box)) taken.set(key(t.x, t.y), `the pond`);
     } else occupy(box, `prop ${n}, a ${prop.kind},`);
   }
 
