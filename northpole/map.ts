@@ -480,7 +480,8 @@ export function startMap(
   /**
    * The fingers on the map, two of which pinch the camera nearer or farther:
    * how far apart they were last and the point between them. `closer` is how
-   * much nearer than its own framing they left the camera, until the overview.
+   * much nearer than its own framing they left the camera, until the overview
+   * goes on or off.
    */
   const fingers = new Map<number, Tile>();
   let pinching: { apart: number; between: Tile } | undefined;
@@ -796,13 +797,12 @@ export function startMap(
     }
     const framed = want();
     // Two fingers may have pinched the camera nearer or farther, though never past the whole island.
-    if (overview) closer = 1;
     const wanted = {
       ...framed,
       zoom: Math.max(fitZoom(bounds, width, height), framed.zoom * closer),
     };
-    // A walk, or the overview, takes the camera back from where a finger left it.
-    if (moving || overview) panned = undefined;
+    // A walk takes the camera back from where a finger left it, as the overview going on or off does.
+    if (moving) panned = undefined;
     if (!camera || still) {
       zoom = wanted.zoom;
       // On a phone the camera opens on the town square, then finds the player.
@@ -1214,7 +1214,8 @@ export function startMap(
   };
   const onPointerEnd = (event: PointerEvent) => {
     fingers.delete(event.pointerId);
-    if (fingers.size < 2) pinching = undefined;
+    // With a finger of the pair gone, the pinch goes on from the two fingers left.
+    pinching = fingers.size < 2 ? undefined : pinchOf();
     if (dragging?.id === event.pointerId) dragging = undefined;
   };
 
@@ -1343,6 +1344,8 @@ export function startMap(
       if (visiting) options.onLeave();
       player = { ...plot.door };
       path = [];
+      // A pinch in the overview was nearer than the overview, not than the carnival.
+      if (overview) closer = 1;
       overview = false;
       panned = undefined;
       // The camera comes in on the square, and eases back out a little later, as after a walk.
@@ -1428,6 +1431,8 @@ export function startMap(
       path = [];
       claiming = undefined;
       held.clear();
+      // A pinch in the overview was nearer than the overview, not than the carnival.
+      if (overview) closer = 1;
       overview = false;
       panned = undefined;
       if (!visiting) fading = performance.now();
@@ -1456,6 +1461,8 @@ export function startMap(
     },
     toggleOverview() {
       overview = !overview;
+      panned = undefined;
+      closer = 1;
       return overview;
     },
     get overview() {
