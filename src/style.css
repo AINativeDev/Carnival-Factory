@@ -1,0 +1,98 @@
+/* Colours and fonts come from src/northpole/theme.ts via applyTheme(). */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-night);
+  color: var(--color-text);
+  font-family: var(--font-family);
+}
+
+a {
+  color: var(--color-gold);
+}
+
+.banner {
+  padding: 20px 16px;
+  text-align: center;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-berry) 0 24px,
+    var(--color-snow) 24px 48px
+  );
+}
+
+.brand {
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: var(--radius);
+  background: var(--color-night);
+  color: var(--color-gold);
+  font-size: 28px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+#app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.map-help,
+.plot-help {
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.map-frame {
+  overflow-x: auto;
+  text-align: center;
+}
+
+.map-canvas {
+  max-width: 100%;
+  border-radius: var(--radius);
+}
+
+.map-guide ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.map-guide .owner {
+  color: var(--color-muted);
+}
+
+.plot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.plot-header {
+  text-align: center;
+}
+
+.plot-header h1 {
+  margin: 12px 0 4px;
+}
+
+.plot-header .owner,
+.plot-header .description {
+  margin: 4px 0;
+  color: var(--color-muted);
+}
+
+.plot-canvas {
+  width: min(480px, 100%);
+  margin-top: 16px;
+  border-radius: var(--radius);
+}
