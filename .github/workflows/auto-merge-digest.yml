@@ -1,0 +1,47 @@
+name: Auto-merge digest
+
+# Once a day, lists the booths that merged on their own in the last 24 hours in
+# one issue, so a person still sees every one. A maintainer who spots a problem
+# can switch the booth off in northpole/disabled.json.
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: read
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          since=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          site=$(gh api "repos/$GH_REPO/pages" --jq .html_url 2>/dev/null || echo "")
+          # Search by merge date, every page, so every auto-merge in the window
+          # is listed. GitHub's search stops at 1000 results: if there are
+          # more, the digest says so and links the full search.
+          query="repo:$GH_REPO is:pr is:merged label:auto-merged merged:>=$since"
+          total=$(gh api -X GET search/issues -f q="$query" --jq .total_count)
+          rows=$(gh api -X GET search/issues -f q="$query" -f per_page=100 --paginate \
+            --jq '.items[] | "- [#\(.number)](\(.html_url)) \(.title)"')
+          listed=$(printf '%s\n' "$rows" | grep -c . || true)
+          if [ "$total" -gt "$listed" ]; then
+            search_url="https://github.com/$GH_REPO/pulls?q=$(jq -rn --arg q "is:pr is:merged label:auto-merged merged:>=$since" '$q|@uri')"
+            rows="$rows
+          - And $((total - listed)) more: [see them all]($search_url)"
+          fi
+          if [ -z "$rows" ]; then
+            echo "Nothing merged on its own since $since."
+            exit 0
+          fi
+          body="These booth changes merged on their own in the last 24 hours, after passing every check in the auto-merge gate. Have a look at each on the map${site:+ ($site)}. To switch one off, add its owner's login to the booths list in northpole/disabled.json.
+
+          $rows"
+          gh issue create --title "Booths that merged on their own, $(date -u +%Y-%m-%d)" --body "$body"

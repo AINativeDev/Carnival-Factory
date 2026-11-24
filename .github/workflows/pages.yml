@@ -146,6 +146,8 @@ jobs:
                 -exec cp {} "$dir/screenshots/" \;
             fi
             echo "$sha" > "$dir/.preview-sha"
+            # The Pages artifact leaves out hidden files, so publish it visibly too.
+            echo "$sha" > "$dir/preview-sha.txt"
             placed+=("$number:$sha")
           done <<<"$open"
           echo "placed=${placed[*]}" >> "$GITHUB_OUTPUT"
