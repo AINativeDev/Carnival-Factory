@@ -8,6 +8,7 @@
  * The rule of thumb: every check must pass on the pull request's current head
  * commit, and any doubt sends it to a person.
  */
+import { safeInline } from './safe-text.ts';
 import type { CodeProblem } from './square-code.ts';
 import type { TextFinding } from './injection-scan.ts';
 
@@ -183,7 +184,7 @@ export function gateComment(result: GateDecision, guideUrl: string): string {
     '',
     ...result.steps.map(
       (s) =>
-        `- **${s.name}** (${STATE[s.state]}): ${s.about}${s.detail ? `  \n  _${s.detail}_` : ''}`,
+        `- **${s.name}** (${STATE[s.state]}): ${s.about}${s.detail ? `  \n  ${safeInline(s.detail, 300)}` : ''}`,
     ),
     '',
     next,

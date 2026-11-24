@@ -7,8 +7,15 @@
  * `check-booth-ownership.ts` fetches the pull request and calls them.
  */
 
-/** GitHub logins that may change any file, and who merge every pull request. */
-export const MAINTAINERS = ['jedi4ever'];
+/**
+ * The people who may change any file, and who merge every pull request. They
+ * are matched by numeric GitHub user id, which never changes: a login can be
+ * renamed and later taken by someone else. The login is only for reading.
+ * The same ids are in tessl.json's event.sender.id filters.
+ */
+export const MAINTAINERS: readonly { login: string; id: number }[] = [
+  { login: 'jedi4ever', id: 70908 },
+];
 
 /** The bots whose pull requests are for the person who wrote the linked issue. */
 export const FACTORY_BOTS = ['tessl-app[bot]'];
@@ -17,8 +24,8 @@ export function boothFolder(login: string): string {
   return `booths/${login.toLowerCase()}/`;
 }
 
-export function isMaintainer(login: string): boolean {
-  return MAINTAINERS.includes(login.toLowerCase());
+export function isMaintainer(person: Pick<Author, 'id'>): boolean {
+  return MAINTAINERS.some((maintainer) => maintainer.id === person.id);
 }
 
 export function isFactory(author: Author): boolean {
@@ -53,25 +60,40 @@ export function linkedIssue(body: string, repository: string): number | undefine
 
 export interface Author {
   login: string;
+  /** The numeric GitHub user id: what identity is checked by, since logins can change hands. */
+  id: number;
   isBot: boolean;
 }
 
 /**
- * Whose booth a pull request may change. A person's own pull request is for
+ * Whose booth a pull request may change, as the person, id and all. A person's own pull request is for
  * them. The factory's pull request is for whoever wrote the issue it links to.
  * Any other bot's pull request is for nobody, and so is the factory's when no
  * person wrote the issue.
  */
-export function boothOwner(author: Author, issueAuthor: Author | undefined): string | undefined {
-  if (!author.isBot) return author.login.toLowerCase();
-  if (isFactory(author) && issueAuthor && !issueAuthor.isBot)
-    return issueAuthor.login.toLowerCase();
+export function boothOwner(author: Author, issueAuthor: Author | undefined): Author | undefined {
+  const person = (who: Author) => ({ ...who, login: who.login.toLowerCase() });
+  if (!author.isBot) return person(author);
+  if (isFactory(author) && issueAuthor && !issueAuthor.isBot) return person(issueAuthor);
   return undefined;
 }
 
 /** The files a pull request touches outside its owner's booth. Empty means it may merge. */
-export function filesOutsideBooth(owner: string, files: readonly string[]): string[] {
+export function filesOutsideBooth(owner: Author, files: readonly string[]): string[] {
   if (isMaintainer(owner)) return [];
-  const folder = boothFolder(owner);
+  const folder = boothFolder(owner.login);
   return files.filter((file) => !file.startsWith(folder));
+}
+
+/**
+ * Escapes text for a GitHub Actions log command (`::error file=…::message`).
+ * A file name can hold a newline, which would otherwise start a command of its own.
+ */
+export function escapeCommand(text: string): string {
+  return text
+    .replace(/%/g, '%25')
+    .replace(/\r/g, '%0D')
+    .replace(/\n/g, '%0A')
+    .replace(/:/g, '%3A')
+    .replace(/,/g, '%2C');
 }
