@@ -124,11 +124,15 @@
       "when": {
         "isPullRequest": "false",
         "event.issue.state": "open",
-        "event.sender.type": "User",
         "event.issue.labels.*.name": {
           "any": {
             "equals": "tessl"
           }
+        },
+        "event.sender.id": {
+          "in": [
+            70908
+          ]
         }
       },
       "action": {
@@ -184,7 +188,12 @@
         "github:issues.labeled"
       ],
       "when": {
-        "event.label.name": "tessl"
+        "event.label.name": "tessl",
+        "event.sender.id": {
+          "in": [
+            70908
+          ]
+        }
       },
       "action": {
         "use": "implement",
@@ -218,9 +227,9 @@
       ],
       "when": {
         "event.sender.id": {
-          "not": {
-            "equals": "{{ github.tesslApp.userId }}"
-          }
+          "in": [
+            70908
+          ]
         },
         "event.pull_request.head.ref": {
           "matches": "^tessl/"
@@ -229,7 +238,32 @@
           "any": {
             "equals": "tessl"
           }
+        },
+        "event.pull_request.head.repo.id": 1469850421
+      },
+      "action": {
+        "use": "shepherd",
+        "inputs": {
+          "GITHUB_PR_NUMBER": "{{ event.pull_request.number }}",
+          "GITHUB_REPOSITORY": "{{ event.repository.full_name }}"
         }
+      }
+    },
+    "shepherd-pr-review-tessl-reviewer": {
+      "on": [
+        "github:pull_request_review.submitted"
+      ],
+      "when": {
+        "event.sender.id": "{{ github.tesslReviewerApp.userId }}",
+        "event.pull_request.head.ref": {
+          "matches": "^tessl/"
+        },
+        "event.pull_request.labels.*.name": {
+          "any": {
+            "equals": "tessl"
+          }
+        },
+        "event.pull_request.head.repo.id": 1469850421
       },
       "action": {
         "use": "shepherd",
@@ -244,11 +278,6 @@
         "github:pull_request_review_comment.created"
       ],
       "when": {
-        "event.sender.type": {
-          "not": {
-            "equals": "Bot"
-          }
-        },
         "event.pull_request.head.ref": {
           "matches": "^tessl/"
         },
@@ -256,7 +285,13 @@
           "any": {
             "equals": "tessl"
           }
-        }
+        },
+        "event.sender.id": {
+          "in": [
+            70908
+          ]
+        },
+        "event.pull_request.head.repo.id": 1469850421
       },
       "action": {
         "use": "shepherd",
@@ -272,15 +307,15 @@
       ],
       "when": {
         "isPullRequest": "true",
-        "event.sender.type": {
-          "not": {
-            "equals": "Bot"
-          }
-        },
         "event.issue.labels.*.name": {
           "any": {
             "equals": "tessl"
           }
+        },
+        "event.sender.id": {
+          "in": [
+            70908
+          ]
         }
       },
       "action": {
