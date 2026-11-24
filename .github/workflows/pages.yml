@@ -187,8 +187,21 @@ jobs:
             pr=${entry%%:*}
             sha=${entry#*:}
             url="${site%/}/previews/pr-$pr/"
+            # A direct link to every booth and attraction the pull request changes.
+            squares=$(gh api "repos/$GH_REPO/pulls/$pr/files" --paginate --jq '.[].filename' |
+              sed -nE 's#^(booth|attraction)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
+            links=""
+            for square in $squares; do
+              links="$links
+          - [\`$square\`](${url}#/$square)"
+            done
             body="<!-- pr-preview -->
           **Preview:** $url (built from ${sha::7}). It updates on every push and is removed when this pull request closes."
+            if [ -n "$links" ]; then
+              body="$body
+
+          **Changed here:**$links"
+            fi
             id=$(gh api "repos/$GH_REPO/issues/$pr/comments" --paginate \
               --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- pr-preview -->"))) | .id' | head -1)
             if [ -n "$id" ]; then
