@@ -291,7 +291,14 @@ async function gate(pull: Pull) {
     // The sha pins the merge to the commit every check ran on: a push since then fails it.
     await call('PUT', `pulls/${pull.number}/merge`, { merge_method: 'merge', sha });
   } catch (error) {
-    await call('DELETE', `issues/${pull.number}/labels/auto-merged`).catch(() => {});
+    // The merge may have happened even if its reply was lost: only take the
+    // label off when the pull request really isn't merged.
+    const after = await get<Pull>(`pulls/${pull.number}`).catch(() => undefined);
+    if (after?.merged_at) {
+      merged = true;
+      return console.log(`#${pull.number}: merged (its reply was lost)`);
+    }
+    if (after) await call('DELETE', `issues/${pull.number}/labels/auto-merged`).catch(() => {});
     throw error;
   }
   merged = true;

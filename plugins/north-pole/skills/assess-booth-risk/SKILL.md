@@ -48,7 +48,7 @@ Stop with no write when any of these holds:
 - **The screenshot, for this commit only.** The preview is published at
   `https://<owner of the repository>.github.io/<repository>/previews/pr-<number>/`
   (the pull request's **Preview** comment links it). First fetch
-  `.preview-sha` from that folder: it holds the commit the preview was built
+  `preview-sha.txt` from that folder: it holds the commit the preview was built
   from. Only when it equals the current head sha, download
   `screenshots/booth-<owner>.png` from the same folder and look at it. Until
   then the preview shows an older commit: wait and retry for up to 15 minutes.

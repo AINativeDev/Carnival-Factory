@@ -244,7 +244,7 @@ export function checkSquareCode(folder: string, files: readonly SourceFile[]): C
         report(
           statement,
           'top-level',
-          'Only declarations at the top level: loading a square must not run anything.',
+          'Only declarations at the top level: loading a square should only define it.',
         );
       }
     }

@@ -27,9 +27,9 @@ for (const { kind, id } of squares) {
   }) => {
     await page.goto(`#/${kind}/${id}`);
     await page.waitForTimeout(1500);
-    // A 4 by 4 grid of cells, each with its own brightness over time, so
+    // An 8 by 8 grid of cells, each with its own brightness over time, so
     // regions flashing out of step can't cancel out.
-    const GRID = 4;
+    const GRID = 8;
     const raw = await page.evaluate(async (grid) => {
       const canvas = document.querySelector('canvas')!;
       const ctx = canvas.getContext('2d', { willReadFrequently: true })!;

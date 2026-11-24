@@ -65,6 +65,8 @@ export function maxFlashesPerSecond(samples: readonly Sample[]): number {
  * The share of the square that flashes too often: each cell of a grid has its
  * own brightness samples, so regions flashing out of step can't cancel out in
  * an average. WCAG counts a flash by area, so this is what the limit applies to.
+ * The smoke test uses an 8 by 8 grid: patterns finer than a cell can still
+ * average out, which the risk and taste check looks out for.
  */
 export function flashingArea(cells: readonly (readonly Sample[])[]): number {
   if (cells.length === 0) return 0;
