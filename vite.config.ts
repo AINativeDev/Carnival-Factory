@@ -6,7 +6,13 @@ import { cleanHolders } from './northpole/badges.ts';
 import { BADGE_REQUEST_URL } from './northpole/links.ts';
 import { readBoothAddedDates } from './scripts/booth-dates.ts';
 import { badgePage } from './scripts/elf-engineer.ts';
-import { readSquareInfo, sharePage, siteUrl, type ShareKind } from './scripts/share-pages.ts';
+import {
+  factorySharePage,
+  readSquareInfo,
+  sharePage,
+  siteUrl,
+  type ShareKind,
+} from './scripts/share-pages.ts';
 
 /** This build's id: the commit and the time, so every build differs. */
 const BUILD_ID = (() => {
@@ -37,7 +43,8 @@ const versionFile: Plugin = {
 /**
  * Writes share/<kind>-<id>.html for every booth and attraction, the pages Share
  * links to so they unfurl with a title, a description and the map's picture
- * (scripts/share-pages.ts), and that picture beside them.
+ * (scripts/share-pages.ts), and that picture beside them, and share/factory.html
+ * for the factory's numbers.
  */
 const sharePages: Plugin = {
   name: 'share-pages',
@@ -54,6 +61,11 @@ const sharePages: Plugin = {
       type: 'asset',
       fileName: 'share/map.png',
       source: readFileSync(join(root, 'docs/north-pole.png')),
+    });
+    this.emitFile({
+      type: 'asset',
+      fileName: 'share/factory.html',
+      source: factorySharePage(image),
     });
     for (const kind of ['booth', 'attraction'] as ShareKind[]) {
       const dir = join(root, `${kind}s`);

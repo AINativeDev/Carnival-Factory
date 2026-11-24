@@ -1,6 +1,7 @@
 /**
  * The link-preview pages the build writes, one per booth and attraction, at
- * `share/<kind>-<id>.html`. Each has Open Graph and Twitter Card tags, so a
+ * `share/<kind>-<id>.html`, and one for the factory's numbers at
+ * `share/factory.html`. Each has Open Graph and Twitter Card tags, so a
  * link to it unfurls in chat and on social, and sends the browser straight on
  * to the world with the player inside the square. They have no scripts: the
  * redirect is a meta refresh, with a plain link beside it. No tracking.
@@ -88,17 +89,47 @@ export const worldLink = (kind: ShareKind, id: string) => `../#/${kind}/${encode
  * site's address is known, since link previews want one, else beside the page.
  */
 export function sharePage(square: SharedSquare, image: string): string {
-  const title = escapeHtml(
-    square.kind === 'booth'
-      ? `${square.name}, by @${square.id}, at the North Pole Carnival`
-      : `${square.name} at the North Pole Carnival`,
-  );
-  const description = escapeHtml(
-    square.description ||
+  return previewPage({
+    title:
+      square.kind === 'booth'
+        ? `${square.name}, by @${square.id}, at the North Pole Carnival`
+        : `${square.name} at the North Pole Carnival`,
+    description:
+      square.description ||
       `Visit ${square.name} at the North Pole Carnival, and build a booth of your own.`,
-  );
-  const to = escapeHtml(worldLink(square.kind, square.id));
-  const picture = escapeHtml(image);
+    to: worldLink(square.kind, square.id),
+    link: `Visit ${square.name} at the North Pole Carnival`,
+    image,
+  });
+}
+
+/** The factory's numbers page, `#/factory`, from its share page. */
+export const FACTORY_LINK = '../#/factory';
+
+/** The share page of the factory's numbers, `share/factory.html`. */
+export function factorySharePage(image: string): string {
+  return previewPage({
+    title: 'The North Pole Carnival factory',
+    description:
+      'How many booths a software factory has built for the North Pole Carnival, and how busy it is.',
+    to: FACTORY_LINK,
+    link: "See the North Pole Carnival factory's numbers",
+    image,
+  });
+}
+
+/** A link-preview page: its tags, and a meta refresh on to `to`, with a plain link beside it. */
+function previewPage(page: {
+  title: string;
+  description: string;
+  to: string;
+  link: string;
+  image: string;
+}): string {
+  const title = escapeHtml(page.title);
+  const description = escapeHtml(page.description);
+  const to = escapeHtml(page.to);
+  const picture = escapeHtml(page.image);
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -120,7 +151,7 @@ export function sharePage(square: SharedSquare, image: string): string {
     <meta name="twitter:image" content="${picture}" />
   </head>
   <body style="font-family: system-ui, sans-serif; text-align: center; padding: 2em">
-    <p><a href="${to}">Visit ${escapeHtml(square.name)} at the North Pole Carnival</a></p>
+    <p><a href="${to}">${escapeHtml(page.link)}</a></p>
   </body>
 </html>
 `;

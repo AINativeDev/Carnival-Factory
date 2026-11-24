@@ -82,6 +82,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       <summary>How was this built?</summary>
       <ol class="history-list"></ol>
       <p class="history-empty" hidden></p>
+      <p class="history-factory"><a class="history-factory-link" href="#/factory">See the factory's numbers</a></p>
       <p class="history-own"><a class="history-own-link" href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run this on your own repo</a>: set up a Tessl factory on a repository of yours.</p>
       <div class="history-offer" hidden>
         <p><span class="history-offer-tag">Offer</span> <a class="history-offer-link" target="_blank" rel="noopener"></a></p>
