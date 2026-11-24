@@ -32,7 +32,9 @@ dependency, so it's easy to review and easy to drop.
    the first in that order. If there's none, stop and say so.
 3. **List what's outdated** with the ecosystem's own tool, for example
    `npm outdated --json`, `pip list --outdated`, `go list -m -u all` or
-   `cargo outdated`.
+   `cargo outdated`. Keep only the packages the manifest itself declares: a
+   tool like `pip list --outdated` also lists transitive dependencies and
+   whatever else is installed, and those are never candidates.
 4. **Pick one.** Prefer, in order: a patch release, then a minor release, then a
    major one; a development dependency before a runtime one; and skip anything
    with a closed pull request on a `stocking-stuffer/<name>-<version>` branch,

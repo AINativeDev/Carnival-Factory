@@ -19,8 +19,8 @@ has touched in a while, so a person can decide what to keep.
 
 1. **Set the line.** Stale means no commit in the last 90 days. The default
    branch, and any protected branch, are never stale.
-2. **List the branches** with their last commit date (`gh api repos/<owner>/<repo>/branches`
-   and each branch's head commit). For each
+2. **List the branches** with their last commit date (`gh api --paginate repos/<owner>/<repo>/branches`,
+   every page of it, and each branch's head commit). For each
    stale one, note:
    - its last commit's date and author;
    - its open pull request, if any;

@@ -192,7 +192,7 @@ const attraction: NorthPoleSquare = {
       ctx.restore();
 
       // The gift tag in front of the shop: the gift's name, what it does and how to take it home.
-      shadow(ctx, 50, 96, 70);
+      shadow(ctx, 47, 91, 40);
       ctx.fillStyle = colors.shadow;
       ctx.globalAlpha = 0.25;
       ctx.fillRect(10.6, 77.6, 80, 19);

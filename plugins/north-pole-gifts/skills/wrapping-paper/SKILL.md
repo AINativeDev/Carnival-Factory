@@ -40,8 +40,10 @@ since the last tag, ready for a person to polish.
 5. **Suggest the next version** when the tags are semantic versions: major for a
    breaking change, minor for anything new, else patch.
 6. **Post the draft** as one comment on the issue, with the range it covers
-   (`v1.3.0...main`), and end it with `<!-- wrapping-paper -->`. If the issue
-   already has a comment with that marker for the same range, post nothing.
+   (`v1.3.0...main`), and end it with `<!-- wrapping-paper: <tag>...<commit> -->`,
+   naming the tag and the full id of the default branch's head commit it was
+   drafted at. If the issue already has a comment with that exact marker,
+   nothing has merged since, so post nothing; a newer commit gets a new draft.
 
 ## Done
 

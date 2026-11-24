@@ -42,7 +42,7 @@ It posts one comment on #57:
 > - The usage docs moved into the guide (#55, @cy)
 > - One dependency update
 >
-> `<!-- wrapping-paper -->`
+> `<!-- wrapping-paper: v1.3.0...<head commit of main> -->`
 
 No tag or release is created. A person edits the notes and publishes the
 release themselves.
