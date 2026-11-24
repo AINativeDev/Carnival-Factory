@@ -6,8 +6,8 @@
  *
  * Everything here is public on the repository already. Titles and logins are
  * participants' text, so they're capped, and the page only ever sets them as
- * text. This is meant to be the one data script for a square's past: the
- * credits (#32), still to come, should read the same file.
+ * text. This is the one data script for a square's past: the credits read
+ * the same file.
  */
 
 import type { FactoryStats } from './factory-stats.ts';
@@ -48,11 +48,21 @@ export interface HistoryEntry {
   pulls: HistoryPull[];
 }
 
+/** Who made a square, and who improved it since, as GitHub shows their logins. */
+export interface Credits {
+  /** A booth's owner. An attraction has none on record. */
+  maker?: string;
+  /** In the order their changes merged, each once. */
+  improvers: string[];
+}
+
 /** Every square's history, keyed `<kind>/<id>`. */
 export interface SquareHistory {
   /** ISO time the data was read. */
   builtAt: string;
   squares: Record<string, HistoryEntry[]>;
+  /** Every square the factory has built into, keyed the same way. */
+  credits: Record<string, Credits>;
   /** The factory's numbers, for the `#/factory` page (scripts/factory-stats.ts). */
   factory?: FactoryStats;
 }
@@ -137,6 +147,32 @@ export function cap(text: string, max = MAX_TITLE): string {
   return chars.length > max ? `${chars.slice(0, max - 1).join('')}…` : chars.join('');
 }
 
+/**
+ * A square's credits, from its history: the authors of the requests whose
+ * pull requests merged into its folder, each once, in the order they merged.
+ * The history shows who changed a square, not who made it, so only a booth
+ * has a maker: its owner, whose login names its folder. Everyone else
+ * improved it. Nothing for an attraction the factory never built into.
+ */
+export function creditsOf(square: string, entries: HistoryEntry[]): Credits | undefined {
+  const merged = entries
+    .flatMap((entry) => {
+      const times = entry.pulls.flatMap((pull) =>
+        pull.state === 'merged' && pull.mergedAt ? [pull.mergedAt] : [],
+      );
+      return times.length ? [{ author: entry.author, at: times.sort()[0] }] : [];
+    })
+    .sort((a, b) => a.at.localeCompare(b.at));
+  const people: string[] = [];
+  for (const { author } of merged) {
+    if (!people.some((login) => login.toLowerCase() === author.toLowerCase())) people.push(author);
+  }
+  const [kind, id] = square.split('/');
+  if (kind !== 'booth') return people.length ? { improvers: people } : undefined;
+  const maker = people.find((login) => login.toLowerCase() === id) ?? id;
+  return { maker, improvers: people.filter((login) => login !== maker) };
+}
+
 export interface ShapeOptions {
   /** The squares on the map, as `<kind>/<id>`. Nothing else gets a history. */
   squares: string[];
@@ -188,7 +224,12 @@ export function shapeHistory(options: ShapeOptions): SquareHistory {
       });
     }
   }
-  return { builtAt: options.builtAt, squares };
+  const credits: Record<string, Credits> = {};
+  for (const [square, entries] of Object.entries(squares)) {
+    const credit = creditsOf(square, entries);
+    if (credit) credits[square] = credit;
+  }
+  return { builtAt: options.builtAt, squares, credits };
 }
 
 function shapePull(pull: RawPull, square: string, options: ShapeOptions): HistoryPull {

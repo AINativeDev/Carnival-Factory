@@ -1066,7 +1066,7 @@ export function startMap(
       width,
       height,
       square.name,
-      plot.kind === 'booth' ? `@${plot.id}` : '',
+      plot.kind === 'booth' ? `by @${plot.id}` : '',
       plot.kind === 'booth' ? avatarOf(plot.id!) : undefined,
     );
     const { stage } = room;

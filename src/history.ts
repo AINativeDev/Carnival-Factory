@@ -1,4 +1,6 @@
+import { profileUrl } from '../northpole/links';
 import type {
+  Credits,
   Decision,
   HistoryEntry,
   HistoryKind,
@@ -21,6 +23,51 @@ export const SQUARE_HISTORY: SquareHistory | undefined = Object.values(files)[0]
 /** A square's requests, newest first; empty when the build has none. */
 export const historyOf = (data: SquareHistory | undefined, kind: HistoryKind, id: string) =>
   data?.squares[`${kind}/${id.toLowerCase()}`] ?? [];
+
+/**
+ * Who made a square and who improved it since, from the build's history. A
+ * booth the factory never built into, or a build without the file, credits
+ * its owner; an attraction then credits nobody.
+ */
+export function creditsFor(
+  data: SquareHistory | undefined,
+  kind: HistoryKind,
+  id: string,
+): Credits | undefined {
+  const credits = data?.credits?.[`${kind}/${id.toLowerCase()}`];
+  if (credits) return credits;
+  return kind === 'booth' ? { maker: id, improvers: [] } : undefined;
+}
+
+/** "a", "a and b", "a, b and c". */
+const listed = <T, S>(items: T[], and: S, comma: S): (T | S)[] =>
+  items.flatMap((item, n) => (n === 0 ? [item] : [n === items.length - 1 ? and : comma, item]));
+
+/**
+ * Fills `line` with a square's credits, "Made by @a. Improved by @b and @c.",
+ * or only who improved an attraction, each login set as text and linked to
+ * its GitHub profile.
+ */
+export function renderCredits(line: HTMLElement, credits: Credits) {
+  const person = (login: string): Node => {
+    const url = profileUrl(login);
+    if (!url) return document.createTextNode(`@${login}`);
+    const a = document.createElement('a');
+    a.className = 'visit-person';
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = `@${login}`;
+    return a;
+  };
+  const parts: (Node | string)[] = [];
+  if (credits.maker) parts.push('Made by ', person(credits.maker), '.');
+  if (credits.improvers.length) {
+    if (parts.length) parts.push(' ');
+    parts.push('Improved by ', ...listed(credits.improvers.map(person), ' and ', ', '), '.');
+  }
+  line.replaceChildren(...parts);
+}
 
 /** What the panel says when a square has no requests to show. */
 export const emptyHistoryText = (data: SquareHistory | undefined) =>
