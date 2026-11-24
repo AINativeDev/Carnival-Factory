@@ -180,12 +180,6 @@ body[data-view='map'] .map {
   color: var(--color-muted);
 }
 
-.booth-canvas {
-  width: min(480px, 100%);
-  margin-top: 16px;
-  border-radius: var(--radius);
-}
-
 .map-note {
   position: absolute;
   top: 56px;
@@ -416,4 +410,216 @@ kbd {
   color: var(--color-snow);
   font: inherit;
   cursor: pointer;
+}
+
+/* Inside a square: the map draws the room, the world's HUD steps aside, and the visit's HUD stands beside the room. */
+.map-frame[data-visiting] .map-prompt,
+.map-frame[data-visiting] .hud-actions,
+.map-frame[data-visiting] .hud-booths,
+.map-frame[data-visiting] .hud-controls {
+  display: none;
+}
+
+.visit {
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 5;
+  box-sizing: border-box;
+  width: 344px;
+  height: fit-content;
+  max-height: calc(100% - 24px);
+  overflow: auto;
+  padding: 12px 18px 16px;
+  border: 3px solid var(--color-gold);
+  text-align: center;
+  animation: visit-in 0.5s ease-out;
+}
+
+@keyframes visit-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* On a phone, below the room. */
+@media (max-width: 719px) {
+  .visit {
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: auto;
+    max-height: 43%;
+  }
+}
+
+.visit-leave {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.visit-close {
+  border: 2px solid var(--color-cocoa);
+  border-radius: 999px;
+  padding: 2px 12px;
+  background: none;
+  color: var(--color-ink);
+  font: bold 13px var(--font-family);
+  font-style: normal;
+  cursor: pointer;
+}
+
+.visit-title {
+  margin: 12px 0 2px;
+  font-size: 22px;
+}
+
+.visit-title:focus {
+  outline: none;
+}
+
+.visit-owner,
+.visit-description,
+.visit-help {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.visit-owner {
+  font-weight: bold;
+}
+
+.visit-share {
+  margin: 12px 0 4px;
+  text-align: left;
+}
+
+.visit-label {
+  font-size: 12px;
+}
+
+.visit-share-text {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 2px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-wood);
+  border-radius: 6px;
+  font: 13px var(--font-family);
+  resize: vertical;
+}
+
+.visit-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.visit-copy,
+.visit-claim {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 18px;
+  background: var(--color-berry);
+  color: var(--color-snow);
+  font: bold 15px var(--font-family);
+  cursor: pointer;
+}
+
+.visit a,
+.visit-mine {
+  color: var(--color-berry);
+}
+
+.visit-mine {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* The invitation, for someone who came by a shared link. */
+.visit-invite {
+  margin-top: 14px;
+  padding: 12px;
+  border: 2px dashed var(--color-berry);
+  border-radius: var(--radius);
+}
+
+.visit-invite[hidden] {
+  display: none;
+}
+
+.visit-invite p {
+  margin: 0 0 10px;
+}
+
+.visit-claim {
+  display: block;
+  margin: 0 auto 8px;
+  padding: 10px 24px;
+  font-size: 18px;
+}
+
+.visit-how {
+  font-size: 13px;
+}
+
+.visit :focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* The tag over what the mouse hovers, or where the player stands: it fades in after a moment. */
+.map-tag {
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  max-width: 240px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.map-tag.shown {
+  opacity: 1;
+  transition-delay: 0.25s;
+}
+
+.map-frame[data-visiting] .map-tag {
+  display: none;
+}
+
+.tag-owner,
+.tag-line,
+.tag-hint {
+  font-size: 12px;
+}
+
+.tag-hint {
+  margin-top: 2px;
+  font-style: italic;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-tag,
+  .map-tag.shown {
+    transition: none;
+  }
+
+  .visit {
+    animation: none;
+  }
 }

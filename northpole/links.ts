@@ -22,3 +22,6 @@ export const KEEP_POSTED_URL = '';
 
 /** Where "Keep me posted" links go: the real form once it's set, or the placeholder page. */
 export const keepPostedHref = (url: string = KEEP_POSTED_URL) => url || '#/keep-posted';
+
+/** How a booth request becomes a booth on the map, for visitors who wonder. */
+export const HOW_IT_WORKS_URL = `${REPO_URL}/blob/main/docs/how-it-works.md`;

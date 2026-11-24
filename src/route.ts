@@ -7,8 +7,9 @@ import type { SquareKind } from '../northpole/map';
 const ID = /^[\w-]+$/;
 
 /**
- * What the page's hash asks for: the map, perhaps focused on one square; one
- * square on its own page; or a link shared from before booths were called plots.
+ * What the page's hash asks for: the map, perhaps focused on one square; the
+ * player inside one square, in the world; or a link shared from before booths
+ * were called plots.
  */
 export type Route =
   | { view: 'map'; focus?: { kind: SquareKind; id: string } }

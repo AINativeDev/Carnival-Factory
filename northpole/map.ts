@@ -9,6 +9,7 @@ import {
   isPhone,
   screenToWorld,
   SLAB,
+  worldToScreen,
   type Framing,
 } from './camera';
 import {
@@ -27,6 +28,7 @@ import {
   drawSnowfall,
   drawStringLights,
   drawThing,
+  faceOf,
   middle,
   setSpriteResolution,
   type Look,
@@ -35,6 +37,19 @@ import {
 import { isTap, onMapping, onRect } from './pointer';
 import type { NorthPoleSquare, SquarePointer } from './square';
 import { canvasFont, theme } from './theme';
+import {
+  clickInRoom,
+  drawRoom,
+  drawRoomPerson,
+  ENTRANCE,
+  fadeAt,
+  FADE,
+  ROOM_SPEED,
+  roomArea,
+  roomLayout,
+  stepInRoom,
+} from './interior';
+import { nearestOpenPlot, placeTag, tagText, targetAt } from './visit';
 import {
   buildWorld,
   findPathToFirst,
@@ -102,6 +117,8 @@ export interface MapOptions {
   booths: readonly NorthPoleSquare[];
   /** Opens a square: `id` is a booth's owner or an attraction's id. */
   onOpen(kind: SquareKind, id: string): void;
+  /** Asks to leave the square the player is inside: they walked out through its doorway. */
+  onLeave(): void;
   /** A square to open the map on: the player starts in front of it, and it glows for a few seconds. */
   focus?: { kind: SquareKind; id: string };
 }
@@ -114,6 +131,11 @@ const SPEED = 4.5;
 /** How long a square the map opens on glows, in milliseconds, and how long it takes to fade. */
 const HIGHLIGHT_TIME = 6000;
 const HIGHLIGHT_FADE = 1500;
+/** The size a square draws at on the back wall of its room, in pixels. */
+export const VISIT_SIZE = 480;
+/** How long footprints stay in the snow, in milliseconds, and how far apart they are, in tiles. */
+const FOOTPRINT_TIME = 9000;
+const FOOTPRINT_GAP = 0.45;
 /** How far above the player the camera looks, in world pixels, so more of what's ahead shows. */
 const LOOK_UP = 40;
 /** How long the player stands still before the camera eases back out to the carnival, in milliseconds. */
@@ -233,6 +255,14 @@ export interface MapControls {
   jumpTo(kind: SquareKind, id: string): void;
   /** Walks the player to the nearest open plot. */
   walkToOpenPlot(): void;
+  /** Walks the player to the open plot nearest them, leaving footprints, and bounces its sign. */
+  claimNextDoor(): void;
+  /** Takes the player inside a square, with a short fade. Returns whether it's there. */
+  visit(kind: SquareKind, id: string): boolean;
+  /** Takes the player back out, just outside the square's door, facing out. */
+  leave(): void;
+  /** The square being visited, if any. */
+  readonly visiting: { kind: SquareKind; id: string } | undefined;
   /** Shows the whole island, or goes back to the carnival. Returns whether it shows the whole island. */
   toggleOverview(): boolean;
   /** Whether it shows the whole island. */
@@ -294,6 +324,28 @@ export function startMap(
   let scale = 1;
   let last: number | undefined;
   let focusedAt: number | undefined;
+  /** The plot the player is inside, the open plot they're walking to claim, and their footprints. */
+  let visiting: Plot | undefined;
+  let claiming: Plot | undefined;
+  let footprints: { at: Tile; time: number; side: number }[] = [];
+  /**
+   * The plot whose room is drawn, which changes halfway through the fade in or
+   * out, and when that fade began. Inside, where the player stands, where a
+   * click sends them, and which way they face.
+   */
+  let entered: Plot | undefined;
+  let fading = -Infinity;
+  let inside: Tile = { ...ENTRANCE };
+  let insideGoal: { to: Tile; out: boolean } | undefined;
+  let insideFacing = 1;
+  /** The plot under the mouse, or tapped once on a touch screen, and the tag that names it. */
+  let hovered: Plot | undefined;
+  let tagged: Plot | undefined;
+  const tag = document.createElement('div');
+  tag.className = 'hud map-tag';
+  tag.setAttribute('aria-hidden', 'true');
+  tag.innerHTML = `<strong class="tag-name"></strong> <span class="tag-owner"></span><span class="tag-line"></span><span class="tag-hint"></span>`;
+  frame.append(tag);
   let frameId = 0;
   let frames = 0;
   let slowest = 0;
@@ -382,6 +434,7 @@ export function startMap(
       right += KEYS[name][0];
       down += KEYS[name][1];
     }
+    if (visiting) return walkInside(dt, Math.sign(right), Math.sign(down));
     const direction = screenDirection(Math.sign(right), Math.sign(down));
     const before = player;
     if (direction.x || direction.y) {
@@ -394,6 +447,74 @@ export function startMap(
     const dx = toScreen(player).x - toScreen(before).x;
     if (Math.abs(dx) > 0.01) facing = Math.sign(dx);
     near = plotAtDoor(world, player);
+    if (claiming) {
+      const lastStep = footprints.at(-1)?.at ?? before;
+      if (moving && Math.hypot(player.x - lastStep.x, player.y - lastStep.y) >= FOOTPRINT_GAP)
+        footprints.push({
+          at: { ...player },
+          time: performance.now(),
+          side: footprints.length % 2,
+        });
+      // The sign stops bouncing once the player has gone somewhere else.
+      if (!path.length && near !== claiming) claiming = undefined;
+    }
+  };
+
+  /** Walks the player inside a room, with the keys or toward where a click sent them, and out through its doorway. */
+  const walkInside = (dt: number, right: number, down: number) => {
+    let dx = right;
+    let dy = down;
+    if (dx || dy) insideGoal = undefined;
+    else if (insideGoal) {
+      dx = insideGoal.to.x - inside.x;
+      dy = insideGoal.to.y - inside.y;
+    }
+    const length = Math.hypot(dx, dy);
+    const step = Math.min(ROOM_SPEED * dt, length);
+    moving = length > 0.001 && step > 0;
+    if (!moving) {
+      insideGoal = undefined;
+      return;
+    }
+    if (Math.abs(dx) > 0.001) insideFacing = Math.sign(dx);
+    const walked = stepInRoom(inside, (dx / length) * step, (dy / length) * step);
+    inside = walked.at;
+    if (walked.out || (insideGoal?.out && step >= length)) {
+      insideGoal = undefined;
+      options.onLeave();
+    }
+  };
+
+  /** Shows the tag over the plot under the mouse, or the one the player stands at. */
+  const showTag = (zoom: number, centre: Tile) => {
+    const plot = visiting ? undefined : (hovered ?? near);
+    const target = plot && targets.find((t) => t.plot === plot);
+    if (!plot || !target) {
+      tagged = undefined;
+      tag.classList.remove('shown');
+      return;
+    }
+    if (plot !== tagged) {
+      tagged = plot;
+      const text = tagText(plot, squareOf(plot));
+      tag.querySelector('.tag-name')!.textContent = text.name;
+      tag.querySelector('.tag-owner')!.textContent = text.owner;
+      tag.querySelector('.tag-line')!.textContent = text.line;
+      tag.querySelector('.tag-hint')!.textContent = text.hint;
+      tag.dataset.plot = `${plot.kind}:${plot.id ?? plot.number}`;
+    }
+    tag.classList.add('shown');
+    const width = frame.clientWidth;
+    const height = frame.clientHeight;
+    const { box } = target;
+    const anchor = worldToScreen({ x: box.x + box.w / 2, y: box.y }, width, height, centre, zoom);
+    const feet = worldToScreen(toScreen(player), width, height, centre, zoom);
+    const body = { x: feet.x - 24 * zoom, y: feet.y - 90 * zoom, w: 48 * zoom, h: 96 * zoom };
+    const at = placeTag(anchor, { w: tag.offsetWidth, h: tag.offsetHeight }, body, {
+      w: width,
+      h: height,
+    });
+    tag.style.transform = `translate(${Math.round(at.x)}px, ${Math.round(at.y)}px)`;
   };
 
   /** Where the camera's centre goes for a framing, at a zoom. */
@@ -422,6 +543,18 @@ export function startMap(
       : time - movedAt > SETTLE
         ? Math.max(0, walking - dt * 0.5)
         : walking;
+    // Halfway through the fade, the view goes in or out.
+    if (still || time - fading >= FADE / 2) entered = visiting;
+    const dark = still ? 0 : fadeAt(time - fading);
+    if (entered) {
+      drawInside(entered, width, height, time, dark);
+      frameId = requestAnimationFrame(render);
+      return;
+    }
+    if (canvas.dataset.room) {
+      delete canvas.dataset.room;
+      delete canvas.dataset.stage;
+    }
     const wanted = want();
     if (!camera || still) {
       zoom = wanted.zoom;
@@ -474,6 +607,18 @@ export function startMap(
     ctx.drawImage(ground.canvas, groundBox.x, groundBox.y, groundBox.w, groundBox.h);
     drawRipples(ctx, world, motion);
     drawLightPools(ctx, world, motion);
+    // The footprints left walking to claim a plot, fading as they fill with snow.
+    const now = performance.now();
+    footprints = footprints.filter((step) => now - step.time < FOOTPRINT_TIME);
+    for (const step of footprints) {
+      const { x, y } = toScreen(step.at);
+      ctx.globalAlpha = 0.6 * (1 - (now - step.time) / FOOTPRINT_TIME);
+      ctx.fillStyle = colors.snowShade;
+      ctx.beginPath();
+      ctx.ellipse(x + (step.side ? 5 : -5), y, 4, 2.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
     drawStringLights(ctx, island, false, motion);
 
     const shown = (box: Box) => {
@@ -498,7 +643,7 @@ export function startMap(
     const pressed = pointer.now();
     const aimed = pressed && screenToWorld(pressed, width, height, camera, zoom);
     const under = aimed && plotUnder(aimed);
-    const hovered = under && squareOf(under);
+    const pointedAt = under && squareOf(under);
     let pointed = '';
     targets = [];
     const paint = (square: NorthPoleSquare, mapping: Mapping) => {
@@ -506,7 +651,7 @@ export function startMap(
       // The square draws at the resolution its face shows at, so its drawing stays sharp,
       // and the face's own angles map it onto the world.
       const size = Math.max(16, Math.min(512, Math.round(Math.hypot(u.x, u.y) * k)));
-      const inside = square === hovered && aimed ? onMapping(aimed, mapping, size) : undefined;
+      const inside = square === pointedAt && aimed ? onMapping(aimed, mapping, size) : undefined;
       if (inside) pointed = `${under!.kind}:${square.id}`;
       ctx.save();
       ctx.transform(u.x / size, u.y / size, v.x / size, v.y / size, origin.x, origin.y);
@@ -531,7 +676,8 @@ export function startMap(
             : 0;
         const strength = Math.max(plot === near ? 0.7 : 0, glowFor);
         if (strength > 0) drawPlotGlow(ctx, plot, strength);
-        const box = drawPlot(ctx, plot, squareOf(plot), paint, motion, plot === near);
+        const bounce = plot === near || plot === claiming;
+        const box = drawPlot(ctx, plot, squareOf(plot), paint, motion, bounce);
         targets.push({ plot, box });
       });
     }
@@ -584,8 +730,65 @@ export function startMap(
 
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     if (!still) drawSnowfall(ctx, width, height, time);
+    darken(dark, width, height);
+    showTag(zoom, camera);
 
     // How long the map took to draw this frame, for the smoke test's budget.
+    timeFrame(started);
+    frameId = requestAnimationFrame(render);
+  };
+
+  /** The fade's black over the view. */
+  const darken = (dark: number, width: number, height: number) => {
+    if (dark <= 0) return;
+    ctx.globalAlpha = dark;
+    ctx.fillStyle = colors.night;
+    ctx.fillRect(0, 0, width, height);
+    ctx.globalAlpha = 1;
+  };
+
+  /**
+   * Draws the room the player is inside: its walls and sign, the square's own
+   * drawing large on the back wall, and the player. The map says where the
+   * stage is, in the canvas's pixels, for the smoke test to read it.
+   */
+  const drawInside = (plot: Plot, width: number, height: number, time: number, dark: number) => {
+    const started = performance.now();
+    const square = squareOf(plot)!;
+    const room = roomLayout(roomArea(width, height));
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    drawRoom(ctx, room, width, height, square.name, plot.kind === 'booth' ? `@${plot.id}` : '');
+    const { stage } = room;
+    // The stage is the square's drawing scaled, so the pointer scales with it.
+    const pressed = pointer.now();
+    const onStage = pressed && onRect(pressed, stage, VISIT_SIZE);
+    const pointed = onStage ? `${plot.kind}:${plot.id}` : '';
+    if (canvas.dataset.pointer !== pointed) canvas.dataset.pointer = pointed;
+    ctx.save();
+    ctx.translate(stage.x, stage.y);
+    ctx.scale(stage.w / VISIT_SIZE, stage.h / VISIT_SIZE);
+    drawSquare(
+      ctx,
+      scratch,
+      square,
+      0,
+      0,
+      VISIT_SIZE,
+      time,
+      onStage && { ...onStage, down: pressed!.down },
+    );
+    ctx.restore();
+    drawRoomPerson(ctx, room, inside, PLAYER, insideFacing, moving, time);
+    darken(dark, width, height);
+    const at = [stage.x, stage.y, stage.w, stage.h].map((n) => Math.round(n * scale)).join(',');
+    if (canvas.dataset.stage !== at) canvas.dataset.stage = at;
+    const place = `${inside.x.toFixed(2)},${inside.y.toFixed(2)}`;
+    if (canvas.dataset.room !== place) canvas.dataset.room = place;
+    timeFrame(started);
+  };
+
+  /** Notes how long a frame took to draw, for the smoke test's budget. */
+  const timeFrame = (started: number) => {
     const spent = performance.now() - started;
     if (++frames > WARM_UP_FRAMES) {
       slowest = Math.max(slowest, spent);
@@ -596,7 +799,6 @@ export function startMap(
         canvas.dataset.slowestFrameMs = slowest.toFixed(2);
       }
     }
-    frameId = requestAnimationFrame(render);
   };
 
   /** Where a click landed, in world pixels. */
@@ -612,19 +814,7 @@ export function startMap(
     );
   };
 
-  const plotUnder = (point: Tile) => {
-    for (let n = targets.length - 1; n >= 0; n--) {
-      const { plot, box } = targets[n];
-      if (
-        point.x >= box.x &&
-        point.x <= box.x + box.w &&
-        point.y >= box.y &&
-        point.y <= box.y + box.h
-      )
-        return plot;
-    }
-    return undefined;
-  };
+  const plotUnder = (point: Tile) => targetAt(targets, point)?.plot;
 
   /** Walks the player to the first of `goals` they can reach. */
   const walkToward = (goals: Tile[]) => {
@@ -636,12 +826,26 @@ export function startMap(
   };
 
   const onClick = (event: MouseEvent) => {
-    // A drag is the square's to play with, not a click.
     const box = canvas.getBoundingClientRect();
+    // A drag is the square's to play with, not a click.
     if (!pointer.tapped({ x: event.clientX - box.left, y: event.clientY - box.top })) return;
+    if (visiting) {
+      // Inside, a click walks the player there, or out through the doorway.
+      const room = roomLayout(roomArea(box.width, box.height));
+      const goal = clickInRoom(room, { x: event.clientX - box.left, y: event.clientY - box.top });
+      if (goal) insideGoal = goal;
+      return;
+    }
     const point = pointAt(event);
     const plot = plotUnder(point);
+    // On a touch screen the first tap on a structure shows its tag, and the second opens it.
+    const touch = (event as PointerEvent).pointerType === 'touch';
+    if (plot && touch && hovered !== plot) {
+      hovered = plot;
+      return;
+    }
     if (plot) return open(plot);
+    hovered = undefined;
     // Walk to the tile clicked, or the nearest one beside it you can stand on.
     const tile = tileOf(toTile(point));
     const goals: Tile[] = [];
@@ -654,7 +858,12 @@ export function startMap(
   };
 
   const onPointerMove = (event: PointerEvent) => {
-    canvas.style.cursor = plotUnder(pointAt(event)) ? 'pointer' : 'default';
+    if (event.pointerType === 'touch') return;
+    hovered = visiting ? undefined : plotUnder(pointAt(event));
+    canvas.style.cursor = hovered ? 'pointer' : 'default';
+  };
+  const onPointerLeave = (event: PointerEvent) => {
+    if (event.pointerType !== 'touch') hovered = undefined;
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -663,14 +872,18 @@ export function startMap(
     if (name in KEYS) {
       held.add(name);
       event.preventDefault();
-    } else if ((name === 'e' || (name === 'enter' && !pressable(event.target))) && near) {
+    } else if (
+      (name === 'e' || (name === 'enter' && !pressable(event.target))) &&
+      near &&
+      !visiting
+    ) {
       event.preventDefault();
       open(near);
     }
   };
   const onKeyUp = (event: KeyboardEvent) => held.delete(event.key.toLowerCase());
   const onBlur = () => held.clear();
-  const onPrompt = () => near && open(near);
+  const onPrompt = () => near && !visiting && open(near);
 
   resize();
   window.addEventListener('resize', resize);
@@ -679,6 +892,7 @@ export function startMap(
   window.addEventListener('blur', onBlur);
   canvas.addEventListener('click', onClick);
   canvas.addEventListener('pointermove', onPointerMove);
+  canvas.addEventListener('pointerleave', onPointerLeave);
   prompt.addEventListener('click', onPrompt);
   frameId = requestAnimationFrame(render);
 
@@ -691,16 +905,21 @@ export function startMap(
       window.removeEventListener('blur', onBlur);
       canvas.removeEventListener('click', onClick);
       canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerleave', onPointerLeave);
+      tag.remove();
+      delete frame.dataset.visiting;
       prompt.removeEventListener('click', onPrompt);
       pointer.stop();
     },
     walkTo(kind, id) {
+      if (visiting) options.onLeave();
       const plot = world.plots.find((p) => p.kind === kind && p.id === id);
       if (plot) walkToward([plot.door]);
     },
     jumpTo(kind, id) {
       const plot = world.plots.find((p) => p.kind === kind && p.id === id);
       if (!plot) return;
+      if (visiting) options.onLeave();
       player = { ...plot.door };
       path = [];
       overview = false;
@@ -711,14 +930,49 @@ export function startMap(
       focusedAt = undefined;
     },
     walkToOpenPlot() {
-      const doors = world.plots
-        .filter((plot) => plot.kind === 'open')
-        .map((plot) => plot.door)
-        .sort(
-          (a, b) =>
-            Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y),
-        );
-      walkToward(doors);
+      if (visiting) options.onLeave();
+      const way = nearestOpenPlot(world, player);
+      if (way) path = way.path;
+    },
+    claimNextDoor() {
+      const way = nearestOpenPlot(world, player);
+      if (!way) return;
+      path = way.path;
+      claiming = way.plot;
+      footprints = [];
+    },
+    visit(kind, id) {
+      const plot = world.plots.find((p) => p.kind === kind && p.id === id);
+      if (!plot) return false;
+      if (visiting === plot) return true;
+      // The player goes in at the door, and whatever walk they were on ends there.
+      if (plotAtDoor(world, player) !== plot) player = { ...plot.door };
+      path = [];
+      claiming = undefined;
+      held.clear();
+      overview = false;
+      if (!visiting) fading = performance.now();
+      visiting = plot;
+      inside = { ...ENTRANCE };
+      insideGoal = undefined;
+      insideFacing = 1;
+      hovered = undefined;
+      frame.dataset.visiting = `${kind}:${id}`;
+      return true;
+    },
+    leave() {
+      if (!visiting) return;
+      // Out just in front of the door, facing out, with the camera where it was.
+      player = { ...visiting.door };
+      path = [];
+      facing = Math.sign(faceOf(visiting).out.x) || 1;
+      visiting = undefined;
+      held.clear();
+      fading = performance.now();
+      delete frame.dataset.visiting;
+    },
+    get visiting() {
+      return visiting && { kind: visiting.kind as SquareKind, id: visiting.id! };
     },
     toggleOverview() {
       overview = !overview;
@@ -727,35 +981,5 @@ export function startMap(
     get overview() {
       return overview;
     },
-  };
-}
-
-/**
- * Animates a single booth or attraction, large, on its own canvas, and gives it
- * the pointer when it's over the canvas. Returns a function that stops it.
- */
-export function startPreview(canvas: HTMLCanvasElement, booth: NorthPoleSquare, size = 480) {
-  const ctx = canvas.getContext('2d')!;
-  const scratch = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const pointer = trackPointer(canvas);
-  let frame = 0;
-  const render = (time: number) => {
-    const pressed = pointer.now();
-    // The page may show the canvas smaller than it draws, so the pointer scales with it.
-    const inside =
-      pressed &&
-      onRect(pressed, { x: 0, y: 0, w: canvas.clientWidth, h: canvas.clientHeight }, size);
-    const pointed = inside ? `${booth.id}` : '';
-    if (canvas.dataset.pointer !== pointed) canvas.dataset.pointer = pointed;
-    ctx.clearRect(0, 0, size, size);
-    drawSquare(ctx, scratch, booth, 0, 0, size, time, inside && { ...inside, down: pressed!.down });
-    frame = requestAnimationFrame(render);
-  };
-  frame = requestAnimationFrame(render);
-  return () => {
-    cancelAnimationFrame(frame);
-    pointer.stop();
   };
 }

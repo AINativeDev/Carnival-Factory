@@ -26,8 +26,8 @@ A few things that help:
   twinkling in turn.
 - **What happens when someone points at it.** A booth can react to the mouse
   or a finger over it: a penguin that waves when you hover, a snowball you
-  throw with a tap, a little game. On the map a click still opens the booth,
-  so taps and games are for its own page.
+  throw with a tap, a little game. On the map a click still takes people inside
+  the booth, so taps and games are for in there.
 - **A focal point.** One thing the eye lands on first, then the small details.
 - **Little touches.** A sign with a pun, a cat on a roof, a snowman with
   sunglasses. These are what people remember.
