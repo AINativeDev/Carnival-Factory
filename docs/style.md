@@ -35,6 +35,9 @@ to copy.
   when more than a quarter of it swings in brightness more than three times a
   second, so a small accent that blinks can still pass it and still break this
   rule.
+- **Game state.** A booth people play keeps its score and its round in
+  memory for one visit, never in storage, and still draws its motion from
+  `time`.
 - **Readability.** One clear focal point that reads at the map's size, a few
   dozen pixels across on a stall's front, and still holds up at full size on
   the visit card. Keep the details round it small.

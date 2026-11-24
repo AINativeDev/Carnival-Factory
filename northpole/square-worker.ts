@@ -54,14 +54,14 @@ addEventListener('message', (event: MessageEvent) => {
   }
   const request = readDrawRequest(event.data);
   if (!request || !square) return;
-  const { size, time } = request;
+  const { size, time, pointer } = request;
   // A fresh size resets the canvas: its pixels, transform, clip and styles.
   if (!canvas || canvas.width !== size) canvas = new OffscreenCanvas(size, size);
   else canvas.width = size;
   const ctx = canvas.getContext('2d') as unknown as CanvasRenderingContext2D;
   const start = performance.now();
   try {
-    square.draw(ctx, size, time);
+    square.draw(ctx, size, time, pointer);
   } catch (error) {
     send({ type: 'error', message: String(error) });
     return;

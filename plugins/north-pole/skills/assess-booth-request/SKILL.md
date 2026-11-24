@@ -51,12 +51,14 @@ set them, so trust labels over comments.
 
 **Accept** only when every one of these holds:
 
-- It asks for something to _see_ on the author's own square: a scene, a
-  character, an animation, a colour change, a restyle (by default to the
-  diorama style in `docs/style.md`). One idea, or a small change to
-  what's there.
+- It asks for something to _see_ or play with on the author's own square: a
+  scene, a character, an animation, something that reacts to hover or taps, a
+  small game, a colour change, a restyle (by default to the diorama style in
+  `docs/style.md`). One idea, or a small change to what's there.
 - It can be drawn with the canvas, the `theme` colours and fonts, and the
-  `draw(ctx, size, time)` contract, inside the house rules in `AGENTS.md`.
+  `draw(ctx, size, time, pointer?)` contract, inside the house rules in
+  `AGENTS.md`. The pointer is only where the mouse or a finger is over the
+  square and whether it's pressed: nothing else from the page, no keys.
 - It's friendly for everyone at a holiday carnival: a family audience at work.
 
 **Decline** only when the request can't become a good booth however it's
@@ -80,10 +82,9 @@ changed, and name which reason:
 built: write the closest version that **can** be built, and ask the author to
 say yes. For example:
 
-- something a booth can't do yet, like reacting to the mouse, sound, links, or
-  pictures from the internet: propose the scene with that part done from
-  `time` instead (the penguins wave every few seconds, the bell swings without
-  ringing);
+- something a booth can't do, like sound, links, or pictures from the
+  internet: propose the scene with that part done from `time` instead (the
+  bell swings without ringing);
 - a character or logo someone else owns: propose an original character _in
   the spirit of_ it;
 - fast flashing: propose a gentle glow or a slow twinkle;

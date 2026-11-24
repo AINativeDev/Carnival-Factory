@@ -61,6 +61,8 @@ northpole/                  the map itself
   frame.ts                  runs in a square's frame (square.html) and supervises it
   square-worker.ts          runs the square's own code on a thread of its own
   frame-protocol.ts         the messages between them, and the checks on them
+  pointer.ts                where the pointer is inside a square, through its
+                            stall's front or the back wall inside (plain functions)
   theme.ts                  colours, fonts and sizes
   disabled.json             the maintainers' kill switch: closed booths and attractions
   links.ts                  links to the repository's issue forms
@@ -151,9 +153,19 @@ uses any of it:
    `northpole/square.ts`, with `id` set to the folder name.
    `northpole/booths.ts` finds it from there, so a new booth needs no change
    anywhere else.
-2. A `draw(ctx, size, time)` that paints a `size` by `size` square from the
-   origin. Scale everything by `size`, because the map and the preview draw at
-   different sizes. Animate from `time`, not from state kept between calls.
+2. A `draw(ctx, size, time, pointer?)` that paints a `size` by `size` square
+   from the origin. Scale everything by `size`, because the map and the preview
+   draw at different sizes. Animate from `time`, not from state kept between
+   calls. A booth may react to hover and taps: `pointer` is
+   `{ x, y, down, presses }` while the mouse or a finger is over the square,
+   with `x` and `y` from `0` to `size` in its own coordinates, `down` while
+   it's held now, and `presses` how many times it went down since the booth's
+   last frame, so a game counts every tap with `presses`; `pointer` is
+   `undefined` otherwise. On the map a click on a square still goes inside
+   it, so play with `down` and `presses` inside, where the drawing fills the
+   back wall. Ignoring `pointer` is fine. What a booth remembers of the pointer, such as when a snowball was
+   thrown or a score, is the one state it keeps between calls: keep it small,
+   and still move from `time`.
 3. Colours and fonts from `theme` and `canvasFont` in `northpole/theme.ts`.
    No hex colours or font strings in a square. Unless the request asks for
    another style, draw it in the diorama style in [`docs/style.md`](docs/style.md):
@@ -190,7 +202,10 @@ written by a maintainer may add or change one.
 attraction's code. Each one runs in its own `<iframe sandbox="allow-scripts">`
 with a strict content security policy (no network, no storage, no access to the
 page), inside a worker the frame stops if it hangs, and sends the map a bitmap
-each frame. So `draw` gets an `OffscreenCanvasRenderingContext2D`-like context
+each frame. The map's draw request carries the pointer, which the frame checks
+(`readPointer` in `northpole/frame-protocol.ts`, with `presses` a whole number
+from 0 to 20) and passes on as plain values, never the page's own events. So
+`draw` gets an `OffscreenCanvasRenderingContext2D`-like context
 with no `ctx.canvas` DOM element, and a square that throws, hangs or never
 loads shows "Under construction" without touching anything else.
 

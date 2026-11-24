@@ -4,7 +4,7 @@
  * trust, so nothing it sends is used before these checks pass.
  */
 
-import { isAttractionId, isBoothOwner } from './square';
+import { isAttractionId, isBoothOwner, MAX_PRESSES, type SquarePointer } from './square';
 
 export type SquareKind = 'booth' | 'attraction';
 
@@ -13,6 +13,8 @@ export interface DrawRequest {
   type: 'draw';
   size: number;
   time: number;
+  /** Where the pointer is over the square, if it is. */
+  pointer?: SquarePointer;
 }
 
 /** What a frame may send back, once checked. */
@@ -62,16 +64,38 @@ export function readFrameMessage(
   }
 }
 
-/** Checks a draw request inside the frame: a whole size in range, and a finite time. */
+const within = (value: unknown, max: number): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= max;
+
+/**
+ * Checks a pointer for a square `size` across: `x` and `y` finite and within
+ * `0..size`, `down` a boolean, and `presses` a whole number from 0 to
+ * `MAX_PRESSES`. Anything else gives undefined. Only those four fields are
+ * kept, so nothing else the message carried reaches the square.
+ */
+export function readPointer(value: unknown, size: number): SquarePointer | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const { x, y, down, presses } = value as Record<string, unknown>;
+  if (!within(x, size) || !within(y, size) || typeof down !== 'boolean') return undefined;
+  if (!within(presses, MAX_PRESSES) || !Number.isInteger(presses)) return undefined;
+  return { x, y, down, presses };
+}
+
+/**
+ * Checks a draw request inside the frame: a whole size in range, and a finite
+ * time. A pointer that doesn't pass `readPointer` is dropped, and the request
+ * draws as if the pointer were elsewhere.
+ */
 export function readDrawRequest(data: unknown): DrawRequest | undefined {
   if (typeof data !== 'object' || data === null) return undefined;
-  const { type, size, time } = data as Record<string, unknown>;
+  const { type, size, time, pointer } = data as Record<string, unknown>;
   if (type !== 'draw') return undefined;
   if (typeof size !== 'number' || !Number.isInteger(size) || size < 1 || size > MAX_SIZE) {
     return undefined;
   }
   if (typeof time !== 'number' || !Number.isFinite(time)) return undefined;
-  return { type, size, time };
+  const checked = readPointer(pointer, size);
+  return checked ? { type, size, time, pointer: checked } : { type, size, time };
 }
 
 /**
