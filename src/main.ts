@@ -74,6 +74,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
         <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
         <a class="hud hud-tessl" href="#/factory">Built with Tessl</a>
+        <button class="hud hud-back" type="button"><span aria-hidden="true">←</span> Back to the map</button>
         ${BOOTHS_PANEL}
         <details class="hud hud-controls">
           <summary>Controls</summary>
@@ -169,6 +170,11 @@ function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
   });
   panel.showSelected(map.selected);
 
+  // Inside a square or on the factory's numbers, the corner the pill had takes you back to the map.
+  app.querySelector('.hud-back')!.addEventListener('click', () => {
+    closeCard(true);
+    canvas.focus({ preventScroll: true });
+  });
   app.querySelector('.hud-claim')!.addEventListener('click', () => {
     map.walkToOpenPlot();
     canvas.focus();

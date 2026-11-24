@@ -789,3 +789,16 @@ for (const viewport of [
     await context.close();
   });
 }
+
+test("inside a square, the pill's corner is a way back to the map", async ({ page }) => {
+  const problems = watch(page);
+  await page.goto('#/booth/jedi4ever');
+  await expect(page.locator('.visit')).toBeVisible();
+  await expect(page.locator('.hud-tessl')).toBeHidden();
+  await page.getByRole('button', { name: 'Back to the map' }).click();
+  await expect(page.locator('.visit')).toBeHidden();
+  await expect(page.locator('.hud-tessl')).toBeVisible();
+  await expect(page.locator('.hud-back')).toBeHidden();
+  expect(page.url()).not.toContain('#/booth/');
+  expect(problems).toEqual([]);
+});
