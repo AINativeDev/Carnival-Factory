@@ -121,9 +121,16 @@ written by a maintainer may add or change one.
 a separate list of attraction ids. A square in either shows "Closed for
 repairs" and its `draw` never runs. Only maintainers change it.
 
-**In the pull request,** say what changed and how to preview it: the
-**Preview** link the pull request gets once its build passes, or `npm run dev`
-and `#/booth/<login>` (or `#/attraction/<id>`).
+**In the pull request,** say what changed, and give a preview link for every
+booth and attraction it changes, so a reviewer can open each one in a click.
+Once the build passes, the site publishes the pull request at
+`https://<owner>.github.io/<repo>/previews/pr-<number>/`, and a **Preview**
+comment lists those links. In the description, under **Preview**, list each
+changed square as its own link into that preview:
+`…/previews/pr-<number>/#/booth/<login>` or
+`…/previews/pr-<number>/#/attraction/<id>`. Open the pull request first, then
+edit its description to add them, since the number comes with it. Locally it's
+`npm run dev` and the same `#/booth/<login>` or `#/attraction/<id>`.
 
 The `.tessl/` rules linked below are not committed. `tessl install` fetches
 them, and the factory runs it before every session. If `.tessl/RULES.md` is
