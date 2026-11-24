@@ -1,6 +1,7 @@
 name: Claim your plot
 description: Get your own square of the North Pole map, built by the factory.
 title: 'Claim my plot: '
+labels: [plot-claim]
 body:
   - type: markdown
     attributes:
