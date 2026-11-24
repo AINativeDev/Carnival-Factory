@@ -43,9 +43,10 @@ const plotProperties = [
   })),
 ];
 
-// A file depth folders below src/plots/<login>/ imports from the map, which is
-// depth + 2 folders up, or from its own plot folder, never above it.
-function importRule(depth) {
+// A file depth folders below src/plots/<login>/ or src/attractions/<id>/
+// imports from the map, which is depth + 2 folders up, or from its own folder,
+// never above it. A test beside it may import vitest too.
+function importRule(depth, test = false) {
   const map = `(\\.\\./){${depth + 2}}northpole/[\\w-]+(\\.json)?$`;
   const own = `(\\./${depth > 0 ? `|(\\.\\./){1,${depth}}` : ''})(?!.*\\.\\.)[\\w./-]+$`;
   return [
@@ -53,7 +54,7 @@ function importRule(depth) {
     {
       patterns: [
         {
-          regex: `^(?!${map}|${own})`,
+          regex: `^(?!${map}|${own}${test ? '|vitest$' : ''})`,
           message:
             'A plot imports only from src/northpole/ and from its own folder, so it adds no dependencies.',
         },
@@ -65,6 +66,9 @@ function importRule(depth) {
 // Helpers may sit in folders inside a plot, up to this deep. Deeper files keep
 // the rule for depth 0, so they can import only from beside themselves.
 const NESTED_DEPTH = 4;
+
+// The folders whose squares draw on the map, one folder each.
+const PLOT_FOLDERS = ['src/plots', 'src/attractions'];
 
 export default tseslint.config(
   {
@@ -91,8 +95,9 @@ export default tseslint.config(
     },
   },
   {
-    // The house rules for every person's plot, src/plots/<login>/.
-    files: ['src/plots/*/**'],
+    // The house rules for every person's plot, src/plots/<login>/, and for
+    // the North Pole's own attractions, src/attractions/<id>/.
+    files: PLOT_FOLDERS.map((folder) => `${folder}/*/**`),
     rules: {
       'no-eval': 'error',
       'no-implied-eval': 'error',
@@ -115,7 +120,11 @@ export default tseslint.config(
     },
   },
   ...Array.from({ length: NESTED_DEPTH }, (_, index) => ({
-    files: [`src/plots/*/${'*/'.repeat(index + 1)}*`],
+    files: PLOT_FOLDERS.map((folder) => `${folder}/*/${'*/'.repeat(index + 1)}*`),
     rules: { 'no-restricted-imports': importRule(index + 1) },
+  })),
+  ...Array.from({ length: NESTED_DEPTH + 1 }, (_, depth) => ({
+    files: PLOT_FOLDERS.map((folder) => `${folder}/*/${'*/'.repeat(depth)}*.test.ts`),
+    rules: { 'no-restricted-imports': importRule(depth, true) },
   })),
 );

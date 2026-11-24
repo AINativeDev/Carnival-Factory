@@ -1,7 +1,11 @@
 # Carnival Christmas
 
 A shared North Pole map that a workshop room grows together through a software
-factory. Everyone in the room owns one square of the map, their **plot**. You
+factory. The map is a Christmas carnival: a midway runs down the middle, lined
+with the North Pole's own **attractions**, a ferris wheel, a reindeer carousel,
+a big top and more. Beside them, everyone in the room owns one square of the
+map, their **plot**, and the open spots along the midway are waiting for the
+next one. You
 ask for changes to your plot by filing an issue, the factory's agent builds
 them and opens a pull request, and a maintainer merges it. You can only change
 your own plot, so you get the feel of working in a multiplayer factory without
@@ -35,6 +39,11 @@ shares one repo and one factory.
 - **Your plot is yours alone.** The **Plot ownership** check fails any pull
   request that changes a file outside its owner's plot. For a pull request the
   factory opens, the owner is whoever wrote the issue it closes.
+- **The attractions belong to the North Pole.** They live in
+  `src/attractions/<id>/`, outside every participant's plot, so only
+  maintainers can change them, and an attraction is never mistaken for
+  someone's plot. Their signs say "North Pole" instead of a `@login`, and each
+  opens at `#/attraction/<id>`. They follow the same house rules as plots.
 - **Issues, not pull requests.** Every change starts as an issue. A pull
   request from someone who isn't a collaborator is closed automatically with a
   pointer to the issue forms. Closing it doesn't stop **CI**, which checks out
@@ -44,11 +53,11 @@ shares one repo and one factory.
   [@jedi4ever](https://github.com/jedi4ever). `.github/CODEOWNERS` asks for
   their review on every pull request, and the maintainers may change any file,
   such as the map itself.
-- **A plot can't break the map.** Each plot draws on a canvas of its own,
-  and a plot that throws shows "Under construction" instead of taking the map
-  down.
+- **A plot can't break the map.** Each plot and attraction draws on a canvas
+  of its own, and one that throws shows "Under construction" instead of taking
+  the map down.
 - **A plot only draws.** ESLint's house rules in `eslint.config.js` stop a
-  plot from importing anything but the map and its own files, and from using
+  plot or an attraction from importing anything but the map and its own files, and from using
   the network, storage, other windows, the page's address, `eval` or string
   timers, or `window`, `document` and the other ways back to them. A lint rule
   reads code, it doesn't sandbox it, so it catches the plain ways in, not
@@ -81,8 +90,8 @@ their own request.
 To add a maintainer, add them to `.github/CODEOWNERS`, to `MAINTAINERS` in
 `scripts/ownership.ts`, and their numeric GitHub user id
 (`gh api users/<login> -q .id`) to each `event.sender.id` list in `tessl.json`. To switch a misbehaving plot off, add its owner's
-login to `src/northpole/disabled.json`: it shows "Closed for repairs" and its
-`draw` never runs. Its code is still loaded, so for code that misbehaves as
+login, or an attraction's id, to `src/northpole/disabled.json`: it shows
+"Closed for repairs" and its `draw` never runs. Its code is still loaded, so for code that misbehaves as
 soon as it loads, remove the plot's folder instead. To publish the map, go to **Settings → Pages** and set
 **Source** to **GitHub Actions**: every merge to `main` then redeploys it.
 
@@ -102,9 +111,11 @@ TypeScript, Vite and plain HTML canvas, with Vitest. No UI framework and no
 native dependencies, so `npm ci` is the whole setup. Node 22.13 or later.
 
 - `index.html` and `src/main.ts`: the page and the router: `#/` is the map,
-  `#/plot/<login>` previews one plot.
-- `src/northpole/`: the map: the plot shape and registry, the layout, drawing
-  and the theme.
+  `#/plot/<login>` previews one plot and `#/attraction/<id>` one attraction.
+- `src/northpole/`: the map: the plot shape and registries, the midway layout,
+  drawing and the theme.
+- `src/attractions/<id>/`: the North Pole's own attractions, one folder each.
+  To add one, add a folder: nothing else needs to change.
 - `src/plots/<login>/`: one folder per person. `src/plots/jedi4ever/` is the
   pattern to copy.
 - `scripts/ownership.ts` and `scripts/check-plot-ownership.ts`: the plot
