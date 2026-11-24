@@ -1,4 +1,4 @@
-import type { NorthPoleSquare } from '../../northpole/square';
+import type { NorthPoleSquare, SquarePointer } from '../../northpole/square';
 import { canvasFont, theme } from '../../northpole/theme';
 
 const { colors } = theme;
@@ -184,6 +184,38 @@ export function snowflake(index: number, time: number): { x: number; y: number }
 /** How bright string light `index` is: between 0.55 and 1, slowly. */
 export function twinkle(index: number, time: number): number {
   return 0.775 + 0.225 * Math.sin(time / 1_600 + index * 1.7);
+}
+
+/** The penguins on the workshop floor: where each stands, in hundredths of the square. */
+export const PENGUINS: readonly { x: number }[] = [{ x: 19 }, { x: 35 }, { x: 51 }, { x: 66 }];
+/** Every penguin's feet are on this line. */
+export const PENGUIN_FEET = 95;
+/** How long a penguin's hop lasts, in milliseconds. */
+export const HOP = 650;
+
+/** How far penguin `index` has shuffled from its spot at `time`, at most 1.5 either way. */
+export function shuffleOf(index: number, time: number): number {
+  return Math.sin(time / 2_300 + index * 1.9) * 1.5;
+}
+
+/** Whether penguin `index` has its eyes shut at `time`: a short blink every few seconds. */
+export function blinking(index: number, time: number): boolean {
+  return wrap(time + index * 1_300, 3_800 + index * 700) < 160;
+}
+
+/** How high a penguin is off the floor `since` milliseconds after it was tapped. */
+export function hopHeight(since: number): number {
+  return since >= 0 && since < HOP ? Math.sin((since / HOP) * Math.PI) * 6 : 0;
+}
+
+/** Which penguin is at `x`, `y` (in hundredths of the square) at `time`, or -1 for none. */
+export function penguinAt(x: number, y: number, time: number): number {
+  return PENGUINS.findIndex(
+    (penguin, index) =>
+      Math.abs(x - (penguin.x + shuffleOf(index, time))) <= 4.5 &&
+      y >= PENGUIN_FEET - 16 &&
+      y <= PENGUIN_FEET + 1.5,
+  );
 }
 
 type Ctx = CanvasRenderingContext2D;
@@ -403,12 +435,86 @@ function room(ctx: Ctx, u: number, size: number, time: number) {
   words(ctx, String(sacksFilled(time) % 1000), 88.5 * u, 28.3 * u, 7 * u, 15 * u);
 }
 
+/** A flipper hanging from a shoulder at `x`, `y`, turned `angle` from straight down. */
+function flipper(ctx: Ctx, u: number, x: number, y: number, angle: number) {
+  ctx.save();
+  ctx.translate(x * u, y * u);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.ellipse(0, 2.3 * u, 1.1 * u, 2.8 * u, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/** Penguin `index`, shuffling and blinking, waving while `waving` and `lift` off the floor. */
+function penguin(ctx: Ctx, u: number, index: number, time: number, waving: boolean, lift: number) {
+  const x = PENGUINS[index].x + shuffleOf(index, time);
+  const feet = PENGUIN_FEET;
+  // Its shadow stays on the floor and shrinks while it hops.
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = colors.cocoa;
+  ctx.beginPath();
+  ctx.ellipse(x * u, (feet + 0.6) * u, (4 - lift * 0.3) * u, 1.1 * u, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.save();
+  // A little waddle while it shuffles, rocking on its feet.
+  const pace = Math.abs(Math.cos(time / 2_300 + index * 1.9));
+  ctx.translate(x * u, (feet - lift) * u);
+  ctx.rotate(Math.sin(time / 180 + index) * 0.07 * pace);
+
+  ctx.fillStyle = colors.gold;
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.ellipse(side * 1.6 * u, 0, 1.5 * u, 0.6 * u, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = colors.night;
+  ctx.beginPath();
+  ctx.ellipse(0, -6 * u, 4 * u, 6 * u, 0, 0, Math.PI * 2);
+  ctx.fill();
+  flipper(ctx, u, -3.4, -9, 0.3);
+  const wave = waving ? -2.4 + Math.sin(time / 110) * 0.45 : -0.3;
+  flipper(ctx, u, 3.4, -9, wave);
+  ctx.fillStyle = colors.snow;
+  ctx.beginPath();
+  ctx.ellipse(0, -5.2 * u, 2.7 * u, 4.6 * u, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = colors.night;
+  circle(ctx, 0, -12.5 * u, 3.2 * u);
+
+  // Its eyes, shut for a moment now and then.
+  ctx.fillStyle = colors.snow;
+  for (const side of [-1, 1]) {
+    if (blinking(index, time)) {
+      ctx.fillRect((side * 1.2 - 0.8) * u, -13 * u, 1.6 * u, 0.4 * u);
+    } else {
+      circle(ctx, side * 1.2 * u, -13 * u, 0.85 * u);
+    }
+  }
+  if (!blinking(index, time)) {
+    ctx.fillStyle = colors.night;
+    for (const side of [-1, 1]) circle(ctx, side * 1.2 * u, -12.8 * u, 0.42 * u);
+  }
+  ctx.fillStyle = colors.gold;
+  ctx.beginPath();
+  ctx.moveTo(-1 * u, -11.8 * u);
+  ctx.lineTo(1 * u, -11.8 * u);
+  ctx.lineTo(0, -10.3 * u);
+  ctx.fill();
+  ctx.restore();
+}
+
+/** When each penguin was last tapped, so it can hop: the booth's one memory of the pointer. */
+const tapped: number[] = PENGUINS.map(() => -Infinity);
+
 /** Santa's toy factory: letters in, sorted, built into toys, checked and into the sleigh. */
 const booth: NorthPoleSquare = {
   id: 'jedi4ever',
   name: "Santa's Toy Factory",
   description: 'Letters in, toys out: the workshop that builds the whole North Pole.',
-  draw(ctx, size, time) {
+  draw(ctx, size, time, pointer?: SquarePointer) {
     const u = size / 100;
     const letters = lettersAt(time);
     const near = (x: number) =>
@@ -561,6 +667,13 @@ const booth: NorthPoleSquare = {
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
+
+    // The penguins on the floor: one waves while the pointer is over it, and hops when tapped.
+    const over = pointer ? penguinAt(pointer.x / u, pointer.y / u, time) : -1;
+    if (pointer && pointer.presses > 0 && over >= 0) tapped[over] = time;
+    PENGUINS.forEach((_, index) =>
+      penguin(ctx, u, index, time, index === over, hopHeight(time - tapped[index])),
+    );
   },
 };
 
