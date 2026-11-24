@@ -54,46 +54,55 @@ function renderGuide(
   }
 }
 
+/** The square the Booths panel features at its top. Once #33 lands, it's the day's featured square. */
+const FEATURED: { kind: SquareKind; id: string } = { kind: 'attraction', id: 'ferris-wheel' };
+
+/** A small walking-figure icon, drawn in the button's own colour. */
+const WALK_ICON = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor"><circle cx="9" cy="2.5" r="1.8"/><path d="M8 5.2 5.5 7.5 5 10.5h1.6l.4-2 1.2-1L7.5 11 5.3 15h1.9l1.9-3.4 1.6 3.4h1.8L10.2 11l.7-3.2.8 1.4 2.3.8.4-1.4-1.8-.6-1.4-2.4C10.7 5 9.2 4.6 8 5.2Z"/></svg>`;
+
 function renderMap(focus?: { kind: SquareKind; id: string }) {
   document.body.dataset.view = 'map';
   app.innerHTML = `
     <section class="map">
-      <p class="map-help">
-        Welcome to the North Pole. Walk around with WASD or the arrow keys, or click or tap
-        where you'd like to go. The attractions round the town square are part of the North
-        Pole itself, and the stalls along the lanes each belong to one person: walk up to one
-        and press E, or click it, to see it up close. The plots marked "For claim" are waiting
-        for a booth: <a href="${CLAIM_URL}" target="_blank" rel="noopener">claim your own</a>.
-      </p>
-      <p class="map-note" role="status" hidden></p>
       <div class="map-frame">
         <canvas class="map-canvas" tabindex="0" aria-label="The North Pole. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a booth or an attraction to visit it, or at an open plot to claim it."></canvas>
+        <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
         <p class="hud hud-tessl">Built with Tessl</p>
         <details class="hud hud-booths">
-          <summary aria-label="Booths"><span class="hud-icon" aria-hidden="true">🎪</span><span class="hud-title">Booths</span></summary>
-          <p class="hud-hint">Click one to walk there.</p>
-          <ul class="hud-list"></ul>
+          <summary>Booths</summary>
+          <p class="hud-hint">Click one to go there, or shift-click to walk.</p>
+          <div class="hud-featured" hidden></div>
+          <h2 class="hud-group">Attractions</h2>
+          <ul class="hud-list hud-attractions"></ul>
+          <h2 class="hud-group">Booths</h2>
+          <ul class="hud-list hud-stalls"></ul>
         </details>
         <details class="hud hud-controls">
-          <summary aria-label="Controls"><span class="hud-icon" aria-hidden="true">⌨️</span><span class="hud-title">Controls</span></summary>
-          <ul>
-            <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> to walk</li>
-            <li>Click where you want to go</li>
-            <li><kbd>E</kbd> to visit a booth or an attraction</li>
-            <li><kbd>E</kbd> at a "For claim" sign to claim that plot</li>
-          </ul>
+          <summary>Controls</summary>
+          <p>Walk with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys, <kbd>E</kbd> to visit or claim</p>
         </details>
-        <button class="hud hud-overview" type="button">Show the whole island</button>
+        <div class="hud-actions">
+          <button class="hud hud-claim" type="button">Claim a plot</button>
+          <button class="hud hud-overview" type="button">Show the whole island</button>
+        </div>
       </div>
-      <nav class="map-guide" aria-label="Attractions">
-        <h2>Attractions</h2>
-        <ul class="attractions"></ul>
-      </nav>
-      <nav class="map-guide" aria-label="Booths">
-        <h2>Booths</h2>
-        <ul class="booths"></ul>
-      </nav>
+      <div class="visually-hidden">
+        <p>
+          Welcome to the North Pole. The attractions round the town square are part of the North
+          Pole itself, and the stalls along the lanes each belong to one person. The plots marked
+          "For claim" are waiting for a booth:
+          <a href="${CLAIM_URL}" target="_blank" rel="noopener">claim your own</a>.
+        </p>
+        <nav class="map-guide" aria-label="Attractions">
+          <h2>Attractions</h2>
+          <ul class="attractions"></ul>
+        </nav>
+        <nav class="map-guide" aria-label="Booths">
+          <h2>Booths</h2>
+          <ul class="booths"></ul>
+        </nav>
+      </div>
     </section>`;
 
   renderGuide(
@@ -124,43 +133,78 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
 }
 
 /**
- * The HUD over the map: the Booths panel, whose entries walk the player to a
- * square, and the button that shows the whole island on a phone. The panels
- * start open on a wide map and folded to their icons on a phone's, judged by
- * the map frame's width, as the camera judges it.
+ * The HUD over the map. In the Booths panel, the Featured entry and every
+ * square's name jump straight to that square, and shift-click or the walk icon
+ * walks there instead. Claim a plot walks the player to the nearest open plot,
+ * and the last button shows the whole island. The panels start open on a wide
+ * map and folded on a phone's, judged by the map frame's width, as the camera
+ * judges it.
  */
 function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
   const wide = !isPhone(app.querySelector<HTMLElement>('.map-frame')!.clientWidth);
   for (const panel of app.querySelectorAll<HTMLDetailsElement>('.hud-booths, .hud-controls'))
     panel.open = wide;
-  const list = app.querySelector('.hud-list')!;
-  const entries: [SquareKind, NorthPoleSquare, string][] = [
-    ...attractionRegistry
-      .all()
-      .map((s): [SquareKind, NorthPoleSquare, string] => ['attraction', s, 'North Pole']),
-    ...boothRegistry
-      .all()
-      .map((s): [SquareKind, NorthPoleSquare, string] => ['booth', s, `@${s.id}`]),
-  ];
-  for (const [kind, square, by] of entries) {
+  const overview = app.querySelector<HTMLButtonElement>('.hud-overview')!;
+  const showOverview = () =>
+    (overview.textContent = map.overview ? 'Back to the carnival' : 'Show the whole island');
+
+  /** A square's entry: its name jumps there, and the walk icon walks there. */
+  const entry = (kind: SquareKind, square: NorthPoleSquare, by: string, label = '') => {
     const item = document.createElement('li');
     const button = document.createElement('button');
     button.type = 'button';
+    button.className = 'hud-go';
     button.dataset.kind = kind;
     button.dataset.id = square.id;
-    button.innerHTML = `<span class="name"></span> <span class="owner"></span>`;
+    button.innerHTML = `<span class="label"></span><span class="name"></span> <span class="owner"></span>`;
+    button.querySelector('.label')!.textContent = label;
     button.querySelector('.owner')!.textContent = by;
-    whenNamed(square, () => (button.querySelector('.name')!.textContent = square.name));
-    button.addEventListener('click', () => {
+    const walk = document.createElement('button');
+    walk.type = 'button';
+    walk.className = 'hud-walk';
+    walk.innerHTML = WALK_ICON;
+    whenNamed(square, () => {
+      button.querySelector('.name')!.textContent = square.name;
+      walk.title = `Walk to ${square.name}`;
+      walk.setAttribute('aria-label', walk.title);
+    });
+    button.addEventListener('click', (event) => {
+      if (event.shiftKey) map.walkTo(kind, square.id);
+      else map.jumpTo(kind, square.id);
+      showOverview();
+      canvas.focus();
+    });
+    walk.addEventListener('click', () => {
       map.walkTo(kind, square.id);
       canvas.focus();
     });
-    item.append(button);
-    list.append(item);
+    item.append(button, walk);
+    return item;
+  };
+
+  const featured = (FEATURED.kind === 'attraction' ? attractionRegistry : boothRegistry).get(
+    FEATURED.id,
+  );
+  if (featured) {
+    const box = app.querySelector<HTMLElement>('.hud-featured')!;
+    const list = document.createElement('ul');
+    const by = FEATURED.kind === 'attraction' ? 'North Pole' : `@${featured.id}`;
+    list.append(entry(FEATURED.kind, featured, by, 'Featured: '));
+    box.append(list);
+    box.hidden = false;
   }
-  const overview = app.querySelector<HTMLButtonElement>('.hud-overview')!;
+  for (const square of attractionRegistry.all())
+    app.querySelector('.hud-attractions')!.append(entry('attraction', square, 'North Pole'));
+  for (const square of boothRegistry.all())
+    app.querySelector('.hud-stalls')!.append(entry('booth', square, `@${square.id}`));
+
+  app.querySelector('.hud-claim')!.addEventListener('click', () => {
+    map.walkToOpenPlot();
+    canvas.focus();
+  });
   overview.addEventListener('click', () => {
-    overview.textContent = map.toggleOverview() ? 'Follow me' : 'Show the whole island';
+    map.toggleOverview();
+    showOverview();
   });
 }
 

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { CLAIM_URL } from '../northpole/links';
 import { worldToScreen } from '../northpole/camera';
+import { CLAIM_SIGN } from '../northpole/render';
 import { buildWorld, toScreen, type PinnedPlots } from '../northpole/world';
 
 /**
@@ -240,7 +241,8 @@ test('clicking an open plot opens the form to claim a booth', async ({ page, con
   const [x, y, zoom] = (await canvas.getAttribute('data-camera'))!.split(',').map(Number);
   const sign = toScreen({ x: open.x + (open.w - 1) / 2, y: open.y + (open.h - 1) / 2 });
   const box = (await canvas.boundingBox())!;
-  const at = worldToScreen({ x: sign.x, y: sign.y - 52 }, box.width, box.height, { x, y }, zoom);
+  const board = { x: sign.x, y: sign.y - CLAIM_SIGN.post - CLAIM_SIGN.h / 2 };
+  const at = worldToScreen(board, box.width, box.height, { x, y }, zoom);
   const form = context.waitForEvent('page');
   await canvas.click({ position: at });
   expect((await form).url()).toBe(CLAIM_URL);
@@ -270,9 +272,79 @@ test('the map shows the island, its HUD, and draws within budget while the playe
   expect(problems).toEqual([]);
 });
 
-test("the Booths panel walks the player to a booth's door", async ({ page }) => {
+test("shift-clicking a name in the Booths panel walks the player to a booth's door", async ({
+  page,
+}) => {
+  await page.goto('#/');
+  const canvas = page.locator('.map-canvas');
+  await page
+    .locator('.hud-list button[data-kind="booth"][data-id="jedi4ever"]')
+    .click({ modifiers: ['Shift'] });
+  await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 20_000 });
+});
+
+test('the Booths panel and Featured jump straight to their square', async ({ page }) => {
+  const problems = watch(page);
   await page.goto('#/');
   const canvas = page.locator('.map-canvas');
   await page.locator('.hud-list button[data-kind="booth"][data-id="jedi4ever"]').click();
-  await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 20_000 });
+  await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 1000 });
+  const featured = page.locator('.hud-featured button[data-kind]');
+  await expect(featured).toContainText('Featured');
+  await featured.click();
+  const id = await featured.getAttribute('data-id');
+  await expect(canvas).toHaveAttribute('data-near', `attraction:${id}`, { timeout: 1000 });
+  expect(problems).toEqual([]);
 });
+
+test('Claim a plot walks the player to an open plot, where E opens the form', async ({
+  page,
+  context,
+}) => {
+  await context.route('https://github.com/**', (route) => route.fulfill({ body: 'claim form' }));
+  await page.goto('#/');
+  const canvas = page.locator('.map-canvas');
+  await page.getByRole('button', { name: 'Claim a plot' }).click();
+  await expect(canvas).toHaveAttribute('data-near', /^open:/, { timeout: 20_000 });
+  await expect(page.locator('.map-prompt')).toHaveText('Press E to claim this plot');
+  const form = context.waitForEvent('page');
+  await page.keyboard.press('e');
+  expect((await form).url()).toBe(CLAIM_URL);
+});
+
+test('the screen-reader guide shows itself when a link in it has keyboard focus', async ({
+  page,
+}) => {
+  await page.goto('#/');
+  const guide = page.locator('.map > .visually-hidden');
+  expect((await guide.boundingBox())!.width).toBeLessThanOrEqual(1);
+  await page.locator('.map > .visually-hidden a').first().focus();
+  expect((await guide.boundingBox())!.width).toBeGreaterThan(100);
+  await expect(page.getByRole('link', { name: 'claim your own' })).toBeInViewport();
+});
+
+for (const viewport of [
+  { width: 1400, height: 900 },
+  { width: 390, height: 844 },
+]) {
+  test(`the map fits a ${viewport.width} by ${viewport.height} window with no scrolling`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto('#/');
+    await expect(page.locator('.map-canvas')).toHaveAttribute('data-camera', /./);
+    const page_ = await page.evaluate(() => ({
+      width: document.documentElement.scrollWidth,
+      height: document.documentElement.scrollHeight,
+      banner: document.querySelector('.banner')!.getBoundingClientRect().height,
+      frame: document.querySelector('.map-frame')!.getBoundingClientRect().height,
+    }));
+    expect(page_.width).toBeLessThanOrEqual(viewport.width);
+    expect(page_.height).toBeLessThanOrEqual(viewport.height);
+    expect(page_.banner).toBeLessThanOrEqual(48);
+    expect(page_.frame).toBeGreaterThanOrEqual(viewport.height - 48);
+    // No emoji in the HUD.
+    const hud = await page.locator('.map-frame').innerText();
+    expect(hud).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+}
