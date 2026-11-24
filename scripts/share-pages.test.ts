@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { escapeHtml, readSquareInfo, sharePage, siteUrl, worldLink } from './share-pages';
+import {
+  decodeLiteral,
+  escapeHtml,
+  readSquareInfo,
+  sharePage,
+  siteUrl,
+  worldLink,
+} from './share-pages';
 
 describe('share pages', () => {
   const page = sharePage(
@@ -21,7 +28,7 @@ describe('share pages', () => {
     expect(page).toContain('<meta name="twitter:image"');
   });
 
-  it('sends the browser on to the world with the card open, with no scripts', () => {
+  it('sends the browser on to the world, inside the square, with no scripts', () => {
     expect(page).toContain('<meta http-equiv="refresh" content="0; url=../#/booth/elf" />');
     expect(page).toContain('<a href="../#/booth/elf">');
     expect(page).not.toMatch(/<script/i);
@@ -30,7 +37,8 @@ describe('share pages', () => {
 
   it('gives a square without a description a line of its own', () => {
     const bare = sharePage({ kind: 'attraction', id: 'x', name: 'X', description: '' }, 'map.png');
-    expect(bare).toContain('by the North Pole');
+    expect(bare).toContain('<title>X at the North Pole Carnival</title>');
+    expect(bare).not.toContain('by the North Pole');
     expect(bare).toContain('Visit X at the North Pole Carnival');
   });
 
@@ -41,6 +49,13 @@ describe('share pages', () => {
       ),
     ).toEqual({ name: "Santa's Workshop", description: "It's cosy." });
     expect(readSquareInfo('const b = { name: computed() }')).toEqual({});
+  });
+
+  it('decodes escapes as the square itself sees them', () => {
+    const source = String.raw`const b = { name: 'Snow☃man', description: 'One\ntwo' }`;
+    expect(readSquareInfo(source)).toEqual({ name: 'Snow☃man', description: 'One\ntwo' });
+    expect(decodeLiteral(String.raw`\x41\u{1F384}\'\\\q`)).toBe("A🎄'\\q");
+    expect(decodeLiteral('a\\\nb')).toBe('ab');
   });
 
   it('knows the site from SITE_URL, or from the repository on GitHub Pages', () => {

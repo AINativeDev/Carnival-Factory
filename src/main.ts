@@ -8,7 +8,7 @@ import type { NorthPoleSquare } from '../northpole/square';
 import { applyTheme } from '../northpole/theme';
 import { boothRegistry } from '../northpole/booths';
 import { parseHash } from './route';
-import { openVisitCard, type VisitCard } from './visit-card';
+import { openVisitHud, type VisitHud } from './visit-hud';
 import { keepUpToDate } from './updates';
 
 applyTheme();
@@ -60,7 +60,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
   app.innerHTML = `
     <section class="map">
       <div class="map-frame">
-        <canvas class="map-canvas" tabindex="0" aria-label="The North Pole. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a booth or an attraction to visit it, or at an open plot to claim it."></canvas>
+        <canvas class="map-canvas" tabindex="0" aria-label="The North Pole. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a booth or an attraction to go inside, or at an open plot to claim it. Inside, Esc or walking out through the doorway leaves."></canvas>
         <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
         <p class="hud hud-tessl">Built with Tessl</p>
@@ -100,12 +100,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
       </div>
     </section>`;
 
-  renderGuide(
-    app.querySelector('.attractions')!,
-    attractionRegistry.all(),
-    'attraction',
-    () => 'North Pole',
-  );
+  renderGuide(app.querySelector('.attractions')!, attractionRegistry.all(), 'attraction', () => '');
   renderGuide(app.querySelector('.booths')!, boothRegistry.all(), 'booth', (id) => `@${id}`);
 
   const registry = focus?.kind === 'attraction' ? attractionRegistry : boothRegistry;
@@ -173,7 +168,7 @@ function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
         map.walkTo(kind, square.id);
         canvas.focus();
       } else {
-        // Picking a square goes there and opens its visit card, in the world.
+        // Picking a square goes there and takes the player inside it.
         map.jumpTo(kind, square.id);
         location.hash = `#/${kind}/${square.id}`;
       }
@@ -193,13 +188,13 @@ function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
   if (featured) {
     const box = app.querySelector<HTMLElement>('.hud-featured')!;
     const list = document.createElement('ul');
-    const by = FEATURED.kind === 'attraction' ? 'North Pole' : `@${featured.id}`;
+    const by = FEATURED.kind === 'attraction' ? '' : `@${featured.id}`;
     list.append(entry(FEATURED.kind, featured, by, 'Featured: '));
     box.append(list);
     box.hidden = false;
   }
   for (const square of attractionRegistry.all())
-    app.querySelector('.hud-attractions')!.append(entry('attraction', square, 'North Pole'));
+    app.querySelector('.hud-attractions')!.append(entry('attraction', square, ''));
   for (const square of boothRegistry.all())
     app.querySelector('.hud-stalls')!.append(entry('booth', square, `@${square.id}`));
 
@@ -252,12 +247,16 @@ function renderKeepPosted() {
     </section>`;
 }
 
-/** The map running now, the visit card open on it, and how the card came to open. */
+/** The map running now, the HUD of the square the player is inside, and how they came in. */
 let map: MapControls | undefined;
-let card: VisitCard | undefined;
-/** Whether the card opened from a change of address in this visit, so going back closes it. */
+let card: VisitHud | undefined;
+/**
+ * Whether the address behind this visit's in history is the map's, so going
+ * back leaves it: true only when the visit began with a change of address
+ * made from the map, not from another square.
+ */
 let cardFromHistory = false;
-/** A hash change this page made itself, while closing a card, for `route` to let pass. */
+/** A hash change this page made itself, while leaving a square, for `route` to let pass. */
 let ignoreNextRoute = false;
 
 /** The booth a shared link brought this visitor to, invited to build their own until they close or claim. */
@@ -269,7 +268,7 @@ let invite: string | undefined =
       ? arrival.focus.id
       : undefined;
 
-/** Closes the visit card. `address` says to take the address back off the square, too. */
+/** Leaves the square the player is inside. `address` says to take the address back off the square, too. */
 function closeCard(address: boolean) {
   if (!card) return;
   card.close();
@@ -285,17 +284,19 @@ function closeCard(address: boolean) {
   }
 }
 
-/** Opens a square's visit card inside the world, or says, on the map, that it isn't there. */
+/** Takes the player inside a square, or says, on the map, that it isn't there. */
 function visit(kind: SquareKind, id: string, fromHistory: boolean) {
   const square = (kind === 'attraction' ? attractionRegistry : boothRegistry).get(id);
+  // From one square straight to another, the address behind is the first square's, not the map's.
+  const fromMap = fromHistory && !card;
   closeCard(false);
   if (!square || !map?.visit(kind, id)) {
     renderUnknown(app.querySelector('.map-note')!, { kind, id });
     return;
   }
   app.querySelector<HTMLElement>('.map-note')!.hidden = true;
-  cardFromHistory = fromHistory;
-  card = openVisitCard(app.querySelector('.map-frame')!, {
+  cardFromHistory = fromMap;
+  card = openVisitHud(app.querySelector('.map-frame')!, {
     kind,
     square,
     invite: kind === 'booth' && invite === id,
@@ -326,13 +327,13 @@ function route(event?: HashChangeEvent) {
   // Booths used to be called plots: keep links shared before the rename working.
   if (route.view === 'legacy') return location.replace(`#/booth/${route.id}`);
 
-  // A square opens its visit card in the world, starting the world if it isn't running.
+  // A square takes the player inside it, starting the world if it isn't running.
   if (route.view === 'square') {
     if (!map) renderMap();
     return visit(route.kind, route.id, fromHistory);
   }
 
-  // Back from a visit, or See it on the map: the card closes, and the world stays.
+  // Back from a visit, or See it on the map: the player comes out, and the world stays.
   if (map && card) {
     closeCard(false);
     if (route.focus) map.jumpTo(route.focus.kind, route.focus.id);

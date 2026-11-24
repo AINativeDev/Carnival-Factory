@@ -192,8 +192,9 @@ TypeScript, Vite and plain HTML canvas, with Vitest. No UI framework and no
 native dependencies, so `npm ci` is the whole setup. Node 22.13 or later.
 
 - `index.html` and `src/main.ts`: the page and the router: `#/` is the map,
-  `#/booth/<login>` and `#/attraction/<id>` open the world with that square's
-  visit card (`src/visit-card.ts`) in front of its stall, and
+  `#/booth/<login>` and `#/attraction/<id>` open the world with the player
+  inside that square, in a room the map draws (`northpole/interior.ts`) beside
+  its HUD (`src/visit-hud.ts`), and
   `#/?booth=<login>` and `#/?attraction=<id>` open the map on that square.
   `src/route.ts` reads the hash. The build also writes a link-preview page per
   square, `share/<kind>-<id>.html` (`scripts/share-pages.ts`), which Share

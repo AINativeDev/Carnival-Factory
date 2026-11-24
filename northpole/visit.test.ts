@@ -1,46 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import pinned from './plots.json';
-import { framing } from './camera';
 import {
   inBox,
   nearestOpenPlot,
   placeTag,
+  shareLink,
   sharePath,
   shareText,
   tagText,
   targetAt,
-  visitFraming,
 } from './visit';
-import { buildWorld, toScreen, walkAlong, type Plot } from './world';
+import { buildWorld, walkAlong, type Plot } from './world';
 
 const ATTRACTIONS = ['big-top', 'cocoa-stand', 'ferris-wheel', 'frozen-pond', 'sleigh-coaster'];
 const world = buildWorld(ATTRACTIONS, ['elf-0', 'elf-1', 'jedi4ever'], pinned);
 const plotOf = (id: string) => world.plots.find((plot) => plot.id === id)!;
-
-describe('the camera on a visit', () => {
-  it('glides in on the visited plot, nearer than it walks', () => {
-    const plot = plotOf('jedi4ever');
-    const visit = visitFraming(plot, 1200, 900);
-    const walk = framing(world, 1200, 900, plot.door, 1, false);
-    expect(visit.zoom).toBeGreaterThan(walk.zoom);
-    const ground = toScreen({ x: plot.x + (plot.w - 1) / 2, y: plot.y + (plot.h - 1) / 2 });
-    expect(visit.target.x).toBe(ground.x);
-    // It looks a little above the ground, so what stands on the plot is in view.
-    expect(visit.target.y).toBeLessThan(ground.y);
-  });
-
-  it('frames a bigger attraction further out than a stall', () => {
-    expect(visitFraming(plotOf('ferris-wheel'), 1200, 900).zoom).toBeLessThanOrEqual(
-      visitFraming(plotOf('jedi4ever'), 1200, 900).zoom,
-    );
-  });
-
-  it('fits the plot in a phone too', () => {
-    const plot = plotOf('ferris-wheel');
-    const { zoom } = visitFraming(plot, 390, 700);
-    expect(((plot.w + plot.h) * 32 * zoom) / 1).toBeLessThanOrEqual(390);
-  });
-});
 
 describe('the plot next door', () => {
   it('walks to the open plot nearest the player, from their own tile', () => {
@@ -86,6 +60,17 @@ describe('the share line', () => {
     expect(sharePath('booth', 'elf')).toBe('share/booth-elf.html');
     expect(sharePath('attraction', 'ferris-wheel')).toBe('share/attraction-ferris-wheel.html');
   });
+
+  it("links a pull request's preview to the live site's share page, which outlives it", () => {
+    const site = 'https://np.github.io/Carnival/';
+    expect(shareLink('booth', 'elf', `${site}#/booth/elf`)).toBe(`${site}share/booth-elf.html`);
+    expect(shareLink('booth', 'elf', `${site}previews/pr-66/#/booth/elf`)).toBe(
+      `${site}share/booth-elf.html`,
+    );
+    expect(shareLink('booth', 'elf', 'http://localhost:4173/')).toBe(
+      'http://localhost:4173/share/booth-elf.html',
+    );
+  });
 });
 
 describe('hovering', () => {
@@ -110,7 +95,7 @@ describe('hovering', () => {
     expect(
       tagText({ kind: 'attraction', id: 'ferris-wheel' }, { name: 'Ferris', description: 'Round' })
         .owner,
-    ).toBe('North Pole');
+    ).toBe('');
     expect(tagText({ kind: 'open' }, undefined).hint).toBe('E or click to claim this plot');
   });
 

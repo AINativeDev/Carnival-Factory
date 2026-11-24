@@ -1,36 +1,11 @@
 /**
  * Visiting a square inside the world, and the tag that names what you hover:
- * where the camera glides to for a visit, the open plot nearest a square, the
- * line Share copies, what's under the mouse and where its tag goes. Plain
- * functions, so the map and the tests use them the same way. Points are in
- * world pixels unless they say otherwise.
+ * the open plot nearest a square, the line Share copies and where it links,
+ * what's under the mouse and where its tag goes. Plain functions, so the map
+ * and the tests use them the same way. Points are in world pixels unless they
+ * say otherwise.
  */
-import { CARNIVAL_HEADROOM, isPhone, MAX_ZOOM, type Framing } from './camera';
-import {
-  findPathToFirst,
-  tileOf,
-  toScreen,
-  type Box,
-  type Plot,
-  type Tile,
-  type World,
-} from './world';
-
-/** How near the camera comes on a visit, at most. */
-export const VISIT_ZOOM = 1.6;
-/** How much of the viewport's height the visited plot and what stands on it fill. */
-export const VISIT_FILL = 0.55;
-
-/** Where the camera glides to for a visit: in on the plot, with what stands on it in view. */
-export function visitFraming(plot: Plot, width: number, height: number): Framing {
-  const ground = toScreen({ x: plot.x + (plot.w - 1) / 2, y: plot.y + (plot.h - 1) / 2 });
-  // The plot's diamond is (w + h) tiles across, with its structure rising over it.
-  const across = ((plot.w + plot.h) * 64) / 2;
-  const tall = ((plot.w + plot.h) * 32) / 2 + CARNIVAL_HEADROOM;
-  const fit = Math.min((width * 0.9) / across, (height * VISIT_FILL) / tall);
-  const zoom = Math.max(0.3, Math.min(isPhone(width) ? VISIT_ZOOM : MAX_ZOOM * 1.2, fit));
-  return { zoom, target: { x: ground.x, y: ground.y - tall / 2 + 40 } };
-}
+import { findPathToFirst, tileOf, type Box, type Plot, type Tile, type World } from './world';
 
 /**
  * The open plots, nearest `from` first, and the path to the nearest one the
@@ -75,6 +50,18 @@ export function shareText(
 /** Where a square's link-preview page is, from the site's root. */
 export const sharePath = (kind: 'booth' | 'attraction', id: string) => `share/${kind}-${id}.html`;
 
+/**
+ * The address of a square's link-preview page, from the page's own address.
+ * A pull request's preview, under `previews/pr-<number>/`, is taken down when
+ * the pull request closes, so its links go to the live site's page instead,
+ * which lasts.
+ */
+export function shareLink(kind: 'booth' | 'attraction', id: string, base: string): string {
+  const site = new URL('./', base);
+  site.pathname = site.pathname.replace(/\/previews\/pr-\d+\/$/, '/');
+  return new URL(sharePath(kind, id), site).href;
+}
+
 /** Whether a point is in a box, edges included. */
 export const inBox = (point: Tile, box: Box) =>
   point.x >= box.x && point.x <= box.x + box.w && point.y >= box.y && point.y <= box.y + box.h;
@@ -91,7 +78,7 @@ export function targetAt<T extends { box: Box }>(
   return undefined;
 }
 
-/** What a hover tag says: its name, who it belongs to, a line of its description and a hint. */
+/** What a hover tag says: its name, who it belongs to (nobody, for an attraction), a line of its description and a hint. */
 export function tagText(
   plot: Pick<Plot, 'kind' | 'id'>,
   square: { name: string; description: string } | undefined,
@@ -105,7 +92,7 @@ export function tagText(
     };
   return {
     name: square?.name ?? plot.id ?? '',
-    owner: plot.kind === 'attraction' ? 'North Pole' : `@${plot.id}`,
+    owner: plot.kind === 'attraction' ? '' : `@${plot.id}`,
     line: (square?.description ?? '').split(/\r?\n|(?<=[.!?])\s/)[0],
     hint: 'E or click to visit',
   };

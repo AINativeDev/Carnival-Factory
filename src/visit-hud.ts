@@ -5,18 +5,18 @@ import {
   KEEP_POSTED_URL,
   keepPostedHref,
 } from '../northpole/links';
-import { startPreview, VISIT_SIZE, type SquareKind } from '../northpole/map';
+import type { SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
-import { sharePath, shareText } from '../northpole/visit';
+import { shareLink, shareText } from '../northpole/visit';
 import { deepLink } from './route';
 
-export interface VisitCardOptions {
+export interface VisitHudOptions {
   kind: SquareKind;
   square: NorthPoleSquare;
   /** Whether to show the invitation to build a booth of your own, for someone who came by a shared link. */
   invite: boolean;
-  /** Closes the card: its close button, or Esc. */
+  /** Leaves the square: Esc, or the Leave button. */
   onClose(): void;
   /** Claim the plot next door. */
   onClaim(): void;
@@ -27,32 +27,30 @@ const KEEP_POSTED_LINK = KEEP_POSTED_URL
   ? `<a href="${keepPostedHref()}" target="_blank" rel="noopener">Keep me posted</a>.`
   : `<a href="${keepPostedHref()}">Keep me posted</a>.`;
 
-/** An open visit card: `close` takes it away, stops its drawing and gives focus back. */
-export interface VisitCard {
+/** The HUD of a visit: `close` takes it away and gives focus back. */
+export interface VisitHud {
   close(): void;
 }
 
 /**
- * The card a square's visit shows, risen in front of its stall in the world:
- * its drawing, large and animated in a stall window, its name, who it belongs
- * to and its description, Share and See it on the map, a link for its owner
- * to ask for a change, and, for someone who came by a shared link, the
- * invitation to claim the plot next door. Focus moves into it, and back out
- * when it closes. Every name and description is only ever set as text.
+ * The HUD inside a square the player has entered, beside the room the map
+ * draws: its name, who it belongs to and its description, Share and See it on
+ * the map, a link for its owner to ask for a change, for someone who came by
+ * a shared link the invitation to claim the plot next door, and how to leave.
+ * Focus moves into it, and back out when it closes. Every name and
+ * description is only ever set as text.
  */
-export function openVisitCard(frame: HTMLElement, options: VisitCardOptions): VisitCard {
+export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): VisitHud {
   const { kind, square } = options;
   const before = document.activeElement as HTMLElement | null;
   const card = document.createElement('section');
-  card.className = 'visit';
-  card.setAttribute('role', 'dialog');
+  card.className = 'hud visit';
   card.setAttribute('aria-labelledby', 'visit-title');
   card.setAttribute('aria-describedby', 'visit-description');
   card.dataset.kind = kind;
   card.dataset.id = square.id;
   card.innerHTML = `
-    <button class="visit-close" type="button" aria-label="Close">×</button>
-    <div class="visit-window"><canvas class="visit-canvas" role="img"></canvas></div>
+    <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>
     <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
     <p class="visit-owner"></p>
     <p class="visit-description" id="visit-description"></p>
@@ -73,8 +71,9 @@ export function openVisitCard(frame: HTMLElement, options: VisitCardOptions): Vi
     <p class="visit-help">Want to hear about the next North Pole event? ${KEEP_POSTED_LINK}</p>`;
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
 
-  const owner = kind === 'attraction' ? 'North Pole' : `@${square.id}`;
+  const owner = kind === 'attraction' ? '' : `@${square.id}`;
   $('.visit-owner').textContent = owner;
+  $<HTMLElement>('.visit-owner').hidden = !owner;
   $<HTMLAnchorElement>('.visit-map').href = deepLink(kind, square.id);
 
   const help = $('.visit-help');
@@ -84,7 +83,7 @@ export function openVisitCard(frame: HTMLElement, options: VisitCardOptions): Vi
     help.innerHTML = `Attractions belong to the North Pole, so only its maintainers change them. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.`;
   }
 
-  const link = new URL(sharePath(kind, square.id), document.baseURI).href;
+  const link = shareLink(kind, square.id, document.baseURI);
   const text = $<HTMLTextAreaElement>('.visit-share-text');
   let mine = false;
   let edited = false;
@@ -96,7 +95,6 @@ export function openVisitCard(frame: HTMLElement, options: VisitCardOptions): Vi
   const show = () => {
     $('.visit-title').textContent = square.name;
     $('.visit-description').textContent = square.description;
-    $('.visit-canvas').setAttribute('aria-label', `The drawing of ${square.name}`);
     $('.visit-invite-text').textContent =
       `${owner} built this by describing it in an issue. An agent built it, checked it and put it on the map. Want one of your own?`;
     showText();
@@ -139,12 +137,10 @@ export function openVisitCard(frame: HTMLElement, options: VisitCardOptions): Vi
   document.addEventListener('keydown', onKeyDown);
 
   frame.append(card);
-  const stopPreview = startPreview($<HTMLCanvasElement>('.visit-canvas'), square, VISIT_SIZE);
   $<HTMLElement>('.visit-title').focus({ preventScroll: true });
 
   return {
     close() {
-      stopPreview();
       window.clearTimeout(reset);
       document.removeEventListener('keydown', onKeyDown);
       const hadFocus = card.contains(document.activeElement);
