@@ -15,15 +15,28 @@ export type Route =
   | { view: 'map'; focus?: { kind: SquareKind; id: string } }
   | { view: 'square'; kind: SquareKind; id: string }
   | { view: 'factory' }
+  | { view: 'level'; login: string; focus?: string; inside?: string }
   | { view: 'legacy'; id: string };
 
 /**
  * Reads a hash such as `#/booth/<login>`, `#/attraction/<id>`, or the map's
  * deep links `#/?booth=<login>` and `#/?attraction=<id>`, or `#/factory`. Anything it doesn't
- * know, a malformed name included, is the plain map.
+ * know, a malformed name included, is the plain map. A level opens at
+ * `#/level/<login>`, in front of one of its squares at
+ * `#/level/<login>?square=<id>`, and inside one at `#/level/<login>/<id>`.
  */
 export function parseHash(hash: string): Route {
   if (hash === '#/factory') return { view: 'factory' };
+
+  const level = hash.match(/^#\/level\/([\w-]+)(?:\/([\w-]+)|\?(.*))?$/);
+  if (level) {
+    const login = level[1].toLowerCase();
+    if (level[2]) return { view: 'level', login, inside: level[2].toLowerCase() };
+    const square = new URLSearchParams(level[3] ?? '').get('square');
+    return square !== null && ID.test(square)
+      ? { view: 'level', login, focus: square.toLowerCase() }
+      : { view: 'level', login };
+  }
 
   const legacy = hash.match(/^#\/plot\/([\w-]+)$/);
   if (legacy) return { view: 'legacy', id: legacy[1] };
@@ -45,4 +58,10 @@ export function parseHash(hash: string): Route {
 /** The hash that opens the map showing one square. */
 export function deepLink(kind: SquareKind, id: string): string {
   return `#/?${kind}=${encodeURIComponent(id)}`;
+}
+
+/** The hash that opens a level, perhaps in front of one of its squares. */
+export function levelLink(login: string, square?: string): string {
+  const base = `#/level/${encodeURIComponent(login)}`;
+  return square ? `${base}?square=${encodeURIComponent(square)}` : base;
 }

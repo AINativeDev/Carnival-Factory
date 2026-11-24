@@ -369,3 +369,39 @@ describe('walking', () => {
       }
   });
 });
+
+describe('the sleigh station', () => {
+  const levels = ['jedi4ever', 'snowelf', 'comet'];
+
+  it('has a platform for each level by the main path, each with its door on it', () => {
+    for (const count of [1, 10, 40]) {
+      const world = buildWorld(ATTRACTIONS, booths(count), undefined, { levels });
+      const platforms = world.plots.filter((plot) => plot.kind === 'platform');
+      expect(platforms.map((plot) => plot.id)).toEqual(levels);
+      const reach = reachable(world, world.start);
+      for (const plot of platforms) {
+        expect(world.ground.get(key(plot.door.x, plot.door.y))).toBe('path');
+        expect(reach.has(key(plot.door.x, plot.door.y))).toBe(true);
+        expect(Math.max(plot.x + plot.w, plot.y + plot.h)).toBeLessThanOrEqual(world.extent);
+      }
+      // No platform stands on any other plot.
+      for (const plot of platforms)
+        for (const other of world.plots) {
+          if (other === plot) continue;
+          const apart =
+            plot.x + plot.w <= other.x ||
+            other.x + other.w <= plot.x ||
+            plot.y + plot.h <= other.y ||
+            other.y + other.h <= plot.y;
+          expect(apart, `${plot.id} and ${other.kind} ${other.id ?? other.number}`).toBe(true);
+        }
+    }
+  });
+
+  it('leaves the world as it was when there are no levels', () => {
+    const before = buildWorld(ATTRACTIONS, booths(4));
+    const after = buildWorld(ATTRACTIONS, booths(4), undefined, { levels: [] });
+    expect(after.extent).toBe(before.extent);
+    expect(after.plots).toEqual(before.plots);
+  });
+});

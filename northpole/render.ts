@@ -6,6 +6,8 @@
  */
 import type { NorthPoleSquare, StallShape, StallStyle } from './square';
 import { badgeFor, type BadgeTier } from './badges';
+import { trophyFor } from './peoples-choice';
+import { PEOPLES_CHOICE } from './peoples-choice-standings';
 import { alongEdge } from './camera';
 import { canvasFont, theme } from './theme';
 import {
@@ -1110,6 +1112,13 @@ function drawStall(
     const pin = onFace(face, 0.94, (signLow + STALL.wall - 2) / 2, 0.1);
     drawElfHatPin(ctx, pin.x, pin.y, (STALL.wall - 2 - signLow) * 0.42, badge.tier);
   }
+  // A People's Choice trophy for the top three, standing on the name board's left end, clear of the portrait.
+  const place = trophyFor(square.id, PEOPLES_CHOICE);
+  if (place) {
+    const r = (STALL.wall - 2 - stallSignLow(face)) * 0.42;
+    const cup = onFace(face, 0.12, STALL.wall - 2 + r, 0.1);
+    drawTrophy(ctx, cup.x, cup.y, r, place);
+  }
   // The owner's pennant, on a pole at the front's far corner, over whatever shape the stall is.
   const top = look.shape === 'stall' ? STALL.wall + 22 : wall;
   const foot = onFace(face, 0.96, top, look.shape === 'stall' ? -0.5 : 0);
@@ -1295,6 +1304,47 @@ export function drawElfHatPin(
   ctx.beginPath();
   ctx.arc(x + r * 0.55, y - r * 0.55, r * 0.22, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+}
+
+/** A trophy's metal, by place. */
+const TROPHIES: Record<1 | 2 | 3, string> = {
+  1: colors.gold,
+  2: colors.snowShade,
+  3: colors.gingerbread,
+};
+
+/** A People's Choice trophy: a cup with two handles on a stand, `radius` across from its middle. */
+export function drawTrophy(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+  place: 1 | 2 | 3,
+) {
+  const r = radius;
+  ctx.save();
+  ctx.fillStyle = colors.cocoa;
+  ctx.beginPath();
+  ctx.arc(x, y, r + 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = TROPHIES[place];
+  ctx.strokeStyle = TROPHIES[place];
+  ctx.lineWidth = Math.max(1, r * 0.16);
+  // The cup, its handles, the stem and the base.
+  ctx.beginPath();
+  ctx.moveTo(x - r * 0.55, y - r * 0.6);
+  ctx.lineTo(x + r * 0.55, y - r * 0.6);
+  ctx.quadraticCurveTo(x + r * 0.5, y + r * 0.1, x, y + r * 0.15);
+  ctx.quadraticCurveTo(x - r * 0.5, y + r * 0.1, x - r * 0.55, y - r * 0.6);
+  ctx.fill();
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.arc(x + side * r * 0.55, y - r * 0.3, r * 0.22, -Math.PI / 2, Math.PI / 2, side < 0);
+    ctx.stroke();
+  }
+  ctx.fillRect(x - r * 0.08, y + r * 0.1, r * 0.16, r * 0.3);
+  ctx.fillRect(x - r * 0.35, y + r * 0.4, r * 0.7, r * 0.2);
   ctx.restore();
 }
 
@@ -1611,6 +1661,71 @@ export function drawSite(
   ctx.fillText(label.stage, foot.x, top + 29, w - 10);
   ctx.textBaseline = 'alphabetic';
   const box = standing(plot, scaffold + 10);
+  const left = Math.min(box.x, foot.x - w / 2 - 4);
+  return {
+    x: left,
+    y: Math.min(box.y, top - 4),
+    w: Math.max(box.x + box.w, foot.x + w / 2 + 4) - left,
+    h: box.y + box.h - Math.min(box.y, top - 4),
+  };
+}
+
+/** What a sleigh platform's sign says: where its sleigh goes, and who it belongs to. */
+export interface PlatformLabel {
+  name: string;
+  by: string;
+  /** Its sign's colour, from the level's theme. */
+  color: string;
+  closed: boolean;
+}
+
+/** The sleigh platform's sign: how tall its post is, and its board's size, in world pixels. */
+export const PLATFORM_SIGN = { post: 70, w: 140, h: 40 };
+
+/**
+ * A sleigh platform: a low wooden deck with a sleigh waiting on it and a sign
+ * on a post saying where it goes. At the sleigh station each one goes to a
+ * participant's level; inside a level, one goes back to the North Pole. A
+ * closed level's platform has a "Closed for repairs" sign and no sleigh.
+ */
+export function drawPlatform(
+  ctx: CanvasRenderingContext2D,
+  plot: Plot,
+  label: PlatformLabel,
+  time: number,
+  near = false,
+): Box {
+  const c = corners(plot);
+  const { x, y } = middle(plot);
+  shadow(ctx, x, y + 6, 70);
+  block(ctx, plot, 8, colors.gingerbread, colors.wood, colors.cocoa);
+  if (!label.closed) {
+    const sleigh = { kind: 'sleigh' as const, x: plot.x + 0.5, y: plot.y + 0.5, w: 1, h: 1 };
+    ctx.save();
+    ctx.translate(0, -8);
+    drawSleigh(ctx, { ...sleigh, seed: 0, blocks: true });
+    ctx.restore();
+  }
+  const { post, w, h } = PLATFORM_SIGN;
+  const foot = { x: (c.left.x + c.bottom.x) / 2, y: (c.left.y + c.bottom.y) / 2 - 4 };
+  const lift = near ? Math.abs(Math.sin(time / 180)) * 6 : 0;
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(foot.x - 3, foot.y - post, 6, post);
+  const top = foot.y - post - h - lift;
+  ctx.fillRect(foot.x - w / 2 - 3, top - 3, w + 6, h + 6);
+  ctx.fillStyle = colors.cream;
+  ctx.fillRect(foot.x - w / 2, top, w, h);
+  ctx.fillStyle = label.closed ? colors.muted : label.color;
+  ctx.fillRect(foot.x - w / 2, top + h - 5, w, 5);
+  ctx.fillStyle = colors.ink;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = canvasFont('small', 'bold');
+  ctx.fillText(label.name, foot.x, top + 12, w - 10);
+  ctx.font = canvasFont('small');
+  ctx.fillText(label.closed ? 'Closed for repairs' : label.by, foot.x, top + 29, w - 10);
+  ctx.textBaseline = 'alphabetic';
+  const box = standing(plot, 50);
   const left = Math.min(box.x, foot.x - w / 2 - 4);
   return {
     x: left,

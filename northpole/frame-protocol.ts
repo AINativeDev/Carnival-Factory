@@ -15,7 +15,8 @@ import {
 } from './square';
 import { theme } from './theme';
 
-export type SquareKind = 'booth' | 'attraction';
+/** A booth, one of the North Pole's attractions, or one of a level's own squares. */
+export type SquareKind = 'booth' | 'attraction' | 'level';
 
 /** The map asks the frame to draw one frame. */
 export interface DrawRequest {
@@ -132,10 +133,18 @@ export function readDrawRequest(data: unknown): DrawRequest | undefined {
 }
 
 /**
- * Which square a frame runs, from its address: `square.html#booth/<login>` or
- * `square.html#attraction/<id>`, each id checked by its own kind's rules.
+ * Which square a frame runs, from its address: `square.html#booth/<login>`,
+ * `square.html#attraction/<id>`, or `square.html#level/<login>/<id>` for one of
+ * a level's own squares, each id checked by its own kind's rules.
  */
-export function readFrameAddress(hash: string): { kind: SquareKind; id: string } | undefined {
+export function readFrameAddress(
+  hash: string,
+): { kind: SquareKind; id: string; level?: string } | undefined {
+  const square = hash.match(/^#level\/([a-z0-9-]+)\/([a-z0-9-]+)$/);
+  if (square) {
+    const [, level, id] = square;
+    return isBoothOwner(level) && isAttractionId(id) ? { kind: 'level', id, level } : undefined;
+  }
   const match = hash.match(/^#(booth|attraction)\/([a-z0-9-]+)$/);
   if (!match) return undefined;
   const [, kind, id] = match;

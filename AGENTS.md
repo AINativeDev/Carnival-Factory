@@ -8,13 +8,17 @@ square, and every square is one folder:
 - An **attraction** belongs to the North Pole itself: `attractions/<id>/`, such
   as the ferris wheel along the midway. Only maintainers change attractions.
 
+A participant may also have a **level**, `levels/<their login>/`: a whole
+patch of the North Pole of their own, reached by sleigh (see **Levels**).
+
 Both draw through the same contract, a `NorthPoleSquare`.
 
 ## Stack
 
 - TypeScript, Vite and plain HTML canvas. No UI framework.
 - Vitest for logic, in Node.
-- A Playwright smoke test (`npm run smoke`) plays every booth and attraction in a
+- A Playwright smoke test (`npm run smoke`) plays every booth and attraction, and
+  walks every level, in a
   real browser. CI runs it on every pull request; locally it needs a browser
   once (`npx playwright install chromium`, or `PLAYWRIGHT_CHANNEL=chrome`).
 - No native dependencies, and nothing that needs `sudo`. `npm ci` is the whole
@@ -38,7 +42,8 @@ src/
   main.ts                   the router: #/ is the map, #/booth/<login> and
                             #/attraction/<id> the map with the player inside that
                             square, #/?booth=<login> or #/?attraction=<id> the map
-                            showing that square, and #/factory the factory's numbers
+                            showing that square, #/level/<login> a participant's level,
+                            and #/factory the factory's numbers
   route.ts                  reading the hash (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
   booths-hud.ts             the Booths panel: search, Featured, Near you, Recently added,
@@ -50,9 +55,14 @@ src/
                             requests, bundled from square-history.json at build time
   factory.ts                the factory's numbers page, #/factory: its counts and figures
                             (plain functions), over the map like a visit's panel
+  peoples-choice-hud.ts     the People's Choice list below the map: the top three, the
+                            Home factory's leader and every entry's votes
   style.css
 northpole/                  the map itself
   square.ts                 the NorthPoleSquare shape, the registries and the kill switch
+  level.ts                  the NorthPoleLevel shape, its catalogue and themes, checking
+                            a level and laying it out as a world (plain functions)
+  levels.ts                 finds every level folder, checks it and sandboxes its squares
   diorama.ts                the diorama style's shared parts: the dusk backdrop, the
                             snow slab, lit volumes, glows (plain functions)
   booths.ts                 finds every booth folder and puts it on the map
@@ -87,11 +97,19 @@ northpole/                  the map itself
   badges.ts                 the Elf Engineer badge: its holders, baked in at build
                             time, its images and its README snippet (plain functions)
   disabled.json             the maintainers' kill switch: closed booths and attractions
+  peoples-choice.ts         People's Choice: the closing date, cleaning the baked standings,
+                            places and trophies (plain functions)
+  peoples-choice-standings.ts  the standings the build baked into the page
   links.ts                  links to the repository's issue forms
 docs/
   style.md                  the diorama style every square follows by default
   booth-ideas.md            ideas and tips for a booth request
   elf-engineer.md           the Elf Engineer badge, and how to get it
+levels/
+  jedi4ever/                the starter level, and the pattern to copy
+    level.ts
+    squares/<id>/square.ts
+    README.md
 booths/
   jedi4ever/                a finished booth, and the pattern to copy
     booth.ts
@@ -129,6 +147,10 @@ scripts/
                             before the deploy's build (previews show the elf fallback)
   elf-engineer.ts           the Elf Engineer badge's rules: the form, the check,
                             the tiers and the holders (plain functions)
+  peoples-choice.ts         the People's Choice standings from its discussion's comments:
+                            one vote per account, not the owner's (plain functions)
+  write-peoples-choice.ts   adds a comment for each new entry, reads the votes and writes
+                            the standings before the deploy's build (previews have none)
 ```
 
 ## Working on an issue
@@ -137,7 +159,9 @@ scripts/
 stays inside `booths/<issue author's login, in lower case>/`. The **Booth
 ownership** check fails the pull request otherwise, so:
 
-- Never edit another person's booth, `attractions/`, `northpole/`, `src/`,
+- A participant's level, `levels/<issue author's login, in lower case>/`, is
+  theirs too, for a level request (see **Levels**).
+- Never edit another person's booth or level, `attractions/`, `northpole/`, `src/`,
   `plugins/`, `package*.json`, `.github/`, `eslint.config.js`, `tessl.json`,
   `.tessl-code-review.yml`, `.tessl/` or anything else outside that folder,
   even when it looks like the issue needs it. If the issue can't be done inside
@@ -309,18 +333,89 @@ where its site stood. If the login isn't there, or the file can't be read,
 write no `plot.json`: the booth takes the next free plot. A change to an
 existing booth never adds or changes its `plot.json`.
 
-**The kill switch**, `northpole/disabled.json`, has a list of booth logins and
-a separate list of attraction ids. A square in either shows "Closed for
-repairs" and its `draw` never runs. Only maintainers change it.
+**The kill switch**, `northpole/disabled.json`, has a list of booth logins, a
+separate list of attraction ids, and a list of level logins. A square in either
+of the first two shows "Closed for repairs" and its `draw` never runs. A level
+in the third shows "Closed for repairs" on its platform, and none of its
+squares run. Only maintainers change it.
+
+## Levels
+
+A participant's **level** is a whole patch of the North Pole of their own,
+`levels/<their login>/`, theirs exactly like their booth: the **Booth
+ownership** check lets them change `booths/<login>/` and `levels/<login>/`, and
+nothing else. Visitors reach it from the **sleigh station**, one platform per
+level along the main path by the entrance (`platformPlot` in
+`northpole/world.ts`): E, Enter or a click on a platform takes the sleigh there,
+and `#/level/<login>` opens it directly. Inside, the map walks the level's own
+world, `#/level/<login>?square=<id>` puts the player in front of one of its
+squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
+`#/`.
+
+**A level is a folder** with:
+
+1. `level.ts`, whose default export is a `NorthPoleLevel` from
+   `northpole/level.ts`, with `id` set to the folder name. It is **plain
+   data**, which the page reads itself: only
+   `import type { NorthPoleLevel } from '../../northpole/level'`,
+   `const level: NorthPoleLevel = { ... }` and `export default level`, with
+   nothing inside but objects, arrays, strings, numbers and booleans. ESLint
+   allows nothing else in it: no other statements, names, calls, functions,
+   getters, spreads, property reads or imports. It holds:
+   - `name`, a one-sentence `description`, and a `theme`, one of
+     `LEVEL_THEMES` (`dusk`, `aurora-night`, `candy-cane`, `frozen-lake`,
+     `gingerbread`), which tints its sky and colours its signs;
+   - `size`, an odd number of tiles each way from 9 to 41. Tiles run from
+     `(0, 0)` at the level's north corner to `(size - 1, size - 1)`, `x` down
+     to the right on screen and `y` down to the left;
+   - `ground`, areas of `snow`, `ice`, `path`, `water` or `bridge`, laid in
+     order (ice and water can't be walked on, bridges can), and `blocked`,
+     areas nobody can walk on;
+   - `props`, each a `kind` from the catalogue `LEVEL_PROPS` with its north
+     corner `x`, `y` and an optional `variant` from 0 to 1. `pond` is the one
+     prop that's ground: a 5 by 4 sheet of ice that skaters go round;
+   - `arrival`, the tile visitors arrive on, and `exits`, at least one sleigh
+     home, each a 2 by 2 platform at `x`, `y` with its door at `(x + 2, y)`;
+   - `squares`, up to 8, each `{ id, x, y }`: a 2 by 2 stall with its door at
+     `(x + 2, y)`.
+2. `squares/<id>/square.ts` for each of its squares, a `NorthPoleSquare` with
+   `id` set to its folder name, built exactly like a booth (the drawing
+   contract, the theme, the diorama style, a `stall`, the house rules), with
+   its imports four folders up: `../../../../northpole/`. Each one runs
+   sandboxed in its own frame and worker, like a booth. Pure logic goes in
+   plain exported functions with a `square.test.ts` beside it.
+3. A `README.md` that says what the level is about and what's in it.
+4. The whole folder, its squares included, within the size budget in
+   `scripts/square-size.ts`.
+
+**Validation.** `validateLevel` in `northpole/level.ts` checks a level before
+anything is drawn: the size limits, only known tiles and catalogue props,
+nothing on water or ice or on top of anything else, every square folder placed
+and every placed square with a folder, and, by pathfinding, every square and
+exit reachable from the arrival point. A level that fails shows "Closed for
+repairs" on its platform, and the reason goes in the console once.
+`northpole/level.test.ts` runs it on every real level, so a broken one fails
+`npm run check`.
+
+**Asking for a level.** One issue form, **Your level**, labelled
+`level-request`, for a new level and for changing one alike, assessed by
+`plugins/north-pole/skills/assess-booth-request` with the booth rules: the
+author's own folder only, family-friendly, and buildable as level data plus
+sandboxed squares. The latest request wins: accepting one closes the author's
+older open `level-request` issues as superseded. Accepted level requests are
+built by the `implement-level` action, and a level's pull request waits for a
+maintainer rather than merging on its own. [Level ideas](docs/level-ideas.md)
+helps participants write one. `levels/jedi4ever/` is the starter level to copy.
 
 **In the pull request,** say what changed, and give a preview link for every
-booth and attraction it changes, so a reviewer can open each one in a click.
+booth, attraction and level it changes, so a reviewer can open each one in a click.
 Once the build passes, the site publishes the pull request at
 `https://<owner>.github.io/<repo>/previews/pr-<number>/`, and a **Preview**
 comment lists those links. In the description, under **Preview**, list each
 changed square as its own link into that preview:
-`…/previews/pr-<number>/#/booth/<login>` or
-`…/previews/pr-<number>/#/attraction/<id>`. Open the pull request first, then
+`…/previews/pr-<number>/#/booth/<login>`,
+`…/previews/pr-<number>/#/attraction/<id>` or
+`…/previews/pr-<number>/#/level/<login>`. Open the pull request first, then
 edit its description to add them, since the number comes with it. Locally it's
 `npm run dev` and the same `#/booth/<login>` or `#/attraction/<id>`.
 

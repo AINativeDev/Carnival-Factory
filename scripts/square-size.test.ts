@@ -49,8 +49,8 @@ describe('overBudget', () => {
   });
 });
 
-describe('every booth and attraction', () => {
-  for (const kind of ['booths', 'attractions']) {
+describe('every booth, attraction and level', () => {
+  for (const kind of ['booths', 'attractions', 'levels']) {
     for (const name of readdirSync(join(root, kind))) {
       const dir = join(root, kind, name);
       if (!statSync(dir).isDirectory()) continue;

@@ -1,4 +1,6 @@
 import { badgeFor, factoryUrl } from '../northpole/badges';
+import { voteUrl } from '../northpole/peoples-choice';
+import { PEOPLES_CHOICE } from '../northpole/peoples-choice-standings';
 import {
   BADGE_REQUEST_URL,
   BUILD_YOUR_OWN_URL,
@@ -23,7 +25,7 @@ import {
   renderCredits,
   renderHistory,
 } from './history';
-import { deepLink } from './route';
+import { deepLink, levelLink } from './route';
 
 export interface VisitHudOptions {
   kind: SquareKind;
@@ -38,6 +40,8 @@ export interface VisitHudOptions {
   avatar?: string;
   /** Says the visitor shared this booth as theirs, so the map knows who they are. */
   onMine?(): void;
+  /** The owner of the level this square is in, for one of a level's own squares. */
+  level?: string;
 }
 
 /** The "Keep me posted" link: to the real form once it's set, or to the placeholder page. */
@@ -77,6 +81,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Build your own</a>
     </p>
     <p class="visit-factory" hidden><a target="_blank" rel="noopener"></a></p>
+    <p class="visit-vote" hidden><a target="_blank" rel="noopener">Vote for this booth</a> in People's Choice</p>
     <p class="visit-description" id="visit-description"></p>
     <div class="visit-actions">
       <button class="visit-copy" type="button">Share</button>
@@ -107,10 +112,14 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     <p class="visit-foot">Next North Pole event? ${KEEP_POSTED_LINK}</p>`;
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
 
-  const owner = kind === 'attraction' ? '' : `@${square.id}`;
-  // Who made it and who improved it, from the build's history: a booth without any credits its owner.
-  // The owner's portrait leads the line when the build has it.
-  const credits = creditsFor(SQUARE_HISTORY, kind, square.id);
+  const { level } = options;
+  const login = level ?? square.id;
+  const owner = kind === 'attraction' && !level ? '' : `@${login}`;
+  // Who made it and who improved it, from the build's history: a booth without any credits its owner,
+  // and a level's square credits the level's owner. The owner's portrait leads the line when the build has it.
+  const credits = level
+    ? { maker: level, improvers: [] }
+    : creditsFor(SQUARE_HISTORY, kind, square.id);
   const ownerLine = $<HTMLElement>('.visit-owner');
   if (credits) renderCredits(ownerLine, credits);
   if (credits && options.avatar) {
@@ -123,8 +132,10 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   }
   ownerLine.hidden = !credits;
   const remix = $<HTMLAnchorElement>('.visit-remix-link');
-  remix.hidden = kind !== 'booth';
-  $<HTMLAnchorElement>('.visit-map').href = deepLink(kind, square.id);
+  remix.hidden = kind !== 'booth' || !!level;
+  const map = $<HTMLAnchorElement>('.visit-map');
+  map.href = level ? levelLink(level, square.id) : deepLink(kind, square.id);
+  if (level) map.textContent = 'See it in the level';
 
   // An Elf Engineer's booth links to the factory on their own repository.
   const badge = kind === 'booth' ? badgeFor(square.id) : undefined;
@@ -135,8 +146,15 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     $<HTMLElement>('.visit-factory').hidden = false;
   }
 
+  // A booth's place in the People's Choice discussion, where a 👍 on its comment is a vote.
+  const vote = kind === 'booth' ? voteUrl(square.id, PEOPLES_CHOICE) : undefined;
+  if (vote) {
+    $<HTMLAnchorElement>('.visit-vote a').href = vote;
+    $<HTMLElement>('.visit-vote').hidden = false;
+  }
+
   // How was this built: open beside the room, collapsed on a phone, where it sits below it.
-  const entries = historyOf(SQUARE_HISTORY, kind, square.id);
+  const entries = level ? [] : historyOf(SQUARE_HISTORY, kind, square.id);
   renderHistory($('.history-list'), entries);
   const empty = $<HTMLElement>('.history-empty');
   empty.textContent = emptyHistoryText(SQUARE_HISTORY);
@@ -151,14 +169,19 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   }
 
   const help = $('.visit-help');
-  if (kind === 'booth') {
+  if (level) {
+    help.innerHTML = `<p>This square belongs to a participant's own level. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> in the North Pole.</p>`;
+  } else if (kind === 'booth') {
     help.innerHTML = `<p><span class="visit-ask">Is this yours?</span> <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask for a change</a> <span aria-hidden="true">·</span> <button class="visit-mine" type="button">Share it as yours</button></p>
       <p><span class="visit-ask">Built your own factory?</span> <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Get the Elf Engineer badge</a></p>`;
   } else {
     help.innerHTML = `<p>Attractions belong to the North Pole, so only its maintainers change them. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.</p>`;
   }
 
-  const link = shareLink(kind, square.id, document.baseURI);
+  // A level's square has no share page of its own: its link opens the level in front of it.
+  const link = level
+    ? new URL(levelLink(level, square.id), document.baseURI).href
+    : shareLink(kind, square.id, document.baseURI);
   const text = $<HTMLTextAreaElement>('.visit-share-text');
   let mine = false;
   let edited = false;

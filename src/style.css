@@ -18,6 +18,7 @@ a {
 }
 
 .banner {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,6 +41,43 @@ a {
   font-weight: bold;
   white-space: nowrap;
   text-decoration: none;
+}
+
+/* The way to the repository: every booth starts there, as an issue. */
+.repo-link {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-night);
+  color: var(--color-snow);
+  font-size: 14px;
+  font-weight: bold;
+  text-decoration: none;
+  transform: translateY(-50%);
+}
+
+.repo-link:hover,
+.repo-link:focus-visible {
+  color: var(--color-gold);
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* On a phone, just the mark, so the title keeps the middle. */
+@media (max-width: 719px) {
+  .repo-link {
+    right: 8px;
+    padding: 5px;
+  }
+
+  .repo-link-text {
+    display: none;
+  }
 }
 
 /* On the map, the diorama fills the window below the banner, and the page never scrolls. */
@@ -133,7 +171,8 @@ body[data-view='map'] .map {
   display: block;
   width: 100%;
   height: 100%;
-  touch-action: manipulation;
+  /* A finger drags the map round, so the page doesn't scroll or zoom under it. */
+  touch-action: none;
 }
 
 .map-canvas:focus-visible {
@@ -273,6 +312,34 @@ body[data-view='map'] .map {
   font-weight: bold;
 }
 
+/* Inside a square or on the factory's numbers, the way back to the map takes the pill's corner. */
+.hud-back {
+  top: 12px;
+  left: 12px;
+  display: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font: bold 14px var(--font-family);
+  cursor: pointer;
+}
+
+.map-frame[data-visiting] .hud-back,
+.map-frame[data-factory] .hud-back {
+  display: block;
+}
+
+.map-frame[data-visiting] .hud-tessl,
+.map-frame[data-factory] .hud-tessl {
+  display: none;
+}
+
+.hud-back:hover,
+.hud-back:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
 /* The pill opens the factory's numbers. */
 a.hud-tessl {
   color: var(--color-ink);
@@ -296,6 +363,23 @@ a.hud-tessl:focus-visible {
 
 .hud-booths:not([open]) {
   width: auto;
+}
+
+/* A level's own card: its name, its owner, what it is, and the way home. */
+.hud-level {
+  top: 12px;
+  right: 12px;
+  width: 260px;
+  max-width: calc(100% - 24px);
+}
+
+.hud-level h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.hud-level p {
+  margin: 4px 0;
 }
 
 .hud-group {
@@ -535,6 +619,7 @@ kbd {
 .map-frame[data-visiting] .map-prompt,
 .map-frame[data-visiting] .hud-actions,
 .map-frame[data-visiting] .hud-booths,
+.map-frame[data-visiting] .hud-level,
 .map-frame[data-visiting] .hud-controls,
 .map-frame[data-factory] .hud-booths,
 .map-frame[data-factory] .hud-controls {
@@ -957,4 +1042,61 @@ kbd {
   .factory {
     animation: none;
   }
+}
+
+/* People's Choice, below the map: one line folded, the standings open. */
+.choice {
+  flex: none;
+  padding: 6px 16px;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-size: 14px;
+}
+
+.choice summary {
+  cursor: pointer;
+}
+
+.choice-title {
+  font-weight: bold;
+}
+
+.choice-body {
+  max-height: 40vh;
+  overflow: auto;
+}
+
+.choice-note {
+  margin: 6px 0;
+}
+
+.choice-lists {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+}
+
+.choice-group {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.choice-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choice-place {
+  display: inline-block;
+  min-width: 2em;
+}
+
+.choice-votes {
+  opacity: 0.75;
+}
+
+.visit-vote {
+  margin: 6px 0;
+  font-size: 14px;
 }

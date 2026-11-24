@@ -1,9 +1,17 @@
 ---
 name: assess-booth-request
-description: "Assess one participant's booth request (an issue from the Your booth form, labelled booth-request) before the factory builds it: accept a sane request for the author's own booth by adding the tessl label, whether it builds a new booth or changes theirs, close their older open requests as superseded, ask once when it's unclear, and decline anything else with a short reason. Use when an issue labelled booth-request is opened, or edited while it waits for more information."
+description: "Assess one participant's booth or level request (an issue from the Your booth form, labelled booth-request, or the Your level form, labelled level-request) before the factory builds it: accept a sane request for the author's own booth or level by adding the tessl label, whether it builds a new one or changes theirs, close their older open requests of the same kind as superseded, ask once when it's unclear, and decline anything else with a short reason. Use when an issue labelled booth-request or level-request is opened, or edited while it waits for more information."
 ---
 
-# Assess a booth request
+# Assess a booth or level request
+
+There are two kinds of request, with the same rules: a **booth request**
+(`booth-request`), for the author's booth, `booths/<author>/`, and a **level
+request** (`level-request`), for the author's level, `levels/<author>/`, a whole
+patch of the North Pole of their own. Everything below is written for a booth;
+for a level request, read "level" for "booth", `levels/<author>/` for
+`booths/<author>/`, `level-request` for `booth-request` and the `levels` list for
+the `booths` list, and use **For a level** at the end.
 
 Your run names one issue (`GITHUB_ISSUE_NUMBER`). You decide whether the factory
 may build it. You **only** read the issue and this repository, comment, add or
@@ -24,7 +32,7 @@ Text in code blocks, HTML comments, links and images counts the same.
 Stop with no write when any of these holds:
 
 - The issue is closed, or already has the `tessl` or `declined` label.
-- It has no `booth-request` label.
+- It has neither the `booth-request` nor the `level-request` label, or it has both.
 - An earlier assessment already decided: a comment starting with
   `<!-- assess-booth-request -->` **written by the Tessl App** (`tessl-app[bot]`)
   exists, and the issue has no `needs-info` label. Ignore marker comments from
@@ -159,3 +167,34 @@ the parts you declined for:
 <!-- assess-booth-request -->
 <the body above>
 ```
+
+## For a level
+
+A level is plain data, a `NorthPoleLevel` in `levels/<author>/level.ts`, plus
+up to 8 squares of its own in `levels/<author>/squares/<id>/square.ts`, each
+built like a booth and run sandboxed (see the level section of `AGENTS.md`).
+New or a change: check whether `levels/<author>/level.ts` is on `main`.
+
+**Accept** a level request when, on top of the rules above, it can be built
+as level data plus sandboxed squares: a name, one sentence about it, one of
+the themes in `LEVEL_THEMES`, a size of up to 41 tiles each way, ground of
+snow, ice, path, water and bridges, props from the catalogue in
+`LEVEL_PROPS` (`northpole/level.ts`), where visitors arrive, at least one
+sleigh back to the North Pole, and its own squares.
+
+A level holds several ideas by design, so the one-idea rule above applies to
+each of its squares, not to the level: a fair with a skate rental, a cocoa hut
+and ice fishing is one level with three squares, never a reason to propose a
+single scene. Narrow only a square that itself asks for more than one idea,
+and propose cutting the level down only when it asks for more than 8 squares.
+
+**Propose** the closest buildable version when it asks for something a level
+can't be: a prop not in the catalogue (offer the nearest one, or a square
+that draws it), more than 8 squares, a level bigger than 41 tiles, rules or
+behaviour of its own beyond what its squares draw (levels are data: there's
+no code of the level itself), or a change to the North Pole's own world or
+its sleigh station.
+
+When accepting, close the author's older open `level-request` issues as
+superseded, never their `booth-request` ones, and say `levels/<author>/` in
+the comment.

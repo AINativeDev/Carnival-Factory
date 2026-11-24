@@ -24,6 +24,11 @@ export function boothFolder(login: string): string {
   return `booths/${login.toLowerCase()}/`;
 }
 
+/** A participant's level: their whole world of their own, theirs like their booth. */
+export function levelFolder(login: string): string {
+  return `levels/${login.toLowerCase()}/`;
+}
+
 export function isMaintainer(person: Pick<Author, 'id'>): boolean {
   return MAINTAINERS.some((maintainer) => maintainer.id === person.id);
 }
@@ -78,11 +83,11 @@ export function boothOwner(author: Author, issueAuthor: Author | undefined): Aut
   return undefined;
 }
 
-/** The files a pull request touches outside its owner's booth. Empty means it may merge. */
+/** The files a pull request touches outside its owner's booth and level. Empty means it may merge. */
 export function filesOutsideBooth(owner: Author, files: readonly string[]): string[] {
   if (isMaintainer(owner)) return [];
-  const folder = boothFolder(owner.login);
-  return files.filter((file) => !file.startsWith(folder));
+  const folders = [boothFolder(owner.login), levelFolder(owner.login)];
+  return files.filter((file) => !folders.some((folder) => file.startsWith(folder)));
 }
 
 /**

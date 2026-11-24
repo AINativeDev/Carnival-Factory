@@ -55,9 +55,11 @@ export interface Thing extends Box {
 
 /**
  * What stands on a plot: an attraction, a participant's booth, the
- * construction site of a booth being built, or nothing yet.
+ * construction site of a booth being built, or nothing yet. At the sleigh
+ * station, a platform whose sleigh goes to one participant's level, and inside
+ * a level, the sleigh back to the North Pole.
  */
-export type PlotKind = 'attraction' | 'booth' | 'site' | 'open';
+export type PlotKind = 'attraction' | 'booth' | 'site' | 'open' | 'platform' | 'exit';
 
 export interface Plot extends Box {
   kind: PlotKind;
@@ -238,6 +240,23 @@ export interface WorldExtras {
   files?: Record<string, PlotFile>;
   /** The accepted booth requests not merged yet, from `pending.json`. */
   pending?: readonly PendingBooth[];
+  /** The logins with a level, each with a platform at the sleigh station. */
+  levels?: readonly string[];
+}
+
+/** How far apart the sleigh station's platforms are along the main path, in tiles. */
+const PLATFORM_STEP = 3;
+
+/**
+ * The sleigh station's platform `number`: 2 by 2, along the south side of the
+ * main path from the east avenue's end to the entrance, with its door on the path.
+ */
+export function platformPlot(
+  number: number,
+  avenueEnd: number,
+): Pick<Plot, 'x' | 'y' | 'w' | 'h' | 'door'> {
+  const x = avenueEnd + 2 + PLATFORM_STEP * number;
+  return { x, y: 2, w: 2, h: 2, door: { x, y: 1 } };
 }
 
 /** Builds the world for these squares, in the order their folders sort. */
@@ -324,9 +343,16 @@ export function buildWorld(
     place('lamp', { x, y, w: 1, h: 1 });
   }
 
+  // The sleigh station, one platform for each level, along the main path.
+  const levels = extras.levels ?? [];
+  levels.forEach((login, number) =>
+    plots.push({ kind: 'platform', id: login, number, ...platformPlot(number, avenueEnd) }),
+  );
+  const station = levels.length ? avenueEnd + 2 + PLATFORM_STEP * levels.length : 0;
+
   // The island's edge: the forest round the town, and the fence round that.
   // The sights end 10 tiles past their first row, and the stream runs on into the forest.
-  const extent = Math.max(avenueEnd, sights + 11) + FOREST;
+  const extent = Math.max(avenueEnd, station, sights + 11) + FOREST;
 
   // The main path runs on from the east avenue to the entrance arch at the
   // front of the island, under bunting strung between poles.
@@ -359,7 +385,7 @@ export function buildWorld(
   }
 
   for (const plot of plots) {
-    keep(plot, plot.kind === 'attraction' ? 1 : 0);
+    keep(plot, plot.kind === 'attraction' || plot.kind === 'platform' ? 1 : 0);
     keep({ ...plot.door, w: 1, h: 1 });
     if (plot.kind === 'attraction') lay({ ...plot.door, w: 1, h: 1 }, 'path');
     if (plot.kind !== 'open')
