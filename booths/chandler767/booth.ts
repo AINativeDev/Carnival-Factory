@@ -158,7 +158,7 @@ const HUT = { gx: 5, gy: 3, w: 13, d: 10, h: 9 };
 const HUT_FACE = HUT.gy + HUT.d;
 
 function seller(ctx: Ctx) {
-  const c = iso(9.5, HUT_FACE, 3.2);
+  const c = iso(9.5, HUT_FACE, 2.6);
   // Body in the hatch, a berry jumper and a cream hat.
   ctx.fillStyle = colors.berry;
   ctx.beginPath();
@@ -218,17 +218,17 @@ function hut(ctx: Ctx, time: number) {
     ctx,
     iso(6.5, HUT_FACE, 7),
     iso(13, HUT_FACE, 7),
-    iso(13, HUT_FACE, 2.5),
-    iso(6.5, HUT_FACE, 2.5),
+    iso(13, HUT_FACE, 1.8),
+    iso(6.5, HUT_FACE, 1.8),
   );
   ctx.globalAlpha = 1;
   seller(ctx);
-  // The counter, with a waffle on it.
-  box(ctx, 6.5, HUT_FACE, 6.5, 2.5, 2.5, colors.snow, colors.wood, colors.cocoa);
-  const w = iso(9, HUT_FACE + 1.2, 3.1);
+  // The counter, with a waffle on it, low enough to show the seller above it.
+  box(ctx, 6.5, HUT_FACE, 6.5, 2.5, 1.8, colors.snow, colors.wood, colors.cocoa);
+  const w = iso(9, HUT_FACE + 1.2, 2.4);
   waffle(ctx, w.x, w.y);
 
-  // The striped awning over the hatch.
+  // The striped awning over the hatch: short and high, so the seller's face shows under it.
   const colours = [colors.berry, colors.cream];
   for (let k = 0; k < 4; k++) {
     const x0 = 6 + k * 1.75;
@@ -236,10 +236,10 @@ function hut(ctx: Ctx, time: number) {
     ctx.fillStyle = colours[k % 2];
     quad(
       ctx,
-      iso(x0, HUT_FACE, 8),
-      iso(x1, HUT_FACE, 8),
-      iso(x1, HUT_FACE + 3, 6),
-      iso(x0, HUT_FACE + 3, 6),
+      iso(x0, HUT_FACE, HUT.h),
+      iso(x1, HUT_FACE, HUT.h),
+      iso(x1, HUT_FACE + 2, HUT.h - 1),
+      iso(x0, HUT_FACE + 2, HUT.h - 1),
     );
   }
 
