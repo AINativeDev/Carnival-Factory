@@ -11,12 +11,12 @@ clicks or keys, so an elf does it for them:
 - **Carrying**: the finished top hops across to the test mat.
 - **Testing**: on the mat the top spins, its stripes sliding round the body,
   and slowly loses speed. As it slows it starts to lean and wobble, then tips
-  over and lies still until the next round.
+  over and lies on its side on the mat until the next round.
 - **Cosy details**: a shelf of finished striped tops behind the bench, a lamp
   on the bench and a few slowly twinkling stars.
 
 Everything is drawn from `time` on a 64 by 64 board of pixels. The timing of the
-round and the spin (`momentAt`, `builtParts`, `spinAngle`, `spinSpeed`,
-`wobble`) are plain functions in `booth.ts`, tested in `booth.test.ts`.
+round, the carry, the spin and the tip-over (`momentAt`, `builtParts`,
+`carryTip`, `spinAngle`, `spinSpeed`, `wobble`, `restPose`) are plain functions in `booth.ts`, tested in `booth.test.ts`.
 
 Preview it at `#/booth/sjmaple`.

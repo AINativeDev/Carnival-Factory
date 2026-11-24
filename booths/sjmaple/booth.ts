@@ -95,6 +95,29 @@ export function wobble(ms: number): number {
   return Math.sin(ms / 140) * 3.5 * s ** 3;
 }
 
+/** Where the top is, tip first, while it is carried from `from` to `to`, `progress` 0 to 1. */
+export function carryTip(
+  progress: number,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): { x: number; y: number } {
+  const t = ease(progress);
+  const hop = Math.sin(t * Math.PI) * 8;
+  return {
+    x: Math.round(from.x + (to.x - from.x) * t),
+    y: Math.round(from.y + (to.y - from.y) * t - hop),
+  };
+}
+
+/**
+ * How the stopped top lies, `progress` 0 to 1 through its rest: it leans
+ * further for a moment, tip still on the mat, then lies on its side.
+ */
+export function restPose(progress: number): { lying: boolean; lean: number } {
+  const settle = ease(progress * 4);
+  return settle < 1 ? { lying: false, lean: 2 + settle * 3 } : { lying: true, lean: 0 };
+}
+
 /** Half the top's width at each row, tip first. */
 export const BODY_ROWS: readonly number[] = [0, 1, 2, 3, 4, 4, 4, 3, 2];
 
@@ -153,6 +176,27 @@ function top(
     for (let s = 0; s < stem; s++) plot(colors.wood, x + shift, y - rows - s);
     if (stem === 3) plot(colors.cocoa, x + shift - 1, y - rows - 3, 3, 1);
   }
+}
+
+/**
+ * A whole top lying on its side on the ground at `ground`, tip to the left at
+ * `x`, handle to the right. Each body row of an upright top becomes a column.
+ */
+function lyingTop(plot: Plot, x: number, ground: number, angle: number, color: string) {
+  const rows = BODY_ROWS.length;
+  const axis = ground - Math.max(...BODY_ROWS);
+  for (let c = 0; c < rows; c++) {
+    const half = BODY_ROWS[c];
+    for (let dy = -half; dy <= half; dy++) {
+      const u = half ? dy / (half + 0.5) : 0;
+      const around = Math.asin(Math.max(-1, Math.min(1, u))) + angle;
+      const striped = Math.sin(around * 2) > 0.25 && c > 1 && c < rows - 1;
+      const base = striped ? color : dy <= 0 ? colors.gold : colors.gingerbread;
+      plot(base, x + c, axis + dy);
+    }
+  }
+  plot(colors.wood, x + rows, axis, 3, 1);
+  plot(colors.cocoa, x + rows + 3, axis - 1, 1, 3);
 }
 
 const booth: NorthPoleSquare = {
@@ -246,18 +290,9 @@ const booth: NorthPoleSquare = {
       top(plot, benchTip.x, benchTip.y, builtParts(moment), 0, 0, color);
       if (hammer(time) > 0.85) plot(colors.glow, benchTip.x + 5, benchTip.y - 5);
     } else if (stage === 'carry') {
-      const t = ease(progress);
-      const hop = Math.sin(t * Math.PI) * 8;
-      plot(colors.shadow, Math.round(benchTip.x + (matTip.x - benchTip.x) * t) - 4, mat.y, 9, 1);
-      top(
-        plot,
-        Math.round(benchTip.x + (matTip.x - benchTip.x) * t),
-        Math.round(benchTip.y + (matTip.y - benchTip.y) * t - hop),
-        3,
-        0,
-        0,
-        color,
-      );
+      const tip = carryTip(progress, benchTip, matTip);
+      plot(colors.shadow, tip.x - 4, mat.y, 9, 1);
+      top(plot, tip.x, tip.y, 3, 0, 0, color);
     } else {
       const ms = stage === 'spin' ? progress * SPIN_TIME : SPIN_TIME;
       const angle = spinAngle(ms);
@@ -274,10 +309,10 @@ const booth: NorthPoleSquare = {
         }
         top(plot, matTip.x, matTip.y, 3, angle, lean, color);
       } else {
-        // Lying still, tipped over on its side, until the next round.
-        const settle = ease(progress * 4);
-        const fall = Math.round(settle * 3);
-        top(plot, matTip.x, matTip.y - fall, 3, angle, 2 + settle * 3, color);
+        // Tipping over, then lying still on its side until the next round.
+        const pose = restPose(progress);
+        if (pose.lying) lyingTop(plot, matTip.x - 4, matTip.y, angle, color);
+        else top(plot, matTip.x, matTip.y, 3, angle, pose.lean, color);
       }
     }
 

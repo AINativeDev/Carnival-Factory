@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { builtParts, ease, LOOP, momentAt, spinAngle, spinSpeed, SPIN_TIME, wobble } from './booth';
+import {
+  builtParts,
+  carryTip,
+  ease,
+  LOOP,
+  momentAt,
+  PLACES,
+  restPose,
+  spinAngle,
+  spinSpeed,
+  SPIN_TIME,
+  wobble,
+} from './booth';
 
 describe('momentAt', () => {
   it('builds, carries, spins and rests, in that order', () => {
@@ -59,5 +71,34 @@ describe('ease', () => {
     expect(ease(-1)).toBe(0);
     expect(ease(2)).toBe(1);
     expect(ease(0.5)).toBe(0.5);
+  });
+});
+
+describe('carryTip', () => {
+  const from = { x: PLACES.bench.x - 2, y: PLACES.bench.y };
+  const to = PLACES.mat;
+
+  it('starts at the bench and ends on the mat', () => {
+    expect(carryTip(0, from, to)).toEqual(from);
+    expect(carryTip(1, from, to)).toEqual({ x: to.x, y: to.y });
+  });
+
+  it('moves steadily towards the mat and hops above both ends on the way', () => {
+    let lastX = from.x;
+    for (let p = 0; p <= 1; p += 0.05) {
+      const { x } = carryTip(p, from, to);
+      expect(x).toBeGreaterThanOrEqual(lastX);
+      lastX = x;
+    }
+    expect(carryTip(0.5, from, to).y).toBeLessThan(Math.min(from.y, to.y));
+  });
+});
+
+describe('restPose', () => {
+  it('leans further at first, then lies on its side for the rest of the round', () => {
+    expect(restPose(0)).toEqual({ lying: false, lean: 2 });
+    expect(restPose(0.1).lying).toBe(false);
+    expect(restPose(0.1).lean).toBeGreaterThan(2);
+    for (const p of [0.25, 0.5, 0.99]) expect(restPose(p).lying).toBe(true);
   });
 });
