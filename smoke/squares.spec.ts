@@ -283,6 +283,26 @@ test("Share copies a friendly line with the booth's share page, which unfurls an
   await expect(page.locator('.map-canvas')).toBeVisible();
 });
 
+test('the Elf Engineer badges and their snippets are plain files on the site', async ({
+  request,
+}) => {
+  for (const name of [
+    'elf-engineer',
+    'elf-engineer-bronze',
+    'elf-engineer-silver',
+    'elf-engineer-gold',
+  ]) {
+    const badge = await request.get(`badges/${name}.svg`);
+    expect(badge.ok()).toBe(true);
+    const svg = await badge.text();
+    expect(svg).toContain('Elf Engineer');
+    expect(svg).not.toMatch(/<script|href=/i);
+  }
+  const page = await (await request.get('badges/index.html')).text();
+  expect(page).toContain('badges/elf-engineer-gold.svg)]');
+  expect(page).not.toMatch(/<script/i);
+});
+
 const booths = squares.filter((square) => square.kind === 'booth').map((square) => square.id);
 const attractions = squares.filter((s) => s.kind === 'attraction').map((s) => s.id);
 const pinned = JSON.parse(readFileSync(join(root, 'northpole/plots.json'), 'utf8')) as PinnedPlots;

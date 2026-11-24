@@ -2,6 +2,9 @@ import { execSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vitest/config';
+import { cleanHolders } from './northpole/badges.ts';
+import { BADGE_REQUEST_URL } from './northpole/links.ts';
+import { badgePage } from './scripts/elf-engineer.ts';
 import { readSquareInfo, sharePage, siteUrl, type ShareKind } from './scripts/share-pages.ts';
 
 /** This build's id: the commit and the time, so every build differs. */
@@ -70,9 +73,35 @@ const sharePages: Plugin = {
   },
 };
 
+/**
+ * The Elf Engineer badge holders, baked into the page so it never asks the
+ * network: read from BADGE_HOLDERS_FILE, which the deploy writes from the
+ * accepted badge requests (scripts/badge-holders.ts), or none without it.
+ */
+const BADGE_HOLDERS = (() => {
+  const file = process.env.BADGE_HOLDERS_FILE;
+  return file && existsSync(file) ? cleanHolders(JSON.parse(readFileSync(file, 'utf8'))) : [];
+})();
+
+/** Writes badges/index.html: the Elf Engineer badges, and the Markdown to paste for each. */
+const badgePages: Plugin = {
+  name: 'badge-pages',
+  apply: 'build',
+  generateBundle() {
+    this.emitFile({
+      type: 'asset',
+      fileName: 'badges/index.html',
+      source: badgePage(siteUrl(process.env) ?? '', BADGE_REQUEST_URL),
+    });
+  },
+};
+
 export default defineConfig(({ command }) => ({
-  plugins: [versionFile, sharePages],
-  define: { __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev') },
+  plugins: [versionFile, sharePages, badgePages],
+  define: {
+    __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev'),
+    __BADGE_HOLDERS__: JSON.stringify(BADGE_HOLDERS),
+  },
   // Relative asset paths, so the build works on any fork's GitHub Pages URL.
   base: './',
   build: {
