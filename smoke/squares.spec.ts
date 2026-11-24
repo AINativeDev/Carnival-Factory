@@ -1,6 +1,7 @@
 import { mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
+import { CLAIM_URL } from '../northpole/links';
 import { middle } from '../northpole/render';
 import { buildWorld, toScreen, type PinnedPlots } from '../northpole/world';
 
@@ -224,7 +225,7 @@ test('pressing E at a booth opens it, and coming back puts the player there', as
   expect(problems).toEqual([]);
 });
 
-test('clicking an open plot opens the Claim your booth form', async ({ page, context }) => {
+test('clicking an open plot opens the form to claim a booth', async ({ page, context }) => {
   await context.route('https://github.com/**', (route) => route.fulfill({ body: 'claim form' }));
   await page.goto('#/?booth=jedi4ever');
   const canvas = page.locator('.map-canvas');
@@ -245,5 +246,5 @@ test('clicking an open plot opens the Claim your booth form', async ({ page, con
       y: box.height / 2 + sign.y - 50 - (player.y - 40),
     },
   });
-  expect((await form).url()).toContain('template=01-claim-your-booth.yml');
+  expect((await form).url()).toBe(CLAIM_URL);
 });
