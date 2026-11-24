@@ -51,6 +51,17 @@ describe('share pages', () => {
     expect(readSquareInfo('const b = { name: computed() }')).toEqual({});
   });
 
+  it("reads the square's own name, not an earlier object's", () => {
+    const source = `const GIFTS = [{ name: 'Stocking stuffer' }];\nconst a = {\n  id: 'gift-shop',\n  name: 'Gift Shop',\n  description: 'Gifts.',\n};`;
+    expect(readSquareInfo(source, 'gift-shop')).toEqual({
+      name: 'Gift Shop',
+      description: 'Gifts.',
+    });
+    // Without the id, or with one the source never sets, it reads the first.
+    expect(readSquareInfo(source).name).toBe('Stocking stuffer');
+    expect(readSquareInfo(source, 'elsewhere').name).toBe('Stocking stuffer');
+  });
+
   it('decodes escapes as the square itself sees them', () => {
     const source = String.raw`const b = { name: 'Snow☃man', description: 'One\ntwo' }`;
     expect(readSquareInfo(source)).toEqual({ name: 'Snow☃man', description: 'One\ntwo' });

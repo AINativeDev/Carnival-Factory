@@ -52,12 +52,22 @@ export function decodeLiteral(body: string): string {
 
 /**
  * A square's name and description, read from its module's source: the first
- * `name:` and `description:` set to a plain string literal, decoded. Either is
- * undefined when the source doesn't set it that way.
+ * `name:` and `description:` set to a plain string literal, decoded. Given the
+ * square's `id`, it reads them from after the `id:` that sets it, so an earlier
+ * object with a `name:` of its own, such as a list of gifts, isn't mistaken for
+ * the square. Either is undefined when the source doesn't set it that way.
  */
-export function readSquareInfo(source: string): { name?: string; description?: string } {
+export function readSquareInfo(
+  source: string,
+  id?: string,
+): { name?: string; description?: string } {
+  const literal = String.raw`(['"\`])((?:\\.|(?!\1)[^\\])*)\1`;
+  const own = id
+    ? source.search(new RegExp(String.raw`\bid:\s*(['"\`])${id.replace(/[^\w-]/g, '\\$&')}\1`))
+    : -1;
+  const from = own >= 0 ? source.slice(own) : source;
   const field = (key: string) => {
-    const match = source.match(new RegExp(`\\b${key}:\\s*(['"\`])((?:\\\\.|(?!\\1)[^\\\\])*)\\1`));
+    const match = from.match(new RegExp(`\\b${key}:\\s*${literal}`));
     return match ? decodeLiteral(match[2]) : undefined;
   };
   return { name: field('name'), description: field('description') };

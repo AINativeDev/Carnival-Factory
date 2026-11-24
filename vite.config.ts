@@ -61,7 +61,7 @@ const sharePages: Plugin = {
       for (const id of readdirSync(dir)) {
         const file = join(dir, id, `${kind}.ts`);
         if (!existsSync(file)) continue;
-        const info = readSquareInfo(readFileSync(file, 'utf8'));
+        const info = readSquareInfo(readFileSync(file, 'utf8'), id);
         const name = info.name ?? (kind === 'booth' ? `@${id}'s booth` : id);
         const description = off.has(id) ? 'Closed for repairs.' : (info.description ?? '');
         this.emitFile({
@@ -109,7 +109,7 @@ function squareNames(): Record<string, string> {
     for (const id of readdirSync(dir)) {
       const file = join(dir, id, `${kind}.ts`);
       if (!existsSync(file)) continue;
-      const name = readSquareInfo(readFileSync(file, 'utf8')).name;
+      const name = readSquareInfo(readFileSync(file, 'utf8'), id).name;
       if (name) names[`${kind}/${id}`] = name.slice(0, 80);
     }
   }

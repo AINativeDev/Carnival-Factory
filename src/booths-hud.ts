@@ -185,16 +185,6 @@ export function startBoothsPanel(
     return li;
   };
 
-  // Once a square's frame says its name, every entry for it shows that name.
-  for (const entry of entries)
-    options.whenNamed(entry.square, () => {
-      if (entry.square.name === entry.id) return;
-      entry.name = entry.square.name.slice(0, 80);
-      for (const button of panel.querySelectorAll<HTMLButtonElement>('.hud-go'))
-        if (button.dataset.kind === entry.kind && button.dataset.id === entry.id)
-          button.dispatchEvent(new Event('named'));
-    });
-
   const fill = (list: Element, items: readonly (typeof entries)[number][]) =>
     list.replaceChildren(...items.map((entry) => item(entry)));
 
@@ -275,12 +265,46 @@ export function startBoothsPanel(
     const searching = query.trim() !== '';
     results.hidden = !searching;
     sections.hidden = searching;
-    if (!searching) return;
+    if (!searching) {
+      found = [];
+      return;
+    }
     found = search(entries, query);
     $('.hud-results-title').textContent = heading('Results', found.length);
     fill($('.hud-found'), found);
   };
   input.addEventListener('input', showSearch);
+
+  /**
+   * Sorts and searches again by the names known now, keeping the page of All
+   * booths shown and the entry that has the focus.
+   */
+  const relist = () => {
+    const focused = document.activeElement as HTMLElement | null;
+    const had = focused?.classList.contains('hud-go') && panel.contains(focused);
+    const key = had && `${focused!.dataset.kind}:${focused!.dataset.id}`;
+    const list = had && focused!.closest('.hud-list');
+    fill($('.hud-attractions'), byName(attractions));
+    showAll();
+    showSearch();
+    if (!key || !list || focused!.isConnected) return;
+    for (const button of list.querySelectorAll<HTMLButtonElement>('.hud-go'))
+      if (`${button.dataset.kind}:${button.dataset.id}` === key) button.focus();
+  };
+
+  // Once a square's frame says its name, every entry for it shows that name,
+  // and the lists sorted or searched by name follow it.
+  for (const entry of entries)
+    options.whenNamed(entry.square, () => {
+      if (entry.square.name === entry.id) return;
+      const name = entry.square.name.slice(0, 80);
+      if (name === entry.name) return;
+      entry.name = name;
+      for (const button of panel.querySelectorAll<HTMLButtonElement>('.hud-go'))
+        if (button.dataset.kind === entry.kind && button.dataset.id === entry.id)
+          button.dispatchEvent(new Event('named'));
+      relist();
+    });
 
   /** The entries the arrow keys move through: the results while searching, otherwise every section shown. */
   const buttons = () =>

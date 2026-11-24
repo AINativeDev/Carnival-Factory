@@ -1140,11 +1140,15 @@ export function startMap(
     walkToOpenPlot() {
       if (visiting) options.onLeave();
       const way = nearestOpenPlot(world, player);
-      if (way) path = way.path;
+      if (!way) return;
+      // The open plot is where they're headed now, so its call to action is the one that shows.
+      select(undefined);
+      path = way.path;
     },
     claimNextDoor() {
       const way = nearestOpenPlot(world, player);
       if (!way) return;
+      select(undefined);
       path = way.path;
       claiming = way.plot;
       footprints = [];
