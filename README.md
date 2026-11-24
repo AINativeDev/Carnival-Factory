@@ -1,21 +1,44 @@
-# North Pole Carnival
+<h1 align="center">North Pole Carnival</h1>
 
-A Christmas carnival at the North Pole, built by a software factory. A ferris
-wheel, a reindeer carousel and a hot cocoa stand line the midway, and between
-them every participant owns one square of the map, their **booth**. Nobody
-writes the code by hand: you describe what you want in an issue, an agent
-builds it and opens a pull request, and once it passes its checks it lands on
-the map.
+<p align="center">
+  <strong>A Christmas carnival that a software factory builds, one booth at a time.</strong><br />
+  Describe your booth in an issue. An agent builds it, checks it and opens the pull request.
+</p>
+
+<h3 align="center">
+  <a href="https://ainativedev.github.io/Northpole-Carnival-Factory/">ainativedev.github.io/Northpole-Carnival-Factory</a>
+</h3>
+
+<p align="center">
+  <a href="https://ainativedev.github.io/Northpole-Carnival-Factory/"><img alt="Play the map" src="https://img.shields.io/badge/Play-the%20North%20Pole-d7263d" /></a>
+  <a href="https://github.com/AINativeDev/Northpole-Carnival-Factory/issues/new?template=01-your-booth.yml"><img alt="Ask for your booth" src="https://img.shields.io/badge/Ask%20for-your%20booth-1f6b45" /></a>
+  <a href="https://tessl.io"><img alt="Built with Tessl" src="https://img.shields.io/badge/Built%20with-Tessl-0f1b33" /></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-a98bff" /></a>
+</p>
+
+<p align="center">
+  <a href="https://ainativedev.github.io/Northpole-Carnival-Factory/">
+    <img alt="The North Pole Carnival map: a town square with a decorated tree, surrounded by a sleigh-ride coaster, a gingerbread fun house, a ferris wheel, a big top, a snowball toss and a hot cocoa stand, with a frozen stream and snowy pines" src="docs/north-pole.png" width="880" />
+  </a>
+</p>
+
+Every square on this map was built by a software factory. A ferris wheel, a
+reindeer carousel and a hot cocoa stand stand round the town square, and along
+the lanes every participant owns one square of their own, their **booth**.
+Nobody writes the code by hand. You describe what you want in an issue, an
+agent checks the request, builds it on a branch and opens a pull request with a
+preview, and code review checks the result before it lands on the map.
+
+Each booth runs sandboxed in its own frame, so the worst a booth can do is
+break itself.
 
 There are two ways to play:
 
 1. **[Build the North Pole Carnival together](#build-it-together).** Everyone
-   shares this repository and one factory. You claim a booth, ask for changes,
-   and watch the carnival grow as the room's requests land. It's the quickest
-   way to get the feel of a multiplayer factory, without stepping on anyone
-   else.
-2. **[Try it on your own](#try-it-on-your-own).** Fork the repository, run your
-   own factory on it, and be the maintainer: change the map, the attractions,
+   shares this repository and one factory. Ask for a booth, change it as often
+   as you like, and watch the carnival grow as everyone's requests land.
+2. **[Try it on your own](#try-it-on-your-own).** Fork the repository and run
+   your own factory on it as the maintainer: change the map, the attractions,
    the rules and the loops themselves.
 
 It's based on [Tessl Carnival](https://github.com/tesslio/tessl-carnival), the
