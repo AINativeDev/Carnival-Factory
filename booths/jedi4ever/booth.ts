@@ -53,6 +53,27 @@ export const PLACES = {
 export const HAMMER_X = 42;
 export const PAINT_X = 56;
 
+/** The toys the sign already counts when the page opens. */
+export const TOYS_AT_DAWN = 120;
+
+/** The sign counts one more toy every `TALLY` milliseconds. */
+export const TALLY = 3_000;
+
+/** How long the number bounces after it ticks up, in milliseconds. */
+export const BOUNCE = 500;
+
+/** How many toys the sign shows at `time`: one more every `TALLY`. */
+export function toysMade(time: number): number {
+  return TOYS_AT_DAWN + Math.floor(Math.max(0, time) / TALLY);
+}
+
+/** How high the number hops, 0 to 1, `since` ms after it last ticked: up fast, then settling. */
+export function bounceOf(since: number): number {
+  if (since < 0 || since >= BOUNCE) return 0;
+  const t = since / BOUNCE;
+  return Math.abs(Math.sin(t * Math.PI * 2)) * (1 - t);
+}
+
 /** Wraps `value` into [0, `span`), negative values included. */
 function wrap(value: number, span: number) {
   return ((value % span) + span) % span;
@@ -514,14 +535,93 @@ function penguin(ctx: Ctx, u: number, index: number, time: number, waving: boole
   ctx.restore();
 }
 
+/** How long the snow globe's snow swirls and settles after a tap, in milliseconds. */
+export const SWIRL = 4_000;
+const GLOBE = { x: 60, y: 75, r: 4.6 } as const;
+const FLAKES = 14;
+
+/** How wild the globe's snow is `since` milliseconds after a tap: 1 just tapped, 0 settled. */
+export function swirlOf(since: number): number {
+  return since >= 0 && since < SWIRL ? 1 - ease(since / SWIRL) : 0;
+}
+
+/** Whether `x`, `y` (in hundredths of the square) is on the snow globe. */
+export function onGlobe(x: number, y: number): boolean {
+  return Math.hypot(x - GLOBE.x, y - GLOBE.y - 1) <= GLOBE.r + 1.5;
+}
+
+/** Flake `index` in the globe, as -1 to 1 across and down from its middle, `since` a tap. */
+export function globeFlake(index: number, since: number): { x: number; y: number } {
+  const wild = swirlOf(since);
+  const rest = { x: ((index * 0.37) % 1) * 1.4 - 0.7, y: 0.78 - ((index * 0.13) % 0.12) };
+  if (wild === 0) return rest;
+  const angle = since / (260 + index * 20) + index * 2.1;
+  const radius = (0.25 + ((index * 0.17) % 0.55)) * wild;
+  const lift = wild * (0.1 + ((index * 0.29) % 0.7));
+  return {
+    x: rest.x * (1 - wild) + Math.cos(angle) * radius,
+    y: rest.y * (1 - wild) + (Math.sin(angle) * radius * 0.7 - lift + 0.2) * wild,
+  };
+}
+
+/** The shelf by the front, with the snow globe and its tiny reindeer on it. */
+function snowGlobe(ctx: Ctx, u: number, since: number) {
+  const { x, y, r } = GLOBE;
+  ctx.fillStyle = colors.wood;
+  ctx.fillRect((x - 9) * u, (y + 6.6) * u, 18 * u, 1.4 * u);
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect((x - 6) * u, (y + 8) * u, 1 * u, 2 * u);
+  ctx.fillRect((x + 5) * u, (y + 8) * u, 1 * u, 2 * u);
+  ctx.fillStyle = colors.berry;
+  ctx.fillRect((x - 3.8) * u, (y + 4.4) * u, 7.6 * u, 2.2 * u);
+  ctx.fillStyle = colors.gold;
+  ctx.fillRect((x - 3.8) * u, (y + 4.4) * u, 7.6 * u, 0.5 * u);
+  // The glass, glowing softly.
+  ctx.globalAlpha = 0.4 + 0.1 * swirlOf(since);
+  ctx.fillStyle = colors.glow;
+  circle(ctx, x * u, y * u, r * u);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = colors.snow;
+  ctx.lineWidth = 0.4 * u;
+  ctx.beginPath();
+  ctx.arc(x * u, y * u, r * u, 0, Math.PI * 2);
+  ctx.stroke();
+  // The reindeer: body, legs, head and antlers.
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect((x - 1.6) * u, (y + 1.2) * u, 3 * u, 1.5 * u);
+  ctx.fillRect((x - 1.4) * u, (y + 2.7) * u, 0.5 * u, 1.3 * u);
+  ctx.fillRect((x + 0.6) * u, (y + 2.7) * u, 0.5 * u, 1.3 * u);
+  circle(ctx, (x + 2) * u, (y + 0.2) * u, 0.9 * u);
+  ctx.fillRect((x + 1.4) * u, (y + 0.4) * u, 0.7 * u, 1.2 * u);
+  ctx.strokeStyle = colors.cocoa;
+  ctx.lineWidth = 0.3 * u;
+  ctx.beginPath();
+  ctx.moveTo((x + 2) * u, (y - 0.5) * u);
+  ctx.lineTo((x + 1.6) * u, (y - 1.8) * u);
+  ctx.moveTo((x + 2.2) * u, (y - 0.5) * u);
+  ctx.lineTo((x + 2.8) * u, (y - 1.8) * u);
+  ctx.stroke();
+  ctx.fillStyle = colors.berry;
+  circle(ctx, (x + 2.8) * u, (y + 0.4) * u, 0.3 * u);
+  // The snow.
+  ctx.fillStyle = colors.snow;
+  for (let i = 0; i < FLAKES; i++) {
+    const flake = globeFlake(i, since);
+    circle(ctx, (x + flake.x * (r - 0.8)) * u, (y + flake.y * (r - 0.8)) * u, 0.4 * u);
+  }
+}
+
 /** When each penguin was last tapped, so it can hop: the booth's one memory of the pointer. */
 const tapped: number[] = PENGUINS.map(() => -Infinity);
+/** When the snow globe was last tapped. */
+let globeTapped = -Infinity;
 
 /** Santa's toy factory: letters in, sorted, built into toys, checked and into the sleigh. */
 const booth: NorthPoleSquare = {
   id: 'jedi4ever',
   name: "Santa's Toy Factory",
   description: 'Letters in, toys out: the workshop that builds the whole North Pole.',
+  stall: { shape: 'cabin', roof: 'berry', trim: 'gold' },
   draw(ctx, size, time, pointer?: SquarePointer) {
     const u = size / 100;
     const letters = lettersAt(time);
@@ -540,6 +640,21 @@ const booth: NorthPoleSquare = {
     ctx.fillStyle = colors.aurora;
     circle(ctx, 67 * u, 32 * u, 2.4 * u);
     ctx.globalAlpha = 1;
+
+    // The wooden sign by the door, counting the toys made today.
+    const hop = bounceOf(wrap(time, TALLY)) * 1.8;
+    ctx.fillStyle = colors.cocoa;
+    ctx.fillRect(65 * u, 34.5 * u, 0.7 * u, 2 * u);
+    ctx.fillRect(76.3 * u, 34.5 * u, 0.7 * u, 2 * u);
+    ctx.fillStyle = colors.wood;
+    ctx.fillRect(63 * u, 36 * u, 16 * u, 10 * u);
+    ctx.strokeStyle = colors.gold;
+    ctx.lineWidth = 0.5 * u;
+    ctx.strokeRect(63.8 * u, 36.8 * u, 14.4 * u, 8.4 * u);
+    ctx.fillStyle = colors.cream;
+    words(ctx, 'toys today', 71 * u, 39 * u, 2.4 * u, 12 * u);
+    ctx.fillStyle = colors.glow;
+    words(ctx, String(toysMade(time)), 71 * u, (42.6 - hop) * u, 3.8 * u, 12 * u);
 
     // The sorting elf, looking letters over with a magnifying glass.
     const sorting = letters.find((l) => l.stage === 'sort');
@@ -675,6 +790,10 @@ const booth: NorthPoleSquare = {
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
+
+    // The snow globe swirls when tapped.
+    if (pointer && pointer.presses > 0 && onGlobe(pointer.x / u, pointer.y / u)) globeTapped = time;
+    snowGlobe(ctx, u, time - globeTapped);
 
     // The penguins on the floor: one waves while the pointer is over it, and hops when tapped.
     const lifts = tapped.map((at) => hopHeight(time - at));

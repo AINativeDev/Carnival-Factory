@@ -16,9 +16,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Two jobs on two runners: the tests run a booth's test code, so they never
-  # share a machine with the files that get published. "Deploy to GitHub
-  # Pages" only places a preview when the whole run succeeded, tests included.
+  # The build and the smoke test run on separate runners, so code the smoke
+  # test plays never shares a machine with the files that get published. Lint,
+  # types and tests run once, in CI's check job.
   build:
     # Outside pull requests are closed (see outside-pull-requests.yml), and
     # their previews would publish code nobody here wrote.
@@ -29,6 +29,8 @@ jobs:
         with:
           # Keep the token out of .git/config, where the code that runs next could read it.
           persist-credentials: false
+          # The whole history, so the build can tell when each booth first appeared.
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
@@ -41,21 +43,6 @@ jobs:
           path: dist
           retention-days: 7
 
-  test:
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          # Keep the token out of .git/config, where the code that runs next could read it.
-          persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run check
-
   # Every booth and attraction in a real browser, in its real sandbox. Its
   # screenshots go in the pull request's preview comment.
   smoke:
@@ -66,12 +53,21 @@ jobs:
         with:
           # Keep the token out of .git/config, where the code that runs next could read it.
           persist-credentials: false
+          # The merge commit's first parent is the base: enough to see what changed.
+          fetch-depth: 2
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Play only the changed booth, if that's all that changes
+        run: |
+          scope=$(git diff --name-only HEAD^1 HEAD | node scripts/smoke-scope.ts)
+          if [ -n "$scope" ]; then
+            echo "SMOKE_ONLY=$scope" >> "$GITHUB_ENV"
+            echo "Playing only $scope one by one; the map-wide tests still run."
+          fi
       - run: npm run smoke
         env:
           CI: 'true'

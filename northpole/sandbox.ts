@@ -13,7 +13,7 @@ import { canvasFont, theme } from './theme';
 import { BUILD_ID } from '../src/updates';
 import { readFrameMessage, type SquareKind } from './frame-protocol';
 import { rescale, withOwedPress } from './pointer';
-import { MAX_PRESSES, type NorthPoleSquare, type SquarePointer } from './square';
+import { MAX_PRESSES, type NorthPoleSquare, type SquarePointer, type StallStyle } from './square';
 
 /** How long a square may take to open, its download included. */
 export const READY_TIMEOUT = 10_000;
@@ -66,10 +66,11 @@ export const FRAME_TIMEOUT = 2000;
 
 type State = 'loading' | 'ready' | 'broken';
 
-/** The square's name and description, as its frame reported them once ready. */
+/** The square's name, description and stall, as its frame reported them once ready. */
 export interface SquareInfo {
   name: string;
   description: string;
+  stall?: StallStyle;
 }
 
 /** A stand-in for a sandboxed square, with what the page needs beyond drawing. */
@@ -159,7 +160,7 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
     switch (message.type) {
       case 'ready':
         if (state !== 'loading') return;
-        info = { name: message.name, description: message.description };
+        info = { name: message.name, description: message.description, stall: message.stall };
         setState('ready');
         if (frames > 0) break; // a restarted frame: the page already knows its name
         for (const listener of listeners.splice(0)) {
@@ -222,6 +223,10 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
     },
     get description() {
       return info.description;
+    },
+    /** Until the frame is ready, or when its option was invalid, the usual stall. */
+    get stall() {
+      return info.stall;
     },
     onReady(listener: (info: SquareInfo) => void) {
       if (state === 'ready') listener(info);

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   decodeLiteral,
   escapeHtml,
+  factorySharePage,
   readSquareInfo,
   sharePage,
   siteUrl,
@@ -42,6 +43,16 @@ describe('share pages', () => {
     expect(bare).toContain('Visit X at the North Pole Carnival');
   });
 
+  it("gives the factory's numbers a share page of their own", () => {
+    const factory = factorySharePage('map.png');
+    expect(factory).toContain('<title>The North Pole Carnival factory</title>');
+    expect(factory).toContain(
+      '<meta property="og:title" content="The North Pole Carnival factory" />',
+    );
+    expect(factory).toContain('<meta http-equiv="refresh" content="0; url=../#/factory" />');
+    expect(factory).not.toMatch(/<script/i);
+  });
+
   it("reads a square's name and description from its source", () => {
     expect(
       readSquareInfo(
@@ -49,6 +60,17 @@ describe('share pages', () => {
       ),
     ).toEqual({ name: "Santa's Workshop", description: "It's cosy." });
     expect(readSquareInfo('const b = { name: computed() }')).toEqual({});
+  });
+
+  it("reads the square's own name, not an earlier object's", () => {
+    const source = `const GIFTS = [{ name: 'Stocking stuffer' }];\nconst a = {\n  id: 'gift-shop',\n  name: 'Gift Shop',\n  description: 'Gifts.',\n};`;
+    expect(readSquareInfo(source, 'gift-shop')).toEqual({
+      name: 'Gift Shop',
+      description: 'Gifts.',
+    });
+    // Without the id, or with one the source never sets, it reads the first.
+    expect(readSquareInfo(source).name).toBe('Stocking stuffer');
+    expect(readSquareInfo(source, 'elsewhere').name).toBe('Stocking stuffer');
   });
 
   it('decodes escapes as the square itself sees them', () => {

@@ -21,7 +21,12 @@ const squares = (['booth', 'attraction'] as const).flatMap((kind) =>
     .map((id) => ({ kind, id })),
 );
 
-for (const { kind, id } of squares) {
+// On a pull request that only changes one booth, CI plays just that booth
+// one by one (scripts/smoke-scope.ts). The map-wide tests still see every square.
+const only = process.env.SMOKE_ONLY;
+const played = only ? squares.filter(({ kind, id }) => `${kind}/${id}` === only) : squares;
+
+for (const { kind, id } of played) {
   test(`${kind} ${id} doesn't flash more than ${MAX_PER_SECOND} times a second`, async ({
     page,
   }) => {

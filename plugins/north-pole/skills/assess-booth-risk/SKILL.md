@@ -47,15 +47,16 @@ Stop with no write when any of these holds:
 - **The request**: the issue's title and body, and the assessment's comment on it.
 - **The change**: the pull request's diff, and every file in `booths/<owner>/`
   at the head commit, including the `README.md`.
-- **The screenshot, for this commit only.** The preview is published at
-  `https://<owner of the repository>.github.io/<repository>/previews/pr-<number>/`
-  (the pull request's **Preview** comment links it). First fetch
-  `preview-sha.txt` from that folder: it holds the commit the preview was built
-  from. Only when it equals the current head sha, download
-  `screenshots/booth-<owner>.png` from the same folder and look at it. Until
-  then the preview shows an older commit: wait and retry for up to 15 minutes.
-  If it never matches, or the screenshot is missing, the verdict is
-  `needs-human`.
+- **The screenshot, for this commit only.** The smoke test saves one for every
+  square. Find the **Preview build** workflow run whose `head_sha` is the pull
+  request's current head sha and that succeeded (`gh run list --workflow
+preview-build.yml --commit <head sha> --status success`). Download its
+  `screenshots` artifact (`gh run download <run> --name screenshots`) and look at
+  `booth-<owner>.png`. Only that run counts: a run for any other commit shows
+  older code. If the run is still going, wait and retry for up to 10 minutes. If
+  there's no successful run for the head sha, or no screenshot, the verdict is
+  `needs-human`. The published preview at `…/previews/pr-<number>/` is for
+  people. You don't need to wait for it.
 
 ## 2. Judge
 

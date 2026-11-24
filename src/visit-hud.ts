@@ -25,6 +25,10 @@ export interface VisitHudOptions {
   onClose(): void;
   /** Claim the plot next door. */
   onClaim(): void;
+  /** The owner's build-time avatar, for a booth whose owner has one. */
+  avatar?: string;
+  /** Says the visitor shared this booth as theirs, so the map knows who they are. */
+  onMine?(): void;
 }
 
 /** The "Keep me posted" link: to the real form once it's set, or to the placeholder page. */
@@ -57,18 +61,18 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   card.innerHTML = `
     <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>
     <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
-    <p class="visit-owner"></p>
+    <p class="visit-owner"><a class="visit-profile" target="_blank" rel="noopener"></a></p>
     <p class="visit-factory" hidden><a target="_blank" rel="noopener"></a></p>
     <p class="visit-description" id="visit-description"></p>
-    <div class="visit-share">
-      <label class="visit-label" for="visit-share-text">Share text</label>
-      <textarea id="visit-share-text" class="visit-share-text" rows="3"></textarea>
-      <div class="visit-actions">
-        <button class="visit-copy" type="button">Share</button>
-        <a class="visit-map">See it on the map</a>
-      </div>
+    <div class="visit-actions">
+      <button class="visit-copy" type="button">Share</button>
+      <a class="visit-map">See it on the map</a>
     </div>
-    <p class="visit-help"></p>
+    <details class="visit-edit">
+      <summary>Edit the message</summary>
+      <label class="visit-label" for="visit-share-text">Share text</label>
+      <textarea id="visit-share-text" class="visit-share-text" rows="4"></textarea>
+    </details>
     <div class="visit-invite" hidden>
       <p class="visit-invite-text"></p>
       <button class="visit-claim" type="button">Claim the plot next door</button>
@@ -78,17 +82,30 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       <summary>How was this built?</summary>
       <ol class="history-list"></ol>
       <p class="history-empty" hidden></p>
+      <p class="history-factory"><a class="history-factory-link" href="#/factory">See the factory's numbers</a></p>
       <p class="history-own"><a class="history-own-link" href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run this on your own repo</a>: set up a Tessl factory on a repository of yours.</p>
       <div class="history-offer" hidden>
         <p><span class="history-offer-tag">Offer</span> <a class="history-offer-link" target="_blank" rel="noopener"></a></p>
         <p class="history-terms">Terms apply, as set out on Tessl's sign-up page. Tessl makes this offer, not the carnival.</p>
       </div>
     </details>
-    <p class="visit-help">Want to hear about the next North Pole event? ${KEEP_POSTED_LINK}</p>`;
+    <div class="visit-help"></div>
+    <p class="visit-foot">Next North Pole event? ${KEEP_POSTED_LINK}</p>`;
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
 
   const owner = kind === 'attraction' ? '' : `@${square.id}`;
-  $('.visit-owner').textContent = owner;
+  // The owner, linking to their GitHub profile, with their portrait when the build has it.
+  const profile = $<HTMLAnchorElement>('.visit-profile');
+  profile.href = `https://github.com/${encodeURIComponent(square.id)}`;
+  if (options.avatar) {
+    const picture = document.createElement('img');
+    picture.className = 'visit-avatar';
+    picture.src = options.avatar;
+    picture.alt = '';
+    picture.width = picture.height = 32;
+    profile.append(picture, ' ');
+  }
+  profile.append(owner);
   $<HTMLElement>('.visit-owner').hidden = !owner;
   $<HTMLAnchorElement>('.visit-map').href = deepLink(kind, square.id);
 
@@ -118,10 +135,12 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
 
   const help = $('.visit-help');
   if (kind === 'booth') {
-    help.innerHTML = `Is this yours? <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask the factory for a change</a>, or <button class="visit-mine" type="button">share it as yours</button>. Built a factory of your own? <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Ask for the Elf Engineer badge</a>. <a class="visit-season">Your season</a>`;
+    help.innerHTML = `<p><span class="visit-ask">Is this yours?</span> <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask for a change</a> <span aria-hidden="true">·</span> <button class="visit-mine" type="button">Share it as yours</button></p>
+      <p><span class="visit-ask">Built your own factory?</span> <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Get the Elf Engineer badge</a></p>
+      <p><a class="visit-season">Your season</a></p>`;
     help.querySelector<HTMLAnchorElement>('.visit-season')!.href = seasonLink(square.id);
   } else {
-    help.innerHTML = `Attractions belong to the North Pole, so only its maintainers change them. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.`;
+    help.innerHTML = `<p>Attractions belong to the North Pole, so only its maintainers change them. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.</p>`;
   }
 
   const link = shareLink(kind, square.id, document.baseURI);
@@ -145,8 +164,10 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
 
   card.querySelector('.visit-mine')?.addEventListener('click', () => {
     mine = true;
+    options.onMine?.();
     edited = false;
     showText();
+    $<HTMLDetailsElement>('.visit-edit').open = true;
     text.focus();
   });
 
@@ -159,7 +180,8 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       window.clearTimeout(reset);
       reset = window.setTimeout(() => (copy.textContent = 'Share'), 2000);
     } catch {
-      // No clipboard: the line is selected, to copy by hand.
+      // No clipboard: the line is shown and selected, to copy by hand.
+      $<HTMLDetailsElement>('.visit-edit').open = true;
       text.focus();
       text.select();
     }

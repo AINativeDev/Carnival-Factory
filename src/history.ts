@@ -65,7 +65,7 @@ export function pullState(pull: HistoryPull): string {
 
 /** One request's line under its title: who asked, when, and what was decided. */
 export const requestLine = (entry: HistoryEntry) =>
-  `Requested by ${entry.author} on ${day(entry.openedAt)}. ${DECISIONS[entry.decision]}.`;
+  `@${entry.author} · ${day(entry.openedAt)} · ${DECISIONS[entry.decision]}`;
 
 /**
  * Fills `list` with a square's timeline, every piece of text set as text and
@@ -99,9 +99,9 @@ export function renderHistory(list: HTMLElement, entries: HistoryEntry[]) {
     for (const pull of entry.pulls) {
       const parts: (Node | string)[] = [
         link(pull.url, `Pull request #${pull.number}`, 'history-pull'),
-        `: ${pullSummary(pull)}. ${pullState(pull)}.`,
+        ` · ${pullState(pull)} · ${pullSummary(pull)}`,
       ];
-      if (pull.preview) parts.push(' ', link(pull.preview, 'Preview it', 'history-preview'));
+      if (pull.preview) parts.push(' · ', link(pull.preview, 'Preview it', 'history-preview'));
       item.append(line('history-pr', ...parts));
     }
     list.append(item);

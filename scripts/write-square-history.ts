@@ -12,6 +12,7 @@
 import { readdirSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { siteUrl } from './share-pages.ts';
+import { factoryStats } from './factory-stats.ts';
 import { shapeHistory, type HistoryKind, type RawIssue, type RawPull } from './square-history.ts';
 
 const token = process.env.GITHUB_TOKEN;
@@ -112,11 +113,15 @@ const THREAD_FIELDS = 'isResolved comments(first: 1) { nodes { author { login } 
 
 const issues = await all<RawIssue>(
   'issues',
-  'number title url createdAt author { login } labels(first: 20) { nodes { name } }',
+  `number title url createdAt author { login } labels(first: 20) { nodes { name } }
+   timelineItems(itemTypes: [LABELED_EVENT], first: 50) {
+     nodes { ... on LabeledEvent { createdAt label { name } } }
+   }`,
 );
 const paged = await all<PagedPull>(
   'pullRequests',
   `number url state mergedAt headRefName isCrossRepository commits { totalCount }
+   labels(first: 20) { nodes { name } }
    files(first: 100) { nodes { ${FILE_FIELDS} } pageInfo { hasNextPage endCursor } }
    reviewThreads(first: 100) { nodes { ${THREAD_FIELDS} } pageInfo { hasNextPage endCursor } }`,
 );
@@ -140,13 +145,10 @@ const squares = (['booth', 'attraction'] as HistoryKind[]).flatMap((kind) =>
     .map((id) => `${kind}/${id}`),
 );
 
-const history = shapeHistory({
-  squares,
-  issues,
-  pulls,
-  site: siteUrl(process.env),
-  builtAt: new Date().toISOString(),
-});
+const builtAt = new Date().toISOString();
+const history = shapeHistory({ squares, issues, pulls, site: siteUrl(process.env), builtAt });
+// The factory's numbers, for the #/factory page: only numbers and dates.
+history.factory = factoryStats(issues, pulls, builtAt);
 writeFileSync(out, JSON.stringify(history));
 console.log(
   `Wrote ${out}: ${Object.keys(history.squares).length} squares, ${issues.length} issues, ${pulls.length} pull requests.`,

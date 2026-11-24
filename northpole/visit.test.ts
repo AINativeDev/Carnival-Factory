@@ -9,6 +9,7 @@ import {
   shareText,
   tagText,
   targetAt,
+  nearYou,
 } from './visit';
 import { buildWorld, walkAlong, type Plot } from './world';
 
@@ -121,5 +122,18 @@ describe('hovering', () => {
       at.y < player.y + player.h &&
       at.y + size.h > player.y;
     expect(overlaps).toBe(false);
+  });
+});
+
+describe('Near you', () => {
+  it('lists the squares whose doors are closest, nearest first', () => {
+    const squares = [0, 5, 2, 9, 1, 7, 3].map((x) => ({ id: `${x}`, door: { x, y: 0 } }));
+    const near = nearYou(squares, { x: 0, y: 0 });
+    expect(near.map((square) => square.id)).toEqual(['0', '1', '2', '3', '5']);
+  });
+
+  it('follows the player as they walk', () => {
+    const squares = [0, 10, 20].map((x) => ({ id: `${x}`, door: { x, y: 0 } }));
+    expect(nearYou(squares, { x: 19, y: 0 }, 1)[0].id).toBe('20');
   });
 });

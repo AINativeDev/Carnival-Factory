@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   blinking,
+  BOUNCE,
+  bounceOf,
+  TALLY,
+  TOYS_AT_DAWN,
+  toysMade,
+  globeFlake,
+  onGlobe,
+  swirlOf,
+  SWIRL,
   buildOf,
   HOP,
   hopHeight,
@@ -188,5 +197,36 @@ describe('the penguins', () => {
     expect(penguinAt(x, PENGUIN_FEET - 20, 0, lifts)).toBe(1);
     expect(penguinAt(x, PENGUIN_FEET - 20, 0)).toBe(-1);
     expect(penguinAt(x, PENGUIN_FEET + 1, 0, lifts)).toBe(-1);
+  });
+});
+
+describe('the snow globe', () => {
+  it('swirls after a tap and settles in four seconds', () => {
+    expect(swirlOf(0)).toBe(1);
+    expect(swirlOf(SWIRL)).toBe(0);
+    expect(swirlOf(-Infinity)).toBe(0);
+    expect(globeFlake(3, 0)).not.toEqual(globeFlake(3, SWIRL));
+    expect(globeFlake(3, SWIRL)).toEqual(globeFlake(3, SWIRL + 5_000));
+    // Never tapped: the snow still rests on the bottom, at finite places.
+    expect(globeFlake(3, Infinity)).toEqual(globeFlake(3, SWIRL));
+    expect(Number.isFinite(globeFlake(3, Infinity).x)).toBe(true);
+    expect(onGlobe(60, 76)).toBe(true);
+    expect(onGlobe(10, 10)).toBe(false);
+  });
+});
+
+describe('the toy counter sign', () => {
+  it('ticks up by one every 3 seconds', () => {
+    expect(toysMade(0)).toBe(TOYS_AT_DAWN);
+    expect(toysMade(TALLY - 1)).toBe(TOYS_AT_DAWN);
+    expect(toysMade(TALLY)).toBe(TOYS_AT_DAWN + 1);
+    expect(toysMade(10 * TALLY)).toBe(TOYS_AT_DAWN + 10);
+  });
+
+  it('bounces after a tick and then rests', () => {
+    expect(bounceOf(0)).toBe(0);
+    expect(bounceOf(BOUNCE / 4)).toBeGreaterThan(0.5);
+    expect(bounceOf(BOUNCE)).toBe(0);
+    expect(bounceOf(TALLY - 1)).toBe(0);
   });
 });

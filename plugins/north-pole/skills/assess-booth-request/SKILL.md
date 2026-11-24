@@ -54,7 +54,12 @@ set them, so trust labels over comments.
 - It asks for something to _see_ or play with on the author's own square: a
   scene, a character, an animation, something that reacts to hover or taps, a
   small game, a colour change, a restyle (by default to the diorama style in
-  `docs/style.md`). One idea, or a small change to what's there.
+  `docs/style.md`), or a different stall shape or roof colour. One idea, or a
+  small change to what's there.
+- A stall shape or roof colour is an ordinary change to the author's booth:
+  the booth sets `stall` in its own `booth.ts` (see `AGENTS.md`), so it needs
+  nothing outside `booths/<author>/`. The shapes are a market stall, a shed,
+  a tent, a log cabin and a kiosk, and the colours are the `theme`'s.
 - It can be drawn with the canvas, the `theme` colours and fonts, and the
   `draw(ctx, size, time, pointer?)` contract, inside the house rules in
   `AGENTS.md`. The pointer is only where the mouse or a finger is over the
@@ -88,6 +93,9 @@ say yes. For example:
 - a character or logo someone else owns: propose an original character _in
   the spirit of_ it;
 - fast flashing: propose a gentle glow or a slow twinkle;
+- a stall shape the map doesn't draw, like a castle or a lighthouse: propose
+  the closest of the five shapes, with the rest of the idea in the drawing on
+  its front;
 - more than one idea, or a whole town: propose the single best scene from it.
 
 **Ask** when it might be fine but you can't tell what to build: it's empty, only
