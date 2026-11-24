@@ -1,6 +1,12 @@
 import './style.css';
 import { attractionRegistry } from '../northpole/attractions';
-import { CHANGE_URL, CLAIM_URL } from '../northpole/links';
+import {
+  CHANGE_URL,
+  CLAIM_URL,
+  KEEP_POSTED_URL,
+  REPO_URL,
+  keepPostedHref,
+} from '../northpole/links';
 import { startMap, startPreview, type SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
@@ -159,6 +165,9 @@ function renderBooth(booth: NorthPoleSquare) {
       <p class="booth-help">
         Is this yours? <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask the factory for a change</a>.
       </p>
+      <p class="booth-help">
+        Want to hear about the next North Pole event? ${KEEP_POSTED_LINK}
+      </p>
     </section>`;
   whenNamed(booth, () => {
     app.querySelector('h1')!.textContent = booth.name;
@@ -195,6 +204,34 @@ function renderAttraction(attraction: NorthPoleSquare) {
   stop = startPreview(app.querySelector('canvas')!, attraction);
 }
 
+/** The "Keep me posted" link: to the real form once it's set, or to the placeholder page. */
+const KEEP_POSTED_LINK = KEEP_POSTED_URL
+  ? `<a href="${keepPostedHref()}" target="_blank" rel="noopener">Keep me posted</a>.`
+  : `<a href="${keepPostedHref()}">Keep me posted</a>.`;
+
+/**
+ * Stands in for the "keep me posted" form until a maintainer sets
+ * KEEP_POSTED_URL. It collects nothing: it only says the list opens soon.
+ */
+function renderKeepPosted() {
+  document.body.dataset.view = 'booth';
+  app.innerHTML = `
+    <section class="booth">
+      <div class="booth-header">
+        <a href="#/">← Back to the map</a>
+        <h1>Keep me posted</h1>
+        <p class="description">
+          The list for news about the next North Pole event opens soon. Nothing is
+          collected on this page. In the meantime, watch the repository on GitHub
+          for updates.
+        </p>
+        <p class="booth-help">
+          <a href="${REPO_URL}" target="_blank" rel="noopener">Open the repository</a>
+        </p>
+      </div>
+    </section>`;
+}
+
 function renderMissing(title: string, description: string) {
   document.body.dataset.view = 'booth';
   app.innerHTML = `
@@ -212,6 +249,8 @@ function renderMissing(title: string, description: string) {
 function route() {
   stop?.();
   stop = undefined;
+
+  if (location.hash === '#/keep-posted') return renderKeepPosted();
 
   const route = parseHash(location.hash);
   // Booths used to be called plots: keep links shared before the rename working.
