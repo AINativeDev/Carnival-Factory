@@ -21,11 +21,14 @@ const QUERY = `query($owner: String!, $name: String!, $after: String) {
       pageInfo { hasNextPage endCursor }
       nodes {
         author { login }
+        number
         closedByPullRequestsReferences(first: 10, includeClosedPrs: true) {
+          pageInfo { hasNextPage }
           nodes {
             number
             merged
             reviewThreads(first: 100) {
+              pageInfo { hasNextPage }
               nodes { isResolved comments(first: 1) { nodes { author { login } } } }
             }
           }
@@ -41,12 +44,15 @@ interface Page {
       issues: {
         pageInfo: { hasNextPage: boolean; endCursor: string | null };
         nodes: {
+          number: number;
           author: { login: string } | null;
           closedByPullRequestsReferences: {
+            pageInfo: { hasNextPage: boolean };
             nodes: {
               number: number;
               merged: boolean;
               reviewThreads: {
+                pageInfo: { hasNextPage: boolean };
                 nodes: {
                   isResolved: boolean;
                   comments: { nodes: { author: { login: string } | null }[] };
@@ -75,6 +81,13 @@ do {
     throw new Error(`The GraphQL API answered with errors: ${JSON.stringify(page.errors)}`);
   const { nodes, pageInfo } = page.data.repository.issues;
   for (const issue of nodes) {
+    // A partial count would publish too-low numbers, so fail and let the
+    // workflow fall back to the empty season instead.
+    if (issue.closedByPullRequestsReferences.pageInfo.hasNextPage)
+      throw new Error(`Issue #${issue.number} has more closing pull requests than one page`);
+    for (const pull of issue.closedByPullRequestsReferences.nodes)
+      if (pull.reviewThreads.pageInfo.hasNextPage)
+        throw new Error(`Pull request #${pull.number} has more review threads than one page`);
     requests.push({
       author: issue.author?.login ?? null,
       pulls: issue.closedByPullRequestsReferences.nodes.map((pull) => ({
