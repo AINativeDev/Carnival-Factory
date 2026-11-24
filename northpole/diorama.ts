@@ -127,6 +127,29 @@ export function slab(ctx: CanvasRenderingContext2D) {
 }
 
 /**
+ * The backdrop and the slab never change, so in a square's worker they are
+ * drawn once for each size and copied in every frame after that.
+ */
+let still: { size: number; canvas: OffscreenCanvas } | undefined;
+
+function backdropAndSlab(ctx: CanvasRenderingContext2D, size: number) {
+  if (typeof OffscreenCanvas === 'undefined') {
+    backdrop(ctx);
+    slab(ctx);
+    return;
+  }
+  if (still?.size !== size) {
+    const canvas = new OffscreenCanvas(size, size);
+    const layer = canvas.getContext('2d')!;
+    layer.scale(size / 100, size / 100);
+    backdrop(layer as unknown as CanvasRenderingContext2D);
+    slab(layer as unknown as CanvasRenderingContext2D);
+    still = { size, canvas };
+  }
+  ctx.drawImage(still.canvas, 0, 0, 100, 100);
+}
+
+/**
  * Draws a square's diorama: scales the context to 0 to 100 units, paints the
  * backdrop and the slab, then `paint` with the context still scaled.
  */
@@ -138,8 +161,7 @@ export function scene(
 ) {
   ctx.save();
   ctx.scale(size / 100, size / 100);
-  backdrop(ctx);
-  slab(ctx);
+  backdropAndSlab(ctx, size);
   paint(ctx, time);
   ctx.restore();
 }
