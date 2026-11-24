@@ -9,7 +9,8 @@ const { colors } = theme;
  * canvas of its own that is reset first, and only its pixels are copied onto
  * the map. Whatever state a plot leaves behind, even when it throws halfway
  * through a save, stays on the scratch canvas, and nothing it draws can spill
- * onto a neighbour. A plot that throws gets a placeholder instead of breaking
+ * onto a neighbour, even if it resizes that canvas. A plot that throws, or
+ * leaves nothing that can be copied, gets a placeholder instead of breaking
  * the whole map.
  */
 export function drawPlot(
@@ -26,6 +27,9 @@ export function drawPlot(
   scratch.height = size;
   try {
     plot.draw(scratch.getContext('2d')!, size, time);
+    // The plot can resize its canvas, so copy exactly its square onto exactly its
+    // own square. A canvas it emptied makes drawImage throw, which shows the placeholder.
+    ctx.drawImage(scratch, 0, 0, size, size, x, y, size, size);
   } catch (error) {
     console.error(`The plot owned by ${plot.owner} failed to draw`, error);
     ctx.save();
@@ -36,9 +40,7 @@ export function drawPlot(
     ctx.textAlign = 'center';
     ctx.fillText('Under construction', x + size / 2, y + size / 2);
     ctx.restore();
-    return;
   }
-  ctx.drawImage(scratch, x, y);
 }
 
 function drawGround(ctx: CanvasRenderingContext2D, layout: MapLayout) {
