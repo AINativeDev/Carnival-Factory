@@ -646,7 +646,7 @@ function faceText(
   ctx.restore();
 }
 
-/** A name board along a face: the name, and whose it is under it. */
+/** A name board along a face: the name, and whose it is under it, or the name alone when `by` is empty. */
 function faceSign(
   ctx: CanvasRenderingContext2D,
   face: Face,
@@ -669,12 +669,13 @@ function faceSign(
     face,
     name,
     0.5,
-    high - line * 0.62,
+    by ? high - line * 0.62 : low + line,
     width * 0.8,
     canvasFont('small', 'bold'),
     colors.ink,
     outward,
   );
+  if (!by) return;
   faceText(
     ctx,
     face,
@@ -887,7 +888,7 @@ function drawAttraction(
   band(ctx, face, 0.05, 0.95, PAVILION.art - 4, PAVILION.art + art + 4);
   ctx.fill();
   paintOnFace(paint, square, face, 0.08, 0.92, PAVILION.art);
-  faceSign(ctx, face, PAVILION.art + art + 8, PAVILION.wall - 4, square.name, 'North Pole');
+  faceSign(ctx, face, PAVILION.art + art + 8, PAVILION.wall - 4, square.name, '');
   const eaves = { x: inner.x - 0.25, y: inner.y - 0.25, w: inner.w + 0.5, h: inner.h + 0.5 };
   stripedRoof(ctx, eaves, PAVILION.wall, PAVILION.roof, ROOFS[plot.number % ROOFS.length], time);
   return standing(plot, PAVILION.wall + PAVILION.roof + 20);
