@@ -33,6 +33,8 @@ const TEXT_FILES = /\.(ts|md)$/;
 const MAX_FILES = 40;
 const MAX_FILE_BYTES = 100 * 1024;
 const MAX_TOTAL_BYTES = 300 * 1024;
+/** Gate steps whose failure is labelled by someone else: the risk check, or a maintainer. */
+const LABELLED_ELSEWHERE = new Set(['Risk and taste check', 'No one has asked to hold it']);
 
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
   const response = await fetch(`${api}/repos/${repository}/${path}`, {
@@ -287,7 +289,13 @@ async function gate(pull: Pull) {
   console.log(`#${pull.number} (booth ${owner}, ${sha.slice(0, 7)}): ${result.decision}`);
   await upsertComment(pull.number, all, gateComment(result, GUIDE));
 
-  if (result.decision === 'human' && !facts.labels.includes('needs-human') && !dryRun) {
+  // Label only the gate's own deterministic failures. The risk check labels its
+  // own verdicts, and a maintainer removing the label is asking it to look
+  // again, so the gate mustn't put the label straight back over that.
+  const ownFailures = result.steps.filter(
+    (step) => step.hard && step.state === 'fail' && !LABELLED_ELSEWHERE.has(step.name),
+  );
+  if (ownFailures.length && !facts.labels.includes('needs-human') && !dryRun) {
     await call('POST', `issues/${pull.number}/labels`, { labels: ['needs-human'] });
   }
   if (result.decision !== 'merge' || dryRun) return;
