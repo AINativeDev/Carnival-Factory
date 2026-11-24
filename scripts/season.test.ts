@@ -30,6 +30,22 @@ describe('countSeason', () => {
     expect(countSeason(requests, AT).participants.pstember.findingsFixed).toBe(1);
   });
 
+  it("counts the reviewer's findings under its bot login too", () => {
+    const requests: RequestRecord[] = [
+      {
+        author: 'pstember',
+        pulls: [
+          {
+            number: 5,
+            merged: true,
+            threads: [thread(true, `${REVIEWER}[bot]`), thread(true), thread(true, 'someone[bot]')],
+          },
+        ],
+      },
+    ];
+    expect(countSeason(requests, AT).participants.pstember.findingsFixed).toBe(2);
+  });
+
   it('counts a pull request that closed two requests once', () => {
     const pull = { number: 7, merged: true, threads: [thread(true)] };
     const requests: RequestRecord[] = [

@@ -63,7 +63,7 @@ export function countSeason(requests: readonly RequestRecord[], countedAt: strin
       if (counted.has(pull.number)) continue;
       counted.add(pull.number);
       stats.findingsFixed += pull.threads.filter(
-        (thread) => thread.resolved && thread.author === REVIEWER,
+        (thread) => thread.resolved && thread.author?.replace(/\[bot\]$/, '') === REVIEWER,
       ).length;
     }
   }
