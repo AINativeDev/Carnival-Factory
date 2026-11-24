@@ -592,6 +592,7 @@ kbd {
 }
 
 .visit-owner,
+.visit-factory,
 .visit-description,
 .visit-help {
   margin: 4px 0;

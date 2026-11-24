@@ -1,4 +1,6 @@
+import { badgeFor, factoryUrl } from '../northpole/badges';
 import {
+  BADGE_REQUEST_URL,
   CHANGE_URL,
   CLAIM_URL,
   HOW_IT_WORKS_URL,
@@ -60,6 +62,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>
     <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
     <p class="visit-owner"><a class="visit-profile" target="_blank" rel="noopener"></a></p>
+    <p class="visit-factory" hidden><a target="_blank" rel="noopener"></a></p>
     <p class="visit-description" id="visit-description"></p>
     <div class="visit-share">
       <label class="visit-label" for="visit-share-text">Share text</label>
@@ -104,6 +107,15 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   $<HTMLElement>('.visit-owner').hidden = !owner;
   $<HTMLAnchorElement>('.visit-map').href = deepLink(kind, square.id);
 
+  // An Elf Engineer's booth links to the factory on their own repository.
+  const badge = kind === 'booth' ? badgeFor(square.id) : undefined;
+  if (badge) {
+    const factory = $<HTMLAnchorElement>('.visit-factory a');
+    factory.href = factoryUrl(badge);
+    factory.textContent = `See ${owner}'s own factory`;
+    $<HTMLElement>('.visit-factory').hidden = false;
+  }
+
   // How was this built: open beside the room, collapsed on a phone, where it sits below it.
   const entries = historyOf(SQUARE_HISTORY, kind, square.id);
   renderHistory($('.history-list'), entries);
@@ -121,7 +133,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
 
   const help = $('.visit-help');
   if (kind === 'booth') {
-    help.innerHTML = `Is this yours? <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask the factory for a change</a>, or <button class="visit-mine" type="button">share it as yours</button>.`;
+    help.innerHTML = `Is this yours? <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask the factory for a change</a>, or <button class="visit-mine" type="button">share it as yours</button>. Built a factory of your own? <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Ask for the Elf Engineer badge</a>.`;
   } else {
     help.innerHTML = `Attractions belong to the North Pole, so only its maintainers change them. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.`;
   }

@@ -5,6 +5,7 @@
  * town square's centre at (0, 0), and the map moves the camera.
  */
 import type { NorthPoleSquare } from './square';
+import { badgeFor, type BadgeTier } from './badges';
 import { alongEdge } from './camera';
 import { canvasFont, theme } from './theme';
 import {
@@ -867,6 +868,12 @@ function drawStall(
     { x: foot.x + 1, y: foot.y - pole + 12 },
   ]);
   ctx.fill();
+  // An Elf Engineer's pin, on the right end of the name board.
+  const badge = badgeFor(square.id);
+  if (badge) {
+    const pin = onFace(face, 0.94, (signLow + STALL.wall - 2) / 2, 0.1);
+    drawElfHatPin(ctx, pin.x, pin.y, (STALL.wall - 2 - signLow) * 0.42, badge.tier);
+  }
   if (owner.you) youTag(ctx, onFace(face, 0.5, STALL.wall + 38, -0.5));
   return standing(plot, STALL.wall + (owner.you ? 52 : 30));
 }
@@ -885,6 +892,49 @@ function youTag(ctx: CanvasRenderingContext2D, at: Tile) {
   ctx.textBaseline = 'middle';
   ctx.fillText('You', at.x, at.y + 1, w - 4);
   ctx.textBaseline = 'alphabetic';
+}
+
+/** The pom-pom of an Elf Engineer's hat, by tier. */
+const POM_POMS: Record<BadgeTier | 'none', string> = {
+  none: colors.snow,
+  bronze: colors.gingerbread,
+  silver: colors.snowShade,
+  gold: colors.gold,
+};
+
+/** An Elf Engineer's pin: a round gold badge with an elf's hat on it, `radius` across from its middle. */
+export function drawElfHatPin(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+  tier?: BadgeTier,
+) {
+  const r = radius;
+  ctx.save();
+  ctx.fillStyle = colors.cocoa;
+  ctx.beginPath();
+  ctx.arc(x, y, r + 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = colors.pine;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  // The hat: a red cone curling to the right, a snowy brim and a pom-pom.
+  ctx.fillStyle = colors.berry;
+  ctx.beginPath();
+  ctx.moveTo(x - r * 0.62, y + r * 0.35);
+  ctx.quadraticCurveTo(x - r * 0.2, y - r * 0.95, x + r * 0.5, y - r * 0.55);
+  ctx.lineTo(x + r * 0.62, y + r * 0.35);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = colors.snow;
+  ctx.fillRect(x - r * 0.72, y + r * 0.25, r * 1.44, r * 0.34);
+  ctx.fillStyle = POM_POMS[tier ?? 'none'];
+  ctx.beginPath();
+  ctx.arc(x + r * 0.55, y - r * 0.55, r * 0.22, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
 const ROOFS = [
