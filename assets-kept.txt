@@ -2,6 +2,7 @@
 2026-11-24 main-D4lkDE7b.css
 2026-11-24 square-worker-DdCi1Q71.js
 2026-11-24 frame-protocol-CQcKUTN7.js
+2026-11-24 main-D78wL_Is.js
 2026-11-24 main-DEiSeKzS.js
 2026-11-24 main-CxlbUB2U.css
 2026-11-24 main-BdweQvNh.js
