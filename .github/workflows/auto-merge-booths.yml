@@ -1,0 +1,51 @@
+name: Auto-merge booths
+
+# Merges a factory pull request for one participant's booth on its own, once
+# every check in scripts/booth-gate.ts passes on its head commit: the request
+# was accepted, only booths/<owner>/ changes, the code check and the hidden
+# text check pass, CI and the smoke test pass, Tessl Code Review approves, and
+# the risk and taste check says low-risk. Anything else waits, or goes to a
+# person with the needs-human label.
+#
+# It runs main's own code on every trigger: workflow_run, pull_request_target
+# and schedule all use the default branch's workflow and checkout. It reads the
+# pull request's files as text through the API and never checks out or runs
+# them.
+on:
+  workflow_run:
+    workflows: [CI, Preview build]
+    types: [completed]
+  pull_request_target:
+    types: [labeled, unlabeled, synchronize]
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: auto-merge-booths
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      checks: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: node scripts/auto-merge-booths.ts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

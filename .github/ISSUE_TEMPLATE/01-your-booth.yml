@@ -14,6 +14,13 @@ body:
 
         An agent reads this with nobody around to answer questions, so say what
         you want people to see and how you'll know it's done.
+
+        **What happens next:** an agent assesses your request, a software
+        factory built on [Tessl](https://tessl.io) builds it as a pull request,
+        and checks, a smoke test in a real browser, code review and a risk and
+        taste check run on it. If every check passes, it merges on its own;
+        otherwise a maintainer takes a look. [How your request is built](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/how-it-works.md)
+        explains each step.
   - type: textarea
     id: what
     attributes:

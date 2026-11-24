@@ -99,7 +99,7 @@ leaves a comment promising something that didn't happen. Create a missing label
 Superseded by #<this issue>: your latest request is the one the factory
 builds.` Then remove `needs-info` here if present, add `tessl`, and comment:
   `Thanks! This fits your booth, booths/<author>/, so the factory is building it
-now. It'll open a pull request and link it here.`
+now. It'll open a pull request and link it here, where you can follow each check. [How your request is built](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/how-it-works.md) explains every step.`
 - **Needs information:** add `needs-info`, then comment: `Thanks! Before the
 factory can build this: <one or two concrete questions>. Edit the issue with
 your answer and it'll be looked at again.`
