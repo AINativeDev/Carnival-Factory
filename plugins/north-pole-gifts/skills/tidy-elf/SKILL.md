@@ -29,9 +29,10 @@ every link it gives still goes somewhere.
 3. **Run them** in a fresh clone of the default branch, in the README's order,
    each with a five minute limit. A command that starts a server counts as
    working once it's listening; stop it then. Note each one's exit code and the
-   last lines of its output. When a command fails and a command before it was
-   skipped or failed, list it as unknown, not broken: it may only have needed
-   what that one would have set up.
+   last lines of its output. A failing command is broken, unless its output
+   shows it is missing something a skipped or failed command before it would
+   have set up, such as a dependency, a built file or a tool: list that one as
+   unknown, with which earlier command it needed.
 4. **Collect the links**: Markdown links and bare URLs. For a relative link,
    check the file or heading exists in the repository. For a web link, make one
    `HEAD` request, then a `GET` if `HEAD` isn't allowed, following redirects.
@@ -42,11 +43,13 @@ every link it gives still goes somewhere.
 6. **If anything is broken**, open that issue, with:
    - each broken command, its heading, exit code and the last lines of output;
    - each broken link, its line and the status it returned;
-   - what you skipped, and why.
+   - what you skipped, and why;
+   - what is unknown, and why.
 
-   If nothing is broken, open nothing, and say so in the run output.
+   If nothing is broken, open nothing, and say so in the run output, naming
+   what was skipped or unknown.
 
 ## Done
 
 One issue listing the README's broken commands and links, kept current, or a run
-output saying all of them work.
+output saying none is broken and naming any it could not check.
