@@ -625,7 +625,9 @@ function paint(ctx: Ctx, time: number) {
       const j = jitter(n);
       const gx = j.gx + (to.gx - j.gx) * slide;
       const gy = j.gy + (to.gy - j.gy) * slide;
-      if (slide < 1) flatCard(ctx, gx, gy, TOP + 0.05 + n * THICK, flip.card);
+      // Rise as it slides, so it lands on top of the winner's stack rather than through it.
+      const z = TOP + 0.05 + (n + counts.hands[round.winner] * slide) * THICK;
+      if (slide < 1) flatCard(ctx, gx, gy, z, flip.card);
     });
   }
   if (inAir) {
