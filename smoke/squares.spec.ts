@@ -109,11 +109,10 @@ test('the map opens the squares in view and stays quiet', async ({ page }) => {
 test("a square's sandbox keeps it from the network, storage and the page", async ({ page }) => {
   await page.goto('#/booth/jedi4ever');
   await expect(frameOf(page, 'booth', 'jedi4ever')).toHaveAttribute('data-state', 'ready');
-  // The frame's address carries the build it came from: square.html?v=<build>#booth/jedi4ever.
-  const frame = page
-    .frames()
-    .find((f) => /square\.html(\?[^#]*)?#booth\/jedi4ever$/.test(f.url()))!;
-  const walls = await frame.evaluate(async () => {
+  // The frame's address carries its build (square.html?v=<build>#booth/<login>).
+  const frame = page.frames().find((f) => /square\.html(\?[^#]*)?#booth\/jedi4ever$/.test(f.url()));
+  expect(frame, "the booth's sandboxed frame").toBeDefined();
+  const walls = await frame!.evaluate(async () => {
     const blocked = async (attempt: () => unknown) => {
       try {
         await attempt();
