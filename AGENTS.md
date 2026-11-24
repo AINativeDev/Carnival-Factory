@@ -62,11 +62,14 @@ northpole/                  the map itself
   square-worker.ts          runs the square's own code on a thread of its own
   frame-protocol.ts         the messages between them, and the checks on them
   theme.ts                  colours, fonts and sizes
+  badges.ts                 the Elf Engineer badge: its holders, baked in at build
+                            time, its images and its README snippet (plain functions)
   disabled.json             the maintainers' kill switch: closed booths and attractions
   links.ts                  links to the repository's issue forms
 docs/
   style.md                  the diorama style every square follows by default
   booth-ideas.md            ideas and tips for a booth request
+  elf-engineer.md           the Elf Engineer badge, and how to get it
 booths/
   jedi4ever/                a finished booth, and the pattern to copy
     booth.ts
@@ -76,14 +79,16 @@ attractions/
     attraction.ts
     attraction.test.ts
     README.md
-plugins/north-pole/         the factory's own skills: assessing booth requests,
-                            and the house-rules review lens
+plugins/north-pole/         the factory's own skills: assessing booth and badge
+                            requests, and the house-rules review lens
 scripts/
   flashing.ts               the smoke test's flashing check (plain functions)
   ownership.ts              the booth ownership rule (plain functions)
   check-booth-ownership.ts  the CI check that enforces it
   square-size.ts            the size budget for every square
   share-pages.ts            the link-preview page the build writes for every square
+  elf-engineer.ts           the Elf Engineer badge's rules: the form, the check,
+                            the tiers and the holders (plain functions)
 ```
 
 ## Working on an issue
