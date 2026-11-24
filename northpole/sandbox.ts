@@ -10,6 +10,7 @@
  * failing, is broken: its stand-in draws the "Under construction" placeholder.
  */
 import { canvasFont, theme } from './theme';
+import { BUILD_ID } from '../src/updates';
 import { readFrameMessage, type SquareKind } from './frame-protocol';
 import type { NorthPoleSquare } from './square';
 
@@ -191,7 +192,9 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
     iframe.dataset.kind = kind;
     iframe.dataset.id = id;
     iframe.dataset.state = state;
-    iframe.src = new URL(`square.html#${kind}/${id}`, document.baseURI).href;
+    // The frame page of this page's own build, so a cached page and its frames
+    // always come from the same build, even while caches catch up.
+    iframe.src = new URL(`square.html?v=${BUILD_ID}#${kind}/${id}`, document.baseURI).href;
     window.addEventListener('message', onMessage);
     frameHolder().append(iframe);
     live.add(self);
