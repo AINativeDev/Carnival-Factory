@@ -49,3 +49,27 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+
+  # Every booth and attraction in a real browser, in its real sandbox. Its
+  # screenshots go in the pull request's preview comment.
+  smoke:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run smoke
+        env:
+          CI: 'true'
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshots
+          path: screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 7

@@ -3,12 +3,19 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { attractionRegistry } from './attractions';
 import disabled from './disabled.json';
-import { isAttractionId } from './square';
+import { fromFolders, isAttractionId, type NorthPoleSquare } from './square';
 
 const attractionsDir = join(import.meta.dirname, '../attractions');
 const folders = readdirSync(attractionsDir).filter((name) =>
   statSync(join(attractionsDir, name)).isDirectory(),
 );
+
+// The attractions' own code, which the page never runs: only their frames do.
+const modules = import.meta.glob<NorthPoleSquare | undefined>('../attractions/*/attraction.ts', {
+  eager: true,
+  import: 'default',
+});
+const squares = fromFolders(modules);
 
 describe('attraction registry', () => {
   it('puts every attraction folder on the map', () => {
@@ -42,7 +49,7 @@ describe('attraction registry', () => {
   });
 
   it('gives every attraction a name and a description', () => {
-    for (const attraction of attractionRegistry.all()) {
+    for (const attraction of squares) {
       expect(attraction.name.trim(), attraction.id).not.toBe('');
       expect(attraction.description.trim(), attraction.id).not.toBe('');
     }
@@ -60,7 +67,7 @@ describe('attraction registry', () => {
       get: (target, key: string) => (key in target ? target[key] : () => {}),
       set: (target, key: string, value) => ((target[key] = value), true),
     }) as unknown as CanvasRenderingContext2D;
-    for (const attraction of attractionRegistry.all()) {
+    for (const attraction of squares) {
       for (const size of [160, 480]) {
         for (const time of [0, 1234, 60_000]) {
           expect(() => attraction.draw(ctx, size, time), attraction.id).not.toThrow();

@@ -2,6 +2,7 @@ import './style.css';
 import { attractionRegistry } from '../northpole/attractions';
 import { CHANGE_URL, CLAIM_URL } from '../northpole/links';
 import { startMap, startPreview } from '../northpole/map';
+import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { applyTheme } from '../northpole/theme';
 import { boothRegistry } from '../northpole/booths';
@@ -10,6 +11,15 @@ applyTheme();
 
 const app = document.querySelector<HTMLElement>('#app')!;
 let stop: (() => void) | undefined;
+
+/**
+ * Calls `show` now, and again once a sandboxed square's frame has said its name
+ * and description: until then the page only knows its id.
+ */
+function whenNamed(square: NorthPoleSquare, show: () => void) {
+  show();
+  if ('onReady' in square) (square as SandboxedSquare).onReady(show);
+}
 
 function renderGuide(
   list: Element,
@@ -21,7 +31,7 @@ function renderGuide(
     const item = document.createElement('li');
     item.innerHTML = `<a><span class="name"></span> <span class="owner"></span></a>`;
     item.querySelector('a')!.href = `#/${href}/${square.id}`;
-    item.querySelector('.name')!.textContent = square.name;
+    whenNamed(square, () => (item.querySelector('.name')!.textContent = square.name));
     item.querySelector('.owner')!.textContent = by(square.id);
     list.append(item);
   }
@@ -88,8 +98,10 @@ function renderBooth(booth: NorthPoleSquare) {
         Is this yours? <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask the factory for a change</a>.
       </p>
     </section>`;
-  app.querySelector('h1')!.textContent = booth.name;
-  app.querySelector('.description')!.textContent = booth.description;
+  whenNamed(booth, () => {
+    app.querySelector('h1')!.textContent = booth.name;
+    app.querySelector('.description')!.textContent = booth.description;
+  });
   const owner = app.querySelector<HTMLAnchorElement>('.owner a')!;
   owner.textContent = `@${booth.id}`;
   owner.href = `https://github.com/${booth.id}`;
@@ -112,8 +124,10 @@ function renderAttraction(attraction: NorthPoleSquare) {
         <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.
       </p>
     </section>`;
-  app.querySelector('h1')!.textContent = attraction.name;
-  app.querySelector('.description')!.textContent = attraction.description;
+  whenNamed(attraction, () => {
+    app.querySelector('h1')!.textContent = attraction.name;
+    app.querySelector('.description')!.textContent = attraction.description;
+  });
   stop = startPreview(app.querySelector('canvas')!, attraction);
 }
 

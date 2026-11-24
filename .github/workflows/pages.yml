@@ -136,6 +136,15 @@ jobs:
             [ -n "$run" ] || continue
             rm -rf "$dir"
             gh run download "$run" --name preview --dir "$dir"
+            # The smoke test's screenshots, if it made any: only PNGs with plain
+            # names are copied, so they can't add pages to the site.
+            shots=$(mktemp -d)
+            if gh run download "$run" --name screenshots --dir "$shots" 2>/dev/null; then
+              mkdir -p "$dir/screenshots"
+              find "$shots" -maxdepth 1 -type f -regextype posix-extended \
+                -regex '.*/(map|(booth|attraction)-[a-z0-9]+(-[a-z0-9]+)*)\.png' \
+                -exec cp {} "$dir/screenshots/" \;
+            fi
             echo "$sha" > "$dir/.preview-sha"
             placed+=("$number:$sha")
           done <<<"$open"
@@ -191,12 +200,17 @@ jobs:
             squares=$(gh api "repos/$GH_REPO/pulls/$pr/files" --paginate --jq '.[].filename' |
               sed -nE 's#^(booth|attraction)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
             links=""
+            shots="${url}screenshots"
             for square in $squares; do
               links="$links
-          - [\`$square\`](${url}#/$square)"
+          - [\`$square\`](${url}#/$square)
+
+            <img src=\"$shots/${square%%/*}-${square#*/}.png\" alt=\"$square\" width=\"240\">"
             done
             body="<!-- pr-preview -->
-          **Preview:** $url (built from ${sha::7}). It updates on every push and is removed when this pull request closes."
+          **Preview:** $url (built from ${sha::7}). It updates on every push and is removed when this pull request closes.
+
+          <img src=\"${url}screenshots/map.png\" alt=\"The map in this preview\" width=\"480\">"
             if [ -n "$links" ]; then
               body="$body
 
