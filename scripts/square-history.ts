@@ -6,8 +6,8 @@
  *
  * Everything here is public on the repository already. Titles and logins are
  * participants' text, so they're capped, and the page only ever sets them as
- * text. This is the one data script for a square's past: credits (#32) read
- * the same file.
+ * text. This is meant to be the one data script for a square's past: the
+ * credits (#32), still to come, should read the same file.
  */
 
 export type HistoryKind = 'booth' | 'attraction';
@@ -143,7 +143,8 @@ export interface ShapeOptions {
 /**
  * Every square's history. A request belongs to the squares its factory pull
  * requests change, and a booth request also to its author's booth, so one
- * that was declined or asked a question still shows there. Newest first.
+ * that was declined or asked a question still shows there. Each square lists
+ * only the pull requests that changed it. Newest first.
  */
 export function shapeHistory(options: ShapeOptions): SquareHistory {
   const known = new Set(options.squares);
@@ -174,7 +175,9 @@ export function shapeHistory(options: ShapeOptions): SquareHistory {
         author: cap(author, 39),
         openedAt: issue.createdAt,
         decision: decisionOf(labels, pulls.length > 0),
-        pulls: pulls.map(({ pull }) => shapePull(pull, square, options)),
+        pulls: pulls
+          .filter((p) => p.squares.includes(square))
+          .map(({ pull }) => shapePull(pull, square, options)),
       });
     }
   }

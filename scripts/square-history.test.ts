@@ -144,6 +144,18 @@ describe('shapeHistory', () => {
     });
   });
 
+  it('lists on each square only the pull requests that changed it', () => {
+    const history = shape(
+      [issue(5, 'ana', ['booth-request', 'tessl'], '2026-11-22T10:00:00Z')],
+      [
+        pull(6, 'tessl/issue-5', ['attractions/ferris-wheel/attraction.ts'], { state: 'CLOSED' }),
+        pull(7, 'tessl/issue-5', ['booths/ana/booth.ts']),
+      ],
+    );
+    expect(history.squares['attraction/ferris-wheel'][0].pulls.map((p) => p.number)).toEqual([6]);
+    expect(history.squares['booth/ana'][0].pulls.map((p) => p.number)).toEqual([7]);
+  });
+
   it("shows a booth request that wasn't built on its author's booth", () => {
     const history = shape(
       [
