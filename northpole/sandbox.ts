@@ -12,7 +12,8 @@
 import { canvasFont, theme } from './theme';
 import { BUILD_ID } from '../src/updates';
 import { readFrameMessage, type SquareKind } from './frame-protocol';
-import type { NorthPoleSquare } from './square';
+import { rescale } from './pointer';
+import type { NorthPoleSquare, SquarePointer } from './square';
 
 /** How long a square may take to open, its download included. */
 export const READY_TIMEOUT = 10_000;
@@ -220,7 +221,7 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
       if (state === 'ready') listener(info);
       else listeners.push(listener);
     },
-    draw(ctx: CanvasRenderingContext2D, size: number, time: number) {
+    draw(ctx: CanvasRenderingContext2D, size: number, time: number, pointer?: SquarePointer) {
       self.lastDrawn = performance.now();
       if (!iframe && state !== 'broken') start();
       if (state === 'broken') {
@@ -241,7 +242,11 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
       if (state === 'ready' && waitingFor === undefined) {
         waitingFor = Math.round(size);
         waitingSince = performance.now();
-        iframe!.contentWindow?.postMessage({ type: 'draw', size: waitingFor, time }, '*');
+        // The frame checks the pointer again: it only ever passes on x, y and down.
+        const request = pointer
+          ? { type: 'draw', size: waitingFor, time, pointer: rescale(pointer, size, waitingFor) }
+          : { type: 'draw', size: waitingFor, time };
+        iframe!.contentWindow?.postMessage(request, '*');
       }
       if (latest) {
         ctx.drawImage(latest, 0, 0, size, size);

@@ -32,7 +32,8 @@ import {
   type Look,
   type Mapping,
 } from './render';
-import type { NorthPoleSquare } from './square';
+import { isTap, onMapping, onRect } from './pointer';
+import type { NorthPoleSquare, SquarePointer } from './square';
 import { canvasFont, theme } from './theme';
 import {
   buildWorld,
@@ -69,12 +70,13 @@ export function drawSquare(
   y: number,
   size: number,
   time: number,
+  pointer?: SquarePointer,
 ) {
   // Setting the size resets the scratch canvas: its pixels, transform, clip and styles.
   scratch.width = size;
   scratch.height = size;
   try {
-    booth.draw(scratch.getContext('2d')!, size, time);
+    booth.draw(scratch.getContext('2d')!, size, time, pointer);
     // The booth can resize its canvas, so copy exactly its square onto exactly its
     // own square. A canvas it emptied makes drawImage throw, which shows the placeholder.
     ctx.drawImage(scratch, 0, 0, size, size, x, y, size, size);
@@ -158,6 +160,69 @@ function claim() {
   link.click();
 }
 
+/** How long a press shows as `down`, at least, so a quick tap still reaches the square. */
+const PRESS_SHOWN = 150;
+
+/**
+ * Follows the mouse or a finger over `element`: where it is, in CSS pixels
+ * from the element's top-left, whether it's pressed, and whether the last
+ * press was a click or a drag. A quick tap stays pressed for `PRESS_SHOWN`, and
+ * a finger lifted off stays there as long, so a square asked for its next frame
+ * still sees it.
+ */
+function trackPointer(element: HTMLElement) {
+  let at: Tile | undefined;
+  let held = false;
+  let pressedAt = -Infinity;
+  let pressedFrom: Tile | undefined;
+  let goneAt = Infinity;
+  const place = (event: PointerEvent): Tile => {
+    const box = element.getBoundingClientRect();
+    return { x: event.clientX - box.left, y: event.clientY - box.top };
+  };
+  const onMove = (event: PointerEvent) => {
+    at = place(event);
+    goneAt = Infinity;
+  };
+  const onDown = (event: PointerEvent) => {
+    at = pressedFrom = place(event);
+    held = true;
+    pressedAt = performance.now();
+    goneAt = Infinity;
+  };
+  const onUp = (event: PointerEvent) => {
+    at = place(event);
+    held = false;
+  };
+  const onLeave = (event: PointerEvent) => {
+    held = false;
+    goneAt = event.pointerType === 'mouse' ? 0 : performance.now() + PRESS_SHOWN;
+  };
+  const events = [
+    ['pointermove', onMove],
+    ['pointerdown', onDown],
+    ['pointerup', onUp],
+    ['pointerleave', onLeave],
+    ['pointercancel', onLeave],
+  ] as const;
+  for (const [name, listener] of events) element.addEventListener(name, listener);
+  return {
+    /** Where the pointer is now, and whether it's pressed, or undefined when it's off the element. */
+    now(): { x: number; y: number; down: boolean } | undefined {
+      const time = performance.now();
+      if (!at || time > goneAt) return undefined;
+      return { x: at.x, y: at.y, down: held || time - pressedAt < PRESS_SHOWN };
+    },
+    /** Whether a click at `point` ended a press that barely moved, so it opens what it's on. */
+    tapped(point: Tile) {
+      return !pressedFrom || isTap(pressedFrom, point);
+    },
+    stop() {
+      for (const [name, listener] of events) element.removeEventListener(name, listener);
+    },
+  };
+}
+
 /** What the page can ask of a running map. */
 export interface MapControls {
   /** Stops it all. */
@@ -236,6 +301,7 @@ export function startMap(
   /** What can be clicked this frame, back to front: each plot's structure or sign. */
   let targets: { plot: Plot; box: Box }[] = [];
   const held = new Set<string>();
+  const pointer = trackPointer(canvas);
 
   // The static layers: the sky and the mountains at the screen's size, and the
   // island and its front fence at the resolution the camera comes nearest at.
@@ -428,14 +494,32 @@ export function startMap(
       if (thing.kind === 'drift') drawThing(ctx, thing, motion);
       else add(thing.x + thing.w + thing.y + thing.h - 2, () => drawThing(ctx, thing, motion));
     }
+    // The pointer, in world pixels, and the square in front under it: only that square gets it.
+    const pressed = pointer.now();
+    const aimed = pressed && screenToWorld(pressed, width, height, camera, zoom);
+    const under = aimed && plotUnder(aimed);
+    const hovered = under && squareOf(under);
+    let pointed = '';
     targets = [];
-    const paint = (square: NorthPoleSquare, { origin, u, v }: Mapping) => {
+    const paint = (square: NorthPoleSquare, mapping: Mapping) => {
+      const { origin, u, v } = mapping;
       // The square draws at the resolution its face shows at, so its drawing stays sharp,
       // and the face's own angles map it onto the world.
       const size = Math.max(16, Math.min(512, Math.round(Math.hypot(u.x, u.y) * k)));
+      const inside = square === hovered && aimed ? onMapping(aimed, mapping, size) : undefined;
+      if (inside) pointed = `${under!.kind}:${square.id}`;
       ctx.save();
       ctx.transform(u.x / size, u.y / size, v.x / size, v.y / size, origin.x, origin.y);
-      drawSquare(ctx, scratch, square, 0, 0, size, time);
+      drawSquare(
+        ctx,
+        scratch,
+        square,
+        0,
+        0,
+        size,
+        time,
+        inside && { ...inside, down: pressed!.down },
+      );
       ctx.restore();
     };
     for (const plot of world.plots) {
@@ -492,6 +576,8 @@ export function startMap(
     scene.sort((a, b) => a.depth - b.depth);
     for (const item of scene) item.draw();
     if (focused) focusedAt ??= time;
+    // Which square has the pointer, for the smoke test.
+    if (canvas.dataset.pointer !== pointed) canvas.dataset.pointer = pointed;
 
     ctx.drawImage(front.canvas, groundBox.x, groundBox.y, groundBox.w, groundBox.h);
     drawStringLights(ctx, island, true, motion);
@@ -550,6 +636,9 @@ export function startMap(
   };
 
   const onClick = (event: MouseEvent) => {
+    // A drag is the square's to play with, not a click.
+    const box = canvas.getBoundingClientRect();
+    if (!pointer.tapped({ x: event.clientX - box.left, y: event.clientY - box.top })) return;
     const point = pointAt(event);
     const plot = plotUnder(point);
     if (plot) return open(plot);
@@ -603,6 +692,7 @@ export function startMap(
       canvas.removeEventListener('click', onClick);
       canvas.removeEventListener('pointermove', onPointerMove);
       prompt.removeEventListener('click', onPrompt);
+      pointer.stop();
     },
     walkTo(kind, id) {
       const plot = world.plots.find((p) => p.kind === kind && p.id === id);
@@ -640,18 +730,32 @@ export function startMap(
   };
 }
 
-/** Animates a single booth or attraction, large, on its own canvas. Returns a function that stops it. */
+/**
+ * Animates a single booth or attraction, large, on its own canvas, and gives it
+ * the pointer when it's over the canvas. Returns a function that stops it.
+ */
 export function startPreview(canvas: HTMLCanvasElement, booth: NorthPoleSquare, size = 480) {
   const ctx = canvas.getContext('2d')!;
   const scratch = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
+  const pointer = trackPointer(canvas);
   let frame = 0;
   const render = (time: number) => {
+    const pressed = pointer.now();
+    // The page may show the canvas smaller than it draws, so the pointer scales with it.
+    const inside =
+      pressed &&
+      onRect(pressed, { x: 0, y: 0, w: canvas.clientWidth, h: canvas.clientHeight }, size);
+    const pointed = inside ? `${booth.id}` : '';
+    if (canvas.dataset.pointer !== pointed) canvas.dataset.pointer = pointed;
     ctx.clearRect(0, 0, size, size);
-    drawSquare(ctx, scratch, booth, 0, 0, size, time);
+    drawSquare(ctx, scratch, booth, 0, 0, size, time, inside && { ...inside, down: pressed!.down });
     frame = requestAnimationFrame(render);
   };
   frame = requestAnimationFrame(render);
-  return () => cancelAnimationFrame(frame);
+  return () => {
+    cancelAnimationFrame(frame);
+    pointer.stop();
+  };
 }

@@ -4,6 +4,7 @@ import {
   MAX_NAME,
   MAX_SIZE,
   readDrawRequest,
+  readPointer,
   readFrameAddress,
   readFrameMessage,
 } from './frame-protocol';
@@ -96,6 +97,46 @@ describe('readDrawRequest', () => {
     }
     expect(readDrawRequest({ type: 'draw', size: 10, time: Infinity })).toBeUndefined();
     expect(readDrawRequest({ type: 'paint', size: 10, time: 0 })).toBeUndefined();
+  });
+
+  it('passes on a pointer within the square', () => {
+    expect(
+      readDrawRequest({ type: 'draw', size: 100, time: 0, pointer: { x: 0, y: 100, down: true } }),
+    ).toEqual({ type: 'draw', size: 100, time: 0, pointer: { x: 0, y: 100, down: true } });
+  });
+
+  it('draws without a malformed pointer', () => {
+    for (const pointer of [
+      { x: 101, y: 5, down: false },
+      { x: -1, y: 5, down: false },
+      { x: 5, y: NaN, down: false },
+      { x: 5, y: Infinity, down: false },
+      { x: '5', y: 5, down: false },
+      { x: 5, y: 5, down: 'yes' },
+      { x: 5, y: 5 },
+      [5, 5, true],
+      'here',
+      null,
+    ]) {
+      expect(
+        readDrawRequest({ type: 'draw', size: 100, time: 0, pointer }),
+        JSON.stringify(pointer),
+      ).toEqual({ type: 'draw', size: 100, time: 0 });
+    }
+  });
+});
+
+describe('readPointer', () => {
+  it('keeps only x, y and down', () => {
+    const pointer = { x: 1, y: 2, down: false, event: {}, toString: () => 'x' };
+    expect(readPointer(pointer, 10)).toEqual({ x: 1, y: 2, down: false });
+    expect(Object.keys(readPointer(pointer, 10)!)).toEqual(['x', 'y', 'down']);
+  });
+
+  it("refuses what's outside the square", () => {
+    expect(readPointer({ x: 10, y: 10, down: false }, 10)).toEqual({ x: 10, y: 10, down: false });
+    expect(readPointer({ x: 10.01, y: 0, down: false }, 10)).toBeUndefined();
+    expect(readPointer(undefined, 10)).toBeUndefined();
   });
 });
 

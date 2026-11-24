@@ -51,6 +51,15 @@ describe('drawSquare', () => {
     expect(map.args[0]).toEqual([scratch.canvas, 0, 0, 100, 100, 10, 20, 100, 100]);
   });
 
+  it('passes the square its pointer, and undefined without one', () => {
+    const seen: unknown[] = [];
+    const square = booth((_ctx, _size, _time, pointer) => seen.push(pointer));
+    const pointer = { x: 4, y: 5, down: true };
+    drawSquare(recordingContext().ctx, scratchCanvas().canvas, square, 0, 0, 10, 0, pointer);
+    drawSquare(recordingContext().ctx, scratchCanvas().canvas, square, 0, 0, 10, 0);
+    expect(seen).toEqual([pointer, undefined]);
+  });
+
   it('copies only the booth square when the booth enlarges its canvas', () => {
     const map = recordingContext();
     const scratch = scratchCanvas();

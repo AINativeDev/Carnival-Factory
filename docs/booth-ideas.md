@@ -24,6 +24,10 @@ A few things that help:
 - **What moves, as a loop.** Booths animate from time, so describe something
   that repeats every few seconds: a skater's circuit, smoke rising, lights
   twinkling in turn.
+- **What happens when someone points at it.** A booth can react to the mouse
+  or a finger over it: a penguin that waves when you hover, a snowball you
+  throw with a tap, a little game. On the map a click still opens the booth,
+  so taps and games are for its own page.
 - **A focal point.** One thing the eye lands on first, then the small details.
 - **Little touches.** A sign with a pun, a cat on a roof, a snowman with
   sunglasses. These are what people remember.
@@ -37,8 +41,9 @@ A few things that help:
 ## What a booth can't do
 
 A booth only draws on its own square, so it can't play sound, load pictures or
-fonts from the internet, link anywhere, store anything, or react to the mouse
-yet. It also can't flash fast, which isn't safe for everyone. Keep it friendly
+fonts from the internet, link anywhere, or store anything. It only knows
+where the pointer is over its own square, never the rest of the page. It also
+can't flash fast, which isn't safe for everyone. Keep it friendly
 for a family audience at work, and make it your own: no logos or characters
 someone else owns, though anything _in the spirit of_ one is fine.
 

@@ -7,7 +7,9 @@ import { canvasFont, theme } from './theme';
  * `draw` paints the square into a `size` by `size` square whose top-left corner
  * is the context's origin. Each square draws on a canvas of its own that size,
  * so nothing it draws can spill onto a neighbour. `time` is milliseconds since the page
- * loaded, for squares that animate.
+ * loaded, for squares that animate. `pointer` is where the mouse or a finger is
+ * over the square, for squares people can play with, or undefined when it isn't
+ * over this square.
  */
 export interface NorthPoleSquare {
   /**
@@ -18,7 +20,19 @@ export interface NorthPoleSquare {
   name: string;
   /** One sentence, shown on the map. */
   description: string;
-  draw(ctx: CanvasRenderingContext2D, size: number, time: number): void;
+  draw(ctx: CanvasRenderingContext2D, size: number, time: number, pointer?: SquarePointer): void;
+}
+
+/**
+ * The mouse or a finger over a square: `x` and `y` in the square's own
+ * coordinates, from 0 to `size` with 0, 0 at its top-left, and whether a
+ * button or finger is pressed. A square only ever gets these numbers, never
+ * the page's own events.
+ */
+export interface SquarePointer {
+  x: number;
+  y: number;
+  down: boolean;
 }
 
 /** A GitHub login: letters, digits and single hyphens, up to 39 characters. */
