@@ -69,7 +69,7 @@ for (const { kind, id } of squares) {
     // The slowest frame after warming up, not just the last one.
     const slowest = Number(await frame.getAttribute('data-slowest-draw-ms'));
     expect(slowest, 'a frame took too long to draw').toBeLessThanOrEqual(FRAME_BUDGET_MS);
-    await page.locator('canvas').screenshot({ path: join(SHOTS, `${kind}-${id}.png`) });
+    await page.locator('.visit-canvas').screenshot({ path: join(SHOTS, `${kind}-${id}.png`) });
     expect(problems).toEqual([]);
   });
 }
@@ -78,7 +78,7 @@ test('the map opens the squares in view and stays quiet', async ({ page }) => {
   const problems = watch(page);
   await page.goto('#/');
   // The town only draws, and so only opens, the squares in view: each one's
-  // own test above opens it on its own page.
+  // own test above opens it in its visit card.
   await expect(page.locator('iframe[data-kind]').first()).toBeAttached({ timeout: 5000 });
   await page.waitForTimeout(3000);
   const states = await page
@@ -181,15 +181,37 @@ test('a deep link to a booth nobody has built says so, as text', async ({ page }
   await expect(page.locator('.map-note b')).toHaveCount(0);
 });
 
-test("a square's page shares its deep link", async ({ page, context }) => {
+test("Share copies a friendly line with the booth's share page, which unfurls and leads back", async ({
+  page,
+  context,
+  request,
+}) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('#/booth/jedi4ever');
-  await page.getByRole('button', { name: 'Copy link' }).click();
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Copied!' })).toBeVisible();
   const copied = await page.evaluate(() => navigator.clipboard.readText());
-  expect(copied).toBe('http://localhost:4173/#/?booth=jedi4ever');
+  expect(copied).toMatch(
+    /^@jedi4ever built .+ at the North Pole Carnival\. Come visit, and build your own: http:\/\/localhost:4173\/share\/booth-jedi4ever\.html$/,
+  );
+  // The owner can share it as theirs, and edit the line before copying.
+  await page.getByRole('button', { name: 'share it as yours' }).click();
+  await expect(page.getByLabel('Share text')).toHaveValue(/^I built /);
+
+  const share = await request.get('share/booth-jedi4ever.html');
+  const html = await share.text();
+  expect(html).toContain('<meta property="og:title"');
+  expect(html).toContain('<meta property="og:description"');
+  expect(html).toContain('<meta property="og:image"');
+  expect(html).toContain('<meta name="twitter:card"');
+  expect(html).not.toMatch(/<script/i);
+  await page.goto('share/booth-jedi4ever.html');
+  await expect(page).toHaveURL(/#\/booth\/jedi4ever$/);
+  await expect(page.getByRole('dialog', { name: /.+/ })).toBeVisible();
+
   await page.getByRole('link', { name: 'See it on the map' }).click();
   await expect(page).toHaveURL(/#\/\?booth=jedi4ever$/);
+  await expect(page.locator('.visit')).toHaveCount(0);
   await expect(page.locator('.map-canvas')).toBeVisible();
 });
 
@@ -214,18 +236,77 @@ test('the player walks the world with the keyboard, and it stays quiet', async (
   expect(problems).toEqual([]);
 });
 
-test('pressing E at a booth opens it, and coming back puts the player there', async ({ page }) => {
+test('pressing E at a booth opens its card in the world, and Esc closes it', async ({ page }) => {
   const problems = watch(page);
   await page.goto('#/?booth=jedi4ever');
   const canvas = page.locator('.map-canvas');
   await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever');
   await expect(page.locator('.map-prompt')).toBeVisible();
+  // Standing at the stall shows its tag.
+  await expect(page.locator('.map-tag.shown')).toHaveAttribute('data-plot', 'booth:jedi4ever');
   const at = await canvas.getAttribute('data-player');
   await canvas.focus();
   await page.keyboard.press('e');
   await expect(page).toHaveURL(/#\/booth\/jedi4ever$/);
-  await page.getByRole('link', { name: '← Back to the map' }).click();
-  await expect(page.locator('.map-canvas')).toHaveAttribute('data-player', at!);
+  const card = page.getByRole('dialog');
+  await expect(card).toBeVisible();
+  await expect(card.getByRole('heading')).toBeFocused();
+  await expect(card).toContainText('@jedi4ever');
+  await expect(page.locator('.map-frame')).toHaveAttribute('data-visiting', 'booth:jedi4ever');
+  await expect(frameOf(page, 'booth', 'jedi4ever')).toHaveAttribute('data-state', 'ready');
+  // A link to the map counts as a shared link: the invitation shows, once a visit.
+  await expect(card.locator('.visit-invite')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(card).toHaveCount(0);
+  await expect(page).toHaveURL(/#\/\?booth=jedi4ever$/);
+  await expect(page.locator('.map-frame')).not.toHaveAttribute('data-visiting', /.*/);
+  await expect(canvas).toHaveAttribute('data-player', at!);
+  await expect(canvas).toBeFocused();
+
+  // The back button closes it too, and walking away does.
+  await page.keyboard.press('e');
+  await expect(card).toBeVisible();
+  await expect(card.locator('.visit-invite')).toBeHidden();
+  await page.goBack();
+  await expect(card).toHaveCount(0);
+  await canvas.focus();
+  await page.keyboard.press('e');
+  await expect(card).toBeVisible();
+  await page.keyboard.down('d');
+  await expect(card).toHaveCount(0);
+  await page.keyboard.up('d');
+  expect(problems).toEqual([]);
+});
+
+test('a shared link opens the card in the world, and invites the visitor to claim the plot next door', async ({
+  page,
+  context,
+}) => {
+  const problems = watch(page);
+  await context.route('https://github.com/**', (route) => route.fulfill({ body: 'claim form' }));
+  await page.goto('#/booth/jedi4ever');
+  const card = page.getByRole('dialog');
+  await expect(card).toBeVisible();
+  await expect(page.locator('.map-canvas')).toBeVisible();
+  const invite = card.locator('.visit-invite');
+  await expect(invite).toBeVisible();
+  await expect(invite).toContainText('@jedi4ever built this by describing it in an issue');
+  await expect(invite.getByRole('link', { name: 'How was this built?' })).toHaveAttribute(
+    'href',
+    /docs\/how-it-works\.md$/,
+  );
+  await invite.getByRole('button', { name: 'Claim the plot next door' }).click();
+  await expect(card).toHaveCount(0);
+  await expect(page).toHaveURL(/#\/$/);
+  const canvas = page.locator('.map-canvas');
+  await expect(canvas).toHaveAttribute('data-near', /^open:/, { timeout: 20_000 });
+  const form = context.waitForEvent('page');
+  await page.keyboard.press('e');
+  expect((await form).url()).toBe(CLAIM_URL);
+  // The invitation shows once a visit: opening the booth again doesn't nag.
+  await page.locator('.hud-list button[data-kind="booth"][data-id="jedi4ever"]').click();
+  await expect(card).toBeVisible();
+  await expect(card.locator('.visit-invite')).toBeHidden();
   expect(problems).toEqual([]);
 });
 
@@ -283,17 +364,23 @@ test("shift-clicking a name in the Booths panel walks the player to a booth's do
   await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 20_000 });
 });
 
-test('the Booths panel and Featured jump straight to their square', async ({ page }) => {
+test('the Booths panel and Featured go straight to their square, and open its card', async ({
+  page,
+}) => {
   const problems = watch(page);
   await page.goto('#/');
   const canvas = page.locator('.map-canvas');
   await page.locator('.hud-list button[data-kind="booth"][data-id="jedi4ever"]').click();
   await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 1000 });
+  await expect(page.locator('.visit[data-kind="booth"][data-id="jedi4ever"]')).toBeVisible();
   const featured = page.locator('.hud-featured button[data-kind]');
   await expect(featured).toContainText('Featured');
   await featured.click();
   const id = await featured.getAttribute('data-id');
   await expect(canvas).toHaveAttribute('data-near', `attraction:${id}`, { timeout: 1000 });
+  await expect(page).toHaveURL(new RegExp(`#/attraction/${id}$`));
+  await expect(page.locator(`.visit[data-kind="attraction"][data-id="${id}"]`)).toBeVisible();
+  await expect(page.locator('.visit')).toHaveCount(1);
   expect(problems).toEqual([]);
 });
 

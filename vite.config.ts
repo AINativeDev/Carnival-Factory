@@ -1,6 +1,8 @@
 import { execSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vitest/config';
+import { readSquareInfo, sharePage, siteUrl, type ShareKind } from './scripts/share-pages.ts';
 
 /** This build's id: the commit and the time, so every build differs. */
 const BUILD_ID = (() => {
@@ -28,8 +30,48 @@ const versionFile: Plugin = {
   },
 };
 
+/**
+ * Writes share/<kind>-<id>.html for every booth and attraction, the pages Share
+ * links to so they unfurl with a title, a description and the map's picture
+ * (scripts/share-pages.ts), and that picture beside them.
+ */
+const sharePages: Plugin = {
+  name: 'share-pages',
+  apply: 'build',
+  generateBundle() {
+    const root = import.meta.dirname;
+    const disabled = JSON.parse(readFileSync(join(root, 'northpole/disabled.json'), 'utf8')) as {
+      booths: string[];
+      attractions: string[];
+    };
+    const site = siteUrl(process.env);
+    const image = site ? `${site}share/map.png` : 'map.png';
+    this.emitFile({
+      type: 'asset',
+      fileName: 'share/map.png',
+      source: readFileSync(join(root, 'docs/north-pole.png')),
+    });
+    for (const kind of ['booth', 'attraction'] as ShareKind[]) {
+      const dir = join(root, `${kind}s`);
+      const off = new Set(disabled[`${kind}s`].map((id) => id.toLowerCase()));
+      for (const id of readdirSync(dir)) {
+        const file = join(dir, id, `${kind}.ts`);
+        if (!existsSync(file)) continue;
+        const info = readSquareInfo(readFileSync(file, 'utf8'));
+        const name = info.name ?? (kind === 'booth' ? `@${id}'s booth` : id);
+        const description = off.has(id) ? 'Closed for repairs.' : (info.description ?? '');
+        this.emitFile({
+          type: 'asset',
+          fileName: `share/${kind}-${id}.html`,
+          source: sharePage({ kind, id, name, description }, image),
+        });
+      }
+    }
+  },
+};
+
 export default defineConfig(({ command }) => ({
-  plugins: [versionFile],
+  plugins: [versionFile, sharePages],
   define: { __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev') },
   // Relative asset paths, so the build works on any fork's GitHub Pages URL.
   base: './',

@@ -10,7 +10,7 @@ import {
 } from '../scripts/flashing.ts';
 
 /**
- * Seizure safety: plays every booth and attraction on its own page and measures
+ * Seizure safety: plays every booth and attraction in its visit card and measures
  * how often it flashes (see scripts/flashing.ts). Nothing may flash more than
  * three times a second.
  */
@@ -26,12 +26,14 @@ for (const { kind, id } of squares) {
     page,
   }) => {
     await page.goto(`#/${kind}/${id}`);
+    await page.locator('.visit-canvas').waitFor();
     await page.waitForTimeout(1500);
     // An 8 by 8 grid of cells, each with its own brightness over time, so
     // regions flashing out of step can't cancel out.
     const GRID = 8;
     const raw = await page.evaluate(async (grid) => {
-      const canvas = document.querySelector('canvas')!;
+      // The square's visit card, open in the world.
+      const canvas = document.querySelector<HTMLCanvasElement>('.visit-canvas')!;
       const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
       const frames: { t: number; cells: [number, number, number][] }[] = [];
       const start = performance.now();

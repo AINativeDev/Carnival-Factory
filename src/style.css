@@ -180,12 +180,6 @@ body[data-view='map'] .map {
   color: var(--color-muted);
 }
 
-.booth-canvas {
-  width: min(480px, 100%);
-  margin-top: 16px;
-  border-radius: var(--radius);
-}
-
 .map-note {
   position: absolute;
   top: 56px;
@@ -416,4 +410,223 @@ kbd {
   color: var(--color-snow);
   font: inherit;
   cursor: pointer;
+}
+
+/* A visit: the world dims and blurs softly round the stall, and its card rises in front of it. */
+.map-canvas {
+  transition: filter 0.4s ease;
+}
+
+.map-frame[data-visiting] .map-canvas {
+  filter: brightness(0.55) blur(3px);
+}
+
+.map-frame[data-visiting] .map-prompt,
+.map-frame[data-visiting] .hud-actions {
+  display: none;
+}
+
+.visit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 5;
+  box-sizing: border-box;
+  width: min(420px, calc(100% - 24px));
+  max-height: calc(100% - 24px);
+  overflow: auto;
+  padding: 16px 20px 20px;
+  border: 3px solid var(--color-gold);
+  border-radius: var(--radius);
+  background: var(--color-cream);
+  color: var(--color-ink);
+  text-align: center;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--color-night) 60%, transparent);
+  animation: visit-rise 0.45s ease-out;
+}
+
+@keyframes visit-rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 48px));
+  }
+}
+
+.visit-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  border: 0;
+  background: none;
+  color: var(--color-ink);
+  font: bold 26px var(--font-family);
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* The drawing, framed like a stall window. */
+.visit-window {
+  margin: 8px auto 0;
+  width: min(240px, 70%);
+  padding: 8px;
+  border: 6px solid var(--color-wood);
+  border-radius: 6px;
+  background: var(--color-cocoa);
+}
+
+.visit-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.visit-title {
+  margin: 12px 0 2px;
+  font-size: 22px;
+}
+
+.visit-title:focus {
+  outline: none;
+}
+
+.visit-owner,
+.visit-description,
+.visit-help {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.visit-owner {
+  font-weight: bold;
+}
+
+.visit-share {
+  margin: 12px 0 4px;
+  text-align: left;
+}
+
+.visit-label {
+  font-size: 12px;
+}
+
+.visit-share-text {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 2px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-wood);
+  border-radius: 6px;
+  font: 13px var(--font-family);
+  resize: vertical;
+}
+
+.visit-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.visit-copy,
+.visit-claim {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 18px;
+  background: var(--color-berry);
+  color: var(--color-snow);
+  font: bold 15px var(--font-family);
+  cursor: pointer;
+}
+
+.visit a,
+.visit-mine {
+  color: var(--color-berry);
+}
+
+.visit-mine {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* The invitation, for someone who came by a shared link. */
+.visit-invite {
+  margin-top: 14px;
+  padding: 12px;
+  border: 2px dashed var(--color-berry);
+  border-radius: var(--radius);
+}
+
+.visit-invite[hidden] {
+  display: none;
+}
+
+.visit-invite p {
+  margin: 0 0 10px;
+}
+
+.visit-claim {
+  display: block;
+  margin: 0 auto 8px;
+  padding: 10px 24px;
+  font-size: 18px;
+}
+
+.visit-how {
+  font-size: 13px;
+}
+
+.visit :focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* The tag over what the mouse hovers, or where the player stands: it fades in after a moment. */
+.map-tag {
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  max-width: 240px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.map-tag.shown {
+  opacity: 1;
+  transition-delay: 0.25s;
+}
+
+.map-frame[data-visiting] .map-tag {
+  display: none;
+}
+
+.tag-owner,
+.tag-line,
+.tag-hint {
+  font-size: 12px;
+}
+
+.tag-hint {
+  margin-top: 2px;
+  font-style: italic;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-canvas,
+  .map-tag,
+  .map-tag.shown {
+    transition: none;
+  }
+
+  .visit {
+    animation: none;
+  }
 }

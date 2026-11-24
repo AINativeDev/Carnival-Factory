@@ -9,6 +9,7 @@ import {
   isPhone,
   screenToWorld,
   SLAB,
+  worldToScreen,
   type Framing,
 } from './camera';
 import {
@@ -34,6 +35,7 @@ import {
 } from './render';
 import type { NorthPoleSquare } from './square';
 import { canvasFont, theme } from './theme';
+import { nearestOpenPlot, placeTag, tagText, targetAt, visitFraming } from './visit';
 import {
   buildWorld,
   findPathToFirst,
@@ -100,6 +102,8 @@ export interface MapOptions {
   booths: readonly NorthPoleSquare[];
   /** Opens a square: `id` is a booth's owner or an attraction's id. */
   onOpen(kind: SquareKind, id: string): void;
+  /** Asks to close the visit card: the player walked away, or clicked the world round it. */
+  onLeave(): void;
   /** A square to open the map on: the player starts in front of it, and it glows for a few seconds. */
   focus?: { kind: SquareKind; id: string };
 }
@@ -112,6 +116,11 @@ const SPEED = 4.5;
 /** How long a square the map opens on glows, in milliseconds, and how long it takes to fade. */
 const HIGHLIGHT_TIME = 6000;
 const HIGHLIGHT_FADE = 1500;
+/** The size a visited square draws at, in pixels, so the map and its visit card ask for the same. */
+export const VISIT_SIZE = 480;
+/** How long footprints stay in the snow, in milliseconds, and how far apart they are, in tiles. */
+const FOOTPRINT_TIME = 9000;
+const FOOTPRINT_GAP = 0.45;
 /** How far above the player the camera looks, in world pixels, so more of what's ahead shows. */
 const LOOK_UP = 40;
 /** How long the player stands still before the camera eases back out to the carnival, in milliseconds. */
@@ -168,6 +177,14 @@ export interface MapControls {
   jumpTo(kind: SquareKind, id: string): void;
   /** Walks the player to the nearest open plot. */
   walkToOpenPlot(): void;
+  /** Walks the player to the open plot nearest them, leaving footprints, and bounces its sign. */
+  claimNextDoor(): void;
+  /** Glides the camera in to a square, and dims the world round it, for its visit card. Returns whether it's there. */
+  visit(kind: SquareKind, id: string): boolean;
+  /** Ends a visit: the camera glides back to the player. */
+  leave(): void;
+  /** The square being visited, if any. */
+  readonly visiting: { kind: SquareKind; id: string } | undefined;
   /** Shows the whole island, or goes back to the carnival. Returns whether it shows the whole island. */
   toggleOverview(): boolean;
   /** Whether it shows the whole island. */
@@ -229,6 +246,20 @@ export function startMap(
   let scale = 1;
   let last: number | undefined;
   let focusedAt: number | undefined;
+  /** The plot whose visit card is open, the open plot the player is walking to claim, and their footprints. */
+  let visiting: Plot | undefined;
+  let claiming: Plot | undefined;
+  let footprints: { at: Tile; time: number; side: number }[] = [];
+  /** Whether the world behind a visit card has been drawn since the camera settled on it. */
+  let drawnStill = false;
+  /** The plot under the mouse, or tapped once on a touch screen, and the tag that names it. */
+  let hovered: Plot | undefined;
+  let tagged: Plot | undefined;
+  const tag = document.createElement('div');
+  tag.className = 'hud map-tag';
+  tag.setAttribute('aria-hidden', 'true');
+  tag.innerHTML = `<strong class="tag-name"></strong> <span class="tag-owner"></span><span class="tag-line"></span><span class="tag-hint"></span>`;
+  frame.append(tag);
   let frameId = 0;
   let frames = 0;
   let slowest = 0;
@@ -254,6 +285,7 @@ export function startMap(
     framing(world, frame.clientWidth, frame.clientHeight, player, walking, overview);
 
   const resize = () => {
+    drawnStill = false;
     scale = Math.min(2, window.devicePixelRatio || 1);
     const width = frame.clientWidth;
     const height = frame.clientHeight;
@@ -318,6 +350,8 @@ export function startMap(
     }
     const direction = screenDirection(Math.sign(right), Math.sign(down));
     const before = player;
+    // Walking away from a visit closes its card.
+    if (visiting && (direction.x || direction.y)) options.onLeave();
     if (direction.x || direction.y) {
       path = [];
       player = moveBy(world, player, direction.x * SPEED * dt, direction.y * SPEED * dt);
@@ -328,6 +362,49 @@ export function startMap(
     const dx = toScreen(player).x - toScreen(before).x;
     if (Math.abs(dx) > 0.01) facing = Math.sign(dx);
     near = plotAtDoor(world, player);
+    if (claiming) {
+      const lastStep = footprints.at(-1)?.at ?? before;
+      if (moving && Math.hypot(player.x - lastStep.x, player.y - lastStep.y) >= FOOTPRINT_GAP)
+        footprints.push({
+          at: { ...player },
+          time: performance.now(),
+          side: footprints.length % 2,
+        });
+      // The sign stops bouncing once the player has gone somewhere else.
+      if (!path.length && near !== claiming) claiming = undefined;
+    }
+  };
+
+  /** Shows the tag over the plot under the mouse, or the one the player stands at. */
+  const showTag = (zoom: number, centre: Tile) => {
+    const plot = visiting ? undefined : (hovered ?? near);
+    const target = plot && targets.find((t) => t.plot === plot);
+    if (!plot || !target) {
+      tagged = undefined;
+      tag.classList.remove('shown');
+      return;
+    }
+    if (plot !== tagged) {
+      tagged = plot;
+      const text = tagText(plot, squareOf(plot));
+      tag.querySelector('.tag-name')!.textContent = text.name;
+      tag.querySelector('.tag-owner')!.textContent = text.owner;
+      tag.querySelector('.tag-line')!.textContent = text.line;
+      tag.querySelector('.tag-hint')!.textContent = text.hint;
+      tag.dataset.plot = `${plot.kind}:${plot.id ?? plot.number}`;
+    }
+    tag.classList.add('shown');
+    const width = frame.clientWidth;
+    const height = frame.clientHeight;
+    const { box } = target;
+    const anchor = worldToScreen({ x: box.x + box.w / 2, y: box.y }, width, height, centre, zoom);
+    const feet = worldToScreen(toScreen(player), width, height, centre, zoom);
+    const body = { x: feet.x - 24 * zoom, y: feet.y - 90 * zoom, w: 48 * zoom, h: 96 * zoom };
+    const at = placeTag(anchor, { w: tag.offsetWidth, h: tag.offsetHeight }, body, {
+      w: width,
+      h: height,
+    });
+    tag.style.transform = `translate(${Math.round(at.x)}px, ${Math.round(at.y)}px)`;
   };
 
   /** Where the camera's centre goes for a framing, at a zoom. */
@@ -356,7 +433,7 @@ export function startMap(
       : time - movedAt > SETTLE
         ? Math.max(0, walking - dt * 0.5)
         : walking;
-    const wanted = want();
+    const wanted = visiting ? visitFraming(visiting, width, height) : want();
     if (!camera || still) {
       zoom = wanted.zoom;
       // On a phone the camera opens on the town square, then finds the player.
@@ -379,6 +456,20 @@ export function startMap(
       w: width / zoom,
       h: height / zoom,
     };
+    // Once the camera has settled on a visit, the dimmed world behind the card
+    // stands still, and leaves the time to the square in the card.
+    const settled = centreFor(wanted, zoom);
+    if (
+      visiting &&
+      Math.abs(wanted.zoom - zoom) < 0.002 &&
+      Math.hypot(settled.x - camera.x, settled.y - camera.y) < 0.5
+    ) {
+      if (drawnStill) {
+        frameId = requestAnimationFrame(render);
+        return;
+      }
+      drawnStill = true;
+    } else drawnStill = false;
     const placed = `${Math.round(camera.x)},${Math.round(camera.y)},${zoom.toFixed(4)}`;
     if (canvas.dataset.camera !== placed) canvas.dataset.camera = placed;
 
@@ -408,6 +499,18 @@ export function startMap(
     ctx.drawImage(ground.canvas, groundBox.x, groundBox.y, groundBox.w, groundBox.h);
     drawRipples(ctx, world, motion);
     drawLightPools(ctx, world, motion);
+    // The footprints left walking to claim a plot, fading as they fill with snow.
+    const now = performance.now();
+    footprints = footprints.filter((step) => now - step.time < FOOTPRINT_TIME);
+    for (const step of footprints) {
+      const { x, y } = toScreen(step.at);
+      ctx.globalAlpha = 0.6 * (1 - (now - step.time) / FOOTPRINT_TIME);
+      ctx.fillStyle = colors.snowShade;
+      ctx.beginPath();
+      ctx.ellipse(x + (step.side ? 5 : -5), y, 4, 2.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
     drawStringLights(ctx, island, false, motion);
 
     const shown = (box: Box) => {
@@ -432,7 +535,11 @@ export function startMap(
     const paint = (square: NorthPoleSquare, { origin, u, v }: Mapping) => {
       // The square draws at the resolution its face shows at, so its drawing stays sharp,
       // and the face's own angles map it onto the world.
-      const size = Math.max(16, Math.min(512, Math.round(Math.hypot(u.x, u.y) * k)));
+      // The square being visited draws at its card's size, so the two ask its frame for the same.
+      const size =
+        visiting && square === squareOf(visiting)
+          ? VISIT_SIZE
+          : Math.max(16, Math.min(512, Math.round(Math.hypot(u.x, u.y) * k)));
       ctx.save();
       ctx.transform(u.x / size, u.y / size, v.x / size, v.y / size, origin.x, origin.y);
       drawSquare(ctx, scratch, square, 0, 0, size, time);
@@ -447,7 +554,8 @@ export function startMap(
             : 0;
         const strength = Math.max(plot === near ? 0.7 : 0, glowFor);
         if (strength > 0) drawPlotGlow(ctx, plot, strength);
-        const box = drawPlot(ctx, plot, squareOf(plot), paint, motion, plot === near);
+        const bounce = plot === near || plot === claiming;
+        const box = drawPlot(ctx, plot, squareOf(plot), paint, motion, bounce);
         targets.push({ plot, box });
       });
     }
@@ -498,6 +606,7 @@ export function startMap(
 
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     if (!still) drawSnowfall(ctx, width, height, time);
+    showTag(zoom, camera);
 
     // How long the map took to draw this frame, for the smoke test's budget.
     const spent = performance.now() - started;
@@ -526,19 +635,7 @@ export function startMap(
     );
   };
 
-  const plotUnder = (point: Tile) => {
-    for (let n = targets.length - 1; n >= 0; n--) {
-      const { plot, box } = targets[n];
-      if (
-        point.x >= box.x &&
-        point.x <= box.x + box.w &&
-        point.y >= box.y &&
-        point.y <= box.y + box.h
-      )
-        return plot;
-    }
-    return undefined;
-  };
+  const plotUnder = (point: Tile) => targetAt(targets, point)?.plot;
 
   /** Walks the player to the first of `goals` they can reach. */
   const walkToward = (goals: Tile[]) => {
@@ -550,9 +647,17 @@ export function startMap(
   };
 
   const onClick = (event: MouseEvent) => {
+    if (visiting) return options.onLeave();
     const point = pointAt(event);
     const plot = plotUnder(point);
+    // On a touch screen the first tap on a structure shows its tag, and the second opens it.
+    const touch = (event as PointerEvent).pointerType === 'touch';
+    if (plot && touch && hovered !== plot) {
+      hovered = plot;
+      return;
+    }
     if (plot) return open(plot);
+    hovered = undefined;
     // Walk to the tile clicked, or the nearest one beside it you can stand on.
     const tile = tileOf(toTile(point));
     const goals: Tile[] = [];
@@ -565,7 +670,12 @@ export function startMap(
   };
 
   const onPointerMove = (event: PointerEvent) => {
-    canvas.style.cursor = plotUnder(pointAt(event)) ? 'pointer' : 'default';
+    if (event.pointerType === 'touch') return;
+    hovered = visiting ? undefined : plotUnder(pointAt(event));
+    canvas.style.cursor = hovered ? 'pointer' : 'default';
+  };
+  const onPointerLeave = (event: PointerEvent) => {
+    if (event.pointerType !== 'touch') hovered = undefined;
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -574,14 +684,18 @@ export function startMap(
     if (name in KEYS) {
       held.add(name);
       event.preventDefault();
-    } else if ((name === 'e' || (name === 'enter' && !pressable(event.target))) && near) {
+    } else if (
+      (name === 'e' || (name === 'enter' && !pressable(event.target))) &&
+      near &&
+      !visiting
+    ) {
       event.preventDefault();
       open(near);
     }
   };
   const onKeyUp = (event: KeyboardEvent) => held.delete(event.key.toLowerCase());
   const onBlur = () => held.clear();
-  const onPrompt = () => near && open(near);
+  const onPrompt = () => near && !visiting && open(near);
 
   resize();
   window.addEventListener('resize', resize);
@@ -590,6 +704,7 @@ export function startMap(
   window.addEventListener('blur', onBlur);
   canvas.addEventListener('click', onClick);
   canvas.addEventListener('pointermove', onPointerMove);
+  canvas.addEventListener('pointerleave', onPointerLeave);
   prompt.addEventListener('click', onPrompt);
   frameId = requestAnimationFrame(render);
 
@@ -602,6 +717,9 @@ export function startMap(
       window.removeEventListener('blur', onBlur);
       canvas.removeEventListener('click', onClick);
       canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerleave', onPointerLeave);
+      tag.remove();
+      delete frame.dataset.visiting;
       prompt.removeEventListener('click', onPrompt);
     },
     walkTo(kind, id) {
@@ -621,14 +739,40 @@ export function startMap(
       focusedAt = undefined;
     },
     walkToOpenPlot() {
-      const doors = world.plots
-        .filter((plot) => plot.kind === 'open')
-        .map((plot) => plot.door)
-        .sort(
-          (a, b) =>
-            Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y),
-        );
-      walkToward(doors);
+      const way = nearestOpenPlot(world, player);
+      if (way) path = way.path;
+    },
+    claimNextDoor() {
+      const way = nearestOpenPlot(world, player);
+      if (!way) return;
+      path = way.path;
+      claiming = way.plot;
+      footprints = [];
+    },
+    visit(kind, id) {
+      const plot = world.plots.find((p) => p.kind === kind && p.id === id);
+      if (!plot) return false;
+      if (plotAtDoor(world, player) !== plot) {
+        player = { ...plot.door };
+        path = [];
+      }
+      held.clear();
+      overview = false;
+      visiting = plot;
+      hovered = undefined;
+      frame.dataset.visiting = `${kind}:${id}`;
+      return true;
+    },
+    leave() {
+      if (!visiting) return;
+      visiting = undefined;
+      delete frame.dataset.visiting;
+      // The camera glides back to the player, and eases out a little later, as after a walk.
+      walking = 1;
+      movedAt = performance.now();
+    },
+    get visiting() {
+      return visiting && { kind: visiting.kind as SquareKind, id: visiting.id! };
     },
     toggleOverview() {
       overview = !overview;

@@ -1,19 +1,14 @@
 import './style.css';
 import { attractionRegistry } from '../northpole/attractions';
-import {
-  CHANGE_URL,
-  CLAIM_URL,
-  KEEP_POSTED_URL,
-  REPO_URL,
-  keepPostedHref,
-} from '../northpole/links';
+import { CLAIM_URL, REPO_URL } from '../northpole/links';
 import { isPhone } from '../northpole/camera';
-import { startMap, startPreview, type MapControls, type SquareKind } from '../northpole/map';
+import { startMap, type MapControls, type SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { applyTheme } from '../northpole/theme';
 import { boothRegistry } from '../northpole/booths';
-import { deepLink, parseHash } from './route';
+import { parseHash } from './route';
+import { openVisitCard, type VisitCard } from './visit-card';
 import { keepUpToDate } from './updates';
 
 applyTheme();
@@ -117,7 +112,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
   if (focus && !registry.get(focus.id)) renderUnknown(app.querySelector('.map-note')!, focus);
 
   const canvas = app.querySelector('canvas')!;
-  const map = startMap(
+  const started = startMap(
     app.querySelector('.map-frame')!,
     canvas,
     app.querySelector('.map-prompt')!,
@@ -125,11 +120,16 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
       attractions: attractionRegistry.all(),
       booths: boothRegistry.all(),
       onOpen: (kind, id) => (location.hash = `#/${kind}/${id}`),
+      onLeave: () => closeCard(true),
       focus,
     },
   );
-  stop = map.stop;
-  renderHud(map, canvas);
+  stop = () => {
+    closeCard(false);
+    started.stop();
+  };
+  map = started;
+  renderHud(started, canvas);
 }
 
 /**
@@ -169,10 +169,15 @@ function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
       walk.setAttribute('aria-label', walk.title);
     });
     button.addEventListener('click', (event) => {
-      if (event.shiftKey) map.walkTo(kind, square.id);
-      else map.jumpTo(kind, square.id);
+      if (event.shiftKey) {
+        map.walkTo(kind, square.id);
+        canvas.focus();
+      } else {
+        // Picking a square goes there and opens its visit card, in the world.
+        map.jumpTo(kind, square.id);
+        location.hash = `#/${kind}/${square.id}`;
+      }
       showOverview();
-      canvas.focus();
     });
     walk.addEventListener('click', () => {
       map.walkTo(kind, square.id);
@@ -224,98 +229,6 @@ function renderUnknown(note: HTMLElement, focus: { kind: SquareKind; id: string 
   note.hidden = false;
 }
 
-const SHARE = `
-        <p class="share">
-          <a class="share-map">See it on the map</a>
-          <button class="share-copy" type="button">Copy link</button>
-          <input class="share-url" type="text" readonly hidden aria-label="Link to it on the map" />
-        </p>`;
-
-/**
- * Wires up a square page's share links: one to the map showing the square,
- * and a button that copies that link's full URL. Where the clipboard isn't
- * available, it shows the URL selected, to copy by hand.
- */
-function renderShare(kind: SquareKind, id: string) {
-  const link = deepLink(kind, id);
-  const url = new URL(link, location.href).href;
-  app.querySelector<HTMLAnchorElement>('.share-map')!.href = link;
-  const button = app.querySelector<HTMLButtonElement>('.share-copy')!;
-  const field = app.querySelector<HTMLInputElement>('.share-url')!;
-  let reset = 0;
-  button.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(url);
-      button.textContent = 'Copied!';
-      window.clearTimeout(reset);
-      reset = window.setTimeout(() => (button.textContent = 'Copy link'), 2000);
-    } catch {
-      field.value = url;
-      field.hidden = false;
-      field.focus();
-      field.select();
-    }
-  });
-}
-
-function renderBooth(booth: NorthPoleSquare) {
-  document.body.dataset.view = 'booth';
-  app.innerHTML = `
-    <section class="booth">
-      <div class="booth-header">
-        <a href="#/">← Back to the map</a>
-        <h1></h1>
-        <p class="owner">Owned by <a target="_blank" rel="noopener"></a></p>
-        <p class="description"></p>${SHARE}
-      </div>
-      <canvas class="booth-canvas"></canvas>
-      <p class="booth-help">
-        Is this yours? <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask the factory for a change</a>.
-      </p>
-      <p class="booth-help">
-        Want to hear about the next North Pole event? ${KEEP_POSTED_LINK}
-      </p>
-    </section>`;
-  whenNamed(booth, () => {
-    app.querySelector('h1')!.textContent = booth.name;
-    app.querySelector('.description')!.textContent = booth.description;
-  });
-  const owner = app.querySelector<HTMLAnchorElement>('.owner a')!;
-  owner.textContent = `@${booth.id}`;
-  owner.href = `https://github.com/${booth.id}`;
-  renderShare('booth', booth.id);
-  stop = startPreview(app.querySelector('canvas')!, booth);
-}
-
-function renderAttraction(attraction: NorthPoleSquare) {
-  document.body.dataset.view = 'booth';
-  app.innerHTML = `
-    <section class="booth">
-      <div class="booth-header">
-        <a href="#/">← Back to the map</a>
-        <h1></h1>
-        <p class="owner">An attraction of the North Pole</p>
-        <p class="description"></p>${SHARE}
-      </div>
-      <canvas class="booth-canvas"></canvas>
-      <p class="booth-help">
-        Attractions belong to the North Pole, so only its maintainers change them.
-        <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.
-      </p>
-    </section>`;
-  whenNamed(attraction, () => {
-    app.querySelector('h1')!.textContent = attraction.name;
-    app.querySelector('.description')!.textContent = attraction.description;
-  });
-  renderShare('attraction', attraction.id);
-  stop = startPreview(app.querySelector('canvas')!, attraction);
-}
-
-/** The "Keep me posted" link: to the real form once it's set, or to the placeholder page. */
-const KEEP_POSTED_LINK = KEEP_POSTED_URL
-  ? `<a href="${keepPostedHref()}" target="_blank" rel="noopener">Keep me posted</a>.`
-  : `<a href="${keepPostedHref()}">Keep me posted</a>.`;
-
 /**
  * Stands in for the "keep me posted" form until a maintainer sets
  * KEEP_POSTED_URL. It collects nothing: it only says the list opens soon.
@@ -339,46 +252,95 @@ function renderKeepPosted() {
     </section>`;
 }
 
-function renderMissing(title: string, description: string) {
-  document.body.dataset.view = 'booth';
-  app.innerHTML = `
-    <section class="booth">
-      <div class="booth-header">
-        <a href="#/">← Back to the map</a>
-        <h1></h1>
-        <p class="description"></p>
-      </div>
-    </section>`;
-  app.querySelector('h1')!.textContent = title;
-  app.querySelector('.description')!.textContent = description;
+/** The map running now, the visit card open on it, and how the card came to open. */
+let map: MapControls | undefined;
+let card: VisitCard | undefined;
+/** Whether the card opened from a change of address in this visit, so going back closes it. */
+let cardFromHistory = false;
+/** A hash change this page made itself, while closing a card, for `route` to let pass. */
+let ignoreNextRoute = false;
+
+/** The booth a shared link brought this visitor to, invited to build their own until they close or claim. */
+const arrival = parseHash(location.hash);
+let invite: string | undefined =
+  arrival.view === 'square' && arrival.kind === 'booth'
+    ? arrival.id
+    : arrival.view === 'map' && arrival.focus?.kind === 'booth'
+      ? arrival.focus.id
+      : undefined;
+
+/** Closes the visit card. `address` says to take the address back off the square, too. */
+function closeCard(address: boolean) {
+  if (!card) return;
+  card.close();
+  card = undefined;
+  map?.leave();
+  invite = undefined;
+  if (!address) return;
+  if (cardFromHistory) {
+    ignoreNextRoute = true;
+    history.back();
+  } else {
+    history.replaceState(null, '', '#/');
+  }
 }
 
-function route() {
-  stop?.();
-  stop = undefined;
+/** Opens a square's visit card inside the world, or says, on the map, that it isn't there. */
+function visit(kind: SquareKind, id: string, fromHistory: boolean) {
+  const square = (kind === 'attraction' ? attractionRegistry : boothRegistry).get(id);
+  closeCard(false);
+  if (!square || !map?.visit(kind, id)) {
+    renderUnknown(app.querySelector('.map-note')!, { kind, id });
+    return;
+  }
+  app.querySelector<HTMLElement>('.map-note')!.hidden = true;
+  cardFromHistory = fromHistory;
+  card = openVisitCard(app.querySelector('.map-frame')!, {
+    kind,
+    square,
+    invite: kind === 'booth' && invite === id,
+    onClose: () => closeCard(true),
+    onClaim: () => {
+      closeCard(true);
+      map?.claimNextDoor();
+      app.querySelector<HTMLElement>('.map-canvas')?.focus({ preventScroll: true });
+    },
+  });
+}
 
-  if (location.hash === '#/keep-posted') return renderKeepPosted();
+function route(event?: HashChangeEvent) {
+  if (ignoreNextRoute) {
+    ignoreNextRoute = false;
+    return;
+  }
+  const fromHistory = event !== undefined;
+
+  if (location.hash === '#/keep-posted') {
+    closeCard(false);
+    stop?.();
+    stop = map = undefined;
+    return renderKeepPosted();
+  }
 
   const route = parseHash(location.hash);
   // Booths used to be called plots: keep links shared before the rename working.
   if (route.view === 'legacy') return location.replace(`#/booth/${route.id}`);
-  if (route.view === 'map') return renderMap(route.focus);
-  const { kind, id } = route;
 
-  if (kind === 'attraction') {
-    const attraction = attractionRegistry.get(id);
-    if (attraction) renderAttraction(attraction);
-    else renderMissing('No such attraction', `The North Pole has no attraction called "${id}".`);
-    return;
+  // A square opens its visit card in the world, starting the world if it isn't running.
+  if (route.view === 'square') {
+    if (!map) renderMap();
+    return visit(route.kind, route.id, fromHistory);
   }
 
-  const booth = boothRegistry.get(id);
-  if (booth) renderBooth(booth);
-  else
-    renderMissing(
-      'No booth yet',
-      `Nobody has built a booth for @${id} yet. Claim it with a new issue, and the factory builds it.`,
-    );
+  // Back from a visit, or See it on the map: the card closes, and the world stays.
+  if (map && card) {
+    closeCard(false);
+    if (route.focus) map.jumpTo(route.focus.kind, route.focus.id);
+    return;
+  }
+  stop?.();
+  stop = map = undefined;
+  renderMap(route.focus);
 }
 
 window.addEventListener('hashchange', route);

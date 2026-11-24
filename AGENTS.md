@@ -31,10 +31,12 @@ runs `npm run check` and `npm run build`.
 index.html                  the page
 square.html                 the page each square's sandboxed frame loads
 src/
-  main.ts                   the router: #/ is the map, #/booth/<login> one booth,
-                            #/attraction/<id> one attraction, and #/?booth=<login>
-                            or #/?attraction=<id> the map showing that square
+  main.ts                   the router: #/ is the map, #/booth/<login> and
+                            #/attraction/<id> the map with that square's visit card
+                            open, and #/?booth=<login> or #/?attraction=<id> the map
+                            showing that square
   route.ts                  reading the hash (plain functions)
+  visit-card.ts             a square's visit card, risen in front of its stall
   style.css
 northpole/                  the map itself
   square.ts                 the NorthPoleSquare shape, the registries and the kill switch
@@ -47,8 +49,10 @@ northpole/                  the map itself
                             camera looks on a laptop and a phone (plain functions)
   render.ts                 drawing the diorama: sky, island, fence and lights, cabins,
                             tents, the ferris wheel, stalls, pavilions, people
-  map.ts                    the walkable map (camera, keys, clicks) and a single
-                            square's preview
+  map.ts                    the walkable map (camera, keys, clicks, hover tags,
+                            visits) and a single square's preview
+  visit.ts                  visiting a square and hovering one: the camera's glide,
+                            the plot next door, the share line, hover tags (plain functions)
   sandbox.ts                the map's side of the sandbox: one frame per square
   frame.ts                  runs in a square's frame (square.html) and supervises it
   square-worker.ts          runs the square's own code on a thread of its own
@@ -71,6 +75,7 @@ scripts/
   ownership.ts              the booth ownership rule (plain functions)
   check-booth-ownership.ts  the CI check that enforces it
   square-size.ts            the size budget for every square
+  share-pages.ts            the link-preview page the build writes for every square
 ```
 
 ## Working on an issue
