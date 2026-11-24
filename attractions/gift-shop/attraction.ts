@@ -1,4 +1,5 @@
 import type { NorthPoleSquare } from '../../northpole/square';
+import { box, glow, iso, scene, shadow } from '../../northpole/diorama';
 import { canvasFont, theme } from '../../northpole/theme';
 
 const { colors } = theme;
@@ -57,18 +58,22 @@ export function installCommand(skill: string): string {
   return `tessl install ${GIFT_SOURCE} --skill ${skill}`;
 }
 
-/** Where each gift sits: three on the top shelf, two below. */
+/** Where each gift sits in the window, along the front and up: three on the top shelf, two below. */
 const PLACES = [
-  [28, 42],
-  [50, 42],
-  [72, 42],
-  [39, 56],
-  [61, 56],
+  [-14, 12],
+  [-7, 12],
+  [0, 12],
+  [-10.5, 5],
+  [-3.5, 5],
 ] as const;
 
 type Ctx = CanvasRenderingContext2D;
 
-/** Words in the theme's font, `height` units tall and no wider than `width`. */
+/** The shop's front wall faces the lower left, at this gy, and stands this tall. */
+const FRONT = 2;
+const WALL = 28;
+
+/** Words in the theme's font at (x, y), `height` units tall and no wider than `width`. */
 function words(
   ctx: Ctx,
   text: string,
@@ -89,16 +94,25 @@ function words(
   ctx.restore();
 }
 
-/** A wrapped box standing on (x, y), with a ribbon round it and a bow on top. */
-function gift(ctx: Ctx, x: number, y: number, u: number, wrap: string) {
-  ctx.fillStyle = wrap;
-  ctx.fillRect(x - 6 * u, y - 10 * u, 12 * u, 10 * u);
-  ctx.fillStyle = colors.snow;
-  ctx.fillRect(x - 1 * u, y - 10 * u, 2 * u, 10 * u);
-  ctx.fillRect(x - 6 * u, y - 6 * u, 12 * u, 2 * u);
+/** A strip along the shop's front, from gx0 to gx1 at gy, from z0 up to z1. */
+function front(ctx: Ctx, gx0: number, gx1: number, gy: number, z0: number, z1: number) {
+  const points = [iso(gx0, gy, z0), iso(gx1, gy, z0), iso(gx1, gy, z1), iso(gx0, gy, z1)];
   ctx.beginPath();
-  ctx.ellipse(x - 2 * u, y - 11 * u, 2.2 * u, 1.4 * u, 0, 0, Math.PI * 2);
-  ctx.ellipse(x + 2 * u, y - 11 * u, 2.2 * u, 1.4 * u, 0, 0, Math.PI * 2);
+  points.forEach((p, n) => (n ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+  ctx.closePath();
+}
+
+/** A wrapped box on the shelf at (gx, z) in the window, with a ribbon and a bow. */
+function gift(ctx: Ctx, gx: number, z: number, wrap: string) {
+  box(ctx, gx, FRONT - 2, 4, 2, 4, wrap, wrap, colors.shadow, z);
+  // The ribbon, round its front and over its top.
+  ctx.fillStyle = colors.snowLit;
+  front(ctx, gx + 1.6, gx + 2.4, FRONT, z, z + 4);
+  ctx.fill();
+  const bow = iso(gx + 2, FRONT - 1, z + 4.6);
+  ctx.beginPath();
+  ctx.ellipse(bow.x - 1, bow.y, 1.1, 0.7, 0, 0, Math.PI * 2);
+  ctx.ellipse(bow.x + 1, bow.y, 1.1, 0.7, 0, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -109,63 +123,90 @@ const attraction: NorthPoleSquare = {
   description:
     'Five small factory loops wrapped as gifts, each installable on your own repository with one command.',
   draw(ctx, size, time) {
-    const u = size / 100;
     const shown = inSpotlight(time);
-    const { skill, name, does } = GIFTS[shown];
+    const { skill, name, does, wrap } = GIFTS[shown];
+    scene(ctx, size, time, () => {
+      // The shop: a wooden hut, its shop window facing the lower left.
+      const c = iso(-3, -6);
+      shadow(ctx, c.x + 2, c.y + 4, 60);
+      box(ctx, -20, -12, 30, 14, WALL, colors.snow, colors.wood, colors.cocoa);
+      ctx.strokeStyle = colors.cocoa;
+      ctx.lineWidth = 0.35;
+      for (let z = 4; z < WALL; z += 4) {
+        const a = iso(-20, FRONT, z);
+        const b = iso(10, FRONT, z);
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
 
-    ctx.fillStyle = colors.night;
-    ctx.fillRect(0, 0, size, size);
-    ctx.fillStyle = colors.snow;
-    ctx.fillRect(0, 80 * u, size, 20 * u);
-
-    // The shop: a wooden front with a striped awning and a gold sign.
-    ctx.fillStyle = colors.wood;
-    ctx.fillRect(10 * u, 20 * u, 80 * u, 62 * u);
-    ctx.fillStyle = colors.surface;
-    ctx.fillRect(16 * u, 28 * u, 68 * u, 32 * u);
-    for (let i = 0; i < 6; i++) {
-      ctx.fillStyle = i % 2 ? colors.snow : colors.berry;
-      ctx.fillRect((8 + i * 14) * u, 16 * u, 14 * u, 6 * u);
-      ctx.beginPath();
-      ctx.arc((15 + i * 14) * u, 22 * u, 7 * u, 0, Math.PI);
+      // The window, dark inside, with two shelves.
+      ctx.fillStyle = colors.ink;
+      front(ctx, -17, 7, FRONT, 3, 21);
       ctx.fill();
-    }
-    ctx.fillStyle = colors.gold;
-    ctx.fillRect(26 * u, 4 * u, 48 * u, 10 * u);
-    ctx.fillStyle = colors.cocoa;
-    words(ctx, 'GIFT SHOP', 50 * u, 9.3 * u, 6.5 * u, 44 * u, 'bold');
+      ctx.fillStyle = colors.gingerbread;
+      for (const z of [4, 11]) {
+        front(ctx, -17, 7, FRONT, z, z + 1);
+        ctx.fill();
+      }
 
-    // A warm pool of light behind the gift in the spotlight, breathing slowly.
-    const [sx, sy] = PLACES[shown];
-    ctx.globalAlpha = 0.45 + 0.15 * Math.sin((time / SHOW) * Math.PI * 2);
-    ctx.fillStyle = colors.glow;
-    ctx.beginPath();
-    ctx.arc(sx * u, (sy - 6) * u, 9 * u, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
+      // A warm pool of light on the gift in the spotlight, breathing slowly; it lifts a little.
+      const [sx, sz] = PLACES[shown];
+      const lit = iso(sx + 2, FRONT, sz + 2);
+      glow(ctx, lit.x, lit.y, 10, 1.6 + 0.3 * Math.sin((time / SHOW) * Math.PI * 2));
+      GIFTS.forEach((g, i) => {
+        const [gx, z] = PLACES[i];
+        const lift = i === shown ? 0.8 + 0.5 * Math.sin(time / 600) : 0;
+        gift(ctx, gx, z + lift, g.wrap);
+      });
 
-    // The shelves, and the gifts on them. The one in the spotlight lifts a little.
-    ctx.fillStyle = colors.gingerbread;
-    ctx.fillRect(18 * u, 42 * u, 64 * u, 2 * u);
-    ctx.fillRect(18 * u, 56 * u, 64 * u, 2 * u);
-    GIFTS.forEach((g, i) => {
-      const [x, y] = PLACES[i];
-      const lift = i === shown ? 1.5 + Math.sin(time / 500) : 0;
-      gift(ctx, x * u, (y - lift) * u, u, g.wrap);
+      // The striped awning over the window, and snow along its edge.
+      const stripes = 8;
+      for (let i = 0; i < stripes; i++) {
+        const gx0 = -20 + (30 * i) / stripes;
+        const gx1 = gx0 + 30 / stripes;
+        ctx.fillStyle = i % 2 ? colors.snowLit : colors.berry;
+        const points = [
+          iso(gx0, FRONT, WALL),
+          iso(gx1, FRONT, WALL),
+          iso(gx1, FRONT + 3, WALL - 2),
+          iso(gx0, FRONT + 3, WALL - 2),
+        ];
+        ctx.beginPath();
+        points.forEach((p, n) => (n ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+        ctx.fill();
+      }
+      ctx.fillStyle = colors.snow;
+      front(ctx, -20, 10, FRONT, WALL, WALL + 1.5);
+      ctx.fill();
+
+      // The sign on the roof, gold, running along the front as the wall does.
+      box(ctx, -15, -3, 20, 1.2, 7, colors.gold, colors.gold, colors.wood, WALL);
+      const sign = iso(-5, -1.8, WALL + 3.5);
+      ctx.save();
+      ctx.translate(sign.x, sign.y);
+      ctx.transform(1, 0.5, 0, 1, 0, 0);
+      ctx.fillStyle = colors.cocoa;
+      words(ctx, 'GIFT SHOP', 0, 0, 4.4, 18, 'bold');
+      ctx.restore();
+
+      // The gift tag in front of the shop: the gift's name, what it does and how to take it home.
+      shadow(ctx, 50, 96, 70);
+      ctx.fillStyle = colors.shadow;
+      ctx.globalAlpha = 0.25;
+      ctx.fillRect(10.6, 77.6, 80, 19);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = colors.cream;
+      ctx.fillRect(10, 77, 80, 19);
+      ctx.fillStyle = wrap;
+      ctx.fillRect(10, 77, 2.5, 19);
+      ctx.fillStyle = colors.ink;
+      words(ctx, name, 51, 81.5, 4.6, 72, 'bold');
+      words(ctx, does, 51, 87, 3.3, 72);
+      ctx.fillStyle = colors.pineDark;
+      words(ctx, installCommand(skill), 51, 92.3, 2.8, 74);
     });
-
-    // The gift tag on the counter: its name, what it does and how to take it home.
-    ctx.fillStyle = colors.snowShade;
-    ctx.fillRect(8 * u, 60 * u, 84 * u, 3 * u);
-    ctx.fillStyle = colors.cream;
-    ctx.fillRect(12 * u, 64 * u, 76 * u, 22 * u);
-    ctx.fillStyle = GIFTS[shown].wrap;
-    ctx.fillRect(12 * u, 64 * u, 3 * u, 22 * u);
-    ctx.fillStyle = colors.ink;
-    words(ctx, name, 51.5 * u, 69 * u, 5 * u, 70 * u, 'bold');
-    words(ctx, does, 51.5 * u, 75.5 * u, 3.6 * u, 70 * u);
-    ctx.fillStyle = colors.pineDark;
-    words(ctx, installCommand(skill), 51.5 * u, 81.5 * u, 3 * u, 70 * u);
   },
 };
 

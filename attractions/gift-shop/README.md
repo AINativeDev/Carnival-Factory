@@ -2,11 +2,13 @@
 
 An attraction of the North Pole: it belongs to the map, not to a participant.
 
-A wooden shop with a red and white striped awning and a gold **GIFT SHOP**
-sign. On its two shelves sit five wrapped gifts, one for each holiday gift skill
-in [`plugins/north-pole-gifts/`](../../plugins/north-pole-gifts/README.md). Every
-four seconds the next gift lifts in a warm pool of light, and the tag on the
-counter shows its name, what it does and the one command that installs it.
+A wooden hut on a slab of snow at dusk, drawn in the [diorama style](../../docs/style.md),
+with a red and white striped awning and a gold **GIFT SHOP** sign on its roof.
+On the two shelves in its window sit five wrapped gifts, one for each holiday
+gift skill in [`plugins/north-pole-gifts/`](../../plugins/north-pole-gifts/README.md).
+Every four seconds the next gift lifts in a warm pool of light, and the gift tag
+in front of the shop shows its name, what it does and the one command that
+installs it.
 
 | Gift             | What it does                                                                    |
 | ---------------- | ------------------------------------------------------------------------------- |
