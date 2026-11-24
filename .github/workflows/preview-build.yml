@@ -60,7 +60,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - name: Play only the changed booth, if that's all that changes
         run: |
           scope=$(git diff --name-only HEAD^1 HEAD | node scripts/smoke-scope.ts)

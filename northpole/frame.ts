@@ -4,11 +4,14 @@
  * stays free to notice when it hangs and stop it: a square stuck in a loop
  * then only stops itself, never the other squares or the map.
  *
- * The worker is started from a blob: URL so it keeps this frame's content
- * security policy, and with it no network. Vite builds it as one classic
- * script with every square in it, but only this square's code ever runs.
+ * The worker is built into this frame's own script and started from a blob:
+ * URL, so it keeps this frame's content security policy, and with it no
+ * network. Vite builds it as one classic script with every square in it, but
+ * only this square's code ever runs. Nothing is loaded from a URL: Safari
+ * reads `script-src 'self'` in this opaque-origin frame as matching nothing,
+ * so a worker that loaded its script from the site never started there.
  */
-import workerUrl from './square-worker.ts?worker&url';
+import SquareWorker from './square-worker.ts?worker&inline';
 import { readDrawRequest } from './frame-protocol';
 
 /** How long a square may take to load, or to draw one frame, before it's stopped. */
@@ -17,13 +20,7 @@ const HANG_MS = 1000;
 const toMap = (message: object, transfer: Transferable[] = []) =>
   parent.postMessage(message, '*', transfer);
 
-const script = new URL(workerUrl, location.href).href;
-// A classic worker: a module worker from a blob: URL won't start in an
-// opaque-origin frame, but one that loads its script with importScripts does.
-const blob = new Blob([`importScripts(${JSON.stringify(script)});`], {
-  type: 'text/javascript',
-});
-const worker = new Worker(URL.createObjectURL(blob));
+const worker = new SquareWorker();
 
 /** What the worker owes the frame, and so what may answer it. */
 type Pending = 'start' | 'load' | 'draw' | undefined;

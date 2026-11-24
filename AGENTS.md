@@ -20,7 +20,8 @@ Both draw through the same contract, a `NorthPoleSquare`.
 - A Playwright smoke test (`npm run smoke`) plays every booth and attraction, and
   walks every level, in a
   real browser. CI runs it on every pull request; locally it needs a browser
-  once (`npx playwright install chromium`, or `PLAYWRIGHT_CHANNEL=chrome`).
+  once (`npx playwright install chromium webkit`, or `PLAYWRIGHT_CHANNEL=chrome`
+  for the Chrome checks).
 - No native dependencies, and nothing that needs `sudo`. `npm ci` is the whole
   setup for `npm run check`.
 
