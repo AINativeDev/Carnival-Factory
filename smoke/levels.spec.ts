@@ -63,10 +63,15 @@ const APPROACHES: { dx: number; dy: number; keys: [string, string] }[] = [
 /**
  * Walks the player to a plot's door: a click on the ground beside it, which
  * the map walks to, then a step onto the door. Clicking the door itself would
- * land on the stall in front of it.
+ * land on the stall in front of it. A player already on the door, such as one
+ * who arrived there, stays put.
  */
 async function walkToDoor(page: Page, world: World, plot: Plot) {
   const canvas = page.locator('.map-canvas');
+  if ((await canvas.getAttribute('data-player')) === `${plot.door.x},${plot.door.y}`) {
+    await expect(canvas).toHaveAttribute('data-near', `${plot.kind}:${plot.id}`);
+    return;
+  }
   const approach = APPROACHES.map(({ dx, dy, keys }) => ({
     beside: { x: plot.door.x + dx, y: plot.door.y + dy } as Tile,
     keys,
