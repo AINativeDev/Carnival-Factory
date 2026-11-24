@@ -272,7 +272,10 @@ export function buildWorld(
   const lastLane = Math.max(...[...taken].map(laneOf));
   const lanesOut = Math.floor(lastLane / 4) + 1;
   const avenueEnd = laneX(4 * (lanesOut - 1)) + 5;
-  const attractionRows = Math.max(1, Math.ceil(attractionIds.length / ATTRACTIONS_PER_RING));
+  // The sights sit past the furthest attraction plot in use, which a pin can
+  // put past where the attractions alone would reach.
+  const lastAttraction = Math.max(-1, ...attractionNumbers.values());
+  const attractionRows = Math.max(1, Math.floor(lastAttraction / ATTRACTIONS_PER_RING) + 1);
   const sights = 5 + 5 * attractionRows;
 
   // The town square, its tree and Santa's sleigh.
@@ -455,6 +458,46 @@ const STEPS = [
   [-1, -1],
 ];
 
+/** Whether a walker can step from tile (x, y) by (dx, dy), cutting no corner. */
+const canStep = (world: World, x: number, y: number, dx: number, dy: number) =>
+  walkable(world, x + dx, y + dy) &&
+  (!dx || !dy || (walkable(world, x + dx, y) && walkable(world, x, y + dy)));
+
+/** Every tile a walker can reach from tile `from`. */
+export function reachable(world: World, from: Tile): Set<string> {
+  const seen = new Set([key(from.x, from.y)]);
+  const queue = [from];
+  for (let n = 0; n < queue.length; n++) {
+    const { x, y } = queue[n];
+    for (const [dx, dy] of STEPS) {
+      const there = key(x + dx, y + dy);
+      if (seen.has(there) || !canStep(world, x, y, dx, dy)) continue;
+      seen.add(there);
+      queue.push({ x: x + dx, y: y + dy });
+    }
+  }
+  return seen;
+}
+
+/**
+ * The shortest walk from tile `from` to the first of `goals` a walker can
+ * reach, or undefined when they can reach none. However many goals there are,
+ * it searches the world at most three times.
+ */
+export function findPathToFirst(
+  world: World,
+  from: Tile,
+  goals: readonly Tile[],
+): Tile[] | undefined {
+  const open = goals.filter((goal) => walkable(world, goal.x, goal.y));
+  if (!open.length) return undefined;
+  const way = findPath(world, from, open[0]);
+  if (way || open.length === 1) return way;
+  const reach = reachable(world, from);
+  const goal = open.find((goal) => reach.has(key(goal.x, goal.y)));
+  return goal && findPath(world, from, goal);
+}
+
 /**
  * The shortest walk from tile `from` to tile `to`, as the tiles after `from`,
  * or undefined when `to` can't be reached. Walkers step diagonally only where
@@ -510,8 +553,7 @@ export function findPath(world: World, from: Tile, to: Tile): Tile[] | undefined
     }
     for (const [dx, dy] of STEPS) {
       const [nx, ny] = [x + dx, y + dy];
-      if (!walkable(world, nx, ny)) continue;
-      if (dx && dy && (!walkable(world, x + dx, y) || !walkable(world, x, y + dy))) continue;
+      if (!canStep(world, x, y, dx, dy)) continue;
       const next = cost.get(here)! + (dx && dy ? Math.SQRT2 : 1);
       const there = key(nx, ny);
       if (next >= (cost.get(there) ?? Infinity)) continue;

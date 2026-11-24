@@ -519,8 +519,20 @@ export function drawThing(ctx: CanvasRenderingContext2D, thing: Thing, time: num
   }
 }
 
-/** A sign on a board: a name, and whose it is under it. */
-function sign(ctx: CanvasRenderingContext2D, x: number, y: number, name: string, by: string) {
+/** The box two boxes span together. */
+function span(a: Box, b: Box): Box {
+  const x = Math.min(a.x, b.x);
+  const y = Math.min(a.y, b.y);
+  return {
+    x,
+    y,
+    w: Math.max(a.x + a.w, b.x + b.w) - x,
+    h: Math.max(a.y + a.h, b.y + b.h) - y,
+  };
+}
+
+/** A sign on a board: a name, and whose it is under it. Returns where the board is. */
+function sign(ctx: CanvasRenderingContext2D, x: number, y: number, name: string, by: string): Box {
   ctx.font = canvasFont('small', 'bold');
   const width = Math.min(190, Math.max(ctx.measureText(name).width, by.length * 7) + 16);
   ctx.fillStyle = colors.cocoa;
@@ -537,6 +549,7 @@ function sign(ctx: CanvasRenderingContext2D, x: number, y: number, name: string,
   ctx.fillStyle = colors.glow;
   ctx.fillText(by, x, y + 20, width - 8);
   ctx.textBaseline = 'alphabetic';
+  return { x: x - width / 2 - 1, y: y - 2, w: width + 2, h: 40 };
 }
 
 /** Where a plot's front panel is, in world pixels: its top-left corner and size. */
@@ -556,7 +569,7 @@ function drawStall(
   plot: Plot,
   square: NorthPoleSquare,
   paint: PaintSquare,
-) {
+): Box {
   const { x, y } = middle(plot);
   const panel = panelBox(plot);
   shadow(ctx, x, y + 6, 44);
@@ -592,7 +605,7 @@ function drawStall(
     colors.wood,
     colors.cocoa,
   );
-  sign(ctx, x, y + 2, square.name, `@${square.id}`);
+  return span(panel, sign(ctx, x, y + 2, square.name, `@${square.id}`));
 }
 
 /** One of the North Pole's attractions: a raised stage, bunting, and its square on a big panel. */
@@ -602,7 +615,7 @@ function drawAttraction(
   square: NorthPoleSquare,
   paint: PaintSquare,
   time: number,
-) {
+): Box {
   const { x, y } = middle(plot);
   const panel = panelBox(plot);
   shadow(ctx, x, y + 8, 76);
@@ -631,11 +644,11 @@ function drawAttraction(
   }
   ctx.fillStyle = colors.gold;
   ctx.fillRect(panel.x - 10, panel.y - 18, panel.w + 20, 4);
-  sign(ctx, x, y + 6, square.name, 'North Pole');
+  return span(panel, sign(ctx, x, y + 6, square.name, 'North Pole'));
 }
 
 /** An open plot: a staked-out square of fresh snow, and a "For claim" sign. */
-function drawOpenPlot(ctx: CanvasRenderingContext2D, plot: Plot, time: number) {
+function drawOpenPlot(ctx: CanvasRenderingContext2D, plot: Plot, time: number): Box {
   const c = corners(plot);
   ctx.save();
   ctx.strokeStyle = colors.berry;
@@ -664,19 +677,20 @@ function drawOpenPlot(ctx: CanvasRenderingContext2D, plot: Plot, time: number) {
   ctx.textBaseline = 'middle';
   ctx.fillText('For claim', x, y - 52 + sway, 76);
   ctx.textBaseline = 'alphabetic';
+  return { x: x - 44, y: y - 70, w: 88, h: 90 };
 }
 
-/** Draws a plot and whatever stands on it. */
+/** Draws a plot and whatever stands on it. Returns where a click opens it. */
 export function drawPlot(
   ctx: CanvasRenderingContext2D,
   plot: Plot,
   square: NorthPoleSquare | undefined,
   paint: PaintSquare,
   time: number,
-) {
-  if (plot.kind === 'open' || !square) drawOpenPlot(ctx, plot, time);
-  else if (plot.kind === 'attraction') drawAttraction(ctx, plot, square, paint, time);
-  else drawStall(ctx, plot, square, paint);
+): Box {
+  if (plot.kind === 'open' || !square) return drawOpenPlot(ctx, plot, time);
+  if (plot.kind === 'attraction') return drawAttraction(ctx, plot, square, paint, time);
+  return drawStall(ctx, plot, square, paint);
 }
 
 /** A glow round a plot, for the one you are standing at or the one a link opened on. */

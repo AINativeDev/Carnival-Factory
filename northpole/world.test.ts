@@ -6,11 +6,13 @@ import {
   buildWorld,
   canStand,
   findPath,
+  findPathToFirst,
   key,
   moveBy,
   OPEN_PLOTS,
   plotAtDoor,
   plotNumbers,
+  reachable,
   screenDirection,
   strollAt,
   toScreen,
@@ -132,6 +134,30 @@ describe('buildWorld', () => {
     expect(boothPlot(40)).not.toEqual(boothPlot(4));
   });
 
+  it('keeps scenery off attractions pinned past where their count would reach', () => {
+    // An attraction pinned to 0 has gone, so eight are left on plots 1 to 8,
+    // and one alone is pinned far out.
+    const eight = ATTRACTIONS.concat(['a', 'b', 'c']);
+    const gap = Object.fromEntries(eight.map((id, n) => [id, n + 1]));
+    for (const world of [
+      buildWorld(eight, booths(1), { attractions: gap, booths: {} }),
+      buildWorld(['far'], booths(1), { attractions: { far: 48 }, booths: {} }),
+    ]) {
+      const things = world.things.filter((t) => t.blocks);
+      for (const plot of world.plots.filter((p) => p.kind === 'attraction')) {
+        for (let x = plot.x; x < plot.x + plot.w; x++)
+          for (let y = plot.y; y < plot.y + plot.h; y++) {
+            expect(world.ground.get(key(x, y)) ?? 'snow', plot.id).not.toMatch(/ice|water/);
+            for (const thing of things)
+              expect(
+                x >= thing.x && x < thing.x + thing.w && y >= thing.y && y < thing.y + thing.h,
+              ).toBe(false);
+          }
+        expect(findPath(world, world.start, plot.door), plot.id).toBeDefined();
+      }
+    }
+  });
+
   it('puts attractions round the town square, closer in than any booth', () => {
     const near = (box: Box) => Math.max(Math.abs(box.x), Math.abs(box.y));
     for (let n = 0; n < 8; n++) expect(near(attractionPlot(n))).toBeLessThan(near(boothPlot(0)));
@@ -180,6 +206,32 @@ describe('walking', () => {
       { x: 2, y: 2 },
     ]);
     expect(findPath(world, world.start, { x: 0, y: 0 })).toBeUndefined();
+  });
+
+  it('walks to the first goal it can reach, after any it cannot', () => {
+    const { paddock } = world;
+    const fenced = { x: paddock.x + 1, y: paddock.y + 1 };
+    expect(walkable(world, fenced.x, fenced.y)).toBe(true);
+    expect(reachable(world, world.start).has(key(fenced.x, fenced.y))).toBe(false);
+    const goals = [fenced, { x: 0, y: 0 }, { x: 0, y: 2 }, { x: 1, y: 2 }];
+    expect(findPathToFirst(world, world.start, goals)).toEqual(
+      findPath(world, world.start, { x: 0, y: 2 }),
+    );
+    expect(findPathToFirst(world, world.start, [fenced, { x: 0, y: 0 }])).toBeUndefined();
+  });
+
+  it('keeps clear of the town tree joining a path from part-way across a tile', () => {
+    const at = { x: -0.71, y: 0.6 };
+    expect(canStand(world, at)).toBe(true);
+    // The map starts a click's walk at the middle of the player's own tile.
+    let walk = {
+      position: at,
+      path: [{ x: -1, y: 1 }, ...findPath(world, { x: -1, y: 1 }, { x: 0, y: 1 })!],
+    };
+    while (walk.path.length) {
+      walk = walkAlong(walk.position, walk.path, 0.02);
+      expect(canStand(world, walk.position), JSON.stringify(walk.position)).toBe(true);
+    }
   });
 
   it('stops at what is blocked and slides along it', () => {

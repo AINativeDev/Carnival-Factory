@@ -10,14 +10,13 @@ import {
   drawSnowfall,
   drawThing,
   middle,
-  panelBox,
   type Look,
 } from './render';
 import type { NorthPoleSquare } from './square';
 import { canvasFont, theme } from './theme';
 import {
   buildWorld,
-  findPath,
+  findPathToFirst,
   moveBy,
   plotAtDoor,
   screenDirection,
@@ -307,15 +306,7 @@ export function startMap(
             : 0;
         const strength = Math.max(plot === near ? 0.7 : 0, glowFor);
         if (strength > 0) drawPlotGlow(ctx, plot, strength);
-        drawPlot(ctx, plot, squareOf(plot), paint, motion);
-        const { x, y } = middle(plot);
-        targets.push({
-          plot,
-          box:
-            plot.kind === 'open'
-              ? { x: x - 44, y: y - 70, w: 88, h: 90 }
-              : { ...panelBox(plot), h: panelBox(plot).h + 80 },
-        });
+        targets.push({ plot, box: drawPlot(ctx, plot, squareOf(plot), paint, motion) });
       });
     }
     world.strolls.forEach((stroll, n) => {
@@ -395,14 +386,17 @@ export function startMap(
     if (plot) return open(plot);
     // Walk to the tile clicked, or the nearest one beside it you can stand on.
     const tile = tileOf(toTile(point));
-    const from = tileOf(player);
+    const goals: Tile[] = [];
     for (let ring = 0; ring <= 2; ring++)
       for (let dx = -ring; dx <= ring; dx++)
-        for (let dy = -ring; dy <= ring; dy++) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== ring) continue;
-          const way = findPath(world, from, { x: tile.x + dx, y: tile.y + dy });
-          if (way) return void (path = way);
-        }
+        for (let dy = -ring; dy <= ring; dy++)
+          if (Math.max(Math.abs(dx), Math.abs(dy)) === ring)
+            goals.push({ x: tile.x + dx, y: tile.y + dy });
+    // The walk starts by stepping to the middle of the player's own tile, so it
+    // keeps clear of whatever is beside them, the way the keys do.
+    const from = tileOf(player);
+    const way = findPathToFirst(world, from, goals);
+    if (way) path = [from, ...way];
   };
 
   const onPointerMove = (event: PointerEvent) => {
