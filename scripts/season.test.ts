@@ -43,6 +43,20 @@ describe('countSeason', () => {
     });
   });
 
+  it("counts a pull request that closed two participants' requests for each of them", () => {
+    const pull = { number: 8, merged: true, threads: [thread(true), thread(true)] };
+    const requests: RequestRecord[] = [
+      { author: 'alice', pulls: [pull] },
+      { author: 'bob', pulls: [pull] },
+    ];
+    const both = { requests: 1, shipped: 1, findingsFixed: 2 };
+    expect(countSeason(requests, AT).participants).toEqual({ alice: both, bob: both });
+    expect(countSeason([...requests].reverse(), AT).participants).toEqual({
+      alice: both,
+      bob: both,
+    });
+  });
+
   it('skips a request whose author is gone', () => {
     expect(countSeason([{ author: null, pulls: [] }], AT).participants).toEqual({});
   });

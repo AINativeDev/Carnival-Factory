@@ -338,7 +338,11 @@ function route(event?: HashChangeEvent) {
 
   // A square takes the player inside it, starting the world if it isn't running.
   if (route.view === 'square') {
-    if (!map) renderMap();
+    if (!map) {
+      // Coming from a page without the map, such as a season card: stop it first.
+      stop?.();
+      renderMap();
+    }
     return visit(route.kind, route.id, fromHistory);
   }
 

@@ -237,9 +237,12 @@ export function renderSeason(app: HTMLElement, login: string): () => void {
       await navigator.clipboard.writeText(mapLink);
       copy.textContent = 'Copied!';
     } catch {
-      // No clipboard: show the link in the share text, selected, to copy by hand.
+      // No clipboard: show the link in the share text, selected, to copy by hand,
+      // putting it back first if the visitor edited it out.
+      if (!text.value.includes(mapLink)) text.value = `${text.value.trimEnd()}\n${mapLink}`.trim();
+      const start = text.value.lastIndexOf(mapLink);
       text.focus();
-      text.select();
+      text.setSelectionRange(start, start + mapLink.length);
       copy.textContent = 'Copy it from the share text';
     }
     window.clearTimeout(reset);

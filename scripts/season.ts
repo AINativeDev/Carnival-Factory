@@ -44,15 +44,18 @@ export interface RequestRecord {
 
 /**
  * Counts every participant's season from their booth requests. A pull request
- * that closed two requests counts once for its findings.
+ * that closed two of one participant's requests counts once for their findings,
+ * and one that closed requests of two participants counts for each of them.
  */
 export function countSeason(requests: readonly RequestRecord[], countedAt: string): SeasonData {
   const participants: Record<string, SeasonStats> = {};
-  const counted = new Set<number>();
+  const countedFor = new Map<string, Set<number>>();
   for (const request of requests) {
     if (!request.author) continue;
     const login = request.author.toLowerCase();
     const stats = (participants[login] ??= { requests: 0, shipped: 0, findingsFixed: 0 });
+    let counted = countedFor.get(login);
+    if (!counted) countedFor.set(login, (counted = new Set()));
     stats.requests++;
     const merged = request.pulls.filter((pull) => pull.merged);
     if (merged.length > 0) stats.shipped++;
