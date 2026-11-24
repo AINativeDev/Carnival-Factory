@@ -183,8 +183,15 @@ async function reviewState(pull: Pull): Promise<GateFacts['review']> {
   const reviews = await getAll<{ user: User; commit_id: string; body: string }>(
     `pulls/${pull.number}/reviews`,
   );
+  // Only a review carrying a result counts: the reviewer also posts follow-up
+  // reviews, such as replies on threads, that have none.
   const last = reviews
-    .filter((r) => r.user.login === REVIEWER && r.commit_id === pull.head.sha)
+    .filter(
+      (r) =>
+        r.user.login === REVIEWER &&
+        r.commit_id === pull.head.sha &&
+        r.body.includes('tessl-code-review:result:v1'),
+    )
     .at(-1);
   if (!last) return 'pending';
   return /tessl-code-review:result:v1[^>]*\bapproved=true\b/.test(last.body)

@@ -498,6 +498,29 @@
           "GITHUB_PR_NUMBER": "{{ event.check_suite.pull_requests.0.number }}"
         }
       }
+    },
+    "assess-booth-risk-look-again": {
+      "on": [
+        "github:pull_request.unlabeled"
+      ],
+      "when": {
+        "event.label.name": "needs-human",
+        "event.sender.id": {
+          "in": [
+            70908
+          ]
+        },
+        "event.pull_request.head.ref": {
+          "matches": "^tessl/"
+        },
+        "event.pull_request.head.repo.id": 1469850421
+      },
+      "action": {
+        "use": "assess-booth-risk",
+        "inputs": {
+          "GITHUB_PR_NUMBER": "{{ event.pull_request.number }}"
+        }
+      }
     }
   },
   "environment": "northpole-carnival-factory-env"

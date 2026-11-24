@@ -130,7 +130,12 @@ jobs:
           while read -r number sha; do
             [[ "$number" =~ ^[0-9]+$ && "$sha" =~ ^[0-9a-f]{40}$ ]] || continue
             dir="site/previews/pr-$number"
-            [ "$(cat "$dir/.preview-sha" 2>/dev/null)" = "$sha" ] && continue
+            if [ "$(cat "$dir/.preview-sha" 2>/dev/null)" = "$sha" ]; then
+              # Already the head's build: just make sure the visible marker
+              # exists, for previews placed before it was added.
+              [ -f "$dir/preview-sha.txt" ] || echo "$sha" > "$dir/preview-sha.txt"
+              continue
+            fi
             run=$(gh run list --workflow preview-build.yml --commit "$sha" --status success \
               --limit 1 --json databaseId --jq '.[0].databaseId // empty')
             [ -n "$run" ] || continue
