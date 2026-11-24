@@ -2,22 +2,26 @@
 
 Owned by [@hamzaoza](https://github.com/hamzaoza).
 
-A first-person run down an ice mountain, in soft storybook shapes and warm dusk
+A sledging game down an ice mountain, in soft storybook shapes and warm dusk
 light. You look down the slope from just behind an original little penguin lying
-on its belly on a red sled. A booth can't take keys or clicks, so the penguin
-steers itself, as a loop that repeats every 24 seconds:
+on its belly on a red sled.
 
+- **Steering**: the penguin follows the pointer's place left and right across
+  the drawing. On touch, each tap on the left or right half steers that way.
 - **The slope** rushes towards you in soft bands of light and shade, between
-  snow-capped pines, with a low warm sun and far mountains.
-- **Weaving**: the penguin swings left and right and the sled leans into each
-  turn, gliding round the grey rocks and snowdrifts at the sides of its path.
-- **Snowflakes**: glowing snowflakes float on its path. Each one it passes adds
-  10 points to the score in the corner.
-- **Looping**: after the last snowflake the run starts again from the top and
-  the score goes back to 0.
+  snow-capped pines, with a low warm sun and far mountains. It starts gently
+  and speeds up slowly through a run.
+- **Rocks and snowdrifts** come up the slope. Hitting one ends the run with a
+  soft tumble and a puff of snow, and a tap starts a new run on a new course.
+- **Snowflakes**: each glowing snowflake the penguin scoops up adds 10 points.
+  The score and the best run of this visit show in the corner. The best lasts
+  only for the visit; nothing is stored.
+- **On its own**: when nobody is steering, as on the map, the penguin weaves
+  along the course's clear line by itself, and starts again after a while.
 
-Everything is drawn from `time`. The course and the score (`pathAt`, `thingAt`,
-`scoreAt`, `inView`, `project`) are plain functions in `booth.ts`, tested in
-`booth.test.ts`.
+The rules are plain functions in `booth.ts`: the seeded course (`thingAt`,
+`thingsBetween`, `pathAt`), speed (`distanceFor`, `speedFor`), steering
+(`laneOf`, `toward`), collisions and scoring (`advance`), and the view
+(`scaleAt`, `project`, `inView`). `booth.test.ts` tests each of them.
 
 Preview it at `#/booth/hamzaoza`.
