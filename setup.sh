@@ -3,4 +3,4 @@
 set -eo pipefail
 
 echo "Installing dependencies with npm ci"
-npm ci
+npm ci --prefer-offline --no-audit --no-fund
