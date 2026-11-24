@@ -38,11 +38,15 @@ function watch(page: Page) {
   return problems;
 }
 
-/** Waits until the camera stands still, and says where it is. */
+/** Waits until the camera stands still, and says where it is. Gives up after 15 seconds. */
 async function stillCamera(page: Page) {
   const canvas = page.locator('.map-canvas');
+  const until = Date.now() + 15_000;
   let camera = '';
-  while (camera !== (camera = (await canvas.getAttribute('data-camera')) ?? '')) {
+  while (
+    camera !== (camera = (await canvas.getAttribute('data-camera', { timeout: 5000 })) ?? '')
+  ) {
+    if (Date.now() > until) throw new Error(`the camera never stood still, last at ${camera}`);
     await page.waitForTimeout(400);
   }
   const [x, y, zoom] = camera.split(',').map(Number);
@@ -83,7 +87,11 @@ async function walkToDoor(page: Page, world: World, plot: Plot) {
   const camera = await stillCamera(page);
   const box = (await canvas.boundingBox())!;
   const at = worldToScreen(toScreen(beside), box.width, box.height, camera, camera.zoom);
-  await canvas.click({ position: at });
+  expect(
+    at.x >= 0 && at.y >= 0 && at.x < box.width && at.y < box.height,
+    `the tile beside ${plot.kind} ${plot.id}'s door, at ${Math.round(at.x)}, ${Math.round(at.y)}, is on the canvas`,
+  ).toBe(true);
+  await canvas.click({ position: at, timeout: 10_000 });
   await expect(canvas).toHaveAttribute('data-player', `${beside.x},${beside.y}`, {
     timeout: 15_000,
   });
@@ -118,24 +126,28 @@ for (const login of logins) {
     await expect(canvas).toHaveAttribute('data-player', `${world.start.x},${world.start.y}`);
     await stillCamera(page);
     await canvas.screenshot({ path: join(SHOTS, `level-${login}.png`) });
-    await canvas.focus();
+    await canvas.focus({ timeout: 5000 });
 
     for (const plot of world.plots.filter((p) => p.kind === 'attraction')) {
-      await walkToDoor(page, world, plot);
-      await page.keyboard.press('e');
-      await expect(page).toHaveURL(new RegExp(`#/level/${login}/${plot.id}$`));
-      const frame = page.locator(`iframe[data-kind="level"][data-id="${login}/${plot.id}"]`);
-      await expect(frame).toHaveAttribute('data-state', 'ready', { timeout: 5000 });
-      await expect(page.locator('.visit')).toContainText(`@${login}`);
-      await page.waitForTimeout(1500);
-      await expect(frame).toHaveAttribute('data-state', 'ready');
-      await page.keyboard.press('Escape');
-      await expect(page.locator('.visit')).toHaveCount(0);
-      await canvas.focus();
+      await test.step(`walk to ${plot.id}`, () => walkToDoor(page, world, plot));
+      await test.step(`inside ${plot.id}`, async () => {
+        await page.keyboard.press('e');
+        await expect(page).toHaveURL(new RegExp(`#/level/${login}/${plot.id}$`));
+        const frame = page.locator(`iframe[data-kind="level"][data-id="${login}/${plot.id}"]`);
+        await expect(frame).toHaveAttribute('data-state', 'ready', { timeout: 5000 });
+        await expect(page.locator('.visit')).toContainText(`@${login}`);
+        await page.waitForTimeout(1500);
+        await expect(frame).toHaveAttribute('data-state', 'ready');
+        await page.keyboard.press('Escape');
+        await expect(page.locator('.visit')).toHaveCount(0);
+        // The room fades out before the map is drawn, and its camera moves, again.
+        await expect(canvas).not.toHaveAttribute('data-room', /.*/);
+        await canvas.focus({ timeout: 5000 });
+      });
     }
 
     const home = world.plots.find((p) => p.kind === 'exit')!;
-    await walkToDoor(page, world, home);
+    await test.step('walk to the sleigh home', () => walkToDoor(page, world, home));
     await page.keyboard.press('e');
     await expect(page).toHaveURL(/#\/$/);
     // Back at the North Pole, the station has this level's platform.
