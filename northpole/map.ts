@@ -197,6 +197,8 @@ function trackPointer(element: HTMLElement) {
   let held = false;
   let pressedAt = -Infinity;
   let pressedFrom: Tile | undefined;
+  /** Whether the press has moved too far to be a click, at any point since it began. */
+  let dragged = false;
   let goneAt = Infinity;
   const place = (event: PointerEvent): Tile => {
     const box = element.getBoundingClientRect();
@@ -204,11 +206,15 @@ function trackPointer(element: HTMLElement) {
   };
   const onMove = (event: PointerEvent) => {
     at = place(event);
+    // Back over the element with the button still down, after leaving it.
+    held = event.buttons !== 0;
+    if (held && pressedFrom && !isTap(pressedFrom, at)) dragged = true;
     goneAt = Infinity;
   };
   const onDown = (event: PointerEvent) => {
     at = pressedFrom = place(event);
     held = true;
+    dragged = false;
     pressedAt = performance.now();
     goneAt = Infinity;
   };
@@ -237,7 +243,7 @@ function trackPointer(element: HTMLElement) {
     },
     /** Whether a click at `point` ended a press that barely moved, so it opens what it's on. */
     tapped(point: Tile) {
-      return !pressedFrom || isTap(pressedFrom, point);
+      return !pressedFrom || (!dragged && isTap(pressedFrom, point));
     },
     stop() {
       for (const [name, listener] of events) element.removeEventListener(name, listener);

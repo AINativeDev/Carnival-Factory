@@ -58,6 +58,19 @@ export function rescale(pointer: SquarePointer, from: number, to: number): Squar
   return { x: fit(pointer.x), y: fit(pointer.y), down: pointer.down };
 }
 
+/**
+ * The pointer to send a square with its next frame, when `owed` is a press it
+ * wasn't sent because it was still drawing: `pointer`, pressed, or the press
+ * itself when the pointer has gone since. So a quick tap always reaches it.
+ */
+export function withOwedPress(
+  pointer: SquarePointer | undefined,
+  owed: SquarePointer | undefined,
+): SquarePointer | undefined {
+  if (!owed) return pointer;
+  return pointer ? { ...pointer, down: true } : owed;
+}
+
 /** Whether a press at `from` let go at `to` is a click, not a drag. */
 export function isTap(from: Tile, to: Tile, slop = TAP_SLOP): boolean {
   return Math.hypot(to.x - from.x, to.y - from.y) <= slop;

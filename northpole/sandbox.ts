@@ -12,7 +12,7 @@
 import { canvasFont, theme } from './theme';
 import { BUILD_ID } from '../src/updates';
 import { readFrameMessage, type SquareKind } from './frame-protocol';
-import { rescale } from './pointer';
+import { rescale, withOwedPress } from './pointer';
 import type { NorthPoleSquare, SquarePointer } from './square';
 
 /** How long a square may take to open, its download included. */
@@ -113,6 +113,8 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
   let latest: ImageBitmap | undefined;
   let waitingFor: number | undefined;
   let waitingSince = 0;
+  /** A press drawn while the frame was busy, kept until a request carries it. */
+  let owedPress: { pointer: SquarePointer; size: number } | undefined;
   let errors = 0;
   let frames = 0;
   let slowest = 0;
@@ -131,6 +133,7 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
     iframe = undefined;
     live.delete(self);
     waitingFor = undefined;
+    owedPress = undefined;
     errors = 0;
     if (state !== 'broken') state = 'loading';
   };
@@ -239,12 +242,19 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
       if (state === 'ready' && waitingFor !== undefined) {
         if (performance.now() - waitingSince > FRAME_TIMEOUT) fail('it stopped answering');
       }
+      if (pointer?.down) owedPress = { pointer, size };
       if (state === 'ready' && waitingFor === undefined) {
         waitingFor = Math.round(size);
         waitingSince = performance.now();
+        // A quick tap may have come and gone while the last frame was drawing.
+        const sent = withOwedPress(
+          pointer && rescale(pointer, size, waitingFor),
+          owedPress && rescale(owedPress.pointer, owedPress.size, waitingFor),
+        );
+        owedPress = undefined;
         // The frame checks the pointer again: it only ever passes on x, y and down.
-        const request = pointer
-          ? { type: 'draw', size: waitingFor, time, pointer: rescale(pointer, size, waitingFor) }
+        const request = sent
+          ? { type: 'draw', size: waitingFor, time, pointer: sent }
           : { type: 'draw', size: waitingFor, time };
         iframe!.contentWindow?.postMessage(request, '*');
       }

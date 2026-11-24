@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isTap, onMapping, onRect, rescale } from './pointer';
+import { isTap, onMapping, onRect, rescale, withOwedPress } from './pointer';
 
 describe('onMapping', () => {
   // A stall's front: its top edge runs down and to the right, its sides stand upright.
@@ -84,5 +84,26 @@ describe('isTap', () => {
   it('counts a press that barely moved as a click, and a drag as not', () => {
     expect(isTap({ x: 0, y: 0 }, { x: 3, y: 4 })).toBe(true);
     expect(isTap({ x: 0, y: 0 }, { x: 9, y: 0 })).toBe(false);
+  });
+});
+
+describe('withOwedPress', () => {
+  const tap = { x: 10, y: 20, down: true };
+
+  it('sends the pointer as it is when no press is owed', () => {
+    expect(withOwedPress({ x: 1, y: 2, down: false }, undefined)).toEqual({
+      x: 1,
+      y: 2,
+      down: false,
+    });
+    expect(withOwedPress(undefined, undefined)).toBeUndefined();
+  });
+
+  it('keeps a press the square missed, where the pointer is now', () => {
+    expect(withOwedPress({ x: 1, y: 2, down: false }, tap)).toEqual({ x: 1, y: 2, down: true });
+  });
+
+  it('sends the press itself when the pointer has gone since', () => {
+    expect(withOwedPress(undefined, tap)).toEqual(tap);
   });
 });
