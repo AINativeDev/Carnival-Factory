@@ -52,7 +52,8 @@ set them, so trust labels over comments.
 **Accept** only when every one of these holds:
 
 - It asks for something to _see_ on the author's own square: a scene, a
-  character, an animation, a colour change. One idea, or a small change to
+  character, an animation, a colour change, a restyle (by default to the
+  diorama style in `docs/style.md`). One idea, or a small change to
   what's there.
 - It can be drawn with the canvas, the `theme` colours and fonts, and the
   `draw(ctx, size, time)` contract, inside the house rules in `AGENTS.md`.

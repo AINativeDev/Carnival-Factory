@@ -107,8 +107,28 @@ jobs:
         run: |
           npm ci
           npm run build
-          find ../site -mindepth 1 -maxdepth 1 ! -name .git ! -name previews ! -name .nojekyll -exec rm -rf {} +
+          # Pages lets caches keep a page for up to 10 minutes, so a visitor can
+          # still be on the last build, asking for its files. Built files have
+          # a hash in their name, so old and new never clash: keep the old ones
+          # for a week, listed with the day they were last part of a build, and
+          # replace everything else.
+          kept=../site/assets-kept.txt
+          today=$(date -u +%Y-%m-%d)
+          cutoff=$(date -u -d '7 days ago' +%Y-%m-%d)
+          # The first time, the files already published are the last build's.
+          [ -s "$kept" ] || find ../site/assets -maxdepth 1 -type f -printf "$today %f\n" > "$kept" 2>/dev/null || true
+          find ../site -mindepth 1 -maxdepth 1 ! -name .git ! -name previews ! -name .nojekyll \
+            ! -name assets ! -name assets-kept.txt -exec rm -rf {} +
           cp -R dist/. ../site/
+          # This build's files are current as of today; drop files unused for a week.
+          find dist/assets -maxdepth 1 -type f -printf "$today %f\n" > new-kept.txt
+          awk -v cutoff="$cutoff" 'NR==FNR { current[$2] = 1; print; next }
+            !($2 in current) && $1 >= cutoff { print }' new-kept.txt "$kept" > merged-kept.txt
+          for file in ../site/assets/*; do
+            name=$(basename "$file")
+            grep -q " $name\$" merged-kept.txt || rm -f "$file"
+          done
+          mv merged-kept.txt "$kept"
 
       - id: files
         name: Reconcile the previews with the open pull requests
@@ -227,16 +247,17 @@ jobs:
             pr=${entry%%:*}
             sha=${entry#*:}
             url="${site%/}/previews/pr-$pr/"
-            # A direct link to every booth and attraction the pull request changes.
+            # A direct link to every booth and attraction the pull request changes,
+            # and their screenshots side by side under the map's, each opening its square.
             squares=$(gh api "repos/$GH_REPO/pulls/$pr/files" --paginate --jq '.[].filename' |
               sed -nE 's#^(booth|attraction)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
             links=""
+            row=""
             shots="${url}screenshots"
             for square in $squares; do
               links="$links
-          - [\`$square\`](${url}#/$square)
-
-            <img src=\"$shots/${square%%/*}-${square#*/}.png\" alt=\"$square\" width=\"240\">"
+          - [\`$square\`](${url}#/$square)"
+              row="$row<a href=\"${url}#/$square\"><img src=\"$shots/${square%%/*}-${square#*/}.png\" alt=\"$square\" width=\"160\"></a> "
             done
             body="<!-- pr-preview -->
           **Preview:** $url (built from ${sha::7}). It updates on every push. Once this pull request closes, its links take you to the live map.
@@ -245,7 +266,10 @@ jobs:
             if [ -n "$links" ]; then
               body="$body
 
-          **Changed here:**$links"
+          **Changed here:**
+
+          $row
+          $links"
             fi
             id=$(gh api "repos/$GH_REPO/issues/$pr/comments" --paginate \
               --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- pr-preview -->"))) | .id' | head -1)

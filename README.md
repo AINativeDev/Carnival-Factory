@@ -70,6 +70,11 @@ starter repo for the "Build your own software factory with context" workshop.
    request is the one that counts, so a new one closes any older one you still
    have open.
 
+Booths are drawn in the [diorama style](docs/style.md) by default, the same
+as the North Pole's attractions: a little isometric scene at dusk, lit warm.
+A booth built before that keeps its own look until its owner asks for a
+restyle, which is a request like any other through **Your booth**.
+
 ## Try it on your own
 
 Run the whole thing on a fork, with you as the maintainer and the factory
@@ -160,10 +165,11 @@ still reach the shepherd. Triggers that only stop work, such as closing an
 issue, removing `tessl` or closing a pull request, aren't filtered, so a
 participant can still withdraw their own request.
 
-To add a maintainer, add them to `.github/CODEOWNERS`, to `MAINTAINERS` in
-`scripts/ownership.ts`, and their numeric GitHub user id
-(`gh api users/<login> -q .id`) to each `event.sender.id` list in
-`tessl.json`.
+To add a maintainer, find their numeric GitHub user id
+(`gh api users/<login> -q .id`). Add them to `.github/CODEOWNERS`, to
+`MAINTAINERS` in `scripts/ownership.ts` with that id, and add the id to each
+`event.sender.id` list in `tessl.json`. Maintainers are checked by id, because
+a login can be renamed and taken by someone else.
 
 To switch a misbehaving square off, add its login to `booths`, or its id to
 `attractions`, in `northpole/disabled.json`: it shows "Closed for repairs" and

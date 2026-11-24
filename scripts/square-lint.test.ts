@@ -18,12 +18,14 @@ describe('booth house rules', () => {
       await problems(`
         import type { NorthPoleSquare } from '../../northpole/square';
         import { theme } from '../../northpole/theme';
+        import { scene } from '../../northpole/diorama';
         import { wobble } from './wobble';
         export const booth: NorthPoleSquare = {
           owner: 'grinch',
           name: 'Cave',
           description: 'A cave.',
           draw(ctx, size, time) {
+            scene(ctx, size, time, () => {});
             ctx.fillStyle = theme.colors.snow;
             ctx.fillRect(0, 0, size * wobble(time), size);
             setTimeout(() => {}, 10);
