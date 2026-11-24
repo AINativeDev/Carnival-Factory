@@ -157,6 +157,8 @@ export function lampAt(time: number): number {
 
 /** The round's last toy lands in the sack this long after the round starts. */
 const LAST_LANDING = (LETTERS.length - 1) * SLOT + IN_THE_SACK;
+/** The first jingle: the rocket already on the belt at time 0 lands within the first loop. */
+const FIRST_LANDING = wrap(LAST_LANDING, LOOP);
 /** How long the bells wiggle after a full sack. */
 export const JINGLE = 1_500;
 
@@ -168,7 +170,7 @@ export function jingleAt(time: number): number {
 
 /** The counter on the wall: how many times the sleigh has jingled since `time` began. */
 export function sacksFilled(time: number): number {
-  return time < LAST_LANDING ? 0 : Math.floor((time - LAST_LANDING) / LOOP) + 1;
+  return time < FIRST_LANDING ? 0 : Math.floor((time - FIRST_LANDING) / LOOP) + 1;
 }
 
 /** Snowflake `index` falling past the window, as 0 to 1 across and down it. */
