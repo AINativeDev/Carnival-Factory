@@ -5,6 +5,16 @@ import { CLAIM_URL } from '../northpole/links';
 import { worldToScreen } from '../northpole/camera';
 import { CLAIM_SIGN, faceOf, onFace } from '../northpole/render';
 import { buildWorld, toScreen, type PinnedPlots } from '../northpole/world';
+import { STALL_SHAPES, type StallShape, type StallStyle } from '../northpole/square';
+
+/** A stall option of each shape, as a booth would write it. */
+const STALL_STYLES: Record<StallShape, StallStyle> = {
+  stall: { shape: 'stall', roof: 'pine', trim: 'cream' },
+  shed: { shape: 'shed', roof: 'gold' },
+  tent: { shape: 'tent', roof: 'berry', trim: 'snow' },
+  cabin: { shape: 'cabin', roof: 'berry' },
+  kiosk: { shape: 'kiosk', roof: 'violet', trim: 'cream' },
+};
 
 /**
  * Plays every booth and attraction for a few seconds in its sandboxed frame,
@@ -183,6 +193,49 @@ for (const viewport of [
       expect(problems).toEqual([]);
     });
   }
+}
+
+// Every booth in turn takes each stall shape, as if its booth.ts asked for it:
+// the frame's ready message gains the option on its way from the square's
+// worker, so the map checks and draws it exactly as it would a booth's own.
+for (const shape of STALL_SHAPES) {
+  test(`the map draws a booth's stall as a ${shape}`, async ({ page }) => {
+    const problems = watch(page);
+    await page.addInitScript((stall) => {
+      if (!location.pathname.endsWith('square.html')) return;
+      const listen = Worker.prototype.addEventListener;
+      Worker.prototype.addEventListener = function (
+        this: Worker,
+        type: string,
+        listener: EventListenerOrEventListenerObject,
+        options?: boolean | AddEventListenerOptions,
+      ) {
+        if (type !== 'message' || typeof listener !== 'function') {
+          return listen.call(this, type, listener, options);
+        }
+        return listen.call(
+          this,
+          type,
+          (event: Event) => {
+            const data = (event as MessageEvent).data as { type?: string } | undefined;
+            if (data?.type !== 'ready') return listener.call(this, event);
+            listener.call(this, { data: { ...data, stall } } as unknown as Event);
+          },
+          options,
+        );
+      };
+    }, STALL_STYLES[shape]);
+    await page.goto('#/?booth=jedi4ever');
+    await expect(frameOf(page, 'booth', 'jedi4ever')).toHaveAttribute('data-state', 'ready', {
+      timeout: 5000,
+    });
+    await page.waitForTimeout(1000);
+    await page
+      .locator('canvas')
+      .first()
+      .screenshot({ path: join(SHOTS, `map-stall-${shape}.png`) });
+    expect(problems).toEqual([]);
+  });
 }
 
 test('a deep link to a booth nobody has built says so, as text', async ({ page }) => {

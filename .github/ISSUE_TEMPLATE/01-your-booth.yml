@@ -60,6 +60,19 @@ body:
         - Night scene, glowing lights on dark
         - Surprise me
       default: 0
+  - type: dropdown
+    id: stall
+    attributes:
+      label: Stall shape
+      description: What your stall on the map looks like, with your drawing on its front. Name a roof colour from the palette in your request too, such as "a gold roof".
+      options:
+        - Keep it as it is
+        - Market stall with a striped awning
+        - Shed, long and low with a flat roof
+        - Tent, round and striped
+        - Log cabin with a snowy pitched roof
+        - Kiosk, small and hexagonal
+      default: 0
   - type: input
     id: mood
     attributes:

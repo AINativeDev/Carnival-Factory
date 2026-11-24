@@ -52,7 +52,8 @@ northpole/                  the map itself
   camera.ts                 framing the island: its outline, the zoom and where the
                             camera looks on a laptop and a phone (plain functions)
   render.ts                 drawing the diorama: sky, island, fence and lights, cabins,
-                            tents, the ferris wheel, stalls, pavilions, people
+                            tents, the ferris wheel, stalls in each booth's chosen
+                            shape, pavilions, people
   map.ts                    the walkable map (camera, keys, clicks, hover tags,
                             and going inside a square)
   interior.ts               the room inside a square: its layout, walking in it and
@@ -196,8 +197,20 @@ uses any of it:
    its own square by relative paths from where it sits. These rules catch the
    plain ways out, not every one, so never look for a way around them: the
    house-rules review lens looks for exactly that.
-5. A `README.md` that says what the booth shows and stays true to the code.
-6. Within the size budget in `scripts/square-size.ts`: 50 KB of code gzipped,
+5. Optionally, a `stall` that says how its stall on the map looks, as plain
+   data: `stall: { shape: 'shed', roof: 'gold' }`. `shape` is one of
+   `'stall'` (the market stall with a striped awning, and the default),
+   `'shed'` (long and low, with a flat roof), `'tent'` (a round, striped
+   tent), `'cabin'` (a log cabin with a snowy pitched roof) or `'kiosk'` (a
+   small hexagonal kiosk). `roof` is a `theme` colour's name, and `trim`, a
+   second one for the stripes or the awning, is optional. The map draws the
+   stall itself, with the booth's drawing on its front: the option only
+   travels in the frame's `ready` message, and `readStall` in
+   `northpole/frame-protocol.ts` drops anything else, so an invalid option
+   draws the usual stall. A request for a stall shape or roof colour is an
+   ordinary change to the booth, made in its own `booth.ts`.
+6. A `README.md` that says what the booth shows and stays true to the code.
+7. Within the size budget in `scripts/square-size.ts`: 50 KB of code gzipped,
    and 200 KB of other files.
 
 Pure logic a booth has, such as movement, goes in plain exported functions with
