@@ -67,10 +67,13 @@ set them once in **Settings → Branches** with a protection rule for `main`:
   access could still merge an approved pull request. Merging is a push to
   `main`, so this is what keeps the merge itself with the maintainers.
 
-Only maintainers can start or steer the factory: every `tessl.json` trigger
-that a person can set off (adding `tessl`, commenting on a `tessl` issue, or
-reviewing or commenting on a factory pull request) is filtered on
+Only maintainers can start or steer the factory: the `tessl.json` triggers
+that start or steer work (adding `tessl`, commenting on a `tessl` issue, or
+reviewing or commenting on a factory pull request) are filtered on
 `event.sender.id`. The Tessl Reviewer's reviews still reach the shepherd.
+Triggers that only stop work, such as closing an issue, removing `tessl` or
+closing a pull request, aren't filtered, so a participant can still withdraw
+their own request.
 
 To add a maintainer, add them to `.github/CODEOWNERS`, to `MAINTAINERS` in
 `scripts/ownership.ts`, and their numeric GitHub user id
