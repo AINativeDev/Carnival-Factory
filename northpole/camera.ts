@@ -113,6 +113,26 @@ export function frameCentre(
   };
 }
 
+/**
+ * Where the camera's centre goes when a finger drags the map from `from` to
+ * `to`, in CSS pixels: the island moves with the finger, and the camera stops
+ * where `frameCentre` would, so the drag never shows anything past `bounds`.
+ */
+export function dragCentre(
+  bounds: Box,
+  width: number,
+  height: number,
+  zoom: number,
+  centre: Tile,
+  from: Tile,
+  to: Tile,
+): Tile {
+  return frameCentre(bounds, width, height, zoom, {
+    x: centre.x - (to.x - from.x) / zoom,
+    y: centre.y - (to.y - from.y) / zoom,
+  });
+}
+
 /** How the camera frames the island: the zoom it settles on, and the point it looks at. */
 export interface Framing {
   zoom: number;

@@ -3,6 +3,7 @@ import {
   alongEdge,
   carnivalBounds,
   CARNIVAL_MARGIN,
+  dragCentre,
   duskAt,
   fitZoom,
   frameCentre,
@@ -166,6 +167,27 @@ describe('framing', () => {
     expect(duskAt(0)).toBe(0);
     expect(duskAt(120_000)).toBeCloseTo(1);
     expect(duskAt(240_000)).toBeCloseTo(0);
+  });
+});
+
+describe('dragging the map', () => {
+  const bounds = islandBounds(world);
+  const zoom = PHONE_ZOOM;
+  const centre = frameCentre(bounds, 390, 844, zoom, { x: 0, y: 0 });
+
+  it('moves the island with the finger', () => {
+    const at = { x: 200, y: 400 };
+    const moved = dragCentre(bounds, 390, 844, zoom, centre, at, { x: 230, y: 380 });
+    const before = screenToWorld(at, 390, 844, centre, zoom);
+    const after = worldToScreen(before, 390, 844, moved, zoom);
+    expect(after.x).toBeCloseTo(230);
+    expect(after.y).toBeCloseTo(380);
+  });
+
+  it('stops at the edge of the island', () => {
+    const far = dragCentre(bounds, 390, 844, zoom, centre, { x: 0, y: 0 }, { x: 99999, y: 99999 });
+    expect(far.x).toBeCloseTo(bounds.x + 390 / zoom / 2);
+    expect(far.y).toBeCloseTo(bounds.y + 844 / zoom / 2);
   });
 });
 
