@@ -10,7 +10,10 @@ import {
   isFactory,
   linkedIssue,
   boothFolder,
+  approvedByMaintainer,
   boothOwner,
+  isMaintainer,
+  type IssueEvent,
   escapeCommand,
   type Author,
 } from './ownership.ts';
@@ -79,6 +82,23 @@ const issue = issueNumber
 // The issues endpoint also returns pull requests, which are not issues.
 const issueAuthor = issue && !issue.pull_request ? author(issue.user) : undefined;
 const owner = boothOwner(prAuthor, issueAuthor);
+
+// A participant's issue that a maintainer approved, by adding tessl
+// themselves, may change anything, like a maintainer's own issue.
+if (issueNumber && issueAuthor && !isMaintainer(issueAuthor)) {
+  const events: IssueEvent[] = [];
+  for (let page = 1; ; page++) {
+    const batch = await get<IssueEvent[]>(`issues/${issueNumber}/events?per_page=100&page=${page}`);
+    events.push(...batch);
+    if (batch.length < 100) break;
+  }
+  if (approvedByMaintainer(events)) {
+    console.log(
+      `A maintainer approved #${issueNumber} for the factory, so it may change any file.`,
+    );
+    process.exit(0);
+  }
+}
 
 if (!owner) {
   console.log(
