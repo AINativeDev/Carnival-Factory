@@ -4,7 +4,16 @@
  * trust, so nothing it sends is used before these checks pass.
  */
 
-import { isAttractionId, isBoothOwner, MAX_PRESSES, type SquarePointer } from './square';
+import {
+  isAttractionId,
+  isBoothOwner,
+  MAX_PRESSES,
+  STALL_SHAPES,
+  type SquarePointer,
+  type StallStyle,
+  type ThemeColor,
+} from './square';
+import { theme } from './theme';
 
 export type SquareKind = 'booth' | 'attraction';
 
@@ -19,7 +28,7 @@ export interface DrawRequest {
 
 /** What a frame may send back, once checked. */
 export type FrameMessage =
-  | { type: 'ready'; name: string; description: string }
+  | { type: 'ready'; name: string; description: string; stall?: StallStyle }
   | { type: 'frame'; bitmap: ImageBitmap; drawMs: number }
   | { type: 'error'; message: string };
 
@@ -46,9 +55,12 @@ export function readFrameMessage(
   switch (message.type) {
     case 'ready': {
       const name = text(message.name, MAX_NAME);
-      return name
-        ? { type: 'ready', name, description: text(message.description, MAX_DESCRIPTION) }
-        : undefined;
+      if (!name) return undefined;
+      const description = text(message.description, MAX_DESCRIPTION);
+      const stall = readStall(message.stall);
+      return stall
+        ? { type: 'ready', name, description, stall }
+        : { type: 'ready', name, description };
     }
     case 'frame': {
       const { bitmap, drawMs } = message;
@@ -62,6 +74,27 @@ export function readFrameMessage(
     default:
       return undefined;
   }
+}
+
+const isThemeColor = (value: unknown): value is ThemeColor =>
+  typeof value === 'string' && Object.hasOwn(theme.colors, value);
+
+/**
+ * Checks a square's stall option: a `shape` from `STALL_SHAPES`, a `roof`
+ * that names a `theme` colour, and a `trim` that is missing or names one too.
+ * Anything else gives undefined, and the map draws the usual stall. Only
+ * those three fields are kept.
+ */
+export function readStall(value: unknown): StallStyle | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const { shape, roof, trim } = value as Record<string, unknown>;
+  if (typeof shape !== 'string' || !(STALL_SHAPES as readonly string[]).includes(shape)) {
+    return undefined;
+  }
+  if (!isThemeColor(roof)) return undefined;
+  if (trim === undefined) return { shape: shape as StallStyle['shape'], roof };
+  if (!isThemeColor(trim)) return undefined;
+  return { shape: shape as StallStyle['shape'], roof, trim };
 }
 
 const within = (value: unknown, max: number): value is number =>

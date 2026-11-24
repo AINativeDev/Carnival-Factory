@@ -10,6 +10,8 @@
  * the same file.
  */
 
+import type { FactoryStats } from './factory-stats.ts';
+
 export type HistoryKind = 'booth' | 'attraction';
 
 /** What the assessment decided about a request. */
@@ -61,6 +63,8 @@ export interface SquareHistory {
   squares: Record<string, HistoryEntry[]>;
   /** Every square the factory has built into, keyed the same way. */
   credits: Record<string, Credits>;
+  /** The factory's numbers, for the `#/factory` page (scripts/factory-stats.ts). */
+  factory?: FactoryStats;
 }
 
 /** An issue as the GitHub GraphQL API gives it. */
@@ -71,6 +75,8 @@ export interface RawIssue {
   createdAt: string;
   author: { login: string } | null;
   labels: { nodes: { name: string }[] };
+  /** When labels were added, for when a request was accepted. */
+  timelineItems?: { nodes: { createdAt: string; label?: { name: string } | null }[] };
 }
 
 /** A pull request as the GitHub GraphQL API gives it. */
@@ -81,6 +87,7 @@ export interface RawPull {
   mergedAt: string | null;
   headRefName: string;
   isCrossRepository: boolean;
+  labels?: { nodes: { name: string }[] };
   commits: { totalCount: number };
   files: { nodes: { path: string }[] } | null;
   reviewThreads: {

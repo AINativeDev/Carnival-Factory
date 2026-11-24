@@ -24,6 +24,8 @@ import {
   drawPlotGlow,
   drawReindeer,
   drawRipples,
+  drawSelectionBeam,
+  drawSelectionRing,
   drawSky,
   drawSnowfall,
   drawStringLights,
@@ -33,7 +35,16 @@ import {
   setSpriteResolution,
   type Look,
   type Mapping,
+  type Owner,
 } from './render';
+import {
+  arrowBounce,
+  avatarPath,
+  highlightAt,
+  inviteFor,
+  inviteOpacity,
+  ownerColor,
+} from './owners';
 import { isTap, onMapping, onRect } from './pointer';
 import type { NorthPoleSquare, SquarePointer } from './square';
 import { canvasFont, theme } from './theme';
@@ -49,7 +60,7 @@ import {
   roomLayout,
   stepInRoom,
 } from './interior';
-import { nearestOpenPlot, placeTag, tagText, targetAt } from './visit';
+import { nearestOpenPlot, nearYou, placeTag, tagText, targetAt } from './visit';
 import {
   buildWorld,
   findPathToFirst,
@@ -119,8 +130,14 @@ export interface MapOptions {
   onOpen(kind: SquareKind, id: string): void;
   /** Asks to leave the square the player is inside: they walked out through its doorway. */
   onLeave(): void;
-  /** A square to open the map on: the player starts in front of it, and it glows for a few seconds. */
+  /** A square to open the map on: the player starts in front of it, and it's picked, so it's highlighted. */
   focus?: { kind: SquareKind; id: string };
+  /** The logins whose avatars the build downloaded (scripts/download-avatars.ts); the rest get the elf. */
+  avatars?: ReadonlySet<string>;
+  /** The visitor's own login, once the page knows it: their booth glows and says "You". */
+  me?: string;
+  /** Says the picked square changed: picked, or let go with Esc, by going inside, or by picking another. */
+  onSelect?(selected: { kind: SquareKind; id: string } | undefined): void;
 }
 
 /** Where the player stood when they last opened a square, so coming back puts them there. */
@@ -128,9 +145,6 @@ let remembered: Tile | undefined;
 
 /** How fast the player walks, in tiles a second. */
 const SPEED = 4.5;
-/** How long a square the map opens on glows, in milliseconds, and how long it takes to fade. */
-const HIGHLIGHT_TIME = 6000;
-const HIGHLIGHT_FADE = 1500;
 /** The size a square draws at on the back wall of its room, in pixels. */
 export const VISIT_SIZE = 480;
 /** How long footprints stay in the snow, in milliseconds, and how far apart they are, in tiles. */
@@ -264,10 +278,18 @@ function trackPointer(element: HTMLElement) {
 export interface MapControls {
   /** Stops it all. */
   stop(): void;
-  /** Walks the player to a square's door. */
+  /** Picks a square and walks the player to its door, leaving footprints and pointing the way. */
   walkTo(kind: SquareKind, id: string): void;
-  /** Puts the player straight at a square's door, and glides the camera there. */
+  /** Puts the player straight at a square's door, glides the camera there, and picks it. */
   jumpTo(kind: SquareKind, id: string): void;
+  /** The square picked now, highlighted and invited into, if any. */
+  readonly selected: { kind: SquareKind; id: string } | undefined;
+  /** Lets go of the picked square. */
+  clearSelection(): void;
+  /** The `count` squares nearest the player, nearest first. */
+  nearest(count: number): { kind: SquareKind; id: string }[];
+  /** Says who the visitor is, so their own booth stands out, or that the page doesn't know. */
+  setMe(login: string | undefined): void;
   /** Walks the player to the nearest open plot. */
   walkToOpenPlot(): void;
   /** Walks the player to the open plot nearest them, leaving footprints, and bounces its sign. */
@@ -318,14 +340,40 @@ export function startMap(
   );
   const squareOf = (plot: Plot) =>
     plot.kind === 'open' ? undefined : byId[plot.kind].get(plot.id!);
-  let focused = options.focus
-    ? world.plots.find((plot) => plot.kind === options.focus!.kind && plot.id === options.focus!.id)
-    : undefined;
+  const plotOf = (kind: SquareKind, id: string) =>
+    world.plots.find((plot) => plot.kind === kind && plot.id === id);
+  /** The picked plot, when its highlight began, and whether the player is walking there on a trail. */
+  let selected = options.focus ? plotOf(options.focus.kind, options.focus.id) : undefined;
+  let selectedAt: number | undefined;
+  let trailing = false;
+  let me = options.me;
+  /** Avatars by login: loading, loaded, or failed, which draws the elf. */
+  const avatars = new Map<string, HTMLImageElement | undefined>();
+  const avatarOf = (login: string) => {
+    if (!options.avatars?.has(login)) return undefined;
+    if (!avatars.has(login)) {
+      const image = new Image();
+      image.decoding = 'async';
+      image.addEventListener('error', () => avatars.set(login, undefined));
+      image.src = avatarPath(login);
+      avatars.set(login, image);
+    }
+    const image = avatars.get(login);
+    return image?.complete && image.naturalWidth > 0 ? image : undefined;
+  };
+  const ownerOf = (plot: Plot): Owner | undefined =>
+    plot.kind === 'booth'
+      ? { color: ownerColor(plot.id!), avatar: avatarOf(plot.id!), you: plot.id === me }
+      : undefined;
+  /** The plot the call to action invites into, and when it started to. */
+  let invited: Plot | undefined;
+  let invitedAt = 0;
+  const touchScreen = window.matchMedia('(pointer: coarse)');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const island = islandCorners(world);
   const bounds = islandBounds(world);
 
-  let player: Tile = focused ? { ...focused.door } : (remembered ?? { ...world.start });
+  let player: Tile = selected ? { ...selected.door } : (remembered ?? { ...world.start });
   let path: Tile[] = [];
   let facing = 1;
   let moving = false;
@@ -338,7 +386,6 @@ export function startMap(
   let near: Plot | undefined;
   let scale = 1;
   let last: number | undefined;
-  let focusedAt: number | undefined;
   /** The plot the player is inside, the open plot they're walking to claim, and their footprints. */
   let visiting: Plot | undefined;
   let claiming: Plot | undefined;
@@ -427,19 +474,65 @@ export function startMap(
     options.onOpen(plot.kind, plot.id!);
   };
 
-  const showPrompt = () => {
-    const square = near && squareOf(near);
-    const text = !near
+  /** Picks a plot, or lets go of the one picked, and tells the page. */
+  const select = (plot: Plot | undefined) => {
+    if (plot === selected) return;
+    selected = plot;
+    selectedAt = undefined;
+    trailing = false;
+    options.onSelect?.(plot && { kind: plot.kind as SquareKind, id: plot.id! });
+  };
+
+  /**
+   * The call to action over a door: "Visit <name>" with its key, or "Claim
+   * this plot", for the picked square if there is one, otherwise the one the
+   * player stands at. It fades in after a moment, so walking past doesn't
+   * flicker it, and sits above the square, its arrow pointing down at it.
+   */
+  const showPrompt = (time: number, zoom: number, centre: Tile) => {
+    const plot = visiting ? undefined : inviteFor(selected, near);
+    if (plot !== invited) {
+      invited = plot;
+      invitedAt = time;
+    }
+    // Its words follow the square's name, which arrives once its frame has opened.
+    const words = !plot
       ? ''
-      : near.kind === 'open'
-        ? 'Press E to claim this plot'
-        : `Visit ${square?.name ?? near.id} (E)`;
-    if (prompt.textContent !== text) prompt.textContent = text;
-    prompt.hidden = !near;
+      : plot.kind === 'open'
+        ? 'Claim this plot'
+        : `Visit ${squareOf(plot)?.name ?? plot.id ?? ''}`;
+    if (plot && prompt.title !== words) {
+      const text = document.createElement('span');
+      text.className = 'prompt-text';
+      text.textContent = words;
+      const key = document.createElement('kbd');
+      key.textContent = touchScreen.matches ? 'Tap' : 'E';
+      prompt.replaceChildren(text, ' ', key);
+      prompt.title = words;
+    }
+    if (plot) prompt.dataset.plot = `${plot.kind}:${plot.id ?? plot.number}`;
+    prompt.hidden = !plot;
+    const target = plot && targets.find((t) => t.plot === plot);
+    if (plot && target) {
+      const width = frame.clientWidth;
+      const height = frame.clientHeight;
+      const top = target.box.y - 40;
+      const anchor = worldToScreen({ x: middle(plot).x, y: top }, width, height, centre, zoom);
+      const w = prompt.offsetWidth;
+      const h = prompt.offsetHeight;
+      const x = Math.max(8, Math.min(width - w - 8, anchor.x - w / 2));
+      const y = Math.max(8, Math.min(height - h - 8, anchor.y - h));
+      prompt.style.translate = `${Math.round(x)}px ${Math.round(y)}px`;
+      prompt.style.opacity = `${inviteOpacity(time - invitedAt)}`;
+    } else if (plot) {
+      prompt.style.opacity = '0';
+    }
     const at = `${Math.round(player.x)},${Math.round(player.y)}`;
     if (canvas.dataset.player !== at) canvas.dataset.player = at;
     const nearBy = near ? `${near.kind}:${near.id ?? near.number}` : '';
     if (canvas.dataset.near !== nearBy) canvas.dataset.near = nearBy;
+    const picked = selected ? `${selected.kind}:${selected.id}` : '';
+    if (canvas.dataset.selected !== picked) canvas.dataset.selected = picked;
   };
 
   const walk = (dt: number) => {
@@ -462,7 +555,9 @@ export function startMap(
     const dx = toScreen(player).x - toScreen(before).x;
     if (Math.abs(dx) > 0.01) facing = Math.sign(dx);
     near = plotAtDoor(world, player);
-    if (claiming) {
+    // The trail ends once the player arrives at the picked square's door.
+    if (trailing && !path.length) trailing = false;
+    if (claiming || trailing) {
       const lastStep = footprints.at(-1)?.at ?? before;
       if (moving && Math.hypot(player.x - lastStep.x, player.y - lastStep.y) >= FOOTPRINT_GAP)
         footprints.push({
@@ -503,6 +598,12 @@ export function startMap(
   /** Shows the tag over the plot under the mouse, or the one the player stands at. */
   const showTag = (zoom: number, centre: Tile) => {
     const plot = visiting ? undefined : (hovered ?? near);
+    // The call to action already names the square it invites into.
+    if (plot && plot === inviteFor(selected, near) && !hovered) {
+      tagged = undefined;
+      tag.classList.remove('shown');
+      return;
+    }
     const target = plot && targets.find((t) => t.plot === plot);
     if (!plot || !target) {
       tagged = undefined;
@@ -547,7 +648,6 @@ export function startMap(
     const still = reduced.matches;
     const motion = still ? 0 : time;
     walk(dt);
-    showPrompt();
 
     const width = frame.clientWidth;
     const height = frame.clientHeight;
@@ -562,6 +662,7 @@ export function startMap(
     if (still || time - fading >= FADE / 2) entered = visiting;
     const dark = still ? 0 : fadeAt(time - fading);
     if (entered) {
+      showPrompt(time, zoom, camera ?? toScreen(player));
       drawInside(entered, width, height, time, dark);
       frameId = requestAnimationFrame(render);
       return;
@@ -633,6 +734,17 @@ export function startMap(
       ctx.ellipse(x + (step.side ? 5 : -5), y, 4, 2.5, 0, 0, Math.PI * 2);
       ctx.fill();
     }
+    // On a walk to a picked square, the way ahead shows as faint footprints until the player arrives.
+    if (trailing) {
+      ctx.fillStyle = colors.snowShade;
+      ctx.globalAlpha = 0.45;
+      path.forEach((tile, n) => {
+        const { x, y } = toScreen(tile);
+        ctx.beginPath();
+        ctx.ellipse(x + (n % 2 ? 5 : -5), y, 4, 2.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
     ctx.globalAlpha = 1;
     drawStringLights(ctx, island, false, motion);
 
@@ -682,17 +794,18 @@ export function startMap(
       );
       ctx.restore();
     };
+    if (selected) selectedAt ??= time;
+    const picked = selectedAt === undefined ? 0 : highlightAt(time - selectedAt);
     for (const plot of world.plots) {
       if (!shown(plot)) continue;
       add(plot.x + plot.w + plot.y + plot.h - 2, () => {
-        const glowFor =
-          plot === focused && focusedAt !== undefined
-            ? Math.min(1, (HIGHLIGHT_TIME - (time - focusedAt)) / HIGHLIGHT_FADE)
-            : 0;
-        const strength = Math.max(plot === near ? 0.7 : 0, glowFor);
+        const highlight = plot === selected ? picked : 0;
+        const owner = ownerOf(plot);
+        const strength = Math.max(plot === near ? 0.7 : 0, owner?.you ? 0.45 : 0, highlight);
         if (strength > 0) drawPlotGlow(ctx, plot, strength);
+        drawSelectionRing(ctx, plot, highlight);
         const bounce = plot === near || plot === claiming;
-        const box = drawPlot(ctx, plot, squareOf(plot), paint, motion, bounce);
+        const box = drawPlot(ctx, plot, squareOf(plot), paint, motion, bounce, owner);
         targets.push({ plot, box });
       });
     }
@@ -736,7 +849,10 @@ export function startMap(
     });
     scene.sort((a, b) => a.depth - b.depth);
     for (const item of scene) item.draw();
-    if (focused) focusedAt ??= time;
+    // The picked square's beam and arrow, over whatever stands in front of it.
+    const pickedTarget = selected && targets.find((t) => t.plot === selected);
+    if (pickedTarget && picked > 0)
+      drawSelectionBeam(ctx, selected!, pickedTarget.box.y, picked, arrowBounce(time, still));
     // Which square has the pointer, for the smoke test.
     if (canvas.dataset.pointer !== pointed) canvas.dataset.pointer = pointed;
 
@@ -745,12 +861,47 @@ export function startMap(
 
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     if (!still) drawSnowfall(ctx, width, height, time);
+    if (trailing && selected)
+      drawEdgeArrow(worldToScreen(middle(selected), width, height, camera, zoom), width, height);
     darken(dark, width, height);
     showTag(zoom, camera);
+    showPrompt(time, zoom, camera);
 
     // How long the map took to draw this frame, for the smoke test's budget.
     timeFrame(started);
     frameId = requestAnimationFrame(render);
+  };
+
+  /** An arrow at the edge of the screen pointing toward `at`, a point in screen pixels, when it's off screen. */
+  const drawEdgeArrow = (at: Tile, width: number, height: number) => {
+    const margin = 28;
+    if (at.x > margin && at.x < width - margin && at.y > margin && at.y < height - margin) return;
+    const cx = width / 2;
+    const cy = height / 2;
+    const angle = Math.atan2(at.y - cy, at.x - cx);
+    // Where the line from the middle toward the square leaves the screen, kept inside the margin.
+    const reach = Math.min(
+      Math.abs((width / 2 - margin) / (Math.cos(angle) || 1e-6)),
+      Math.abs((height / 2 - margin) / (Math.sin(angle) || 1e-6)),
+    );
+    ctx.save();
+    ctx.translate(cx + Math.cos(angle) * reach, cy + Math.sin(angle) * reach);
+    ctx.rotate(angle);
+    ctx.fillStyle = colors.cocoa;
+    ctx.beginPath();
+    ctx.moveTo(16, 0);
+    ctx.lineTo(-10, -13);
+    ctx.lineTo(-10, 13);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = colors.gold;
+    ctx.beginPath();
+    ctx.moveTo(12, 0);
+    ctx.lineTo(-7, -9);
+    ctx.lineTo(-7, 9);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   };
 
   /** The fade's black over the view. */
@@ -772,7 +923,15 @@ export function startMap(
     const square = squareOf(plot)!;
     const room = roomLayout(roomArea(width, height));
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    drawRoom(ctx, room, width, height, square.name, plot.kind === 'booth' ? `by @${plot.id}` : '');
+    drawRoom(
+      ctx,
+      room,
+      width,
+      height,
+      square.name,
+      plot.kind === 'booth' ? `by @${plot.id}` : '',
+      plot.kind === 'booth' ? avatarOf(plot.id!) : undefined,
+    );
     const { stage } = room;
     // The stage is the square's drawing scaled, so the pointer scales with it.
     const pressed = pointer.now();
@@ -889,16 +1048,29 @@ export function startMap(
       event.preventDefault();
     } else if (
       (name === 'e' || (name === 'enter' && !pressable(event.target))) &&
-      near &&
+      inviteFor(selected, near) &&
       !visiting
     ) {
       event.preventDefault();
-      open(near);
+      enter(inviteFor(selected, near)!);
+    } else if (name === 'escape' && selected && !visiting) {
+      select(undefined);
     }
+  };
+  /** Opens a plot from the map: from afar, the player goes to its door first. */
+  const enter = (plot: Plot) => {
+    if (plotAtDoor(world, player) !== plot) {
+      player = { ...plot.door };
+      path = [];
+    }
+    open(plot);
   };
   const onKeyUp = (event: KeyboardEvent) => held.delete(event.key.toLowerCase());
   const onBlur = () => held.clear();
-  const onPrompt = () => near && !visiting && open(near);
+  const onPrompt = () => {
+    const plot = inviteFor(selected, near);
+    if (plot && !visiting) enter(plot);
+  };
 
   resize();
   window.addEventListener('resize', resize);
@@ -928,11 +1100,16 @@ export function startMap(
     },
     walkTo(kind, id) {
       if (visiting) options.onLeave();
-      const plot = world.plots.find((p) => p.kind === kind && p.id === id);
-      if (plot) walkToward([plot.door]);
+      const plot = plotOf(kind, id);
+      if (!plot) return;
+      select(plot);
+      selectedAt = undefined;
+      walkToward([plot.door]);
+      trailing = path.length > 0;
+      footprints = [];
     },
     jumpTo(kind, id) {
-      const plot = world.plots.find((p) => p.kind === kind && p.id === id);
+      const plot = plotOf(kind, id);
       if (!plot) return;
       if (visiting) options.onLeave();
       player = { ...plot.door };
@@ -941,17 +1118,37 @@ export function startMap(
       // The camera comes in on the square, and eases back out a little later, as after a walk.
       walking = 1;
       movedAt = performance.now();
-      focused = plot;
-      focusedAt = undefined;
+      select(plot);
+      selectedAt = undefined;
+    },
+    get selected() {
+      return selected && { kind: selected.kind as SquareKind, id: selected.id! };
+    },
+    clearSelection() {
+      select(undefined);
+    },
+    nearest(count) {
+      const squares = world.plots.filter((plot) => plot.kind !== 'open');
+      return nearYou(squares, player, count).map((plot) => ({
+        kind: plot.kind as SquareKind,
+        id: plot.id!,
+      }));
+    },
+    setMe(login) {
+      me = login;
     },
     walkToOpenPlot() {
       if (visiting) options.onLeave();
       const way = nearestOpenPlot(world, player);
-      if (way) path = way.path;
+      if (!way) return;
+      // The open plot is where they're headed now, so its call to action is the one that shows.
+      select(undefined);
+      path = way.path;
     },
     claimNextDoor() {
       const way = nearestOpenPlot(world, player);
       if (!way) return;
+      select(undefined);
       path = way.path;
       claiming = way.plot;
       footprints = [];
@@ -968,6 +1165,7 @@ export function startMap(
       overview = false;
       if (!visiting) fading = performance.now();
       visiting = plot;
+      select(undefined);
       inside = { ...ENTRANCE };
       insideGoal = undefined;
       insideFacing = 1;

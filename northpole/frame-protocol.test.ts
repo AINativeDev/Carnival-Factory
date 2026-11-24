@@ -7,8 +7,9 @@ import {
   readPointer,
   readFrameAddress,
   readFrameMessage,
+  readStall,
 } from './frame-protocol';
-import { MAX_PRESSES } from './square';
+import { MAX_PRESSES, STALL_SHAPES } from './square';
 
 /** Stands in for an ImageBitmap in Node, where there is none. */
 class FakeBitmap {
@@ -44,6 +45,22 @@ describe('readFrameMessage', () => {
     expect(
       readFrameMessage({ type: 'ready', name: { x: 1 } }, undefined, isBitmap),
     ).toBeUndefined();
+  });
+
+  it('carries a valid stall option on ready, and drops an invalid one', () => {
+    const ready = (stall: unknown) =>
+      readFrameMessage({ type: 'ready', name: 'Shed', stall }, undefined, isBitmap);
+    expect(ready({ shape: 'shed', roof: 'gold' })).toEqual({
+      type: 'ready',
+      name: 'Shed',
+      description: '',
+      stall: { shape: 'shed', roof: 'gold' },
+    });
+    expect(ready({ shape: 'castle', roof: 'gold' })).toEqual({
+      type: 'ready',
+      name: 'Shed',
+      description: '',
+    });
   });
 
   it('takes a frame only as a bitmap of the size the map asked for', () => {
@@ -196,6 +213,47 @@ describe('readFrameAddress', () => {
       '#booth/a/b',
     ]) {
       expect(readFrameAddress(hash), hash).toBeUndefined();
+    }
+  });
+});
+
+describe('readStall', () => {
+  it('reads every shape the map knows, with theme colours', () => {
+    for (const shape of STALL_SHAPES) {
+      expect(readStall({ shape, roof: 'gold' })).toEqual({ shape, roof: 'gold' });
+    }
+    expect(readStall({ shape: 'tent', roof: 'berry', trim: 'snow' })).toEqual({
+      shape: 'tent',
+      roof: 'berry',
+      trim: 'snow',
+    });
+  });
+
+  it('keeps only the shape, roof and trim', () => {
+    expect(readStall({ shape: 'cabin', roof: 'pine', draw: 'x', onclick: 1 })).toEqual({
+      shape: 'cabin',
+      roof: 'pine',
+    });
+  });
+
+  it('refuses shapes the map does not know', () => {
+    for (const shape of ['castle', 'Shed', ' shed', '', 3, undefined, null, ['shed']]) {
+      expect(readStall({ shape, roof: 'gold' })).toBeUndefined();
+    }
+  });
+
+  it('refuses colours that are not theme colour names', () => {
+    for (const roof of ['#ff0000', 'red', 'Gold', 'toString', '__proto__', '', 7, undefined]) {
+      expect(readStall({ shape: 'shed', roof })).toBeUndefined();
+    }
+    for (const trim of ['#fff', 'constructor', null, 0]) {
+      expect(readStall({ shape: 'shed', roof: 'gold', trim })).toBeUndefined();
+    }
+  });
+
+  it('refuses anything that is not an object', () => {
+    for (const value of [null, undefined, 'shed', 42, true]) {
+      expect(readStall(value)).toBeUndefined();
     }
   });
 });

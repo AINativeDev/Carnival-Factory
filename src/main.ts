@@ -7,6 +7,10 @@ import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { applyTheme } from '../northpole/theme';
 import { boothRegistry } from '../northpole/booths';
+import { avatarPath } from '../northpole/owners';
+import { BOOTHS_PANEL, startBoothsPanel, type BoothsPanel } from './booths-hud';
+import { openFactoryHud, readFactoryStats, squareCounts } from './factory';
+import { SQUARE_HISTORY } from './history';
 import { parseHash } from './route';
 import { openVisitHud, type VisitHud } from './visit-hud';
 import { keepUpToDate } from './updates';
@@ -52,8 +56,12 @@ function renderGuide(
 /** The square the Booths panel features at its top. Once #33 lands, it's the day's featured square. */
 const FEATURED: { kind: SquareKind; id: string } = { kind: 'attraction', id: 'ferris-wheel' };
 
-/** A small walking-figure icon, drawn in the button's own colour. */
-const WALK_ICON = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor"><circle cx="9" cy="2.5" r="1.8"/><path d="M8 5.2 5.5 7.5 5 10.5h1.6l.4-2 1.2-1L7.5 11 5.3 15h1.9l1.9-3.4 1.6 3.4h1.8L10.2 11l.7-3.2.8 1.4 2.3.8.4-1.4-1.8-.6-1.4-2.4C10.7 5 9.2 4.6 8 5.2Z"/></svg>`;
+/** The owners whose avatars the build downloaded (scripts/download-avatars.ts), set by Vite. */
+declare const __AVATARS__: string[];
+const AVATARS: ReadonlySet<string> = new Set(typeof __AVATARS__ === 'object' ? __AVATARS__ : []);
+
+/** The Booths panel on the map now. */
+let panel: BoothsPanel | undefined;
 
 function renderMap(focus?: { kind: SquareKind; id: string }) {
   document.body.dataset.view = 'map';
@@ -63,16 +71,8 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
         <canvas class="map-canvas" tabindex="0" aria-label="The North Pole. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a booth or an attraction to go inside, or at an open plot to claim it. Inside, Esc or walking out through the doorway leaves."></canvas>
         <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
-        <p class="hud hud-tessl">Built with Tessl</p>
-        <details class="hud hud-booths">
-          <summary>Booths</summary>
-          <p class="hud-hint">Click one to go there, or shift-click to walk.</p>
-          <div class="hud-featured" hidden></div>
-          <h2 class="hud-group">Attractions</h2>
-          <ul class="hud-list hud-attractions"></ul>
-          <h2 class="hud-group">Booths</h2>
-          <ul class="hud-list hud-stalls"></ul>
-        </details>
+        <a class="hud hud-tessl" href="#/factory">Built with Tessl</a>
+        ${BOOTHS_PANEL}
         <details class="hud hud-controls">
           <summary>Controls</summary>
           <p>Walk with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys, <kbd>E</kbd> to visit or claim</p>
@@ -116,87 +116,46 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
       booths: boothRegistry.all(),
       onOpen: (kind, id) => (location.hash = `#/${kind}/${id}`),
       onLeave: () => closeCard(true),
+      onSelect: (selected) => panel?.showSelected(selected),
+      avatars: AVATARS,
       focus,
     },
   );
   stop = () => {
     closeCard(false);
     started.stop();
+    panel?.stop();
+    panel = undefined;
   };
   map = started;
   renderHud(started, canvas);
 }
 
 /**
- * The HUD over the map. In the Booths panel, the Featured entry and every
- * square's name jump straight to that square, and shift-click or the walk icon
- * walks there instead. Claim a plot walks the player to the nearest open plot,
- * and the last button shows the whole island. The panels start open on a wide
- * map and folded on a phone's, judged by the map frame's width, as the camera
- * judges it.
+ * The HUD over the map: the Booths panel (src/booths-hud.ts), Claim a plot,
+ * which walks the player to the nearest open plot, and the button that shows
+ * the whole island. The panels start open on a wide map and folded on a
+ * phone's, judged by the map frame's width, as the camera judges it.
  */
 function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
   const wide = !isPhone(app.querySelector<HTMLElement>('.map-frame')!.clientWidth);
-  for (const panel of app.querySelectorAll<HTMLDetailsElement>('.hud-booths, .hud-controls'))
-    panel.open = wide;
+  for (const box of app.querySelectorAll<HTMLDetailsElement>('.hud-booths, .hud-controls'))
+    box.open = wide;
   const overview = app.querySelector<HTMLButtonElement>('.hud-overview')!;
   const showOverview = () =>
     (overview.textContent = map.overview ? 'Back to the carnival' : 'Show the whole island');
 
-  /** A square's entry: its name jumps there, and the walk icon walks there. */
-  const entry = (kind: SquareKind, square: NorthPoleSquare, by: string, label = '') => {
-    const item = document.createElement('li');
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'hud-go';
-    button.dataset.kind = kind;
-    button.dataset.id = square.id;
-    button.innerHTML = `<span class="label"></span><span class="name"></span> <span class="owner"></span>`;
-    button.querySelector('.label')!.textContent = label;
-    button.querySelector('.owner')!.textContent = by;
-    const walk = document.createElement('button');
-    walk.type = 'button';
-    walk.className = 'hud-walk';
-    walk.innerHTML = WALK_ICON;
-    whenNamed(square, () => {
-      button.querySelector('.name')!.textContent = square.name;
-      walk.title = `Walk to ${square.name}`;
-      walk.setAttribute('aria-label', walk.title);
-    });
-    button.addEventListener('click', (event) => {
-      if (event.shiftKey) {
-        map.walkTo(kind, square.id);
-        canvas.focus();
-      } else {
-        // Picking a square goes there and takes the player inside it.
-        map.jumpTo(kind, square.id);
-        location.hash = `#/${kind}/${square.id}`;
-      }
-      showOverview();
-    });
-    walk.addEventListener('click', () => {
-      map.walkTo(kind, square.id);
-      canvas.focus();
-    });
-    item.append(button, walk);
-    return item;
-  };
-
   const featured = (FEATURED.kind === 'attraction' ? attractionRegistry : boothRegistry).get(
     FEATURED.id,
   );
-  if (featured) {
-    const box = app.querySelector<HTMLElement>('.hud-featured')!;
-    const list = document.createElement('ul');
-    const by = FEATURED.kind === 'attraction' ? '' : `@${featured.id}`;
-    list.append(entry(FEATURED.kind, featured, by, 'Featured: '));
-    box.append(list);
-    box.hidden = false;
-  }
-  for (const square of attractionRegistry.all())
-    app.querySelector('.hud-attractions')!.append(entry('attraction', square, ''));
-  for (const square of boothRegistry.all())
-    app.querySelector('.hud-stalls')!.append(entry('booth', square, `@${square.id}`));
+  panel = startBoothsPanel(app.querySelector<HTMLDetailsElement>('.hud-booths')!, map, canvas, {
+    attractions: attractionRegistry.all(),
+    booths: boothRegistry.all(),
+    featured: featured && { kind: FEATURED.kind, square: featured },
+    whenNamed,
+    onPicked: showOverview,
+  });
+  panel.showSelected(map.selected);
 
   app.querySelector('.hud-claim')!.addEventListener('click', () => {
     map.walkToOpenPlot();
@@ -247,7 +206,7 @@ function renderKeepPosted() {
     </section>`;
 }
 
-/** The map running now, the HUD of the square the player is inside, and how they came in. */
+/** The map running now, the HUD of the square the player is inside or of the factory's numbers, and how they came in. */
 let map: MapControls | undefined;
 let card: VisitHud | undefined;
 /**
@@ -268,7 +227,7 @@ let invite: string | undefined =
       ? arrival.focus.id
       : undefined;
 
-/** Leaves the square the player is inside. `address` says to take the address back off the square, too. */
+/** Leaves the square the player is inside, or the factory's numbers. `address` says to take the address back off it, too. */
 function closeCard(address: boolean) {
   if (!card) return;
   card.close();
@@ -300,12 +259,29 @@ function visit(kind: SquareKind, id: string, fromHistory: boolean) {
     kind,
     square,
     invite: kind === 'booth' && invite === id,
+    avatar: kind === 'booth' && AVATARS.has(id) ? avatarPath(id) : undefined,
+    onMine: () => panel?.setMe(id),
     onClose: () => closeCard(true),
     onClaim: () => {
       closeCard(true);
       map?.claimNextDoor();
       app.querySelector<HTMLElement>('.map-canvas')?.focus({ preventScroll: true });
     },
+  });
+}
+
+/** Shows the factory's numbers over the map. */
+function showFactory(fromHistory: boolean) {
+  const fromMap = fromHistory && !card;
+  closeCard(false);
+  cardFromHistory = fromMap;
+  card = openFactoryHud(app.querySelector('.map-frame')!, {
+    squares: squareCounts(
+      boothRegistry.all().map((square) => square.id),
+      attractionRegistry.all().map((square) => square.id),
+    ),
+    stats: readFactoryStats(SQUARE_HISTORY?.factory),
+    onClose: () => closeCard(true),
   });
 }
 
@@ -331,6 +307,11 @@ function route(event?: HashChangeEvent) {
   if (route.view === 'square') {
     if (!map) renderMap();
     return visit(route.kind, route.id, fromHistory);
+  }
+
+  if (route.view === 'factory') {
+    if (!map) renderMap();
+    return showFactory(fromHistory);
   }
 
   // Back from a visit, or See it on the map: the player comes out, and the world stays.

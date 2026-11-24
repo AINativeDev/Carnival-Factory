@@ -7,6 +7,11 @@ describe('parseHash', () => {
       expect(parseHash(hash)).toEqual({ view: 'map' });
   });
 
+  it("reads the factory's numbers page", () => {
+    expect(parseHash('#/factory')).toEqual({ view: 'factory' });
+    expect(parseHash('#/factory/more')).toEqual({ view: 'map' });
+  });
+
   it("reads a square's own page", () => {
     expect(parseHash('#/booth/jedi4ever')).toEqual({
       view: 'square',

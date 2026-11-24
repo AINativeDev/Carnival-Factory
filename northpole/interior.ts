@@ -9,7 +9,7 @@
  * left wall and forward from the back wall.
  */
 import { isPhone } from './camera';
-import { drawPerson, type Look } from './render';
+import { drawPerson, portrait, type Look } from './render';
 import type { Box, Tile } from './world';
 import { canvasFont, theme } from './theme';
 
@@ -152,6 +152,7 @@ export function drawRoom(
   height: number,
   name: string,
   by: string,
+  avatar?: CanvasImageSource,
 ) {
   const { centre, top, back, backHalf, front, frontHalf, sign, stage } = room;
   const rise = room.width * 0.06;
@@ -286,6 +287,24 @@ export function drawRoom(
   ctx.fill();
   ctx.globalAlpha = 1;
 
+  // A framed portrait on the wall beside the stage: the owner's avatar for a
+  // booth, or the North Pole's emblem for an attraction.
+  const hung = portraitBox(room);
+  if (hung) {
+    const r = hung.w / 2;
+    ctx.fillStyle = colors.cocoa;
+    ctx.fillRect(hung.x - rim * 2, hung.y - rim * 2, hung.w + rim * 4, hung.h + rim * 4);
+    ctx.fillStyle = colors.gold;
+    ctx.fillRect(hung.x - rim, hung.y - rim, hung.w + rim * 2, hung.h + rim * 2);
+    ctx.fillStyle = colors.cream;
+    ctx.fillRect(hung.x, hung.y, hung.w, hung.h);
+    ctx.save();
+    ctx.translate(hung.x + r, hung.y + r);
+    if (by) portrait(ctx, r * 0.9, avatar);
+    else emblem(ctx, r * 0.9);
+    ctx.restore();
+  }
+
   // The sign: the name, and whose it is under it for a booth.
   ctx.fillStyle = colors.cocoa;
   ctx.fillRect(sign.x - rim, sign.y - rim, sign.w + rim * 2, sign.h + rim * 2);
@@ -329,6 +348,32 @@ export function drawRoom(
   );
   ctx.fillStyle = colors.snow;
   ctx.fillRect(doorLeft, front, doorRight - doorLeft, Math.max(2, room.width * 0.008));
+}
+
+/** Where the portrait hangs on the back wall, left of the stage, or undefined when there's no room for it. */
+export function portraitBox(room: Room): Box | undefined {
+  const { stage, centre, backHalf } = room;
+  const free = stage.x - (centre - backHalf);
+  const size = Math.min(free * 0.5, stage.h * 0.28);
+  if (size < 16) return undefined;
+  return { x: stage.x - free / 2 - size / 2, y: stage.y + stage.h * 0.12, w: size, h: size };
+}
+
+/** The North Pole's emblem, radius `r` at (0, 0): a gold star on a red disc. */
+function emblem(ctx: CanvasRenderingContext2D, r: number) {
+  ctx.fillStyle = colors.berry;
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = colors.gold;
+  ctx.beginPath();
+  for (let n = 0; n < 10; n++) {
+    const reach = n % 2 ? r * 0.3 : r * 0.72;
+    const angle = -Math.PI / 2 + (n * Math.PI) / 5;
+    ctx.lineTo(Math.cos(angle) * reach, Math.sin(angle) * reach);
+  }
+  ctx.closePath();
+  ctx.fill();
 }
 
 /** Draws the player standing at `at` in the room. */

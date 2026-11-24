@@ -94,7 +94,7 @@ describe('requestLine', () => {
         decision: 'question',
         pulls: [],
       }),
-    ).toBe('Requested by ana on 20 Nov 2026. Asked a question.');
+    ).toBe('@ana · 20 Nov 2026 · Asked a question');
   });
 });
 

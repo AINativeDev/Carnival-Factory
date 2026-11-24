@@ -25,6 +25,10 @@ Both draw through the same contract, a `NorthPoleSquare`.
 Run `npm run format`, then `npm run check`, before you finish any change. CI
 runs `npm run check` and `npm run build`.
 
+The factory's sandbox can't start a browser, so agents there never run
+`npm run smoke` or install Playwright: CI runs the smoke test on every pull
+request.
+
 ## Layout
 
 ```txt
@@ -33,13 +37,18 @@ square.html                 the page each square's sandboxed frame loads
 src/
   main.ts                   the router: #/ is the map, #/booth/<login> and
                             #/attraction/<id> the map with the player inside that
-                            square, and #/?booth=<login> or #/?attraction=<id> the map
-                            showing that square
+                            square, #/?booth=<login> or #/?attraction=<id> the map
+                            showing that square, and #/factory the factory's numbers
   route.ts                  reading the hash (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
+  booths-hud.ts             the Booths panel: search, Featured, Near you, Recently added,
+                            Attractions, All booths a page at a time, and "This is me"
+  booth-panel.ts            the panel's searching, sorting and sections (plain functions)
   history.ts                the credits and the "How was this built?" panel: who made
                             each square and improved it, its requests and pull
                             requests, bundled from square-history.json at build time
+  factory.ts                the factory's numbers page, #/factory: its counts and figures
+                            (plain functions), over the map like a visit's panel
   style.css
 northpole/                  the map itself
   square.ts                 the NorthPoleSquare shape, the registries and the kill switch
@@ -53,11 +62,15 @@ northpole/                  the map itself
   camera.ts                 framing the island: its outline, the zoom and where the
                             camera looks on a laptop and a phone (plain functions)
   render.ts                 drawing the diorama: sky, island, fence and lights, cabins,
-                            tents, the ferris wheel, stalls, pavilions, people
+                            tents, the ferris wheel, stalls in each booth's chosen
+                            shape, pavilions, people
   map.ts                    the walkable map (camera, keys, clicks, hover tags,
                             and going inside a square)
   interior.ts               the room inside a square: its layout, walking in it and
                             out of its doorway, the fade (plain functions), and drawing it
+  owners.ts                 who owns what: each owner's colour, their avatar's address,
+                            and how a picked square's highlight and call to action fade
+                            (plain functions)
   visit.ts                  visiting a square and hovering one: the plot next door,
                             the share line and its link, hover tags (plain functions)
   sandbox.ts                the map's side of the sandbox: one frame per square
@@ -93,11 +106,20 @@ scripts/
   ownership.ts              the booth ownership rule (plain functions)
   check-booth-ownership.ts  the CI check that enforces it
   square-size.ts            the size budget for every square
-  share-pages.ts            the link-preview page the build writes for every square
+  share-pages.ts            the link-preview page the build writes for every square,
+                            and for the factory's numbers
   square-history.ts         every square's history and credits from its issues and
                             pull requests (plain functions)
-  write-square-history.ts   reads them from the GitHub API and writes square-history.json
-                            before the deploy's build (previews have none)
+  factory-stats.ts          the factory's numbers from the same issues and pull requests:
+                            builds, requests, findings, time to the map (plain functions)
+  write-square-history.ts   reads them from the GitHub API and writes square-history.json,
+                            with the factory's numbers, before the deploy's build
+                            (previews have none)
+  booth-dates.ts            when each booth's folder first appeared, from git history,
+                            for Recently added (the build reads it)
+  avatars.ts                the build-time avatars' rules (plain functions)
+  download-avatars.ts       downloads every booth owner's avatar into public/avatars/
+                            before the deploy's build (previews show the elf fallback)
   elf-engineer.ts           the Elf Engineer badge's rules: the form, the check,
                             the tiers and the holders (plain functions)
 ```
@@ -212,8 +234,20 @@ uses any of it:
    its own square by relative paths from where it sits. These rules catch the
    plain ways out, not every one, so never look for a way around them: the
    house-rules review lens looks for exactly that.
-5. A `README.md` that says what the booth shows and stays true to the code.
-6. Within the size budget in `scripts/square-size.ts`: 50 KB of code gzipped,
+5. Optionally, a `stall` that says how its stall on the map looks, as plain
+   data: `stall: { shape: 'shed', roof: 'gold' }`. `shape` is one of
+   `'stall'` (the market stall with a striped awning, and the default),
+   `'shed'` (long and low, with a flat roof), `'tent'` (a round, striped
+   tent), `'cabin'` (a log cabin with a snowy pitched roof) or `'kiosk'` (a
+   small hexagonal kiosk). `roof` is a `theme` colour's name, and `trim`, a
+   second one for the stripes or the awning, is optional. The map draws the
+   stall itself, with the booth's drawing on its front: the option only
+   travels in the frame's `ready` message, and `readStall` in
+   `northpole/frame-protocol.ts` drops anything else, so an invalid option
+   draws the usual stall. A request for a stall shape or roof colour is an
+   ordinary change to the booth, made in its own `booth.ts`.
+6. A `README.md` that says what the booth shows and stays true to the code.
+7. Within the size budget in `scripts/square-size.ts`: 50 KB of code gzipped,
    and 200 KB of other files.
 
 Pure logic a booth has, such as movement, goes in plain exported functions with

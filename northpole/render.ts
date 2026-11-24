@@ -4,7 +4,7 @@
  * and the people walking about. Everything is drawn in world pixels, with the
  * town square's centre at (0, 0), and the map moves the camera.
  */
-import type { NorthPoleSquare } from './square';
+import type { NorthPoleSquare, StallShape, StallStyle } from './square';
 import { badgeFor, type BadgeTier } from './badges';
 import { alongEdge } from './camera';
 import { canvasFont, theme } from './theme';
@@ -641,13 +641,76 @@ function faceText(
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = color;
-  const measured = ctx.measureText(text).width;
-  if (measured > width) ctx.scale(width / measured, width / measured);
-  ctx.fillText(text, 0, 0);
+  // A long name shrinks a little, then is shortened with an ellipsis: its tag shows it whole.
+  let shown = text;
+  const fit = Math.max(MIN_TEXT_SCALE, Math.min(1, width / ctx.measureText(text).width));
+  const chars = Array.from(text);
+  while (chars.length > 1 && ctx.measureText(shown).width * fit > width) {
+    chars.pop();
+    shown = `${chars.join('').trimEnd()}…`;
+  }
+  ctx.scale(fit, fit);
+  ctx.fillText(shown, 0, 0);
   ctx.restore();
 }
 
-/** A name board along a face: the name, and whose it is under it, or the name alone when `by` is empty. */
+/** The smallest a sign's text shrinks to before it's shortened instead. */
+const MIN_TEXT_SCALE = 0.8;
+
+/**
+ * Who owns a booth, as its stall shows it: their colour on the pennant and the
+ * sign's trim, their avatar on the sign (undefined for the elf fallback), and
+ * whether they are the visitor, whose own booth says "You".
+ */
+export interface Owner {
+  color: string;
+  avatar?: CanvasImageSource;
+  you: boolean;
+}
+
+/**
+ * A round portrait of radius `r` at (0, 0), in whatever transform the caller
+ * set: the owner's avatar, or an elf's silhouette when there is none.
+ */
+export function portrait(ctx: CanvasRenderingContext2D, r: number, avatar?: CanvasImageSource) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fillStyle = colors.pine;
+  ctx.fill();
+  ctx.clip();
+  if (avatar) {
+    ctx.drawImage(avatar, -r, -r, r * 2, r * 2);
+  } else {
+    // The elf: a head, a pointed hat with its tip falling to one side, and shoulders.
+    ctx.fillStyle = colors.snowShade;
+    ctx.beginPath();
+    ctx.arc(0, r * 0.05, r * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(0, r * 0.95, r * 0.7, r * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = colors.berry;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.4, -r * 0.12);
+    ctx.lineTo(r * 0.4, -r * 0.12);
+    ctx.quadraticCurveTo(r * 0.2, -r * 0.6, r * 0.55, -r * 0.7);
+    ctx.quadraticCurveTo(-r * 0.05, -r * 0.75, -r * 0.4, -r * 0.12);
+    ctx.fill();
+  }
+  ctx.restore();
+  ctx.strokeStyle = colors.cocoa;
+  ctx.lineWidth = Math.max(1, r / 6);
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+/**
+ * A name board along a face: the name, and whose it is under it, or the name
+ * alone when `by` is empty. A booth's board has its owner's portrait at the
+ * left and a trim in their colour.
+ */
 function faceSign(
   ctx: CanvasRenderingContext2D,
   face: Face,
@@ -656,22 +719,41 @@ function faceSign(
   name: string,
   by: string,
   outward = 0,
+  owner?: Owner,
 ) {
   const width = Math.abs(face.b.x - face.a.x);
   ctx.fillStyle = colors.cocoa;
   band(ctx, face, 0.04, 0.96, low, high, outward);
   ctx.fill();
+  if (owner) {
+    ctx.fillStyle = owner.color;
+    band(ctx, face, 0.055, 0.945, low + 1, high - 1, outward);
+    ctx.fill();
+  }
   ctx.fillStyle = colors.cream;
-  band(ctx, face, 0.07, 0.93, low + 2, high - 2, outward);
+  band(ctx, face, 0.07, 0.93, low + 2.5, high - 2.5, outward);
   ctx.fill();
   const line = (high - low) / 2;
+  // With a portrait, the words move right of it.
+  const r = Math.min(line - 3.5, width * 0.09);
+  const pictured = owner && r > 2;
+  const along = pictured ? 0.58 : 0.5;
+  const room = pictured ? width * 0.62 : width * 0.8;
+  if (pictured) {
+    const at = onFace(face, 0.08 + r / width + 0.02, low + line, outward);
+    const slope = (face.b.y - face.a.y) / (face.b.x - face.a.x);
+    ctx.save();
+    ctx.transform(1, slope, 0, 1, at.x, at.y);
+    portrait(ctx, r, owner.avatar);
+    ctx.restore();
+  }
   faceText(
     ctx,
     face,
     name,
-    0.5,
+    along,
     by ? high - line * 0.62 : low + line,
-    width * 0.8,
+    room,
     canvasFont('small', 'bold'),
     colors.ink,
     outward,
@@ -681,9 +763,9 @@ function faceSign(
     ctx,
     face,
     by,
-    0.5,
+    along,
     low + line * 0.5,
-    width * 0.8,
+    room,
     canvasFont('small'),
     colors.berry,
     outward,
@@ -726,36 +808,340 @@ function standing(plot: Box, height: number): Box {
   };
 }
 
-/** A participant's market stall: wooden walls, its square on the front, a counter, a name board and a striped awning. */
-function drawStall(
+/** A point on a stall's plot, `along` its front from 0 to 1, left to right, and `depth` back from it, 0 to 1. */
+export interface OnPlot {
+  along: number;
+  depth: number;
+}
+
+/** The ground outline of each stall shape, on its plot, round it in order. */
+export function stallOutline(shape: StallShape): OnPlot[] {
+  const ring = (sides: number, radius: number, turn: number) =>
+    Array.from({ length: sides }, (_, n) => {
+      const angle = turn + (n / sides) * Math.PI * 2;
+      return { along: 0.5 + Math.cos(angle) * radius, depth: 0.5 + Math.sin(angle) * radius };
+    });
+  switch (shape) {
+    case 'tent':
+      return ring(20, 0.46, 0);
+    case 'kiosk':
+      // Flat to the front, so the drawing's board stands against one side.
+      return ring(6, 0.46, 0);
+    default:
+      return [
+        { along: 0, depth: 0 },
+        { along: 1, depth: 0 },
+        { along: 1, depth: 1 },
+        { along: 0, depth: 1 },
+      ];
+  }
+}
+
+/** How tall each stall shape's walls are, and how high its roof rises over them, in world pixels. */
+export const STALL_SHAPES_DRAWN: Record<StallShape, { wall: number; roof: number }> = {
+  stall: { wall: STALL.wall, roof: 25 },
+  shed: { wall: STALL.wall, roof: 10 },
+  tent: { wall: STALL.wall - 24, roof: 70 },
+  cabin: { wall: STALL.wall, roof: 46 },
+  kiosk: { wall: STALL.wall - 16, roof: 56 },
+};
+
+/** The colours a stall is drawn in: its shape, its roof, and its trim for stripes and the awning. */
+export function stallLook(stall: StallStyle | undefined): {
+  shape: StallShape;
+  roof: string;
+  trim: string;
+} {
+  if (!stall) return { shape: 'stall', roof: colors.berry, trim: colors.snow };
+  const trim = stall.trim ?? (stall.shape === 'shed' || stall.shape === 'kiosk' ? 'cream' : 'snow');
+  return { shape: stall.shape, roof: colors[stall.roof], trim: colors[trim] };
+}
+
+/** Where a point on a stall's plot is on screen, `lift` up. */
+function plotPoint(face: Face, deep: number, at: OnPlot, lift = 0): Tile {
+  return onFace(face, at.along, lift, -at.depth * deep);
+}
+
+/** A side's colour: one for every side, or one for side `n` of the outline. */
+type SideColor = string | ((n: number) => string);
+
+/**
+ * Upright walls round a ground outline, `height` high from `lift`: the sides
+ * we see, lit on the left and shaded on the right, then the top. With `dim`,
+ * the shaded sides are their own colour under the dusk's shadow.
+ */
+function prism(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  ground: Tile[],
+  height: number,
+  top: string | undefined,
+  lit: SideColor,
+  shaded: SideColor,
+  lift = 0,
+  dim = false,
+) {
+  const colorOf = (color: SideColor, n: number) => (typeof color === 'string' ? color : color(n));
+  const centre = {
+    x: ground.reduce((sum, p) => sum + p.x, 0) / ground.length,
+    y: ground.reduce((sum, p) => sum + p.y, 0) / ground.length,
+  };
+  ground.forEach((p, n) => {
+    const q = ground[(n + 1) % ground.length];
+    // The side's outward normal on screen: one facing down the screen faces us.
+    let normal = { x: q.y - p.y, y: p.x - q.x };
+    const mid = { x: (p.x + q.x) / 2 - centre.x, y: (p.y + q.y) / 2 - centre.y };
+    if (normal.x * mid.x + normal.y * mid.y < 0) normal = { x: -normal.x, y: -normal.y };
+    if (normal.y <= 0) return;
+    const isLit = normal.x < 0;
+    ctx.fillStyle = colorOf(isLit ? lit : shaded, n);
+    quad(ctx, [
+      { x: p.x, y: p.y - lift },
+      { x: q.x, y: q.y - lift },
+      { x: q.x, y: q.y - lift - height },
+      { x: p.x, y: p.y - lift - height },
+    ]);
+    ctx.fill();
+    if (dim && !isLit) {
+      ctx.fillStyle = colors.night;
+      ctx.globalAlpha = 0.22;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  });
+  if (!top) return;
+  ctx.fillStyle = top;
+  quad(
+    ctx,
+    ground.map((p) => ({ x: p.x, y: p.y - lift - height })),
+  );
+  ctx.fill();
+}
+
+/** A pointed roof over a ground outline, from `height` up to a peak `rise` higher, its slopes in `pair` by turns. */
+function peakedRoof(
+  ctx: CanvasRenderingContext2D,
+  ground: Tile[],
+  height: number,
+  rise: number,
+  pair: readonly string[],
+) {
+  const centre = {
+    x: ground.reduce((sum, p) => sum + p.x, 0) / ground.length,
+    y: ground.reduce((sum, p) => sum + p.y, 0) / ground.length,
+  };
+  const peak = { x: centre.x, y: centre.y - height - rise };
+  const slopes = ground.map((p, n) => ({ p, q: ground[(n + 1) % ground.length], n }));
+  // Back to front, so the slopes facing us cover the ones behind.
+  slopes.sort((a, b) => a.p.y + a.q.y - (b.p.y + b.q.y));
+  for (const { p, q, n } of slopes) {
+    ctx.fillStyle = pair[n % pair.length];
+    quad(ctx, [peak, { x: p.x, y: p.y - height }, { x: q.x, y: q.y - height }]);
+    ctx.fill();
+    if ((p.x + q.x) / 2 > centre.x) {
+      ctx.fillStyle = colors.night;
+      ctx.globalAlpha = 0.2;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+
+/** The front of a stall: a frame round the drawing, the drawing itself, and the name board over it. */
+function stallFront(
+  ctx: CanvasRenderingContext2D,
+  face: Face,
   square: NorthPoleSquare,
   paint: PaintSquare,
-): Box {
-  const { x, y } = middle(plot);
-  const face = faceOf(plot);
+  owner: Owner,
+) {
   const width = Math.abs(face.b.x - face.a.x);
   const art = width * 0.84;
-  shadow(ctx, x, y + 6, 48);
-  block(ctx, plot, STALL.wall, colors.snowShade, colors.wood, colors.cocoa);
-  // A frame round the drawing, and the drawing itself, along the stall's front.
   ctx.fillStyle = colors.cocoa;
   band(ctx, face, 0.05, 0.95, STALL.art - 3, STALL.art + art + 3);
   ctx.fill();
   paintOnFace(paint, square, face, 0.08, 0.92, STALL.art);
-  const signLow = STALL.art + art + 5;
-  faceSign(ctx, face, signLow, STALL.wall - 2, square.name, `by @${square.id}`);
-  // The counter, standing out in front of the drawing.
+  const signLow = stallSignLow(face);
+  faceSign(ctx, face, signLow, STALL.wall - 2, square.name, `by @${square.id}`, 0, owner);
+}
+
+/** Where a stall's name board starts, just over the drawing on its front. */
+function stallSignLow(face: Face): number {
+  return STALL.art + Math.abs(face.b.x - face.a.x) * 0.84 + 5;
+}
+
+/** The counter, standing out in front of the drawing. */
+function stallCounter(ctx: CanvasRenderingContext2D, plot: Plot, face: Face) {
   const counter: Box =
     face.out.x > 0
       ? { x: plot.x + plot.w, y: plot.y, w: 0.3, h: plot.h }
       : { x: plot.x, y: plot.y + plot.h, w: plot.w, h: 0.3 };
   block(ctx, counter, STALL.counter, colors.gingerbread, colors.wood, colors.cocoa);
-  // The awning, striped, sloping out over the counter, with a scalloped edge and snow on top.
+}
+
+/**
+ * A booth's stall: its square on the front, framed, with the name board over
+ * it, in the shape and colours the booth chose, or a market stall with a
+ * striped awning. Every shape stands on its plot, so the door and the depth
+ * order stay the same.
+ */
+function drawStall(
+  ctx: CanvasRenderingContext2D,
+  plot: Plot,
+  square: NorthPoleSquare,
+  paint: PaintSquare,
+  time: number,
+  owner: Owner,
+): Box {
+  const { x, y } = middle(plot);
+  const face = faceOf(plot);
+  const deep = face.out.x > 0 ? plot.w : plot.h;
+  const look = stallLook(square.stall);
+  const { wall, roof } = STALL_SHAPES_DRAWN[look.shape];
+  const ground = stallOutline(look.shape).map((at) => plotPoint(face, deep, at));
+  shadow(ctx, x, y + 6, 48);
+  switch (look.shape) {
+    case 'stall':
+      block(ctx, plot, wall, colors.snowShade, colors.wood, colors.cocoa);
+      stallFront(ctx, face, square, paint, owner);
+      stallCounter(ctx, plot, face);
+      awning(ctx, face, look.roof, look.trim);
+      break;
+    case 'shed': {
+      prism(ctx, ground, wall, undefined, colors.wood, colors.cocoa);
+      // Planks along the walls.
+      ctx.fillStyle = colors.cocoa;
+      for (let k = 1; k < 5; k++) {
+        band(ctx, face, 0, 1, (wall * k) / 5, (wall * k) / 5 + 1);
+        ctx.fill();
+      }
+      stallFront(ctx, face, square, paint, owner);
+      // A flat roof hanging a little over the walls, with snow along its back.
+      const eaves = stallOutline('shed').map((at) =>
+        plotPoint(face, deep, {
+          along: (at.along - 0.5) * 1.08 + 0.5,
+          depth: (at.depth - 0.5) * 1.08 + 0.5,
+        }),
+      );
+      prism(ctx, eaves, roof, look.roof, look.trim, colors.cocoa, wall);
+      ctx.fillStyle = colors.snow;
+      ctx.globalAlpha = 0.85;
+      quad(
+        ctx,
+        [
+          { along: -0.04, depth: 1.04 },
+          { along: 1.04, depth: 1.04 },
+          { along: 1.04, depth: 0.7 },
+          { along: -0.04, depth: 0.78 },
+        ].map((at) => plotPoint(face, deep, at, wall + roof)),
+      );
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      break;
+    }
+    case 'tent': {
+      // Canvas walls in stripes, a striped cone over them, and the front on a board.
+      const stripe = (n: number) => (n % 2 ? look.trim : look.roof);
+      prism(ctx, ground, wall, undefined, stripe, stripe, 0, true);
+      peakedRoof(ctx, ground, wall, roof, [look.roof, look.trim]);
+      ctx.fillStyle = colors.cocoa;
+      band(ctx, face, 0.03, 0.97, 0, STALL.wall);
+      ctx.fill();
+      stallFront(ctx, face, square, paint, owner);
+      pennant(ctx, plotPoint(face, deep, { along: 0.5, depth: 0.5 }, wall + roof), look.trim);
+      break;
+    }
+    case 'cabin': {
+      block(ctx, plot, wall, colors.snowShade, colors.wood, colors.cocoa);
+      // Logs along the walls, a round end on each at the front corners.
+      for (let k = 0; k < 8; k++) {
+        const lift = (wall * (k + 0.5)) / 8;
+        ctx.fillStyle = colors.cocoa;
+        for (const [from, to] of [
+          [face.a, face.b],
+          [face.b, plotPoint(face, deep, { along: 1, depth: 1 })],
+        ]) {
+          quad(ctx, [
+            { x: from.x, y: from.y - lift },
+            { x: to.x, y: to.y - lift },
+            { x: to.x, y: to.y - lift - 1.5 },
+            { x: from.x, y: from.y - lift - 1.5 },
+          ]);
+          ctx.fill();
+        }
+        ctx.fillStyle = colors.gingerbread;
+        for (const end of [face.a, face.b]) {
+          ctx.beginPath();
+          ctx.arc(end.x, end.y - lift, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      stallFront(ctx, face, square, paint, owner);
+      cabinRoof(ctx, face, deep, wall, roof, look.roof);
+      break;
+    }
+    case 'kiosk': {
+      prism(ctx, ground, wall, undefined, look.trim, colors.cocoa);
+      const eaves = stallOutline('kiosk').map((at) =>
+        plotPoint(face, deep, {
+          along: (at.along - 0.5) * 1.15 + 0.5,
+          depth: (at.depth - 0.5) * 1.15 + 0.5,
+        }),
+      );
+      prism(ctx, eaves, 6, undefined, look.trim, colors.snowShade, wall);
+      peakedRoof(ctx, eaves, wall + 6, roof, [look.roof]);
+      const peak = plotPoint(face, deep, { along: 0.5, depth: 0.5 }, wall + 6 + roof);
+      ctx.fillStyle = colors.gold;
+      ctx.beginPath();
+      ctx.arc(peak.x, peak.y - 4, 4, 0, Math.PI * 2);
+      ctx.fill();
+      // The front on a board after the roof, so the name board stands in front of the eaves, as on the tent.
+      ctx.fillStyle = colors.cocoa;
+      band(ctx, face, 0.03, 0.97, 0, STALL.wall);
+      ctx.fill();
+      stallFront(ctx, face, square, paint, owner);
+      stallCounter(ctx, plot, face);
+      break;
+    }
+  }
+  // An Elf Engineer's pin, on the right end of the name board, over whatever shape the stall is.
+  const badge = badgeFor(square.id);
+  if (badge) {
+    const signLow = stallSignLow(face);
+    const pin = onFace(face, 0.94, (signLow + STALL.wall - 2) / 2, 0.1);
+    drawElfHatPin(ctx, pin.x, pin.y, (STALL.wall - 2 - signLow) * 0.42, badge.tier);
+  }
+  // The owner's pennant, on a pole at the front's far corner, over whatever shape the stall is.
+  const top = look.shape === 'stall' ? STALL.wall + 22 : wall;
+  const foot = onFace(face, 0.96, top, look.shape === 'stall' ? -0.5 : 0);
+  const pole = 30;
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(foot.x - 1, foot.y - pole, 2, pole);
+  const wave = Math.sin(time / 500 + plot.number) * 2;
+  ctx.fillStyle = owner.color;
+  quad(ctx, [
+    { x: foot.x + 1, y: foot.y - pole },
+    { x: foot.x + 20, y: foot.y - pole + 6 + wave },
+    { x: foot.x + 1, y: foot.y - pole + 12 },
+  ]);
+  ctx.fill();
+  const reach = Math.max(stallReach(look.shape), top + pole);
+  if (owner.you) youTag(ctx, onFace(face, 0.5, reach + 8, -0.5));
+  return standing(plot, reach + (owner.you ? 22 : 0));
+}
+
+/** How high a stall of `shape` reaches over its plot, with its awning, pennant or finial. */
+export function stallReach(shape: StallShape): number {
+  const { wall, roof } = STALL_SHAPES_DRAWN[shape];
+  const extra = shape === 'tent' ? 20 : shape === 'kiosk' ? 14 : 5;
+  return Math.max(STALL.wall, wall + roof) + extra;
+}
+
+/** The market stall's awning, striped, sloping out over the counter, with a scalloped edge and snow on top. */
+function awning(ctx: CanvasRenderingContext2D, face: Face, roof: string, trim: string) {
+  const width = Math.abs(face.b.x - face.a.x);
   const stripes = 8;
   for (let n = 0; n < stripes; n++) {
-    ctx.fillStyle = n % 2 ? colors.snow : colors.berry;
+    ctx.fillStyle = n % 2 ? trim : roof;
     quad(ctx, [
       onFace(face, n / stripes, STALL.wall + 22, -0.5),
       onFace(face, (n + 1) / stripes, STALL.wall + 22, -0.5),
@@ -771,13 +1157,102 @@ function drawStall(
   ctx.fillStyle = colors.snow;
   band(ctx, face, -0.02, 1.02, STALL.wall + 20, STALL.wall + 25, -0.5);
   ctx.fill();
-  // An Elf Engineer's pin, on the right end of the name board.
-  const badge = badgeFor(square.id);
-  if (badge) {
-    const pin = onFace(face, 0.94, (signLow + STALL.wall - 2) / 2, 0.1);
-    drawElfHatPin(ctx, pin.x, pin.y, (STALL.wall - 2 - signLow) * 0.42, badge.tier);
+}
+
+/** The "You" tag over the visitor's own booth, centred on `at`. */
+function youTag(ctx: CanvasRenderingContext2D, at: Tile) {
+  const w = 40;
+  const h = 20;
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(at.x - w / 2 - 2, at.y - h / 2 - 2, w + 4, h + 4);
+  ctx.fillStyle = colors.gold;
+  ctx.fillRect(at.x - w / 2, at.y - h / 2, w, h);
+  ctx.fillStyle = colors.ink;
+  ctx.font = canvasFont('small', 'bold');
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('You', at.x, at.y + 1, w - 4);
+  ctx.textBaseline = 'alphabetic';
+}
+
+/** A small flag on a pole, rising from `at`. */
+function pennant(ctx: CanvasRenderingContext2D, at: Tile, color: string) {
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(at.x - 1, at.y - 18, 2, 18);
+  ctx.fillStyle = color;
+  quad(ctx, [
+    { x: at.x + 1, y: at.y - 18 },
+    { x: at.x + 13, y: at.y - 14 },
+    { x: at.x + 1, y: at.y - 10 },
+  ]);
+  ctx.fill();
+}
+
+/**
+ * The cabin's pitched roof: its ridge running back from the front, a gable
+ * over the name board, and the slopes in `color` under a coat of snow.
+ */
+function cabinRoof(
+  ctx: CanvasRenderingContext2D,
+  face: Face,
+  deep: number,
+  wall: number,
+  rise: number,
+  color: string,
+) {
+  const at = (along: number, depth: number, lift: number) =>
+    plotPoint(face, deep, { along, depth }, lift);
+  const over = 0.08;
+  const eave = wall - 6;
+  /** One slope, from the ridge down to the eave on side `side` of the front, with snow on its upper part. */
+  const slope = (side: 0 | 1) => {
+    const edge = side ? 1 + over : -over;
+    const down = (t: number) => ({
+      along: 0.5 + (edge - 0.5) * t,
+      lift: wall + rise + (eave - wall - rise) * t,
+    });
+    const strip = (from: number, to: number) => {
+      const [p, q] = [down(from), down(to)];
+      quad(ctx, [
+        at(p.along, -over, p.lift),
+        at(p.along, 1 + over, p.lift),
+        at(q.along, 1 + over, q.lift),
+        at(q.along, -over, q.lift),
+      ]);
+    };
+    ctx.fillStyle = color;
+    strip(0, 1);
+    ctx.fill();
+    ctx.fillStyle = colors.snow;
+    strip(0, 0.45);
+    ctx.fill();
+    if (!side) return;
+    // The slope facing right is in the dusk's shadow.
+    ctx.fillStyle = colors.night;
+    ctx.globalAlpha = 0.18;
+    strip(0, 1);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  };
+  // The far slope first, then the gable end in logs over it, then the near slope.
+  const near = face.out.x > 0 ? 0 : 1;
+  slope(near === 0 ? 1 : 0);
+  ctx.fillStyle = colors.wood;
+  quad(ctx, [at(0, 0, wall), at(1, 0, wall), at(0.5, 0, wall + rise)]);
+  ctx.fill();
+  ctx.fillStyle = colors.cocoa;
+  for (let k = 1; k < 4; k++) {
+    const lift = wall + (rise * k) / 4;
+    const half = 0.5 * (1 - k / 4);
+    quad(ctx, [
+      at(0.5 - half, 0, lift),
+      at(0.5 + half, 0, lift),
+      at(0.5 + half, 0, lift + 1.5),
+      at(0.5 - half, 0, lift + 1.5),
+    ]);
+    ctx.fill();
   }
-  return standing(plot, STALL.wall + 30);
+  slope(near);
 }
 
 /** The pom-pom of an Elf Engineer's hat, by tier. */
@@ -1029,10 +1504,11 @@ export function drawPlot(
   paint: PaintSquare,
   time: number,
   near = false,
+  owner?: Owner,
 ): Box {
   if (plot.kind === 'open' || !square) return drawOpenPlot(ctx, plot, time, near);
   if (plot.kind === 'attraction') return drawAttraction(ctx, plot, square, paint, time);
-  return drawStall(ctx, plot, square, paint);
+  return drawStall(ctx, plot, square, paint, time, owner ?? { color: colors.gold, you: false });
 }
 
 /** A glow round a plot, for the one you are standing at or the one a link opened on. */
@@ -1054,6 +1530,88 @@ export function drawPlotGlow(ctx: CanvasRenderingContext2D, plot: Plot, strength
         ? STALL.wall
         : CLAIM_SIGN.post;
   glow(ctx, x, y - tall / 2, tall, strength);
+}
+
+/**
+ * A ring of string lights round a picked plot, on the snow, in steady warm
+ * colours that never flash. `strength` fades it in and out.
+ */
+export function drawSelectionRing(ctx: CanvasRenderingContext2D, plot: Plot, strength: number) {
+  if (strength <= 0) return;
+  const c = corners(plot);
+  const edges = [
+    [c.top, c.right],
+    [c.right, c.bottom],
+    [c.bottom, c.left],
+    [c.left, c.top],
+  ] as const;
+  ctx.save();
+  ctx.globalAlpha = 0.5 * strength;
+  ctx.strokeStyle = colors.cocoa;
+  ctx.lineWidth = 1.5;
+  diamond(ctx, c, 0);
+  ctx.stroke();
+  ctx.restore();
+  let n = 0;
+  for (const [from, to] of edges)
+    for (let k = 0; k < 8; k++) {
+      const at = {
+        x: from.x + ((to.x - from.x) * k) / 8,
+        y: from.y + ((to.y - from.y) * k) / 8,
+      };
+      bulb(ctx, at.x, at.y, LIGHTS[n++ % LIGHTS.length], strength);
+    }
+  ctx.globalAlpha = 1;
+}
+
+/**
+ * What marks a picked plot over everything in front of it: a soft beam of
+ * light rising from it, seen even when something taller hides the stall, and
+ * an arrow over `top`, the top of what stands on it, bouncing by `bounce`.
+ */
+export function drawSelectionBeam(
+  ctx: CanvasRenderingContext2D,
+  plot: Plot,
+  top: number,
+  strength: number,
+  bounce: number,
+) {
+  if (strength <= 0) return;
+  const c = corners(plot);
+  const { x, y } = middle(plot);
+  const height = y - top + 160;
+  ctx.save();
+  const beam = ctx.createLinearGradient(0, y, 0, y - height);
+  beam.addColorStop(0, colors.glow);
+  beam.addColorStop(1, `${colors.glow}00`);
+  ctx.fillStyle = beam;
+  ctx.globalAlpha = 0.3 * strength;
+  ctx.beginPath();
+  ctx.moveTo(c.left.x + 12, c.left.y);
+  ctx.lineTo(c.bottom.x, c.bottom.y);
+  ctx.lineTo(c.right.x - 12, c.right.y);
+  ctx.lineTo(c.right.x - 26, y - height);
+  ctx.lineTo(c.left.x + 26, y - height);
+  ctx.closePath();
+  ctx.fill();
+  // The arrow, pointing down at the sign.
+  const tip = top - 8 - bounce;
+  ctx.globalAlpha = strength;
+  ctx.fillStyle = colors.cocoa;
+  quad(ctx, [
+    { x: x - 15, y: tip - 25 },
+    { x: x + 15, y: tip - 25 },
+    { x, y: tip + 2 },
+  ]);
+  ctx.fill();
+  ctx.fillStyle = colors.gold;
+  quad(ctx, [
+    { x: x - 11, y: tip - 23 },
+    { x: x + 11, y: tip - 23 },
+    { x, y: tip - 2 },
+  ]);
+  ctx.fill();
+  ctx.restore();
 }
 
 /** How a person looks: their coat and hat. */
