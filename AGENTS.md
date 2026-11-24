@@ -166,7 +166,10 @@ for the author's own booth like any other, so the factory builds it in
 `booths/<author>/` and never touches `booths/<login>/`:
 
 - Copy the files of `booths/<login>/` as they are on the base into
-  `booths/<author>/`, replacing any booth the author already had there.
+  `booths/<author>/`, replacing any booth the author already had there,
+  except `plot.json`: that holds `<login>`'s plot, never the author's. Keep
+  the author's own `plot.json` if they have one, and for a new booth write
+  one only as **Construction sites** says.
 - Set `id` to `<author>`, and change whatever else the request asks for.
 - Say at the top of its `README.md` that it's a remix: "Remixed from
   [@<login>'s <name>](../<login>/)", with `<login>` in lower case.
