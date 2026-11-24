@@ -12,7 +12,10 @@ import {
   islandCorners,
   isPhone,
   MARGIN,
+  MAX_PINCH_ZOOM,
   PHONE_ZOOM,
+  pinchCentre,
+  pinchZoom,
   screenToWorld,
   WALK_ZOOM,
   worldToScreen,
@@ -203,5 +206,33 @@ describe('fronts', () => {
       expect(out.x - middle.x).toBe(face.out.x);
       expect(out.y - middle.y).toBe(face.out.y - 10);
     }
+  });
+});
+
+describe('pinching the map', () => {
+  const bounds = islandBounds(world);
+  const fit = fitZoom(bounds, 390, 844);
+  const zoom = PHONE_ZOOM;
+  const centre = frameCentre(bounds, 390, 844, zoom, { x: 0, y: 0 });
+
+  it('comes nearer as the fingers spread, and goes farther as they close', () => {
+    expect(pinchZoom(zoom, 100, 150, fit)).toBeCloseTo(zoom * 1.5);
+    expect(pinchZoom(zoom, 150, 100, fit)).toBeCloseTo(zoom / 1.5);
+  });
+
+  it('stops at the whole island and at the nearest the camera comes', () => {
+    expect(pinchZoom(zoom, 100, 1, fit)).toBe(fit);
+    expect(pinchZoom(zoom, 1, 100, fit)).toBe(MAX_PINCH_ZOOM);
+  });
+
+  it('keeps what was between the fingers under them', () => {
+    const from = { x: 180, y: 420 };
+    const to = { x: 200, y: 400 };
+    const next = pinchZoom(zoom, 100, 140, fit);
+    const moved = pinchCentre(bounds, 390, 844, zoom, next, centre, from, to);
+    const held = screenToWorld(from, 390, 844, centre, zoom);
+    const after = worldToScreen(held, 390, 844, moved, next);
+    expect(after.x).toBeCloseTo(to.x);
+    expect(after.y).toBeCloseTo(to.y);
   });
 });

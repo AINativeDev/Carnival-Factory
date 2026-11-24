@@ -5,11 +5,14 @@ import { landedBooths, STAGE_TEXT, type PendingBooth } from './plots';
 import {
   dragCentre,
   duskAt,
+  fitZoom,
   frameCentre,
   framing,
   islandBounds,
   islandCorners,
   isPhone,
+  pinchCentre,
+  pinchZoom,
   screenToWorld,
   SLAB,
   worldToScreen,
@@ -474,6 +477,14 @@ export function startMap(
    */
   let panned: Tile | undefined;
   let dragging: { id: number; from: Tile; moved: boolean } | undefined;
+  /**
+   * The fingers on the map, two of which pinch the camera nearer or farther:
+   * how far apart they were last and the point between them. `closer` is how
+   * much nearer than its own framing they left the camera, until the overview.
+   */
+  const fingers = new Map<number, Tile>();
+  let pinching: { apart: number; between: Tile } | undefined;
+  let closer = 1;
   let near: Plot | undefined;
   let scale = 1;
   let last: number | undefined;
@@ -783,7 +794,13 @@ export function startMap(
       delete canvas.dataset.room;
       delete canvas.dataset.stage;
     }
-    const wanted = want();
+    const framed = want();
+    // Two fingers may have pinched the camera nearer or farther, though never past the whole island.
+    if (overview) closer = 1;
+    const wanted = {
+      ...framed,
+      zoom: Math.max(fitZoom(bounds, width, height), framed.zoom * closer),
+    };
     // A walk, or the overview, takes the camera back from where a finger left it.
     if (moving || overview) panned = undefined;
     if (!camera || still) {
@@ -1168,27 +1185,70 @@ export function startMap(
     walkToward(goals);
   };
 
-  /** On a touch screen a finger drags the map round, and a tap still walks or opens. */
-  const onPointerDown = (event: PointerEvent) => {
-    if (event.pointerType !== 'touch' || visiting || dragging) return;
-    const box = canvas.getBoundingClientRect();
-    dragging = {
-      id: event.pointerId,
-      from: { x: event.clientX - box.left, y: event.clientY - box.top },
-      moved: false,
+  /** How far apart the first two fingers on the map are, and the point between them. */
+  const pinchOf = () => {
+    const [a, b] = [...fingers.values()];
+    return {
+      apart: Math.hypot(b.x - a.x, b.y - a.y),
+      between: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
     };
-    // The drag goes on when the finger slides off the map.
+  };
+
+  /**
+   * On a touch screen a finger drags the map round, two fingers pinch it
+   * nearer or farther, and a tap still walks or opens.
+   */
+  const onPointerDown = (event: PointerEvent) => {
+    if (event.pointerType !== 'touch' || visiting) return;
+    const box = canvas.getBoundingClientRect();
+    const at = { x: event.clientX - box.left, y: event.clientY - box.top };
+    fingers.set(event.pointerId, at);
+    // The drag, or the pinch, goes on when a finger slides off the map.
     canvas.setPointerCapture(event.pointerId);
+    if (fingers.size === 2) {
+      dragging = undefined;
+      pinching = pinchOf();
+    } else if (fingers.size === 1) {
+      dragging = { id: event.pointerId, from: at, moved: false };
+    }
   };
   const onPointerEnd = (event: PointerEvent) => {
+    fingers.delete(event.pointerId);
+    if (fingers.size < 2) pinching = undefined;
     if (dragging?.id === event.pointerId) dragging = undefined;
   };
 
   const onPointerMove = (event: PointerEvent) => {
     if (event.pointerType === 'touch') {
-      if (dragging?.id !== event.pointerId || visiting || !camera) return;
+      if (!fingers.has(event.pointerId) || visiting || !camera) return;
       const box = canvas.getBoundingClientRect();
       const to = { x: event.clientX - box.left, y: event.clientY - box.top };
+      fingers.set(event.pointerId, to);
+      if (pinching) {
+        // The camera follows the fingers at once, without easing.
+        const next = pinchOf();
+        const nearer = pinchZoom(
+          zoom,
+          pinching.apart,
+          next.apart,
+          fitZoom(bounds, box.width, box.height),
+        );
+        camera = panned = pinchCentre(
+          bounds,
+          box.width,
+          box.height,
+          zoom,
+          nearer,
+          camera,
+          pinching.between,
+          next.between,
+        );
+        zoom = nearer;
+        closer = nearer / want().zoom;
+        pinching = next;
+        return;
+      }
+      if (dragging?.id !== event.pointerId) return;
       if (!dragging.moved && isTap(dragging.from, to)) return;
       dragging.moved = true;
       // The camera follows the finger at once, without easing.

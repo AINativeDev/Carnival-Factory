@@ -22,6 +22,8 @@ export const MAX_ZOOM = 1.25;
 export const WALK_ZOOM = 0.35;
 /** How near the camera is on a phone, following the player. */
 export const PHONE_ZOOM = 0.75;
+/** How near two fingers can pinch the camera in. */
+export const MAX_PINCH_ZOOM = 1.5;
 /** Viewports narrower than this, in CSS pixels, are framed as a phone's. */
 export const PHONE_WIDTH = 720;
 
@@ -130,6 +132,39 @@ export function dragCentre(
   return frameCentre(bounds, width, height, zoom, {
     x: centre.x - (to.x - from.x) / zoom,
     y: centre.y - (to.y - from.y) / zoom,
+  });
+}
+
+/**
+ * The zoom two fingers pinch the camera to, from `zoom` as they move from
+ * `from` to `to` apart: nearer as they spread, farther as they close, and never
+ * farther than `min`, the whole island, or nearer than `MAX_PINCH_ZOOM`.
+ */
+export function pinchZoom(zoom: number, from: number, to: number, min: number): number {
+  const next = from > 0 ? (zoom * to) / from : zoom;
+  return Math.min(Math.max(min, MAX_PINCH_ZOOM), Math.max(min, next));
+}
+
+/**
+ * Where the camera's centre goes when two fingers pinch it from `zoom` to
+ * `next` while the point between them moves from `from` to `to`, in CSS
+ * pixels: what was under the fingers stays under them, and the camera stops
+ * where `frameCentre` would.
+ */
+export function pinchCentre(
+  bounds: Box,
+  width: number,
+  height: number,
+  zoom: number,
+  next: number,
+  centre: Tile,
+  from: Tile,
+  to: Tile,
+): Tile {
+  const held = screenToWorld(from, width, height, centre, zoom);
+  return frameCentre(bounds, width, height, next, {
+    x: held.x - (to.x - width / 2) / next,
+    y: held.y - (to.y - height / 2) / next,
   });
 }
 

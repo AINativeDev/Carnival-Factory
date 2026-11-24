@@ -193,11 +193,7 @@ function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
   });
   panel.showSelected(map.selected);
 
-  // Inside a square or on the factory's numbers, the corner the pill had takes you back to the map.
-  app.querySelector('.hud-back')!.addEventListener('click', () => {
-    closeCard(true);
-    canvas.focus({ preventScroll: true });
-  });
+  backToTheMap(canvas);
   app.querySelector('.hud-claim')!.addEventListener('click', () => {
     map.walkToOpenPlot();
     canvas.focus();
@@ -205,6 +201,14 @@ function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
   overview.addEventListener('click', () => {
     map.toggleOverview();
     showOverview();
+  });
+}
+
+/** Inside a square or on the factory's numbers, the top-left corner takes you back to the map. */
+function backToTheMap(canvas: HTMLCanvasElement) {
+  app.querySelector('.hud-back')!.addEventListener('click', () => {
+    closeCard(true);
+    canvas.focus({ preventScroll: true });
   });
 }
 
@@ -236,6 +240,7 @@ function renderLevel(login: string, focus?: string) {
         <canvas class="map-canvas" tabindex="0"></canvas>
         <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
+        <button class="hud hud-back" type="button"><span aria-hidden="true">←</span> Back to the map</button>
         <section class="hud hud-level">
           <h1 class="level-name"></h1>
           <p class="level-owner"></p>
@@ -282,6 +287,7 @@ function renderLevel(login: string, focus?: string) {
     started.stop();
   };
   map = started;
+  backToTheMap(canvas);
 }
 
 /** A level's note for a link to one of its squares that isn't there. The id is only ever set as text. */
