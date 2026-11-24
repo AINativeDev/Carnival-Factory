@@ -4,12 +4,13 @@ import { expect, test, type Page } from '@playwright/test';
 import { CLAIM_URL } from '../northpole/links';
 import { worldToScreen } from '../northpole/camera';
 import { buildWorld, toScreen, type PinnedPlots } from '../northpole/world';
+import { flashesPerSecond, MAX_FLASHES_PER_SECOND, type Sample } from '../scripts/flashing';
 
 /**
  * Plays every booth and attraction for a few seconds in its sandboxed frame,
  * and fails on anything a square shouldn't do: console errors, uncaught
- * exceptions, requests anywhere but the site itself, never opening, or frames
- * slower than the budget. Saves a screenshot of each, and of the map, to
+ * exceptions, requests anywhere but the site itself, never opening, frames
+ * slower than the budget, or flashing more than three times a second. Saves a screenshot of each, and of the map, to
  * screenshots/ for the pull request's preview comment.
  */
 
@@ -39,6 +40,43 @@ const squares = (['booth', 'attraction'] as const).flatMap((kind) => {
 const frameOf = (page: Page, kind: string, id: string) =>
   page.locator(`iframe[data-kind="${kind}"][data-id="${id}"]`);
 
+/**
+ * Watches the page's canvas for `ms` milliseconds, every frame, and returns
+ * the relative luminance of each quarter of it, for the flashing check.
+ */
+function sampleLuminance(page: Page, ms: number): Promise<Sample[]> {
+  return page.evaluate(
+    (ms) =>
+      new Promise<Sample[]>((resolve) => {
+        const canvas = document.querySelector('canvas')!;
+        const small = document.createElement('canvas');
+        small.width = small.height = 16;
+        const ctx = small.getContext('2d', { willReadFrequently: true })!;
+        const linear = (c: number) => {
+          const v = c / 255;
+          return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+        };
+        const samples: Sample[] = [];
+        const start = performance.now();
+        const frame = (now: number) => {
+          ctx.drawImage(canvas, 0, 0, 16, 16);
+          const { data } = ctx.getImageData(0, 0, 16, 16);
+          const regions = [0, 0, 0, 0];
+          for (let i = 0; i < 256; i++) {
+            const [r, g, b] = [data[i * 4], data[i * 4 + 1], data[i * 4 + 2]];
+            const quarter = (i >> 4 < 8 ? 0 : 2) + ((i & 15) < 8 ? 0 : 1);
+            regions[quarter] += (0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)) / 64;
+          }
+          samples.push({ time: now - start, regions });
+          if (now - start < ms) requestAnimationFrame(frame);
+          else resolve(samples);
+        };
+        requestAnimationFrame(frame);
+      }),
+    ms,
+  );
+}
+
 /** Collects what the page and every frame in it did wrong. */
 function watch(page: Page) {
   const problems: string[] = [];
@@ -63,8 +101,11 @@ for (const { kind, id } of squares) {
     await page.goto(`#/${kind}/${id}`);
     const frame = frameOf(page, kind, id);
     await expect(frame).toHaveAttribute('data-state', 'ready', { timeout: 5000 });
-    await page.waitForTimeout(PLAY_MS);
+    const samples = await sampleLuminance(page, PLAY_MS);
     await expect(frame).toHaveAttribute('data-state', 'ready');
+    expect(flashesPerSecond(samples), 'it flashes too often').toBeLessThanOrEqual(
+      MAX_FLASHES_PER_SECOND,
+    );
     // The slowest frame after warming up, not just the last one.
     const slowest = Number(await frame.getAttribute('data-slowest-draw-ms'));
     expect(slowest, 'a frame took too long to draw').toBeLessThanOrEqual(FRAME_BUDGET_MS);

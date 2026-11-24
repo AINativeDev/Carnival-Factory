@@ -196,16 +196,17 @@ jobs:
             pr=${entry%%:*}
             sha=${entry#*:}
             url="${site%/}/previews/pr-$pr/"
-            # A direct link to every booth and attraction the pull request changes.
+            # A direct link to every booth and attraction the pull request changes,
+            # and their screenshots side by side under the map's, each opening its square.
             squares=$(gh api "repos/$GH_REPO/pulls/$pr/files" --paginate --jq '.[].filename' |
               sed -nE 's#^(booth|attraction)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
             links=""
+            row=""
             shots="${url}screenshots"
             for square in $squares; do
               links="$links
-          - [\`$square\`](${url}#/$square)
-
-            <img src=\"$shots/${square%%/*}-${square#*/}.png\" alt=\"$square\" width=\"240\">"
+          - [\`$square\`](${url}#/$square)"
+              row="$row<a href=\"${url}#/$square\"><img src=\"$shots/${square%%/*}-${square#*/}.png\" alt=\"$square\" width=\"160\"></a> "
             done
             body="<!-- pr-preview -->
           **Preview:** $url (built from ${sha::7}). It updates on every push and is removed when this pull request closes.
@@ -214,7 +215,10 @@ jobs:
             if [ -n "$links" ]; then
               body="$body
 
-          **Changed here:**$links"
+          **Changed here:**
+
+          $row
+          $links"
             fi
             id=$(gh api "repos/$GH_REPO/issues/$pr/comments" --paginate \
               --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- pr-preview -->"))) | .id' | head -1)

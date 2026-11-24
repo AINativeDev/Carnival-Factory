@@ -36,6 +36,9 @@ export const theme = {
     slabShade: '#8796b3',
     cream: '#fbf3e1',
     ink: '#2b2a3d',
+    // A square's diorama: snow in the warm light, and the cool shadows things cast.
+    snowLit: '#fff4e2',
+    shadow: '#283255',
   },
   font: {
     family: '"Trebuchet MS", "Segoe UI", system-ui, sans-serif',

@@ -1,4 +1,5 @@
 import type { NorthPoleSquare } from '../../northpole/square';
+import { cone, drum, glow, scene, shadow, stringLights } from '../../northpole/diorama';
 import { theme } from '../../northpole/theme';
 
 const { colors } = theme;
@@ -63,53 +64,61 @@ const attraction: NorthPoleSquare = {
   name: 'Reindeer Carousel',
   description: 'Reindeer bobbing round under a candy-cane canopy.',
   draw(ctx, size, time) {
-    const u = size / 100;
+    scene(ctx, size, time, () => {
+      const x = 50;
+      const floor = 76;
+      const deck = floor - 4;
+      const hem = 40;
+      const turn = ((time % TURN) / TURN) * Math.PI * 2;
 
-    ctx.fillStyle = colors.snow;
-    ctx.fillRect(0, 0, size, size);
+      // The platform, lit warm by the lights under the canopy.
+      shadow(ctx, x, floor + 2, 76);
+      drum(ctx, x, floor, 34, 4, [colors.surface, colors.dusk], 12, turn, colors.slab);
+      glow(ctx, x, deck - 6, 30, 0.6);
 
-    // The platform.
-    ctx.fillStyle = colors.surface;
-    ctx.beginPath();
-    ctx.ellipse(50 * u, 80 * u, 40 * u, 9 * u, 0, 0, Math.PI * 2);
-    ctx.fill();
+      const riders = carouselRiders(6, time);
+      const ride = (rider: Rider) => {
+        const { across, depth, lift } = rider;
+        const rx = x + across * 26;
+        const foot = deck + depth * 12;
+        const ry = foot - 12 - lift * 6;
+        ctx.globalAlpha = depth < 0 ? 0.75 : 1;
+        ctx.strokeStyle = colors.gold;
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(rx, hem + 2 + depth * 14);
+        ctx.lineTo(rx, foot);
+        ctx.stroke();
+        reindeer(ctx, rx, ry, 0.85, depth >= 0 ? 1 : -1);
+        ctx.globalAlpha = 1;
+      };
+      // Reindeer at the back first, then the centre column, then the front ones.
+      const order = [...riders].sort((a, b) => a.depth - b.depth);
+      for (const rider of order) if (rider.depth < 0) ride(rider);
+      drum(ctx, x, deck, 4, deck - hem, [colors.gold, colors.lantern], 2, 0, colors.gold);
+      for (const rider of order) if (rider.depth >= 0) ride(rider);
 
-    // The candy-cane canopy: a cone of red and white stripes.
-    const stripes = 10;
-    for (let i = 0; i < stripes; i++) {
-      ctx.fillStyle = i % 2 ? colors.snow : colors.berry;
-      ctx.beginPath();
-      ctx.moveTo(50 * u, 8 * u);
-      ctx.lineTo((8 + (84 * i) / stripes) * u, 32 * u);
-      ctx.lineTo((8 + (84 * (i + 1)) / stripes) * u, 32 * u);
-      ctx.closePath();
-      ctx.fill();
-    }
-    ctx.fillStyle = colors.gold;
-    ctx.fillRect(8 * u, 32 * u, 84 * u, 3 * u);
-    ctx.beginPath();
-    ctx.arc(50 * u, 7 * u, 2.5 * u, 0, Math.PI * 2);
-    ctx.fill();
-
-    // The centre column.
-    ctx.fillStyle = colors.gold;
-    ctx.fillRect(47 * u, 35 * u, 6 * u, 45 * u);
-
-    // Reindeer at the back first, so the front ones pass in front of them.
-    const riders = carouselRiders(6, time).sort((a, b) => a.depth - b.depth);
-    for (const { across, depth, lift } of riders) {
-      const x = 50 * u + across * 34 * u;
-      const y = 62 * u + depth * 6 * u - lift * 6 * u;
-      ctx.globalAlpha = depth < 0 ? 0.65 : 1;
+      // The candy-cane canopy, turning with the ride, with a gold trim and a gold ball on top.
+      cone(ctx, x, hem, 35, 24, [colors.berry, colors.snow], 10, turn);
       ctx.strokeStyle = colors.gold;
-      ctx.lineWidth = 1 * u;
+      ctx.lineWidth = 1.6;
       ctx.beginPath();
-      ctx.moveTo(x, 35 * u);
-      ctx.lineTo(x, 80 * u + depth * 6 * u);
+      ctx.ellipse(x, hem, 35, 17.5, 0, 0, Math.PI);
       ctx.stroke();
-      reindeer(ctx, x, y, u, depth >= 0 ? 1 : -1);
-    }
-    ctx.globalAlpha = 1;
+      stringLights(
+        ctx,
+        Array.from({ length: 13 }, (_, i) => {
+          const a = 0.1 + (i / 12) * (Math.PI - 0.2);
+          return { x: x + Math.cos(a) * 33, y: hem + 2 + Math.sin(a) * 16.5 };
+        }),
+        [colors.lantern, colors.gold],
+        time,
+      );
+      ctx.fillStyle = colors.gold;
+      ctx.beginPath();
+      ctx.arc(x, hem - 25, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    });
   },
 };
 

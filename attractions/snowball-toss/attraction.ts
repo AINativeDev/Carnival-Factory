@@ -1,4 +1,5 @@
 import type { NorthPoleSquare } from '../../northpole/square';
+import { box, glow, iso, scene, shadow } from '../../northpole/diorama';
 import { theme } from '../../northpole/theme';
 
 const { colors } = theme;
@@ -50,62 +51,73 @@ const attraction: NorthPoleSquare = {
   name: 'Snowball Toss',
   description: 'Knock the tin snowmen off the shelf and win a candy cane.',
   draw(ctx, size, time) {
-    const u = size / 100;
-
-    ctx.fillStyle = colors.snow;
-    ctx.fillRect(0, 0, size, size);
-
-    // The booth: a back wall, a striped awning and a counter.
-    ctx.fillStyle = colors.surface;
-    ctx.fillRect(14 * u, 14 * u, 72 * u, 64 * u);
-    ctx.fillStyle = colors.wood;
-    ctx.fillRect(14 * u, 14 * u, 3 * u, 72 * u);
-    ctx.fillRect(83 * u, 14 * u, 3 * u, 72 * u);
-    ctx.fillRect(10 * u, 78 * u, 80 * u, 6 * u);
-    ctx.fillRect(30 * u, 66 * u, 40 * u, 2 * u);
-    for (let i = 0; i < 6; i++) {
-      ctx.fillStyle = i % 2 ? colors.snow : colors.pine;
-      ctx.fillRect((10 + i * 13.33) * u, 4 * u, 13.4 * u, 10 * u);
+    scene(ctx, size, time, () => {
+      // The booth: two back walls meeting behind, a lamp in the corner, and striped awnings.
+      const wall = 34;
+      shadow(ctx, 54, 70, 80);
+      box(ctx, -21, -21, 3, 40, wall, colors.slab, colors.surface, colors.night);
+      box(ctx, -21, -21, 40, 3, wall, colors.slab, colors.surface, colors.night);
+      const lamp = iso(-17, -17, 24);
+      glow(ctx, lamp.x, lamp.y, 24, 0.8);
+      ctx.fillStyle = colors.lantern;
       ctx.beginPath();
-      ctx.arc((16.67 + i * 13.33) * u, 14 * u, 6.67 * u, 0, Math.PI);
+      ctx.arc(lamp.x, lamp.y, 1.4, 0, Math.PI * 2);
       ctx.fill();
-    }
+      for (const side of [0, 1]) {
+        for (let i = 0; i < 7; i++) {
+          const a0 = -18 + i * 5.3;
+          const a1 = a0 + 5.3;
+          // Along one wall or the other: `a` runs along it, out from it to the front.
+          const p = (a: number, out: number, z: number) =>
+            side ? iso(-18 + out, a, z) : iso(a, -18 + out, z);
+          ctx.fillStyle = i % 2 ? colors.snow : colors.pine;
+          const points = [p(a0, 0, wall), p(a1, 0, wall), p(a1, 6, wall - 5), p(a0, 6, wall - 5)];
+          ctx.beginPath();
+          points.forEach((q, n) => (n ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)));
+          ctx.fill();
+        }
+      }
 
-    // The pyramid: three on the bottom, two, then one on top that the snowball hits.
-    const s = 0.8 * u;
-    for (const x of [38, 50, 62]) snowman(ctx, x * u, 60.4 * u, s);
-    for (const x of [44, 56]) snowman(ctx, x * u, 46.8 * u, s);
-    const tip = topple(time);
-    ctx.save();
-    // It tips over about its base.
-    ctx.translate(50 * u, 38.8 * u);
-    ctx.rotate((tip * Math.PI) / 2);
-    ctx.globalAlpha = 1 - tip * 0.6;
-    snowman(ctx, 0, -5.6 * u, s);
-    ctx.restore();
+      // The shelf, and the pyramid on it: three on the bottom, two, then one on top that the snowball hits.
+      box(ctx, -9, -9, 18, 18, 4, colors.gingerbread, colors.wood, colors.cocoa);
+      const s = 0.8;
+      for (const x of [38, 50, 62]) snowman(ctx, x, 60.4, s);
+      for (const x of [44, 56]) snowman(ctx, x, 46.8, s);
+      const tip = topple(time);
+      ctx.save();
+      // It tips over about its base.
+      ctx.translate(50, 38.8);
+      ctx.rotate((tip * Math.PI) / 2);
+      ctx.globalAlpha = 1 - tip * 0.6;
+      snowman(ctx, 0, -5.6, s);
+      ctx.restore();
 
-    // Candy-cane prizes hanging from the awning.
-    ctx.strokeStyle = colors.berry;
-    ctx.lineWidth = 1.5 * u;
-    for (const x of [22, 78]) {
-      const sway = Math.sin(time / 600 + x) * 2 * u;
-      ctx.beginPath();
-      ctx.moveTo(x * u + sway, 46 * u);
-      ctx.lineTo(x * u, 34 * u);
-      ctx.arc(x * u - 2.5 * u, 34 * u, 2.5 * u, 0, Math.PI, true);
-      ctx.stroke();
-    }
+      // Candy-cane prizes hanging from the awning.
+      ctx.strokeStyle = colors.berry;
+      ctx.lineWidth = 1.3;
+      for (const [n, hook] of [iso(-16, 12, wall - 6), iso(12, -16, wall - 6)].entries()) {
+        const sway = Math.sin(time / 600 + n * 40) * 1.6;
+        ctx.beginPath();
+        ctx.moveTo(hook.x + sway, hook.y + 11);
+        ctx.lineTo(hook.x, hook.y);
+        ctx.arc(hook.x - 2.2, hook.y, 2.2, 0, Math.PI, true);
+        ctx.stroke();
+      }
 
-    const ball = snowballAt(time);
-    if (ball) {
-      ctx.fillStyle = colors.snow;
-      ctx.strokeStyle = colors.snowShade;
-      ctx.lineWidth = 0.8 * u;
-      ctx.beginPath();
-      ctx.arc(ball.x * u, ball.y * u, 3 * u, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-    }
+      // The counter at the front, with snow on it.
+      box(ctx, -21, 17, 30, 4, 6, colors.snowShade, colors.gingerbread, colors.wood);
+
+      const ball = snowballAt(time);
+      if (ball) {
+        ctx.fillStyle = colors.snowLit;
+        ctx.strokeStyle = colors.snowShade;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+    });
   },
 };
 

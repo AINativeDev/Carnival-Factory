@@ -1,4 +1,5 @@
 import type { NorthPoleSquare } from '../../northpole/square';
+import { cone, drum, glow, scene, shadow, stringLights } from '../../northpole/diorama';
 import { theme } from '../../northpole/theme';
 
 const { colors } = theme;
@@ -43,72 +44,73 @@ const attraction: NorthPoleSquare = {
   name: "Santa's Big Top",
   description: "Santa's workshop under a striped big top, with elves peeking out of the flaps.",
   draw(ctx, size, time) {
-    const u = size / 100;
+    scene(ctx, size, time, () => {
+      const x = 50;
+      const y = 72;
+      const wall = 16;
+      const hem = y - wall;
 
-    ctx.fillStyle = colors.snow;
-    ctx.fillRect(0, 0, size, size);
-
-    // The tent walls, in stripes.
-    const stripes = 8;
-    for (let i = 0; i < stripes; i++) {
-      ctx.fillStyle = i % 2 ? colors.snow : colors.berry;
-      ctx.fillRect((12 + (76 * i) / stripes) * u, 44 * u, (76 / stripes) * u, 42 * u);
-    }
-    ctx.strokeStyle = colors.snowShade;
-    ctx.lineWidth = 1 * u;
-    ctx.strokeRect(12 * u, 44 * u, 76 * u, 42 * u);
-
-    // The roof: a striped peak with a scalloped hem.
-    for (let i = 0; i < stripes; i++) {
-      ctx.fillStyle = i % 2 ? colors.berry : colors.snow;
-      ctx.beginPath();
-      ctx.moveTo(50 * u, 12 * u);
-      ctx.lineTo((8 + (84 * i) / stripes) * u, 44 * u);
-      ctx.lineTo((8 + (84 * (i + 1)) / stripes) * u, 44 * u);
-      ctx.closePath();
-      ctx.fill();
-    }
-    ctx.fillStyle = colors.gold;
-    for (let i = 0; i < 7; i++) {
-      ctx.beginPath();
-      ctx.arc((14 + i * 12) * u, 44 * u, 6 * u, 0, Math.PI);
-      ctx.fill();
-    }
-
-    // A pennant on the peak, fluttering.
-    ctx.strokeStyle = colors.wood;
-    ctx.lineWidth = 1 * u;
-    ctx.beginPath();
-    ctx.moveTo(50 * u, 12 * u);
-    ctx.lineTo(50 * u, 2 * u);
-    ctx.stroke();
-    ctx.fillStyle = colors.pine;
-    ctx.beginPath();
-    ctx.moveTo(50 * u, 2 * u);
-    ctx.lineTo((60 + Math.sin(time / 250) * 1.5) * u, (5 + Math.sin(time / 300)) * u);
-    ctx.lineTo(50 * u, 8 * u);
-    ctx.closePath();
-    ctx.fill();
-
-    // Three flaps, each with an elf that pops out in turn.
-    for (const [flap, x] of [24, 50, 76].entries()) {
-      const peek = elfPeek(flap, time);
-      ctx.fillStyle = colors.night;
-      ctx.beginPath();
-      ctx.moveTo((x - 7) * u, 86 * u);
-      ctx.lineTo(x * u, 66 * u);
-      ctx.lineTo((x + 7) * u, 86 * u);
-      ctx.closePath();
-      ctx.fill();
-      if (peek > 0) {
-        ctx.save();
+      shadow(ctx, x, y + 2, 66);
+      glow(ctx, x, y - 2, 26, 0.7);
+      // The tent walls in stripes, and the roof's peak in stripes over them.
+      drum(ctx, x, y, 28, wall, [colors.berry, colors.snow], 8, 0.2, colors.snow);
+      cone(ctx, x, hem, 32, 28, [colors.snow, colors.berry], 8, 0.2);
+      // A gold scalloped hem round the front of the roof.
+      ctx.fillStyle = colors.gold;
+      for (let i = 1; i < 8; i++) {
+        const a = (i / 8) * Math.PI;
         ctx.beginPath();
-        ctx.rect((x - 9) * u, 50 * u, 18 * u, 36 * u);
-        ctx.clip();
-        elf(ctx, x * u, (88 - peek * 14) * u, u);
-        ctx.restore();
+        ctx.arc(x + Math.cos(a) * 32, hem + Math.sin(a) * 16, 2.2, 0, Math.PI);
+        ctx.fill();
       }
-    }
+      stringLights(
+        ctx,
+        Array.from({ length: 11 }, (_, i) => {
+          const a = 0.15 + (i / 10) * (Math.PI - 0.3);
+          return { x: x + Math.cos(a) * 29, y: hem + 3 + Math.sin(a) * 14.5 };
+        }),
+        [colors.lantern, colors.gold],
+        time,
+      );
+
+      // A pennant on the peak, fluttering.
+      const peak = hem - 28;
+      ctx.fillStyle = colors.wood;
+      ctx.fillRect(x - 0.5, peak - 9, 1, 9);
+      ctx.fillStyle = colors.pine;
+      ctx.beginPath();
+      ctx.moveTo(x + 0.5, peak - 9);
+      ctx.lineTo(x + 9 + Math.sin(time / 500) * 1.2, peak - 6.5 + Math.sin(time / 600) * 0.8);
+      ctx.lineTo(x + 0.5, peak - 4);
+      ctx.fill();
+
+      // Three flaps, lit warm inside, each with an elf that pops out in turn.
+      for (const [flap, a] of [0.95, 0.5, 0.05].entries()) {
+        const angle = Math.PI * (0.22 + a * 0.56);
+        const fx = x + Math.cos(angle) * 28;
+        const fy = y + Math.sin(angle) * 14;
+        const door = () => {
+          ctx.beginPath();
+          ctx.moveTo(fx - 5, fy);
+          ctx.lineTo(fx, fy - 13);
+          ctx.lineTo(fx + 5, fy);
+          ctx.closePath();
+        };
+        ctx.fillStyle = colors.ink;
+        door();
+        ctx.fill();
+        glow(ctx, fx, fy - 4, 7, 0.9);
+        const peek = elfPeek(flap, time);
+        if (peek > 0) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(fx - 8, hem + 2, 16, fy - hem - 2);
+          ctx.clip();
+          elf(ctx, fx, fy + 3 - peek * 11, 1);
+          ctx.restore();
+        }
+      }
+    });
   },
 };
 
