@@ -8,6 +8,7 @@ import type { NorthPoleSquare } from '../northpole/square';
 import { applyTheme } from '../northpole/theme';
 import { boothRegistry } from '../northpole/booths';
 import { parseHash } from './route';
+import { renderSeason } from './season-card';
 import { openVisitHud, type VisitHud } from './visit-hud';
 import { keepUpToDate } from './updates';
 
@@ -326,6 +327,14 @@ function route(event?: HashChangeEvent) {
   const route = parseHash(location.hash);
   // Booths used to be called plots: keep links shared before the rename working.
   if (route.view === 'legacy') return location.replace(`#/booth/${route.id}`);
+
+  if (route.view === 'season') {
+    closeCard(false);
+    stop?.();
+    map = undefined;
+    stop = renderSeason(app, route.login);
+    return;
+  }
 
   // A square takes the player inside it, starting the world if it isn't running.
   if (route.view === 'square') {

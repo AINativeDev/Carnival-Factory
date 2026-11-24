@@ -9,7 +9,7 @@ import type { SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { shareLink, shareText } from '../northpole/visit';
-import { deepLink } from './route';
+import { deepLink, seasonLink } from './route';
 
 export interface VisitHudOptions {
   kind: SquareKind;
@@ -35,7 +35,7 @@ export interface VisitHud {
 /**
  * The HUD inside a square the player has entered, beside the room the map
  * draws: its name, who it belongs to and its description, Share and See it on
- * the map, a link for its owner to ask for a change, for someone who came by
+ * the map, a link for its owner to ask for a change and one to their season card, for someone who came by
  * a shared link the invitation to claim the plot next door, and how to leave.
  * Focus moves into it, and back out when it closes. Every name and
  * description is only ever set as text.
@@ -78,7 +78,8 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
 
   const help = $('.visit-help');
   if (kind === 'booth') {
-    help.innerHTML = `Is this yours? <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask the factory for a change</a>, or <button class="visit-mine" type="button">share it as yours</button>.`;
+    help.innerHTML = `Is this yours? <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask the factory for a change</a>, or <button class="visit-mine" type="button">share it as yours</button>. <a class="visit-season">Your season</a>`;
+    help.querySelector<HTMLAnchorElement>('.visit-season')!.href = seasonLink(square.id);
   } else {
     help.innerHTML = `Attractions belong to the North Pole, so only its maintainers change them. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.`;
   }

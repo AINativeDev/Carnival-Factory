@@ -73,6 +73,7 @@ jobs:
     permissions:
       contents: write
       actions: read
+      issues: read
       pull-requests: read
     outputs:
       placed: ${{ steps.files.outputs.placed }}
@@ -102,6 +103,22 @@ jobs:
       # Every run rebuilds the root from main, not only a push: GitHub keeps one
       # pending run per group and drops the rest, so a push's run can be
       # replaced by the next event, and that run must still publish main.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: main/.nvmrc
+
+      # Every participant's season, for the season card. A failure here leaves
+      # the season empty rather than stopping the deploy.
+      - name: Count the season
+        working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/season-data.ts > season.json || {
+            echo "::warning title=Season not counted::The season card shows no numbers in this build."
+            rm -f season.json
+          }
+
       - name: Build main into the root
         working-directory: main
         run: |

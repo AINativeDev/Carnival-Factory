@@ -65,7 +65,14 @@ starter repo for the "Build your own software factory with context" workshop.
    map with you standing in front of your booth, lit up for a few seconds, and **Copy
    link**, which copies that link to send to anyone:
    `…/#/?booth=<your-login>`. An attraction's is `…/#/?attraction=<id>`.
-6. **Change it.** Open **Your booth** again for anything after that: the same
+6. **Look back on your season.** Your booth's page links to **Your season**,
+   a card at
+   [`…/#/season/<your-login>`](https://ainativedev.github.io/Northpole-Carnival-Factory/#/season/jedi4ever)
+   with your booth and the numbers from your season: requests made and
+   shipped, and the review findings the factory fixed. **Download** saves it
+   as a PNG, and **Copy link** copies your booth's link on the map. Nothing is
+   posted for you. The numbers are counted when the site is built.
+7. **Change it.** Open **Your booth** again for anything after that: the same
    form builds your booth if it's new and changes it if it's there. Your latest
    request is the one that counts, so a new one closes any older one you still
    have open.

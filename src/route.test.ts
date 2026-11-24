@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deepLink, parseHash } from './route';
+import { deepLink, parseHash, seasonLink } from './route';
 
 describe('parseHash', () => {
   it('reads the plain map', () => {
@@ -69,5 +69,17 @@ describe('parseHash', () => {
       focus: { kind: 'booth', id: 'jedi4ever' },
     });
     expect(deepLink('attraction', 'ferris-wheel')).toBe('#/?attraction=ferris-wheel');
+  });
+});
+
+describe('the season card', () => {
+  it("reads a participant's season card, in lower case", () => {
+    expect(parseHash('#/season/Jedi4ever')).toEqual({ view: 'season', login: 'jedi4ever' });
+    expect(parseHash(seasonLink('jedi4ever'))).toEqual({ view: 'season', login: 'jedi4ever' });
+  });
+
+  it('ignores a malformed login and opens the plain map', () => {
+    expect(parseHash('#/season/<script>')).toEqual({ view: 'map' });
+    expect(parseHash('#/season/')).toEqual({ view: 'map' });
   });
 });
