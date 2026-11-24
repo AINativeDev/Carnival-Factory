@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { STALL_SHAPES_DRAWN, stallLook, stallOutline, stallReach } from './render';
+import { decorationsFor } from './advent';
+import {
+  adventCrown,
+  ADVENT_SIGN,
+  STALL_SHAPES_DRAWN,
+  stallLook,
+  stallOutline,
+  stallReach,
+} from './render';
 import { STALL_SHAPES } from './square';
 import { theme } from './theme';
 
@@ -70,5 +78,14 @@ describe('stallReach', () => {
     }
     const others = STALL_SHAPES.filter((shape) => shape !== 'shed').map(stallReach);
     expect(stallReach('shed')).toBeLessThan(Math.min(...others));
+  });
+});
+
+describe('adventCrown', () => {
+  it('adds nothing over the stall until the star, then the sign under it', () => {
+    expect(adventCrown(decorationsFor(0))).toBe(0);
+    expect(adventCrown(decorationsFor(11))).toBe(0);
+    expect(adventCrown(decorationsFor(12))).toBe(22);
+    expect(adventCrown(decorationsFor(24))).toBe(22 + ADVENT_SIGN.h + 6);
   });
 });

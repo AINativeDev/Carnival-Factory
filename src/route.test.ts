@@ -12,6 +12,11 @@ describe('parseHash', () => {
     expect(parseHash('#/factory/more')).toEqual({ view: 'map' });
   });
 
+  it('reads the advent calendar', () => {
+    expect(parseHash('#/advent')).toEqual({ view: 'advent' });
+    expect(parseHash('#/advent/3')).toEqual({ view: 'map' });
+  });
+
   it("reads a square's own page", () => {
     expect(parseHash('#/booth/jedi4ever')).toEqual({
       view: 'square',
