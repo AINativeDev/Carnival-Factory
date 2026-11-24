@@ -1,4 +1,5 @@
 2026-11-24 square-BjmbLKfU.js
+2026-11-24 main-BpfBf2wV.js
 2026-11-24 main-DTbhe2HG.css
 2026-11-24 square-worker-CC3IsPM5.js
 2026-11-24 frame-protocol-CQcKUTN7.js
