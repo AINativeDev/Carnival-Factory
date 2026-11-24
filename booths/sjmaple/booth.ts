@@ -188,6 +188,8 @@ export interface Workshop {
   build: Build;
   /** The `time` the top was last let go, or null before the first test. */
   launchedAt: number | null;
+  /** The top that was let go then, which later changes to `build` never touch. */
+  tested: Build;
   /** The longest spin so far, in milliseconds, counted once each test is done. */
   best: number;
   /** Whether the last test has been counted towards `best`. */
@@ -201,6 +203,7 @@ export function newWorkshop(): Workshop {
   return {
     build: { body: 0, stripe: 0, handle: 0 },
     launchedAt: null,
+    tested: { body: 0, stripe: 0, handle: 0 },
     best: 0,
     counted: true,
     pressedAt: -Infinity,
@@ -211,16 +214,21 @@ export function newWorkshop(): Workshop {
 /** Whether a top is out on the mat at `time`, so the buttons wait. */
 export function testing(state: Workshop, time: number): boolean {
   if (state.launchedAt === null) return false;
-  const test = testOf(state.build, state.launchedAt);
+  const test = testOf(state.tested, state.launchedAt);
   return stageAt(time - state.launchedAt, test.spin).stage !== 'done';
 }
 
-/** The workshop after `presses` presses on `button` at `time`. Buttons do nothing while a top is out. */
+/**
+ * The workshop after `presses` presses on `button` at `time`. Buttons do
+ * nothing while a top is out, and a finished test is counted before anything
+ * replaces it.
+ */
 export function press(state: Workshop, button: Button | null, presses: number, time: number) {
   if (presses < 1) return state;
-  const pressed = { ...state, pressedAt: time };
+  const pressed = { ...settle(state, time), pressedAt: time };
   if (!button || testing(state, time)) return pressed;
-  if (button === 'spin') return { ...pressed, launchedAt: time, counted: false };
+  if (button === 'spin')
+    return { ...pressed, launchedAt: time, tested: state.build, counted: false };
   const { body, stripe, handle } = state.build;
   const build =
     button === 'body'
@@ -234,7 +242,7 @@ export function press(state: Workshop, button: Button | null, presses: number, t
 /** The workshop with its last test counted towards the best once it is done. */
 export function settle(state: Workshop, time: number): Workshop {
   if (state.counted || state.launchedAt === null || testing(state, time)) return state;
-  const { spin } = testOf(state.build, state.launchedAt);
+  const { spin } = testOf(state.tested, state.launchedAt);
   return { ...state, best: Math.max(state.best, spin), counted: true };
 }
 
@@ -385,8 +393,10 @@ const booth: NorthPoleSquare = {
     const demo = idle(workshop, time);
     const elfRound = demoAt(time);
     const build = demo ? elfRound.build : workshop.build;
+    // The top out on the mat, and the one the test board reports, is the one let go.
+    const tested = demo ? elfRound.build : workshop.tested;
     const launchedAt = demo ? elfRound.launchedAt : workshop.launchedAt;
-    const test = launchedAt === null ? null : testOf(build, launchedAt);
+    const test = launchedAt === null ? null : testOf(tested, launchedAt);
     const since = launchedAt === null ? Infinity : time - launchedAt;
     const { stage, progress } =
       test && since >= 0 ? stageAt(since, test.spin) : { stage: 'done' as Stage, progress: 1 };
@@ -542,7 +552,7 @@ const booth: NorthPoleSquare = {
     } else if (stage === 'carry') {
       const tip = carryTip(progress, benchTip, matTip);
       plot(colors.shadow, tip.x - 4, mat.y, 9, 1);
-      top(plot, build, tip.x, tip.y, 3, 0, 0);
+      top(plot, tested, tip.x, tip.y, 3, 0, 0);
     } else {
       const ms = stage === 'spin' ? progress * test.spin : test.spin;
       const angle = spinAngle(ms, test.spin);
@@ -555,12 +565,12 @@ const booth: NorthPoleSquare = {
             plot(colors.snowLit, matTip.x + Math.round(Math.cos(a) * 8), matTip.y - 1 - (i % 2), 1);
           }
         }
-        top(plot, build, matTip.x, matTip.y, 3, angle, wobble(ms, test));
+        top(plot, tested, matTip.x, matTip.y, 3, angle, wobble(ms, test));
       } else {
         // Tipping over, then lying still on its side until it goes back on the bench.
         const pose = restPose(progress);
-        if (pose.lying) lyingTop(plot, build, matTip.x - 5, matTip.y, angle);
-        else top(plot, build, matTip.x, matTip.y, 3, angle, pose.lean);
+        if (pose.lying) lyingTop(plot, tested, matTip.x - 5, matTip.y, angle);
+        else top(plot, tested, matTip.x, matTip.y, 3, angle, pose.lean);
       }
     }
 

@@ -80,6 +80,27 @@ describe('settle', () => {
     expect(done.counted).toBe(true);
   });
 
+  it('reports the top that was tested, whatever is built after it', () => {
+    let state = press(newWorkshop(), 'spin', 1, 0);
+    const { spin } = testOf(state.tested, 0);
+    const after = CARRY + spin + REST;
+    // A round body, then a wide one, which would spin longer.
+    state = press(state, 'body', 1, after);
+    expect(state.build.body).toBe(1);
+    expect(state.tested.body).toBe(0);
+    expect(testing(state, after + 1)).toBe(false);
+    expect(settle(state, after + 1).best).toBe(spin);
+  });
+
+  it('counts a finished test before a new spin replaces it', () => {
+    const launched = press(newWorkshop(), 'spin', 1, 0);
+    const { spin } = testOf(launched.build, 0);
+    const after = CARRY + spin + REST;
+    const again = press(launched, 'spin', 1, after);
+    expect(again.launchedAt).toBe(after);
+    expect(again.best).toBe(spin);
+  });
+
   it('keeps the longest spin', () => {
     const state = { ...press(newWorkshop(), 'spin', 1, 0), best: 99_000 };
     expect(settle(state, 60_000).best).toBe(99_000);
