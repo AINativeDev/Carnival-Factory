@@ -22,7 +22,7 @@ function renderGuide(
     item.innerHTML = `<a><span class="name"></span> <span class="owner"></span></a>`;
     item.querySelector('a')!.href = `#/${href}/${square.id}`;
     item.querySelector('.name')!.textContent = square.name;
-    item.querySelector('.id')!.textContent = by(square.id);
+    item.querySelector('.owner')!.textContent = by(square.id);
     list.append(item);
   }
 }
