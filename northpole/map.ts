@@ -114,7 +114,7 @@ const HIGHLIGHT_TIME = 6000;
 const HIGHLIGHT_FADE = 1500;
 /** How far above the player the camera looks, in world pixels, so more of what's ahead shows. */
 const LOOK_UP = 40;
-/** How long the player stands still before the camera eases back out to the whole island, in milliseconds. */
+/** How long the player stands still before the camera eases back out to the carnival, in milliseconds. */
 const SETTLE = 2500;
 /** Frames the map draws before it starts timing them, while the page warms up. */
 const WARM_UP_FRAMES = 30;
@@ -164,8 +164,14 @@ export interface MapControls {
   stop(): void;
   /** Walks the player to a square's door. */
   walkTo(kind: SquareKind, id: string): void;
-  /** On a phone, shows the whole island or goes back to following the player. Returns whether it shows the whole island. */
+  /** Puts the player straight at a square's door, and glides the camera there. */
+  jumpTo(kind: SquareKind, id: string): void;
+  /** Walks the player to the nearest open plot. */
+  walkToOpenPlot(): void;
+  /** Shows the whole island, or goes back to the carnival. Returns whether it shows the whole island. */
   toggleOverview(): boolean;
+  /** Whether it shows the whole island. */
+  readonly overview: boolean;
 }
 
 /** A canvas of its own, to draw a layer on once. */
@@ -202,7 +208,7 @@ export function startMap(
   );
   const squareOf = (plot: Plot) =>
     plot.kind === 'open' ? undefined : byId[plot.kind].get(plot.id!);
-  const focused = options.focus
+  let focused = options.focus
     ? world.plots.find((plot) => plot.kind === options.focus!.kind && plot.id === options.focus!.id)
     : undefined;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -293,7 +299,7 @@ export function startMap(
     const text = !near
       ? ''
       : near.kind === 'open'
-        ? 'Claim this plot for your booth (E)'
+        ? 'Press E to claim this plot'
         : `Visit ${square?.name ?? near.id} (E)`;
     if (prompt.textContent !== text) prompt.textContent = text;
     prompt.hidden = !near;
@@ -441,7 +447,8 @@ export function startMap(
             : 0;
         const strength = Math.max(plot === near ? 0.7 : 0, glowFor);
         if (strength > 0) drawPlotGlow(ctx, plot, strength);
-        targets.push({ plot, box: drawPlot(ctx, plot, squareOf(plot), paint, motion) });
+        const box = drawPlot(ctx, plot, squareOf(plot), paint, motion, plot === near);
+        targets.push({ plot, box });
       });
     }
     world.strolls.forEach((stroll, n) => {
@@ -601,8 +608,33 @@ export function startMap(
       const plot = world.plots.find((p) => p.kind === kind && p.id === id);
       if (plot) walkToward([plot.door]);
     },
+    jumpTo(kind, id) {
+      const plot = world.plots.find((p) => p.kind === kind && p.id === id);
+      if (!plot) return;
+      player = { ...plot.door };
+      path = [];
+      overview = false;
+      // The camera comes in on the square, and eases back out a little later, as after a walk.
+      walking = 1;
+      movedAt = performance.now();
+      focused = plot;
+      focusedAt = undefined;
+    },
+    walkToOpenPlot() {
+      const doors = world.plots
+        .filter((plot) => plot.kind === 'open')
+        .map((plot) => plot.door)
+        .sort(
+          (a, b) =>
+            Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y),
+        );
+      walkToward(doors);
+    },
     toggleOverview() {
       overview = !overview;
+      return overview;
+    },
+    get overview() {
       return overview;
     },
   };

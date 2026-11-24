@@ -12,8 +12,14 @@ export const SLAB = 56;
 export const HEADROOM = 140;
 /** The room left round the whole island on a laptop, in CSS pixels. */
 export const MARGIN = 32;
+/** The room left round the carnival on a laptop, in CSS pixels. */
+export const CARNIVAL_MARGIN = 12;
+/** How far the pavilions' roofs rise over their plots, in world pixels. */
+export const CARNIVAL_HEADROOM = 240;
+/** How near the camera ever comes on a laptop. */
+export const MAX_ZOOM = 1.25;
 /** How much nearer the camera comes on a laptop while the player walks. */
-export const WALK_ZOOM = 0.45;
+export const WALK_ZOOM = 0.35;
 /** How near the camera is on a phone, following the player. */
 export const PHONE_ZOOM = 0.75;
 /** Viewports narrower than this, in CSS pixels, are framed as a phone's. */
@@ -39,6 +45,37 @@ export function islandBounds(world: World): Box {
     w: c.right.x - c.left.x,
     h: c.bottom.y + SLAB - (c.top.y - HEADROOM),
   };
+}
+
+/** The box round the boxes and points in `boxes`. */
+function union(boxes: Box[]): Box {
+  const x = Math.min(...boxes.map((b) => b.x));
+  const y = Math.min(...boxes.map((b) => b.y));
+  const right = Math.max(...boxes.map((b) => b.x + b.w));
+  const bottom = Math.max(...boxes.map((b) => b.y + b.h));
+  return { x, y, w: right - x, h: bottom - y };
+}
+
+/** The screen box round a box of tiles, from its top corner to its bottom one. */
+function tilesOnScreen(box: Box): Box {
+  const top = toScreen({ x: box.x - 0.5, y: box.y - 0.5 });
+  const right = toScreen({ x: box.x + box.w - 0.5, y: box.y - 0.5 });
+  const bottom = toScreen({ x: box.x + box.w - 0.5, y: box.y + box.h - 0.5 });
+  const left = toScreen({ x: box.x - 0.5, y: box.y + box.h - 0.5 });
+  return { x: left.x, y: top.y, w: right.x - left.x, h: bottom.y - top.y };
+}
+
+/**
+ * The box round the carnival itself: every plot and what stands on it, the
+ * town square, the ends of the avenues and the entrance, without the forest
+ * and the sights round it. It grows with the booths, as the island does.
+ */
+export function carnivalBounds(world: World): Box {
+  const plots = union(world.plots.map(tilesOnScreen));
+  return union([
+    { ...plots, y: plots.y - CARNIVAL_HEADROOM, h: plots.h + CARNIVAL_HEADROOM },
+    tilesOnScreen({ x: world.start.x, y: world.start.y - 1, w: 1, h: 3 }),
+  ]);
 }
 
 /** Whether a viewport is framed as a phone's. */
@@ -84,9 +121,9 @@ export interface Framing {
 
 /**
  * How the camera wants to frame the island for a viewport. On a laptop it fits
- * the whole island and comes in by up to `WALK_ZOOM` as `walking` goes from 0
- * to 1, towards the player. On a phone it follows the player close up, unless
- * `overview` asks for the whole island.
+ * the carnival, and the player wherever they stand, and comes in by up to
+ * `WALK_ZOOM` as `walking` goes from 0 to 1, towards the player. On a phone it
+ * follows the player close up. Either way, `overview` asks for the whole island.
  */
 export function framing(
   world: World,
@@ -96,12 +133,18 @@ export function framing(
   walking: number,
   overview: boolean,
 ): Framing {
-  const bounds = islandBounds(world);
-  const fit = fitZoom(bounds, width, height);
+  const fit = fitZoom(islandBounds(world), width, height);
   const at = toScreen(player);
-  if (isPhone(width) && !overview) return { zoom: Math.max(fit, PHONE_ZOOM), target: at };
-  if (isPhone(width)) return { zoom: fit, target: at };
-  return { zoom: fit * (1 + WALK_ZOOM * Math.min(1, Math.max(0, walking))), target: at };
+  if (overview) return { zoom: fit, target: at };
+  if (isPhone(width)) return { zoom: Math.max(fit, PHONE_ZOOM), target: at };
+  const around = union([carnivalBounds(world), { x: at.x - 48, y: at.y - 120, w: 96, h: 150 }]);
+  const still = Math.max(fit, Math.min(MAX_ZOOM, fitZoom(around, width, height, CARNIVAL_MARGIN)));
+  const t = Math.min(1, Math.max(0, walking));
+  const middle = { x: around.x + around.w / 2, y: around.y + around.h / 2 };
+  return {
+    zoom: still * (1 + WALK_ZOOM * t),
+    target: { x: middle.x + (at.x - middle.x) * t, y: middle.y + (at.y - middle.y) * t },
+  };
 }
 
 /** The world point under a point in a viewport, for a camera at `centre` and `zoom`. */

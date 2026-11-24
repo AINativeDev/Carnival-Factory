@@ -3,14 +3,14 @@ import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { CLAIM_URL } from '../northpole/links';
 import { worldToScreen } from '../northpole/camera';
+import { CLAIM_SIGN } from '../northpole/render';
 import { buildWorld, toScreen, type PinnedPlots } from '../northpole/world';
-import { flashesPerSecond, MAX_FLASHES_PER_SECOND, type Sample } from '../scripts/flashing';
 
 /**
  * Plays every booth and attraction for a few seconds in its sandboxed frame,
  * and fails on anything a square shouldn't do: console errors, uncaught
- * exceptions, requests anywhere but the site itself, never opening, frames
- * slower than the budget, or flashing more than three times a second. Saves a screenshot of each, and of the map, to
+ * exceptions, requests anywhere but the site itself, never opening, or frames
+ * slower than the budget. Saves a screenshot of each, and of the map, to
  * screenshots/ for the pull request's preview comment.
  */
 
@@ -40,43 +40,6 @@ const squares = (['booth', 'attraction'] as const).flatMap((kind) => {
 const frameOf = (page: Page, kind: string, id: string) =>
   page.locator(`iframe[data-kind="${kind}"][data-id="${id}"]`);
 
-/**
- * Watches the page's canvas for `ms` milliseconds, every frame, and returns
- * the relative luminance of each quarter of it, for the flashing check.
- */
-function sampleLuminance(page: Page, ms: number): Promise<Sample[]> {
-  return page.evaluate(
-    (ms) =>
-      new Promise<Sample[]>((resolve) => {
-        const canvas = document.querySelector('canvas')!;
-        const small = document.createElement('canvas');
-        small.width = small.height = 16;
-        const ctx = small.getContext('2d', { willReadFrequently: true })!;
-        const linear = (c: number) => {
-          const v = c / 255;
-          return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-        };
-        const samples: Sample[] = [];
-        const start = performance.now();
-        const frame = (now: number) => {
-          ctx.drawImage(canvas, 0, 0, 16, 16);
-          const { data } = ctx.getImageData(0, 0, 16, 16);
-          const regions = [0, 0, 0, 0];
-          for (let i = 0; i < 256; i++) {
-            const [r, g, b] = [data[i * 4], data[i * 4 + 1], data[i * 4 + 2]];
-            const quarter = (i >> 4 < 8 ? 0 : 2) + ((i & 15) < 8 ? 0 : 1);
-            regions[quarter] += (0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)) / 64;
-          }
-          samples.push({ time: now - start, regions });
-          if (now - start < ms) requestAnimationFrame(frame);
-          else resolve(samples);
-        };
-        requestAnimationFrame(frame);
-      }),
-    ms,
-  );
-}
-
 /** Collects what the page and every frame in it did wrong. */
 function watch(page: Page) {
   const problems: string[] = [];
@@ -101,11 +64,8 @@ for (const { kind, id } of squares) {
     await page.goto(`#/${kind}/${id}`);
     const frame = frameOf(page, kind, id);
     await expect(frame).toHaveAttribute('data-state', 'ready', { timeout: 5000 });
-    const samples = await sampleLuminance(page, PLAY_MS);
+    await page.waitForTimeout(PLAY_MS);
     await expect(frame).toHaveAttribute('data-state', 'ready');
-    expect(flashesPerSecond(samples), 'it flashes too often').toBeLessThanOrEqual(
-      MAX_FLASHES_PER_SECOND,
-    );
     // The slowest frame after warming up, not just the last one.
     const slowest = Number(await frame.getAttribute('data-slowest-draw-ms'));
     expect(slowest, 'a frame took too long to draw').toBeLessThanOrEqual(FRAME_BUDGET_MS);
@@ -281,7 +241,8 @@ test('clicking an open plot opens the form to claim a booth', async ({ page, con
   const [x, y, zoom] = (await canvas.getAttribute('data-camera'))!.split(',').map(Number);
   const sign = toScreen({ x: open.x + (open.w - 1) / 2, y: open.y + (open.h - 1) / 2 });
   const box = (await canvas.boundingBox())!;
-  const at = worldToScreen({ x: sign.x, y: sign.y - 52 }, box.width, box.height, { x, y }, zoom);
+  const board = { x: sign.x, y: sign.y - CLAIM_SIGN.post - CLAIM_SIGN.h / 2 };
+  const at = worldToScreen(board, box.width, box.height, { x, y }, zoom);
   const form = context.waitForEvent('page');
   await canvas.click({ position: at });
   expect((await form).url()).toBe(CLAIM_URL);
@@ -311,9 +272,79 @@ test('the map shows the island, its HUD, and draws within budget while the playe
   expect(problems).toEqual([]);
 });
 
-test("the Booths panel walks the player to a booth's door", async ({ page }) => {
+test("shift-clicking a name in the Booths panel walks the player to a booth's door", async ({
+  page,
+}) => {
+  await page.goto('#/');
+  const canvas = page.locator('.map-canvas');
+  await page
+    .locator('.hud-list button[data-kind="booth"][data-id="jedi4ever"]')
+    .click({ modifiers: ['Shift'] });
+  await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 20_000 });
+});
+
+test('the Booths panel and Featured jump straight to their square', async ({ page }) => {
+  const problems = watch(page);
   await page.goto('#/');
   const canvas = page.locator('.map-canvas');
   await page.locator('.hud-list button[data-kind="booth"][data-id="jedi4ever"]').click();
-  await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 20_000 });
+  await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 1000 });
+  const featured = page.locator('.hud-featured button[data-kind]');
+  await expect(featured).toContainText('Featured');
+  await featured.click();
+  const id = await featured.getAttribute('data-id');
+  await expect(canvas).toHaveAttribute('data-near', `attraction:${id}`, { timeout: 1000 });
+  expect(problems).toEqual([]);
 });
+
+test('Claim a plot walks the player to an open plot, where E opens the form', async ({
+  page,
+  context,
+}) => {
+  await context.route('https://github.com/**', (route) => route.fulfill({ body: 'claim form' }));
+  await page.goto('#/');
+  const canvas = page.locator('.map-canvas');
+  await page.getByRole('button', { name: 'Claim a plot' }).click();
+  await expect(canvas).toHaveAttribute('data-near', /^open:/, { timeout: 20_000 });
+  await expect(page.locator('.map-prompt')).toHaveText('Press E to claim this plot');
+  const form = context.waitForEvent('page');
+  await page.keyboard.press('e');
+  expect((await form).url()).toBe(CLAIM_URL);
+});
+
+test('the screen-reader guide shows itself when a link in it has keyboard focus', async ({
+  page,
+}) => {
+  await page.goto('#/');
+  const guide = page.locator('.map > .visually-hidden');
+  expect((await guide.boundingBox())!.width).toBeLessThanOrEqual(1);
+  await page.locator('.map > .visually-hidden a').first().focus();
+  expect((await guide.boundingBox())!.width).toBeGreaterThan(100);
+  await expect(page.getByRole('link', { name: 'claim your own' })).toBeInViewport();
+});
+
+for (const viewport of [
+  { width: 1400, height: 900 },
+  { width: 390, height: 844 },
+]) {
+  test(`the map fits a ${viewport.width} by ${viewport.height} window with no scrolling`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto('#/');
+    await expect(page.locator('.map-canvas')).toHaveAttribute('data-camera', /./);
+    const page_ = await page.evaluate(() => ({
+      width: document.documentElement.scrollWidth,
+      height: document.documentElement.scrollHeight,
+      banner: document.querySelector('.banner')!.getBoundingClientRect().height,
+      frame: document.querySelector('.map-frame')!.getBoundingClientRect().height,
+    }));
+    expect(page_.width).toBeLessThanOrEqual(viewport.width);
+    expect(page_.height).toBeLessThanOrEqual(viewport.height);
+    expect(page_.banner).toBeLessThanOrEqual(48);
+    expect(page_.frame).toBeGreaterThanOrEqual(viewport.height - 48);
+    // No emoji in the HUD.
+    const hud = await page.locator('.map-frame').innerText();
+    expect(hud).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+}

@@ -151,6 +151,11 @@ Some of the rules live in the repository's settings, not its code:
   outside contributors, not only first-time ones, and the workflow token is
   read-only by default.
 
+Booth changes that pass every check merge on their own, through the auto-merge
+gate. Anything in doubt gets the `needs-human` label and waits for a
+maintainer, and a daily digest issue lists everything that merged on its own.
+[How your request is built](docs/how-it-works.md) explains each step.
+
 Booth requests are assessed before the factory builds them: see
 `plugins/north-pole/skills/assess-booth-request/`. Only maintainers can start or steer the
 factory directly: the `tessl.json` triggers that start or steer work (adding

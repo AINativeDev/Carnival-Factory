@@ -107,6 +107,16 @@ builds it (it adds `tessl`), asks a question (`needs-info`) or declines it
 (`declined`). The latest request wins: accepting one closes the author's older
 open requests as superseded. Keep its rules in step with this file.
 
+**Booth changes can merge on their own.** `.github/workflows/auto-merge-booths.yml`
+runs the gate in `scripts/booth-gate.ts`. It merges a factory pull request for
+one booth only when: the request was accepted; only `booths/<owner>/` changes;
+the static code check (`scripts/square-code.ts`) and the hidden-text check
+(`scripts/injection-scan.ts`) pass; CI, the smoke test and the flashing check
+pass; Tessl Code Review approves; and `assess-booth-risk` says `low-risk`.
+Anything else waits, or gets `needs-human`. Write booths that pass these: plain
+drawing code, no tricks. [How your request is built](docs/how-it-works.md)
+explains the whole loop to participants.
+
 **A booth is a folder** with:
 
 1. `booth.ts`, whose default export is a `NorthPoleSquare` from
