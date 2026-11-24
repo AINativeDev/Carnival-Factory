@@ -90,6 +90,22 @@
         ]
       }
     },
+    "assess-badge-request": {
+      "tags": [
+        "Ticket to PR"
+      ],
+      "agent": "claude",
+      "model": "claude-sonnet-5-5",
+      "skill": "file:plugins/north-pole#assess-badge-request",
+      "concurrency": {
+        "keys": [
+          {
+            "key": "assess-badge-request:github-issue:{{ inputs.GITHUB_ISSUE_NUMBER }}",
+            "limit": 1
+          }
+        ]
+      }
+    },
     "assess-booth-risk": {
       "tags": [
         "Ticket to PR"
@@ -454,6 +470,25 @@
       },
       "action": {
         "use": "assess-booth-request",
+        "inputs": {
+          "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
+        }
+      }
+    },
+    "assess-badge-request-opened": {
+      "on": [
+        "github:issues.opened"
+      ],
+      "when": {
+        "event.issue.labels.*.name": {
+          "any": {
+            "equals": "badge-request"
+          }
+        },
+        "event.sender.type": "User"
+      },
+      "action": {
+        "use": "assess-badge-request",
         "inputs": {
           "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
         }

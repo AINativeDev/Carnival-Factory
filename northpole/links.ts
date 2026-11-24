@@ -6,6 +6,12 @@ export const REPO_URL = 'https://github.com/AINativeDev/Northpole-Carnival-Facto
  */
 export const BOOTH_REQUEST_URL = `${REPO_URL}/issues/new?template=01-your-booth.yml`;
 
+/**
+ * The Elf Engineer form: asks for the badge, for someone who set up a Tessl
+ * factory on a repository of their own.
+ */
+export const BADGE_REQUEST_URL = `${REPO_URL}/issues/new?template=02-elf-engineer.yml`;
+
 /** Where "claim a booth" links go: the same form, for someone without a booth. */
 export const CLAIM_URL = BOOTH_REQUEST_URL;
 
