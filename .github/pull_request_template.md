@@ -1,7 +1,7 @@
 ## What changed
 
-## Whose plot
+## Whose booth
 
-This changes `src/plots/<login>/` only.
+This changes `booths/<login>/` only.
 
 Closes #

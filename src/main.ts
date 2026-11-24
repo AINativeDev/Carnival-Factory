@@ -1,10 +1,10 @@
 import './style.css';
-import { attractionRegistry } from './attractions';
-import { CHANGE_URL, CLAIM_URL } from './northpole/links';
-import { startMap, startPreview } from './northpole/map';
-import type { NorthPolePlot } from './northpole/plot';
-import { applyTheme } from './northpole/theme';
-import { registry } from './plots';
+import { attractionRegistry } from '../northpole/attractions';
+import { CHANGE_URL, CLAIM_URL } from '../northpole/links';
+import { startMap, startPreview } from '../northpole/map';
+import type { NorthPoleSquare } from '../northpole/square';
+import { applyTheme } from '../northpole/theme';
+import { boothRegistry } from '../northpole/booths';
 
 applyTheme();
 
@@ -13,16 +13,16 @@ let stop: (() => void) | undefined;
 
 function renderGuide(
   list: Element,
-  squares: NorthPolePlot[],
+  squares: NorthPoleSquare[],
   href: string,
   by: (id: string) => string,
 ) {
   for (const square of squares) {
     const item = document.createElement('li');
     item.innerHTML = `<a><span class="name"></span> <span class="owner"></span></a>`;
-    item.querySelector('a')!.href = `#/${href}/${square.owner}`;
+    item.querySelector('a')!.href = `#/${href}/${square.id}`;
     item.querySelector('.name')!.textContent = square.name;
-    item.querySelector('.owner')!.textContent = by(square.owner);
+    item.querySelector('.id')!.textContent = by(square.id);
     list.append(item);
   }
 }
@@ -34,19 +34,19 @@ function renderMap() {
       <p class="map-help">
         Welcome to the North Pole midway. The attractions down the middle are part of the
         North Pole itself, and the booths beside them each belong to one person. Click any
-        square to see it up close. The open spots along the midway are waiting for a plot:
+        square to see it up close. The open spots along the midway are waiting for a booth:
         <a href="${CLAIM_URL}" target="_blank" rel="noopener">claim your own</a>.
       </p>
       <div class="map-frame">
-        <canvas class="map-canvas" aria-label="The North Pole map. Click an attraction or a plot to preview it."></canvas>
+        <canvas class="map-canvas" aria-label="The North Pole map. Click an attraction or a booth to preview it."></canvas>
       </div>
       <nav class="map-guide" aria-label="Attractions">
         <h2>Attractions</h2>
         <ul class="attractions"></ul>
       </nav>
-      <nav class="map-guide" aria-label="Plots">
-        <h2>Plots</h2>
-        <ul class="plots"></ul>
+      <nav class="map-guide" aria-label="Booths">
+        <h2>Booths</h2>
+        <ul class="booths"></ul>
       </nav>
     </section>`;
 
@@ -56,52 +56,52 @@ function renderMap() {
     'attraction',
     () => 'North Pole',
   );
-  renderGuide(app.querySelector('.plots')!, registry.all(), 'plot', (owner) => `@${owner}`);
+  renderGuide(app.querySelector('.booths')!, boothRegistry.all(), 'booth', (id) => `@${id}`);
 
   stop = startMap(app.querySelector('canvas')!, {
     attractions: attractionRegistry.all(),
-    plots: registry.all(),
+    booths: boothRegistry.all(),
     onOpen: (kind, id) => (location.hash = `#/${kind}/${id}`),
   });
 }
 
-function renderPlot(plot: NorthPolePlot) {
-  document.body.dataset.view = 'plot';
+function renderBooth(booth: NorthPoleSquare) {
+  document.body.dataset.view = 'booth';
   app.innerHTML = `
-    <section class="plot">
-      <div class="plot-header">
+    <section class="booth">
+      <div class="booth-header">
         <a href="#/">← Back to the map</a>
         <h1></h1>
         <p class="owner">Owned by <a target="_blank" rel="noopener"></a></p>
         <p class="description"></p>
       </div>
-      <canvas class="plot-canvas"></canvas>
-      <p class="plot-help">
+      <canvas class="booth-canvas"></canvas>
+      <p class="booth-help">
         Is this yours? <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask the factory for a change</a>.
       </p>
     </section>`;
-  app.querySelector('h1')!.textContent = plot.name;
-  app.querySelector('.description')!.textContent = plot.description;
+  app.querySelector('h1')!.textContent = booth.name;
+  app.querySelector('.description')!.textContent = booth.description;
   const owner = app.querySelector<HTMLAnchorElement>('.owner a')!;
-  owner.textContent = `@${plot.owner}`;
-  owner.href = `https://github.com/${plot.owner}`;
-  stop = startPreview(app.querySelector('canvas')!, plot);
+  owner.textContent = `@${booth.id}`;
+  owner.href = `https://github.com/${booth.id}`;
+  stop = startPreview(app.querySelector('canvas')!, booth);
 }
 
-function renderAttraction(attraction: NorthPolePlot) {
-  document.body.dataset.view = 'plot';
+function renderAttraction(attraction: NorthPoleSquare) {
+  document.body.dataset.view = 'booth';
   app.innerHTML = `
-    <section class="plot">
-      <div class="plot-header">
+    <section class="booth">
+      <div class="booth-header">
         <a href="#/">← Back to the map</a>
         <h1></h1>
         <p class="owner">An attraction of the North Pole</p>
         <p class="description"></p>
       </div>
-      <canvas class="plot-canvas"></canvas>
-      <p class="plot-help">
+      <canvas class="booth-canvas"></canvas>
+      <p class="booth-help">
         Attractions belong to the North Pole, so only its maintainers change them.
-        <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a plot of your own</a> beside it.
+        <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.
       </p>
     </section>`;
   app.querySelector('h1')!.textContent = attraction.name;
@@ -110,10 +110,10 @@ function renderAttraction(attraction: NorthPolePlot) {
 }
 
 function renderMissing(title: string, description: string) {
-  document.body.dataset.view = 'plot';
+  document.body.dataset.view = 'booth';
   app.innerHTML = `
-    <section class="plot">
-      <div class="plot-header">
+    <section class="booth">
+      <div class="booth-header">
         <a href="#/">← Back to the map</a>
         <h1></h1>
         <p class="description"></p>
@@ -127,7 +127,11 @@ function route() {
   stop?.();
   stop = undefined;
 
-  const match = location.hash.match(/^#\/(plot|attraction)\/([\w-]+)$/);
+  // Booths used to be called plots: keep links shared before the rename working.
+  const legacy = location.hash.match(/^#\/plot\/([\w-]+)$/);
+  if (legacy) return location.replace(`#/booth/${legacy[1]}`);
+
+  const match = location.hash.match(/^#\/(booth|attraction)\/([\w-]+)$/);
   if (!match) return renderMap();
   const [, kind, id] = match;
 
@@ -138,12 +142,12 @@ function route() {
     return;
   }
 
-  const plot = registry.get(id);
-  if (plot) renderPlot(plot);
+  const booth = boothRegistry.get(id);
+  if (booth) renderBooth(booth);
   else
     renderMissing(
-      'No plot yet',
-      `Nobody has built a plot for @${id} yet. Claim it with a new issue, and the factory builds it.`,
+      'No booth yet',
+      `Nobody has built a booth for @${id} yet. Claim it with a new issue, and the factory builds it.`,
     );
 }
 

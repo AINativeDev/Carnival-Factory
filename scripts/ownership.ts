@@ -1,10 +1,10 @@
 /**
- * The rule that keeps every participant inside their own plot: a pull request
- * may only change files under `src/plots/<owner>/`, where the owner is the
+ * The rule that keeps every participant inside their own booth: a pull request
+ * may only change files under `booths/<owner>/`, where the owner is the
  * person the change is for. Maintainers may change anything.
  *
  * These are plain functions so they can be tested without GitHub.
- * `check-plot-ownership.ts` fetches the pull request and calls them.
+ * `check-booth-ownership.ts` fetches the pull request and calls them.
  */
 
 /** GitHub logins that may change any file, and who merge every pull request. */
@@ -13,8 +13,8 @@ export const MAINTAINERS = ['jedi4ever'];
 /** The bots whose pull requests are for the person who wrote the linked issue. */
 export const FACTORY_BOTS = ['tessl-app[bot]'];
 
-export function plotFolder(login: string): string {
-  return `src/plots/${login.toLowerCase()}/`;
+export function boothFolder(login: string): string {
+  return `booths/${login.toLowerCase()}/`;
 }
 
 export function isMaintainer(login: string): boolean {
@@ -57,21 +57,21 @@ export interface Author {
 }
 
 /**
- * Whose plot a pull request may change. A person's own pull request is for
+ * Whose booth a pull request may change. A person's own pull request is for
  * them. The factory's pull request is for whoever wrote the issue it links to.
  * Any other bot's pull request is for nobody, and so is the factory's when no
  * person wrote the issue.
  */
-export function plotOwner(author: Author, issueAuthor: Author | undefined): string | undefined {
+export function boothOwner(author: Author, issueAuthor: Author | undefined): string | undefined {
   if (!author.isBot) return author.login.toLowerCase();
   if (isFactory(author) && issueAuthor && !issueAuthor.isBot)
     return issueAuthor.login.toLowerCase();
   return undefined;
 }
 
-/** The files a pull request touches outside its owner's plot. Empty means it may merge. */
-export function filesOutsidePlot(owner: string, files: readonly string[]): string[] {
+/** The files a pull request touches outside its owner's booth. Empty means it may merge. */
+export function filesOutsideBooth(owner: string, files: readonly string[]): string[] {
   if (isMaintainer(owner)) return [];
-  const folder = plotFolder(owner);
+  const folder = boothFolder(owner);
   return files.filter((file) => !file.startsWith(folder));
 }

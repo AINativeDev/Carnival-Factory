@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { filesOutsidePlot, linkedIssue, plotFolder, plotOwner } from './ownership';
+import { filesOutsideBooth, linkedIssue, boothFolder, boothOwner } from './ownership';
 
 const REPO = 'AINativeDev/Northpole-Carnival-Factory';
 
@@ -26,56 +26,56 @@ describe('linkedIssue', () => {
   });
 });
 
-describe('plotOwner', () => {
+describe('boothOwner', () => {
   it('gives a person their own pull request', () => {
-    expect(plotOwner({ login: 'Rudolph', isBot: false }, { login: 'comet', isBot: false })).toBe(
+    expect(boothOwner({ login: 'Rudolph', isBot: false }, { login: 'comet', isBot: false })).toBe(
       'rudolph',
     );
   });
 
   it("gives a bot's pull request to the issue's author", () => {
     expect(
-      plotOwner({ login: 'tessl-app[bot]', isBot: true }, { login: 'Comet', isBot: false }),
+      boothOwner({ login: 'tessl-app[bot]', isBot: true }, { login: 'Comet', isBot: false }),
     ).toBe('comet');
   });
 
   it("gives another bot's pull request to nobody, whoever wrote the issue", () => {
     expect(
-      plotOwner({ login: 'evil-app[bot]', isBot: true }, { login: 'jedi4ever', isBot: false }),
+      boothOwner({ login: 'evil-app[bot]', isBot: true }, { login: 'jedi4ever', isBot: false }),
     ).toBeUndefined();
   });
 
   it('gives a bot nothing without a person behind it', () => {
-    expect(plotOwner({ login: 'tessl-app[bot]', isBot: true }, undefined)).toBeUndefined();
+    expect(boothOwner({ login: 'tessl-app[bot]', isBot: true }, undefined)).toBeUndefined();
     expect(
-      plotOwner({ login: 'tessl-app[bot]', isBot: true }, { login: 'dependabot', isBot: true }),
+      boothOwner({ login: 'tessl-app[bot]', isBot: true }, { login: 'dependabot', isBot: true }),
     ).toBeUndefined();
   });
 });
 
-describe('filesOutsidePlot', () => {
-  it("allows changes inside the owner's plot", () => {
-    expect(
-      filesOutsidePlot('comet', ['src/plots/comet/plot.ts', 'src/plots/comet/README.md']),
-    ).toEqual([]);
+describe('filesOutsideBooth', () => {
+  it("allows changes inside the owner's booth", () => {
+    expect(filesOutsideBooth('comet', ['booths/comet/booth.ts', 'booths/comet/README.md'])).toEqual(
+      [],
+    );
   });
 
-  it("flags everything else, a neighbour's plot included", () => {
+  it("flags everything else, a neighbour's booth included", () => {
     expect(
-      filesOutsidePlot('comet', [
-        'src/plots/comet/plot.ts',
-        'src/plots/cupid/plot.ts',
-        'src/plots/comet-two/plot.ts',
-        'src/northpole/map.ts',
+      filesOutsideBooth('comet', [
+        'booths/comet/booth.ts',
+        'booths/cupid/booth.ts',
+        'booths/comet-two/booth.ts',
+        'northpole/map.ts',
       ]),
-    ).toEqual(['src/plots/cupid/plot.ts', 'src/plots/comet-two/plot.ts', 'src/northpole/map.ts']);
+    ).toEqual(['booths/cupid/booth.ts', 'booths/comet-two/booth.ts', 'northpole/map.ts']);
   });
 
   it('lets maintainers change anything', () => {
-    expect(filesOutsidePlot('jedi4ever', ['package.json', 'src/plots/cupid/plot.ts'])).toEqual([]);
+    expect(filesOutsideBooth('jedi4ever', ['package.json', 'booths/cupid/booth.ts'])).toEqual([]);
   });
 
   it('uses the lower-case login as the folder', () => {
-    expect(plotFolder('Comet')).toBe('src/plots/comet/');
+    expect(boothFolder('Comet')).toBe('booths/comet/');
   });
 });

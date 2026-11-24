@@ -15,5 +15,13 @@
     "noEmit": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["src", "scripts", "vite.config.ts", "eslint.config.js"]
+  "include": [
+    "src",
+    "northpole",
+    "booths",
+    "attractions",
+    "scripts",
+    "vite.config.ts",
+    "eslint.config.js"
+  ]
 }

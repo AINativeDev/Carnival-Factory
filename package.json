@@ -2,7 +2,7 @@
   "name": "carnival-christmas",
   "private": true,
   "version": "0.1.0",
-  "description": "A shared North Pole map where every workshop participant owns one plot and grows it through a software factory.",
+  "description": "A shared North Pole map where every workshop participant owns one booth and grows it through a software factory.",
   "license": "MIT",
   "type": "module",
   "engines": {

@@ -1,0 +1,39 @@
+name: Claim your booth
+description: Get your own square of the North Pole map, built by the factory.
+title: 'Claim my booth: '
+labels: [booth-claim]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Your booth is yours alone: it lives in `booths/<your GitHub login>/`,
+        and a check stops any change for you from touching anything else. An
+        agent reads this issue with nobody around to answer questions, so say
+        what you want and how you'll know it's done.
+  - type: textarea
+    id: what
+    attributes:
+      label: What should your booth show?
+      description: What people see on your square of the map. Keep it to one idea.
+      placeholder: A frozen pond with two penguins skating in circles.
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Your booth's name
+      description: Shown under your square on the map.
+      placeholder: Penguin Pond
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: A short checklist the agent can test its work against.
+      value: |
+        - [ ] My booth shows up on the map, and at `#/booth/<my login>`
+        - [ ] Every change is inside `booths/<my login>/`
+        - [ ] `npm run check` passes
+    validations:
+      required: true

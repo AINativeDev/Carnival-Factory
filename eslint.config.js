@@ -2,11 +2,11 @@ import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-const ESCAPE = 'A plot only draws on its own square, so it may not use';
+const ESCAPE = 'A booth only draws on its own square, so it may not use';
 
-// What a plot may not reach for: the network, storage, other windows and the
-// page's address. A plot draws with the canvas it is given and nothing else.
-const plotGlobals = [
+// What a booth may not reach for: the network, storage, other windows and the
+// page's address. A booth draws with the canvas it is given and nothing else.
+const squareGlobals = [
   'fetch',
   'XMLHttpRequest',
   'WebSocket',
@@ -25,15 +25,22 @@ const plotGlobals = [
   'eval',
   'Function',
   // The global object and the document lead to all of the above, as
-  // window.fetch or const w = window; w.fetch, so a plot may not touch them.
+  // window.fetch or const w = window; w.fetch, so a booth may not touch them.
   'window',
   'globalThis',
   'self',
   'frames',
   'document',
+  // Node's ways to the file system and other modules. A booth never needs them
+  // in the browser, and its tests run in Node before the preview is published.
+  'process',
+  'require',
+  'module',
+  'global',
+  'Buffer',
 ].map((name) => ({ name, message: `${ESCAPE} ${name}.` }));
 
-const plotProperties = [
+const squareProperties = [
   { object: 'navigator', property: 'sendBeacon', message: `${ESCAPE} navigator.sendBeacon.` },
   // The other ways back to the window: ctx.canvas.ownerDocument.defaultView,
   // and the Function constructor through any function's .constructor.
@@ -43,7 +50,7 @@ const plotProperties = [
   })),
 ];
 
-// A file depth folders below src/plots/<login>/ or src/attractions/<id>/
+// A file depth folders below booths/<login>/ or attractions/<id>/
 // imports from the map, which is depth + 2 folders up, or from its own folder,
 // never above it. A test beside it may import vitest too.
 function importRule(depth, test = false) {
@@ -56,19 +63,19 @@ function importRule(depth, test = false) {
         {
           regex: `^(?!${map}|${own}${test ? '|vitest$' : ''})`,
           message:
-            'A plot imports only from src/northpole/ and from its own folder, so it adds no dependencies.',
+            'A booth imports only from northpole/ and from its own folder, so it adds no dependencies.',
         },
       ],
     },
   ];
 }
 
-// Helpers may sit in folders inside a plot, up to this deep. Deeper files keep
+// Helpers may sit in folders inside a booth, up to this deep. Deeper files keep
 // the rule for depth 0, so they can import only from beside themselves.
 const NESTED_DEPTH = 4;
 
 // The folders whose squares draw on the map, one folder each.
-const PLOT_FOLDERS = ['src/plots', 'src/attractions'];
+const SQUARE_FOLDERS = ['booths', 'attractions'];
 
 export default tseslint.config(
   {
@@ -95,15 +102,15 @@ export default tseslint.config(
     },
   },
   {
-    // The house rules for every person's plot, src/plots/<login>/, and for
-    // the North Pole's own attractions, src/attractions/<id>/.
-    files: PLOT_FOLDERS.map((folder) => `${folder}/*/**`),
+    // The house rules for every person's booth, booths/<login>/, and for
+    // the North Pole's own attractions, attractions/<id>/.
+    files: SQUARE_FOLDERS.map((folder) => `${folder}/*/**`),
     rules: {
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
-      'no-restricted-globals': ['error', ...plotGlobals],
-      'no-restricted-properties': ['error', ...plotProperties],
+      'no-restricted-globals': ['error', ...squareGlobals],
+      'no-restricted-properties': ['error', ...squareProperties],
       'no-restricted-imports': importRule(0),
       'no-restricted-syntax': [
         'error',
@@ -120,11 +127,11 @@ export default tseslint.config(
     },
   },
   ...Array.from({ length: NESTED_DEPTH }, (_, index) => ({
-    files: PLOT_FOLDERS.map((folder) => `${folder}/*/${'*/'.repeat(index + 1)}*`),
+    files: SQUARE_FOLDERS.map((folder) => `${folder}/*/${'*/'.repeat(index + 1)}*`),
     rules: { 'no-restricted-imports': importRule(index + 1) },
   })),
   ...Array.from({ length: NESTED_DEPTH + 1 }, (_, depth) => ({
-    files: PLOT_FOLDERS.map((folder) => `${folder}/*/${'*/'.repeat(depth)}*.test.ts`),
+    files: SQUARE_FOLDERS.map((folder) => `${folder}/*/${'*/'.repeat(depth)}*.test.ts`),
     rules: { 'no-restricted-imports': importRule(depth, true) },
   })),
 );

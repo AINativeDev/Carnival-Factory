@@ -1,0 +1,30 @@
+name: Change your booth
+description: Ask the factory for a change to a booth you already own.
+title: 'Change my booth: '
+labels: [booth-change]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        You can only change your own booth, `booths/<your GitHub login>/`. A
+        change for anyone else's booth, or for the map itself, fails the booth
+        ownership check.
+  - type: textarea
+    id: what
+    attributes:
+      label: What should change?
+      description: What people would see on your booth once it's done.
+      placeholder: Make the penguins wave when the mouse is over them.
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: A short checklist the agent can test its work against.
+      value: |
+        - [ ]
+        - [ ] Every change is inside `booths/<my login>/`
+        - [ ] `npm run check` passes
+    validations:
+      required: true
