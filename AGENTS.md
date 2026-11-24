@@ -43,7 +43,10 @@ northpole/                  the map itself
   world.ts                  the isometric world: its tiles, where each square's plot
                             is, walking and pathfinding (plain functions)
   plots.json                the maintainers' pins: which plot each square keeps
-  render.ts                 drawing the world: ground, cabins, forest, stalls, people
+  camera.ts                 framing the island: its outline, the zoom and where the
+                            camera looks on a laptop and a phone (plain functions)
+  render.ts                 drawing the diorama: sky, island, fence and lights, cabins,
+                            tents, the ferris wheel, stalls, pavilions, people
   map.ts                    the walkable map (camera, keys, clicks) and a single
                             square's preview
   sandbox.ts                the map's side of the sandbox: one frame per square

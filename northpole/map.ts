@@ -1,16 +1,36 @@
 import { CLAIM_URL } from './links';
 import pinned from './plots.json';
 import {
+  duskAt,
+  frameCentre,
+  framing,
+  islandBounds,
+  islandCorners,
+  isPhone,
+  screenToWorld,
+  SLAB,
+  type Framing,
+} from './camera';
+import {
   drawAurora,
-  drawGround,
+  drawClouds,
+  drawFrontFence,
+  drawIsland,
+  drawLightPools,
+  drawMountains,
   drawPerson,
   drawPlot,
   drawPlotGlow,
   drawReindeer,
+  drawRipples,
+  drawSky,
   drawSnowfall,
+  drawStringLights,
   drawThing,
   middle,
+  setSpriteResolution,
   type Look,
+  type Mapping,
 } from './render';
 import type { NorthPoleSquare } from './square';
 import { canvasFont, theme } from './theme';
@@ -21,8 +41,6 @@ import {
   plotAtDoor,
   screenDirection,
   strollAt,
-  TILE_H,
-  TILE_W,
   tileOf,
   toScreen,
   toTile,
@@ -94,8 +112,14 @@ const SPEED = 4.5;
 /** How long a square the map opens on glows, in milliseconds, and how long it takes to fade. */
 const HIGHLIGHT_TIME = 6000;
 const HIGHLIGHT_FADE = 1500;
-/** How far above the player the camera looks, in pixels, so more of what's ahead shows. */
+/** How far above the player the camera looks, in world pixels, so more of what's ahead shows. */
 const LOOK_UP = 40;
+/** How long the player stands still before the camera eases back out to the whole island, in milliseconds. */
+const SETTLE = 2500;
+/** Frames the map draws before it starts timing them, while the page warms up. */
+const WARM_UP_FRAMES = 30;
+/** The widest or tallest the island's cached layers get, in device pixels. */
+const LAYER_MAX = 4096;
 
 const KEYS: Record<string, [number, number]> = {
   arrowup: [0, -1],
@@ -134,19 +158,37 @@ function claim() {
   link.click();
 }
 
+/** What the page can ask of a running map. */
+export interface MapControls {
+  /** Stops it all. */
+  stop(): void;
+  /** Walks the player to a square's door. */
+  walkTo(kind: SquareKind, id: string): void;
+  /** On a phone, shows the whole island or goes back to following the player. Returns whether it shows the whole island. */
+  toggleOverview(): boolean;
+}
+
+/** A canvas of its own, to draw a layer on once. */
+function layer(width: number, height: number) {
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.ceil(width));
+  canvas.height = Math.max(1, Math.ceil(height));
+  return { canvas, ctx: canvas.getContext('2d')! };
+}
+
 /**
- * Draws the North Pole as an isometric world on `canvas`, which fills `frame`,
- * and lets the player walk round it with WASD, the arrow keys, or by clicking
- * or tapping the ground. Standing at a booth or an attraction, or at an open
- * plot, `prompt` offers to open it, as do E, Enter and a click on it. Returns
- * a function that stops it all.
+ * Draws the North Pole as a diorama on `canvas`, which fills `frame`: the whole
+ * carnival on one fenced, lit snow island under a mountain-and-aurora sky. It
+ * lets the player walk round it with WASD, the arrow keys, or by clicking or
+ * tapping the ground. Standing at a booth or an attraction, or at an open plot,
+ * `prompt` offers to open it, as do E, Enter and a click on it.
  */
 export function startMap(
   frame: HTMLElement,
   canvas: HTMLCanvasElement,
   prompt: HTMLButtonElement,
   options: MapOptions,
-): () => void {
+): MapControls {
   const ctx = canvas.getContext('2d')!;
   const scratch = document.createElement('canvas');
   const byId = {
@@ -164,25 +206,80 @@ export function startMap(
     ? world.plots.find((plot) => plot.kind === options.focus!.kind && plot.id === options.focus!.id)
     : undefined;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const island = islandCorners(world);
+  const bounds = islandBounds(world);
 
   let player: Tile = focused ? { ...focused.door } : (remembered ?? { ...world.start });
   let path: Tile[] = [];
   let facing = 1;
   let moving = false;
   let camera: Tile | undefined;
+  let zoom = 0;
+  /** How far the camera has come in for the walk, from 0 to 1, and when the player last moved. */
+  let walking = 0;
+  let movedAt = -Infinity;
+  let overview = false;
   let near: Plot | undefined;
   let scale = 1;
   let last: number | undefined;
   let focusedAt: number | undefined;
   let frameId = 0;
-  /** What can be clicked this frame, back to front: each plot's panel or sign. */
+  let frames = 0;
+  let slowest = 0;
+  const recent: number[] = [];
+  /** What can be clicked this frame, back to front: each plot's structure or sign. */
   let targets: { plot: Plot; box: Box }[] = [];
   const held = new Set<string>();
 
+  // The static layers: the sky and the mountains at the screen's size, and the
+  // island and its front fence at the resolution the camera comes nearest at.
+  let sky = layer(1, 1);
+  let mountains = layer(1, 1);
+  let ground = layer(1, 1);
+  let front = layer(1, 1);
+  const groundBox: Box = {
+    x: island.left.x - 8,
+    y: island.top.y - 40,
+    w: island.right.x - island.left.x + 16,
+    h: island.bottom.y + SLAB + 80 - (island.top.y - 40),
+  };
+
+  const want = (): Framing =>
+    framing(world, frame.clientWidth, frame.clientHeight, player, walking, overview);
+
   const resize = () => {
     scale = Math.min(2, window.devicePixelRatio || 1);
-    canvas.width = Math.round(frame.clientWidth * scale);
-    canvas.height = Math.round(frame.clientHeight * scale);
+    const width = frame.clientWidth;
+    const height = frame.clientHeight;
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
+    sky = layer(canvas.width, canvas.height);
+    sky.ctx.scale(scale, scale);
+    drawSky(sky.ctx, width, height);
+    mountains = layer(canvas.width, canvas.height);
+    mountains.ctx.scale(scale, scale);
+    drawMountains(mountains.ctx, width, height);
+    // The nearest the camera comes, walking on a laptop or following on a phone.
+    const nearest = framing(world, width, height, player, 1, false).zoom;
+    const resolution = Math.min(nearest * scale, LAYER_MAX / groundBox.w, LAYER_MAX / groundBox.h);
+    for (const [n, draw] of [
+      () => drawIsland(ground.ctx, world, island, SLAB),
+      () => drawFrontFence(front.ctx, island),
+    ].entries()) {
+      const made = layer(groundBox.w * resolution, groundBox.h * resolution);
+      made.ctx.setTransform(
+        resolution,
+        0,
+        0,
+        resolution,
+        -groundBox.x * resolution,
+        -groundBox.y * resolution,
+      );
+      if (n) front = made;
+      else ground = made;
+      draw();
+    }
+    setSpriteResolution(nearest * scale);
   };
 
   const open = (plot: Plot) => {
@@ -227,7 +324,15 @@ export function startMap(
     near = plotAtDoor(world, player);
   };
 
+  /** Where the camera's centre goes for a framing, at a zoom. */
+  const centreFor = (wanted: Framing, at: number) =>
+    frameCentre(bounds, frame.clientWidth, frame.clientHeight, at, {
+      x: wanted.target.x,
+      y: wanted.target.y - LOOK_UP,
+    });
+
   const render = (time: number) => {
+    const started = performance.now();
     const dt = last === undefined ? 0 : Math.min(0.1, (time - last) / 1000);
     last = time;
     // Decoration stands still for anyone who'd rather nothing moved.
@@ -238,49 +343,78 @@ export function startMap(
 
     const width = frame.clientWidth;
     const height = frame.clientHeight;
-    const target = toScreen(player);
-    target.y -= LOOK_UP;
-    if (!camera || still) camera = target;
-    else {
-      const ease = Math.min(1, dt * 6);
+    // The camera comes in a little while the player walks, and eases back out once they stop.
+    if (moving) movedAt = time;
+    walking = moving
+      ? Math.min(1, walking + dt * 1.2)
+      : time - movedAt > SETTLE
+        ? Math.max(0, walking - dt * 0.5)
+        : walking;
+    const wanted = want();
+    if (!camera || still) {
+      zoom = wanted.zoom;
+      // On a phone the camera opens on the town square, then finds the player.
+      camera =
+        isPhone(width) && !still
+          ? centreFor({ ...wanted, target: toScreen({ x: 0, y: 0 }) }, zoom)
+          : centreFor(wanted, zoom);
+    } else {
+      const ease = Math.min(1, dt * 4);
+      zoom += (wanted.zoom - zoom) * ease;
+      const goal = centreFor(wanted, zoom);
       camera = {
-        x: camera.x + (target.x - camera.x) * ease,
-        y: camera.y + (target.y - camera.y) * ease,
+        x: camera.x + (goal.x - camera.x) * ease,
+        y: camera.y + (goal.y - camera.y) * ease,
       };
     }
-    const view = { x: camera.x - width / 2, y: camera.y - height / 2, w: width, h: height };
+    const view = {
+      x: camera.x - width / 2 / zoom,
+      y: camera.y - height / 2 / zoom,
+      w: width / zoom,
+      h: height / zoom,
+    };
+    const placed = `${Math.round(camera.x)},${Math.round(camera.y)},${zoom.toFixed(4)}`;
+    if (canvas.dataset.camera !== placed) canvas.dataset.camera = placed;
 
+    // The sky, the northern lights, the clouds and the mountains, and the dusk deepening over them.
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(sky.canvas, 0, 0);
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    drawAurora(ctx, width, motion);
+    drawClouds(ctx, width, height, motion);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(mountains.canvas, 0, 0);
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.globalAlpha = 0.3 * duskAt(motion);
     ctx.fillStyle = colors.night;
     ctx.fillRect(0, 0, width, height);
-    drawAurora(ctx, width, motion);
-    ctx.setTransform(scale, 0, 0, scale, -view.x * scale, -view.y * scale);
+    ctx.globalAlpha = 1;
 
-    // The tiles in view, with room below for things standing tall from there.
-    const reach = [
-      toTile({ x: view.x - TILE_W, y: view.y - TILE_H }),
-      toTile({ x: view.x + view.w + TILE_W, y: view.y - TILE_H }),
-      toTile({ x: view.x - TILE_W, y: view.y + view.h + 200 }),
-      toTile({ x: view.x + view.w + TILE_W, y: view.y + view.h + 200 }),
-    ];
-    const range = {
-      minX: Math.max(-world.extent, Math.floor(Math.min(...reach.map((t) => t.x)))),
-      maxX: Math.min(world.extent, Math.ceil(Math.max(...reach.map((t) => t.x)))),
-      minY: Math.max(-world.extent, Math.floor(Math.min(...reach.map((t) => t.y)))),
-      maxY: Math.min(world.extent, Math.ceil(Math.max(...reach.map((t) => t.y)))),
-    };
+    const k = scale * zoom;
+    ctx.setTransform(
+      k,
+      0,
+      0,
+      k,
+      (width / 2 - camera.x * zoom) * scale,
+      (height / 2 - camera.y * zoom) * scale,
+    );
+    ctx.drawImage(ground.canvas, groundBox.x, groundBox.y, groundBox.w, groundBox.h);
+    drawRipples(ctx, world, motion);
+    drawLightPools(ctx, world, motion);
+    drawStringLights(ctx, island, false, motion);
+
     const shown = (box: Box) => {
       const { x, y } = middle(box);
       return (
         x > view.x - 200 &&
         x < view.x + view.w + 200 &&
         y > view.y - 60 &&
-        y < view.y + view.h + 260
+        y < view.y + view.h + 320
       );
     };
-    drawGround(ctx, world, range, motion);
 
-    // Everything standing, drawn back to front so what's in front hides what's behind.
+    // Everything standing, drawn back to front by its footprint, so what's in front hides what's behind.
     const scene: { depth: number; draw: () => void }[] = [];
     const add = (depth: number, draw: () => void) => scene.push({ depth, draw });
     for (const thing of world.things) {
@@ -289,12 +423,13 @@ export function startMap(
       else add(thing.x + thing.w + thing.y + thing.h - 2, () => drawThing(ctx, thing, motion));
     }
     targets = [];
-    const paint = (square: NorthPoleSquare, x: number, y: number, size: number) => {
-      // The square draws at the screen's own resolution, so its drawing stays sharp.
+    const paint = (square: NorthPoleSquare, { origin, u, v }: Mapping) => {
+      // The square draws at the resolution its face shows at, so its drawing stays sharp,
+      // and the face's own angles map it onto the world.
+      const size = Math.max(16, Math.min(512, Math.round(Math.hypot(u.x, u.y) * k)));
       ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(1 / scale, 1 / scale);
-      drawSquare(ctx, scratch, square, 0, 0, Math.round(size * scale), time);
+      ctx.transform(u.x / size, u.y / size, v.x / size, v.y / size, origin.x, origin.y);
+      drawSquare(ctx, scratch, square, 0, 0, size, time);
       ctx.restore();
     };
     for (const plot of world.plots) {
@@ -336,34 +471,52 @@ export function startMap(
     }
     add(player.x + player.y, () => {
       drawPerson(ctx, player, PLAYER, facing, moving, time);
-      // A marker over the player's head, so they can find themselves.
+      // A marker over the player's head, so they can find themselves, bigger when the camera is far.
       const { x, y } = toScreen(player);
       const bob = still ? 0 : Math.sin(time / 300) * 3;
+      const big = Math.max(1, 0.6 / zoom);
       ctx.fillStyle = colors.gold;
       ctx.beginPath();
-      ctx.moveTo(x - 6, y - 72 + bob);
-      ctx.lineTo(x + 6, y - 72 + bob);
-      ctx.lineTo(x, y - 64 + bob);
+      ctx.moveTo(x - 6 * big, y - 72 - 10 * big + bob);
+      ctx.lineTo(x + 6 * big, y - 72 - 10 * big + bob);
+      ctx.lineTo(x, y - 72 + bob);
       ctx.fill();
     });
     scene.sort((a, b) => a.depth - b.depth);
     for (const item of scene) item.draw();
     if (focused) focusedAt ??= time;
 
+    ctx.drawImage(front.canvas, groundBox.x, groundBox.y, groundBox.w, groundBox.h);
+    drawStringLights(ctx, island, true, motion);
+
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    drawAurora(ctx, width, motion, 0.3);
     if (!still) drawSnowfall(ctx, width, height, time);
+
+    // How long the map took to draw this frame, for the smoke test's budget.
+    const spent = performance.now() - started;
+    if (++frames > WARM_UP_FRAMES) {
+      slowest = Math.max(slowest, spent);
+      recent.push(spent);
+      if (recent.length > 60) recent.shift();
+      if (frames % 15 === 0) {
+        canvas.dataset.frameMs = (recent.reduce((a, b) => a + b, 0) / recent.length).toFixed(2);
+        canvas.dataset.slowestFrameMs = slowest.toFixed(2);
+      }
+    }
     frameId = requestAnimationFrame(render);
   };
 
   /** Where a click landed, in world pixels. */
   const pointAt = (event: MouseEvent): Tile => {
     const box = canvas.getBoundingClientRect();
-    const middleOf = camera ?? toScreen(player);
-    return {
-      x: event.clientX - box.left - box.width / 2 + middleOf.x,
-      y: event.clientY - box.top - box.height / 2 + middleOf.y,
-    };
+    const centre = camera ?? toScreen(player);
+    return screenToWorld(
+      { x: event.clientX - box.left, y: event.clientY - box.top },
+      box.width,
+      box.height,
+      centre,
+      zoom || 1,
+    );
   };
 
   const plotUnder = (point: Tile) => {
@@ -380,6 +533,15 @@ export function startMap(
     return undefined;
   };
 
+  /** Walks the player to the first of `goals` they can reach. */
+  const walkToward = (goals: Tile[]) => {
+    // The walk starts by stepping to the middle of the player's own tile, so it
+    // keeps clear of whatever is beside them, the way the keys do.
+    const from = tileOf(player);
+    const way = findPathToFirst(world, from, goals);
+    if (way) path = [from, ...way];
+  };
+
   const onClick = (event: MouseEvent) => {
     const point = pointAt(event);
     const plot = plotUnder(point);
@@ -392,11 +554,7 @@ export function startMap(
         for (let dy = -ring; dy <= ring; dy++)
           if (Math.max(Math.abs(dx), Math.abs(dy)) === ring)
             goals.push({ x: tile.x + dx, y: tile.y + dy });
-    // The walk starts by stepping to the middle of the player's own tile, so it
-    // keeps clear of whatever is beside them, the way the keys do.
-    const from = tileOf(player);
-    const way = findPathToFirst(world, from, goals);
-    if (way) path = [from, ...way];
+    walkToward(goals);
   };
 
   const onPointerMove = (event: PointerEvent) => {
@@ -428,15 +586,25 @@ export function startMap(
   prompt.addEventListener('click', onPrompt);
   frameId = requestAnimationFrame(render);
 
-  return () => {
-    cancelAnimationFrame(frameId);
-    window.removeEventListener('resize', resize);
-    window.removeEventListener('keydown', onKeyDown);
-    window.removeEventListener('keyup', onKeyUp);
-    window.removeEventListener('blur', onBlur);
-    canvas.removeEventListener('click', onClick);
-    canvas.removeEventListener('pointermove', onPointerMove);
-    prompt.removeEventListener('click', onPrompt);
+  return {
+    stop() {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
+      canvas.removeEventListener('click', onClick);
+      canvas.removeEventListener('pointermove', onPointerMove);
+      prompt.removeEventListener('click', onPrompt);
+    },
+    walkTo(kind, id) {
+      const plot = world.plots.find((p) => p.kind === kind && p.id === id);
+      if (plot) walkToward([plot.door]);
+    },
+    toggleOverview() {
+      overview = !overview;
+      return overview;
+    },
   };
 }
 

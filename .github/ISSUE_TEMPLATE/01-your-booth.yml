@@ -21,19 +21,78 @@ body:
         taste check run on it. If every check passes, it merges on its own;
         otherwise a maintainer takes a look. [How your request is built](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/how-it-works.md)
         explains each step.
+  - type: markdown
+    attributes:
+      value: |
+        **Need ideas?** [Booth ideas](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/booth-ideas.md)
+        has examples to borrow from. The more you say about the scene, its
+        style and what moves, the closer the factory gets on the first try.
+        Everything below the first box is optional.
   - type: textarea
     id: what
     attributes:
       label: What should your booth show?
-      description: What people see on your booth. For a change, what should be different.
-      placeholder: A frozen pond with two penguins skating in circles.
+      description: The scene, in a few sentences. Who or what is in it, and what are they doing? For a change, what should be different.
+      placeholder: |
+        A frozen pond at dusk. Two penguins in scarves skate figure eights, and a
+        third wobbles at the edge holding a cup of cocoa. Pine trees behind, a
+        lantern on a post.
     validations:
       required: true
+  - type: dropdown
+    id: style
+    attributes:
+      label: Style
+      description: How it's drawn. All of them use the North Pole's own colours.
+      options:
+        - Cosy storybook, soft shapes and warm light
+        - Bold and flat, like a poster
+        - Papercut, layered shapes with little shadows
+        - Pixel art, chunky and retro
+        - Tiny details, like a model railway
+        - Night scene, glowing lights on dark
+        - Surprise me
+  - type: input
+    id: mood
+    attributes:
+      label: Mood
+      description: How should it feel? A few words.
+      placeholder: Cosy, a little silly, quietly busy
+  - type: textarea
+    id: motion
+    attributes:
+      label: What moves?
+      description: The animation, if any. Booths animate from time, so describe a loop that repeats every few seconds.
+      placeholder: |
+        The penguins skate a slow figure eight every 6 seconds. Steam rises
+        from the cocoa. Snow falls gently. The lantern flickers.
+  - type: textarea
+    id: details
+    attributes:
+      label: Little details
+      description: The small touches that make it yours. A sign, a pet, a joke only your friends get (keep it friendly for everyone).
+      placeholder: A tiny sign that reads "Thin ice, skate anyway". A fish peeking out of a hole in the ice.
+  - type: dropdown
+    id: colours
+    attributes:
+      label: Main colours
+      description: Pick a few from the North Pole palette.
+      multiple: true
+      options:
+        - Snow and ice
+        - Pine green
+        - Berry red
+        - Gold and glow
+        - Wood and gingerbread
+        - Cocoa brown
+        - Aurora green and violet
+        - Mint
+        - Night blue
   - type: input
     id: name
     attributes:
       label: Your booth's name
-      description: Shown on your booth's sign. Leave it empty to keep the name it has.
+      description: Shown on your booth's sign, up to about 24 characters. Leave it empty to keep the name it has.
       placeholder: Penguin Pond
   - type: textarea
     id: done
