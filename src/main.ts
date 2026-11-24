@@ -14,8 +14,10 @@ import type { NorthPoleSquare } from '../northpole/square';
 import { applyTheme } from '../northpole/theme';
 import { boothRegistry } from '../northpole/booths';
 import { deepLink, parseHash } from './route';
+import { keepUpToDate } from './updates';
 
 applyTheme();
+keepUpToDate();
 
 const app = document.querySelector<HTMLElement>('#app')!;
 let stop: (() => void) | undefined;

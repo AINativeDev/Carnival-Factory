@@ -1,7 +1,36 @@
+import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { defineConfig } from 'vitest/config';
+import { defineConfig, type Plugin } from 'vitest/config';
 
-export default defineConfig({
+/** This build's id: the commit and the time, so every build differs. */
+const BUILD_ID = (() => {
+  let commit = 'local';
+  try {
+    commit = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    // Not a git checkout: the time alone is enough.
+  }
+  return `${commit}-${Date.now().toString(36)}`;
+})();
+
+/** Writes version.json beside the page, so an open page can tell a newer build is out. */
+const versionFile: Plugin = {
+  name: 'version-file',
+  apply: 'build',
+  generateBundle() {
+    this.emitFile({
+      type: 'asset',
+      fileName: 'version.json',
+      source: JSON.stringify({ build: BUILD_ID }),
+    });
+  },
+};
+
+export default defineConfig(({ command }) => ({
+  plugins: [versionFile],
+  define: { __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev') },
   // Relative asset paths, so the build works on any fork's GitHub Pages URL.
   base: './',
   build: {
@@ -22,4 +51,4 @@ export default defineConfig({
     environment: 'node',
     include: ['{src,northpole,booths,attractions,scripts}/**/*.test.ts'],
   },
-});
+}));
