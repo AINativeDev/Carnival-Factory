@@ -71,6 +71,13 @@ starter repo for the "Build your own software factory with context" workshop.
    request is the one that counts, so a new one closes any older one you still
    have open.
 
+**Want a whole world of your own?** Open **Issues → New issue → Your level**
+for a level: a patch of the North Pole laid out how you like, with up to 8
+squares of its own, that visitors reach by sleigh from the sleigh station by
+the entrance. It lives in `levels/<your-login>/` and opens at
+`…/#/level/<your-login>`. [Level ideas](docs/level-ideas.md) helps you write
+the request.
+
 **Built a factory of your own?** Set up Tessl on a repository of yours, then
 ask for the [Elf Engineer badge](docs/elf-engineer.md) with **Issues → New
 issue → Elf Engineer badge**. Once it's granted, your booth gets an elf-hat pin

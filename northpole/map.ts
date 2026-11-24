@@ -24,6 +24,7 @@ import {
   drawMountains,
   drawPerson,
   drawPlot,
+  drawPlatform,
   drawPlotGlow,
   drawReindeer,
   drawRipples,
@@ -67,7 +68,7 @@ import {
   roomLayout,
   stepInRoom,
 } from './interior';
-import { nearestOpenPlot, nearYou, placeTag, tagText, targetAt } from './visit';
+import { nearestOpenPlot, nearYou, placeTag, platformTag, tagText, targetAt } from './visit';
 import {
   buildWorld,
   findPathToFirst,
@@ -151,10 +152,27 @@ export interface MapOptions {
   pending?: readonly PendingBooth[];
   /** The logins that were construction sites when the page last saw them: the ones with a booth now sparkle, once. */
   wereSites?: Iterable<string>;
+  /** The levels, each with a platform at the sleigh station, and whether it's closed for repairs. */
+  levels?: readonly StationEntry[];
+  /**
+   * A participant's level to walk instead of the North Pole: its laid-out
+   * world (`levelWorld` in level.ts), with its squares as `attractions`.
+   */
+  level?: { id: string; name: string; world: World; tint: string };
+  /** Takes the sleigh from a platform: to the level of `login`, or, without one, back to the North Pole. */
+  onTravel?(login: string | undefined): void;
 }
 
-/** Where the player stood when they last opened a square, so coming back puts them there. */
-let remembered: Tile | undefined;
+/** A level's platform at the sleigh station: its name, its owner, its sign's colour, and whether it's closed. */
+export interface StationEntry {
+  login: string;
+  name: string;
+  color: string;
+  closed: boolean;
+}
+
+/** Where the player stood when they last opened a square, in each world, so coming back puts them there. */
+const remembered = new Map<string, Tile>();
 
 /** How fast the player walks, in tiles a second. */
 const SPEED = 4.5;
@@ -357,12 +375,14 @@ export function startMap(
   let layout = '';
   const build = (list: readonly PendingBooth[]) => {
     pending = new Map(list.map((entry) => [entry.login, entry]));
-    const made = buildWorld(
-      options.attractions.map((square) => square.id),
-      options.booths.map((square) => square.id),
-      pinned,
-      { files: boothPlotFiles, pending: list },
-    );
+    const made =
+      options.level?.world ??
+      buildWorld(
+        options.attractions.map((square) => square.id),
+        options.booths.map((square) => square.id),
+        pinned,
+        { files: boothPlotFiles, pending: list, levels: options.levels?.map((l) => l.login) },
+      );
     const plan = made.plots.map((plot) => `${plot.kind}:${plot.id ?? ''}:${plot.number}`).join();
     if (plan === layout) return false;
     layout = plan;
@@ -371,7 +391,27 @@ export function startMap(
   };
   build(options.pending ?? []);
   const squareOf = (plot: Plot) =>
-    plot.kind === 'open' || plot.kind === 'site' ? undefined : byId[plot.kind].get(plot.id!);
+    plot.kind === 'attraction' || plot.kind === 'booth' ? byId[plot.kind].get(plot.id!) : undefined;
+  /** Which world this is, for where the player stood in it: the North Pole, or a level's owner. */
+  const place = options.level?.id ?? '';
+  const stations = new Map((options.levels ?? []).map((entry) => [entry.login, entry]));
+  /** What a sleigh platform's sign says: the level it goes to, or, inside a level, the way home. */
+  const platformLabel = (plot: Plot) => {
+    if (plot.kind === 'exit')
+      return {
+        name: 'The North Pole',
+        by: 'Sleigh home',
+        color: options.level?.tint ?? colors.gold,
+        closed: false,
+      };
+    const entry = stations.get(plot.id!);
+    return {
+      name: entry?.name ?? plot.id!,
+      by: `@${plot.id}`,
+      color: entry?.color ?? colors.gold,
+      closed: entry?.closed ?? true,
+    };
+  };
   /** What a construction site's sign says. */
   const siteLabel = (plot: Plot) => {
     const entry = pending.get(plot.id!);
@@ -415,7 +455,9 @@ export function startMap(
   let island = islandCorners(world);
   let bounds = islandBounds(world);
 
-  let player: Tile = selected ? { ...selected.door } : (remembered ?? { ...world.start });
+  let player: Tile = selected
+    ? { ...selected.door }
+    : (remembered.get(place) ?? { ...world.start });
   let path: Tile[] = [];
   let facing = 1;
   let moving = false;
@@ -524,7 +566,12 @@ export function startMap(
       const entry = pending.get(plot.id!);
       return claim(entry ? `${REPO_URL}/issues/${entry.issue}` : CLAIM_URL);
     }
-    remembered = { ...player };
+    remembered.set(place, { ...player });
+    if (plot.kind === 'exit') return options.onTravel?.(undefined);
+    if (plot.kind === 'platform') {
+      if (!platformLabel(plot).closed) options.onTravel?.(plot.id);
+      return;
+    }
     options.onOpen(plot.kind, plot.id!);
   };
 
@@ -556,7 +603,13 @@ export function startMap(
         ? 'Claim this plot'
         : plot.kind === 'site'
           ? `Being built for @${plot.id}: ${siteLabel(plot).stage}`
-          : `Visit ${squareOf(plot)?.name ?? plot.id ?? ''}`;
+          : plot.kind === 'exit'
+            ? 'Take the sleigh back to the North Pole'
+            : plot.kind === 'platform'
+              ? platformLabel(plot).closed
+                ? `${platformLabel(plot).name} is closed for repairs`
+                : `Take the sleigh to ${platformLabel(plot).name}`
+              : `Visit ${squareOf(plot)?.name ?? plot.id ?? ''}`;
     if (plot && prompt.title !== words) {
       const text = document.createElement('span');
       text.className = 'prompt-text';
@@ -668,7 +721,10 @@ export function startMap(
     }
     if (plot !== tagged) {
       tagged = plot;
-      const text = tagText(plot, squareOf(plot), siteLabel(plot).stage);
+      const text =
+        plot.kind === 'platform' || plot.kind === 'exit'
+          ? platformTag(plot.kind, platformLabel(plot))
+          : tagText(plot, squareOf(plot), siteLabel(plot).stage);
       tag.querySelector('.tag-name')!.textContent = text.name;
       tag.querySelector('.tag-owner')!.textContent = text.owner;
       tag.querySelector('.tag-line')!.textContent = text.line;
@@ -770,6 +826,12 @@ export function startMap(
     ctx.globalAlpha = 0.3 * duskAt(motion);
     ctx.fillStyle = colors.night;
     ctx.fillRect(0, 0, width, height);
+    // A level's sky takes on its theme's colour.
+    if (options.level) {
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = options.level.tint;
+      ctx.fillRect(0, 0, width, height);
+    }
     ctx.globalAlpha = 1;
 
     const k = scale * zoom;
@@ -869,7 +931,9 @@ export function startMap(
         const box =
           plot.kind === 'site'
             ? drawSite(ctx, plot, siteLabel(plot), motion, plot === near)
-            : drawPlot(ctx, plot, squareOf(plot), paint, motion, bounce, owner);
+            : plot.kind === 'platform' || plot.kind === 'exit'
+              ? drawPlatform(ctx, plot, platformLabel(plot), motion, plot === near)
+              : drawPlot(ctx, plot, squareOf(plot), paint, motion, bounce, owner);
         if (plot.kind === 'booth' && pending.has(plot.id!)) drawUpdateSign(ctx, plot);
         if (plot.kind === 'booth' && landed.has(plot.id!)) {
           // The booth that replaced its construction site sparkles once, the first time it's in view.
@@ -886,7 +950,8 @@ export function startMap(
       add(at.x + at.y, () => drawPerson(ctx, at, LOOKS[n % LOOKS.length], at.facing, !still, time));
     });
     const { pond, paddock } = world;
-    for (let n = 0; n < 3; n++) {
+    // A level may have no pond, and has no paddock.
+    for (let n = 0; n < (pond.w ? 3 : 0); n++) {
       const turn = motion / (2600 + n * 500) + n * 2.1;
       const at = {
         x: pond.x + (pond.w - 1) / 2 + Math.cos(turn) * (pond.w / 2 - 1),
@@ -896,7 +961,7 @@ export function startMap(
         drawPerson(ctx, at, LOOKS[(n + 1) % LOOKS.length], Math.sin(turn) < 0 ? 1 : -1, false, 0),
       );
     }
-    for (let n = 0; n < 3; n++) {
+    for (let n = 0; n < (paddock.w ? 3 : 0); n++) {
       const wander = motion / (6000 + n * 1300) + n * 2;
       const at = {
         x: paddock.x + ((paddock.w - 1) * (1 + Math.sin(wander))) / 2,

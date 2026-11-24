@@ -129,6 +129,29 @@ export function tagText(
 }
 
 /**
+ * The hover tag of a sleigh platform: at the station, the level it goes to and
+ * its owner; inside a level, the way back to the North Pole.
+ */
+export function platformTag(
+  kind: 'platform' | 'exit',
+  label: { name: string; by: string; closed: boolean },
+): { name: string; owner: string; line: string; hint: string } {
+  if (kind === 'exit')
+    return {
+      name: 'The sleigh home',
+      owner: '',
+      line: 'Back to the North Pole.',
+      hint: 'E or click to ride it',
+    };
+  return {
+    name: label.name,
+    owner: label.by,
+    line: label.closed ? 'Closed for repairs.' : 'A level of its own, a sleigh ride away.',
+    hint: label.closed ? '' : 'E or click to ride the sleigh there',
+  };
+}
+
+/**
  * Where a hover tag of `size` goes, in screen pixels: centred above `anchor`,
  * kept inside the viewport, and moved aside if it would cover `player`, the
  * box round the player on screen.

@@ -17,6 +17,10 @@ const attractions = import.meta.glob<NorthPoleSquare | undefined>(
   '../attractions/*/attraction.ts',
   { import: 'default' },
 );
+const levelSquares = import.meta.glob<NorthPoleSquare | undefined>(
+  '../levels/*/squares/*/square.ts',
+  { import: 'default' },
+);
 
 // A worker's postMessage, which the DOM types don't describe.
 const send = (message: object, transfer: Transferable[] = []) =>
@@ -28,7 +32,9 @@ async function load(hash: string): Promise<NorthPoleSquare> {
   const loader: Loader | undefined =
     address.kind === 'booth'
       ? booths[`../booths/${address.id}/booth.ts`]
-      : attractions[`../attractions/${address.id}/attraction.ts`];
+      : address.kind === 'level'
+        ? levelSquares[`../levels/${address.level}/squares/${address.id}/square.ts`]
+        : attractions[`../attractions/${address.id}/attraction.ts`];
   if (!loader) throw new Error(`No ${address.kind} called ${address.id}`);
   const square = await loader();
   if (!square || square.id !== address.id || typeof square.draw !== 'function') {

@@ -1,5 +1,6 @@
 /**
- * The size budget for a booth or an attraction, so no square can make the map
+ * The size budget for a booth, an attraction or a whole level (its level.ts
+ * and all its squares together), so no square can make the map
  * slow to load for everyone. Plain functions, so the budget can be tested on
  * made-up folders; `square-size.test.ts` runs it on every real one.
  */

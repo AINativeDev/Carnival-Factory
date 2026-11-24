@@ -365,6 +365,23 @@ a.hud-tessl:focus-visible {
   width: auto;
 }
 
+/* A level's own card: its name, its owner, what it is, and the way home. */
+.hud-level {
+  top: 12px;
+  right: 12px;
+  width: 260px;
+  max-width: calc(100% - 24px);
+}
+
+.hud-level h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.hud-level p {
+  margin: 4px 0;
+}
+
 .hud-group {
   margin: 8px 0 0;
   color: var(--color-slabShade);
@@ -602,6 +619,7 @@ kbd {
 .map-frame[data-visiting] .map-prompt,
 .map-frame[data-visiting] .hud-actions,
 .map-frame[data-visiting] .hud-booths,
+.map-frame[data-visiting] .hud-level,
 .map-frame[data-visiting] .hud-controls,
 .map-frame[data-factory] .hud-booths,
 .map-frame[data-factory] .hud-controls {
