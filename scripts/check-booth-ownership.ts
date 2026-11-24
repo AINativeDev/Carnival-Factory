@@ -11,6 +11,7 @@ import {
   linkedIssue,
   boothFolder,
   boothOwner,
+  escapeCommand,
   type Author,
 } from './ownership.ts';
 
@@ -33,10 +34,15 @@ async function get<T>(path: string): Promise<T> {
 
 interface User {
   login: string;
+  id: number;
   type: string;
 }
 
-const author = (user: User): Author => ({ login: user.login, isBot: user.type === 'Bot' });
+const author = (user: User): Author => ({
+  login: user.login,
+  id: user.id,
+  isBot: user.type === 'Bot',
+});
 
 const pr = await get<{ user: User; body: string | null; changed_files: number }>(`pulls/${number}`);
 
@@ -85,10 +91,12 @@ const outside = filesOutsideBooth(owner, files);
 if (outside.length > 0) {
   for (const file of outside) {
     console.log(
-      `::error file=${file},title=Outside your booth::This pull request is for @${owner}, who may only change files in ${boothFolder(owner)}`,
+      `::error file=${escapeCommand(file)},title=Outside your booth::This pull request is for @${owner.login}, who may only change files in ${boothFolder(owner.login)}`,
     );
   }
   process.exit(1);
 }
 
-console.log(`Every change is inside the booth of @${owner}, or @${owner} is a maintainer.`);
+console.log(
+  `Every change is inside the booth of @${owner.login}, or @${owner.login} is a maintainer.`,
+);
