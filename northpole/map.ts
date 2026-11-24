@@ -1,18 +1,36 @@
+import { CLAIM_URL } from './links';
+import pinned from './plots.json';
 import {
-  hash,
-  layoutMap,
-  placeScenery,
-  SIGN_WIDTH,
-  SQUARE_SIZE,
-  scrollToward,
-  slotAt,
-  type MapLayout,
-  type Point,
-  type SceneryItem,
-  type Slot,
-} from './layout';
+  drawAurora,
+  drawGround,
+  drawPerson,
+  drawPlot,
+  drawPlotGlow,
+  drawReindeer,
+  drawSnowfall,
+  drawThing,
+  middle,
+  type Look,
+} from './render';
 import type { NorthPoleSquare } from './square';
 import { canvasFont, theme } from './theme';
+import {
+  buildWorld,
+  findPathToFirst,
+  moveBy,
+  plotAtDoor,
+  screenDirection,
+  strollAt,
+  TILE_H,
+  TILE_W,
+  tileOf,
+  toScreen,
+  toTile,
+  walkAlong,
+  type Box,
+  type Plot,
+  type Tile,
+} from './world';
 
 const { colors } = theme;
 
@@ -55,368 +73,6 @@ export function drawSquare(
   }
 }
 
-/** The part of the town on screen, in town coordinates. */
-interface View {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-const inView = (view: View, x: number, y: number, room: number) =>
-  x > view.x - room &&
-  x < view.x + view.width + room &&
-  y > view.y - room &&
-  y < view.y + view.height + room;
-
-/** Strokes a path as a smooth curve through its points. */
-function tracePath(ctx: CanvasRenderingContext2D, points: readonly Point[]) {
-  ctx.beginPath();
-  ctx.moveTo(points[0].x, points[0].y);
-  for (let i = 1; i < points.length - 1; i++) {
-    const [p, q] = [points[i], points[i + 1]];
-    ctx.quadraticCurveTo(p.x, p.y, (p.x + q.x) / 2, (p.y + q.y) / 2);
-  }
-  const last = points[points.length - 1];
-  ctx.lineTo(last.x, last.y);
-}
-
-/** The frozen stream, the trodden paths with footprints in them, and the town square. */
-function drawPaths(ctx: CanvasRenderingContext2D, layout: MapLayout, time: number) {
-  ctx.save();
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  for (const path of layout.paths) {
-    tracePath(ctx, path.points);
-    if (path.kind === 'stream') {
-      ctx.strokeStyle = colors.ice;
-      ctx.lineWidth = path.width;
-      ctx.stroke();
-      // Cracks in the ice that catch the light now and then.
-      ctx.strokeStyle = colors.snow;
-      ctx.lineWidth = 2;
-      ctx.setLineDash([18, 40]);
-      ctx.lineDashOffset = -time / 200;
-      ctx.globalAlpha = 0.7;
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.globalAlpha = 1;
-      continue;
-    }
-    ctx.strokeStyle = colors.muted;
-    ctx.globalAlpha = 0.35;
-    ctx.lineWidth = path.width + 6;
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = colors.snow;
-    ctx.lineWidth = path.width;
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  drawFootprints(ctx, layout);
-
-  const { plaza } = layout;
-  ctx.fillStyle = colors.snow;
-  ctx.beginPath();
-  ctx.arc(plaza.x, plaza.y, plaza.radius, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = colors.muted;
-  ctx.globalAlpha = 0.35;
-  ctx.lineWidth = 3;
-  ctx.stroke();
-  ctx.setLineDash([4, 10]);
-  ctx.beginPath();
-  ctx.arc(plaza.x, plaza.y, plaza.radius * 0.7, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.globalAlpha = 1;
-
-  drawBridge(ctx, layout);
-}
-
-/** Footprints down the middle of each path, left and right in turn. */
-function drawFootprints(ctx: CanvasRenderingContext2D, layout: MapLayout) {
-  ctx.fillStyle = colors.muted;
-  ctx.globalAlpha = 0.3;
-  for (const path of layout.paths) {
-    if (path.kind === 'stream') continue;
-    for (let i = 1; i < path.points.length; i++) {
-      const [a, b] = [path.points[i - 1], path.points[i]];
-      const angle = Math.atan2(b.y - a.y, b.x - a.x);
-      const side = i % 2 ? 5 : -5;
-      ctx.beginPath();
-      ctx.ellipse(
-        a.x - Math.sin(angle) * side,
-        a.y + Math.cos(angle) * side,
-        4,
-        2.5,
-        angle,
-        0,
-        Math.PI * 2,
-      );
-      ctx.fill();
-    }
-  }
-  ctx.globalAlpha = 1;
-}
-
-/** A little wooden bridge where the midway crosses the stream. */
-function drawBridge(ctx: CanvasRenderingContext2D, layout: MapLayout) {
-  const { bridge } = layout;
-  const [midway] = layout.paths;
-  const deck = midway.width + 20;
-  ctx.save();
-  ctx.translate(bridge.x, bridge.y);
-  ctx.fillStyle = colors.gingerbread;
-  ctx.fillRect(-56, -deck / 2, 112, deck);
-  ctx.strokeStyle = colors.wood;
-  ctx.lineWidth = 2;
-  for (let x = -50; x <= 50; x += 10) {
-    ctx.beginPath();
-    ctx.moveTo(x, -deck / 2);
-    ctx.lineTo(x, deck / 2);
-    ctx.stroke();
-  }
-  // Rails along both sides, with snow along their tops.
-  for (const y of [-deck / 2 - 4, deck / 2 - 2]) {
-    ctx.fillStyle = colors.cocoa;
-    ctx.fillRect(-60, y, 120, 6);
-    for (const x of [-60, -20, 20, 54]) ctx.fillRect(x, y - 4, 6, 10);
-    ctx.fillStyle = colors.snow;
-    ctx.fillRect(-60, y - 2, 120, 2);
-  }
-  ctx.restore();
-}
-
-/** A snowy pine tree. */
-function drawTree(ctx: CanvasRenderingContext2D, item: SceneryItem) {
-  const scale = 0.8 + 0.5 * item.seed;
-  ctx.save();
-  ctx.translate(item.x, item.y);
-  ctx.scale(scale, scale);
-  ctx.fillStyle = colors.wood;
-  ctx.fillRect(-3, 8, 6, 10);
-  for (const [y, half, height] of [
-    [-26, 12, 18],
-    [-14, 17, 20],
-    [-2, 22, 20],
-  ]) {
-    ctx.fillStyle = colors.pineDark;
-    ctx.beginPath();
-    ctx.moveTo(0, y - height / 2);
-    ctx.lineTo(half, y + height / 2);
-    ctx.lineTo(-half, y + height / 2);
-    ctx.fill();
-    ctx.fillStyle = colors.pine;
-    ctx.beginPath();
-    ctx.moveTo(0, y - height / 2);
-    ctx.lineTo(-half, y + height / 2);
-    ctx.lineTo(-half / 3, y + height / 2);
-    ctx.fill();
-    ctx.fillStyle = colors.snow;
-    ctx.beginPath();
-    ctx.moveTo(0, y - height / 2);
-    ctx.lineTo(half * 0.45, y);
-    ctx.lineTo(-half * 0.45, y);
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
-function drawDrift(ctx: CanvasRenderingContext2D, item: SceneryItem) {
-  const width = 18 + 10 * item.seed;
-  ctx.fillStyle = colors.muted;
-  ctx.globalAlpha = 0.25;
-  ctx.beginPath();
-  ctx.ellipse(item.x, item.y + 3, width, 9, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = colors.snow;
-  ctx.beginPath();
-  ctx.ellipse(item.x, item.y, width, 8, 0, Math.PI, 0);
-  ctx.ellipse(item.x + width * 0.3, item.y, width * 0.5, 12, 0, Math.PI, 0);
-  ctx.fill();
-}
-
-/** A short run of picket fence with snow on its rails. */
-function drawFence(ctx: CanvasRenderingContext2D, item: SceneryItem) {
-  ctx.save();
-  ctx.translate(item.x, item.y);
-  ctx.rotate((item.seed - 0.5) * 0.6);
-  ctx.fillStyle = colors.wood;
-  ctx.fillRect(-30, -8, 60, 3);
-  ctx.fillRect(-30, 0, 60, 3);
-  for (let x = -28; x <= 28; x += 14) ctx.fillRect(x - 2, -14, 4, 20);
-  ctx.fillStyle = colors.snow;
-  ctx.fillRect(-30, -10, 60, 2);
-  for (let x = -28; x <= 28; x += 14) ctx.fillRect(x - 2, -16, 4, 3);
-  ctx.restore();
-}
-
-/** A lamp post whose soft glow breathes slowly. */
-function drawLamp(ctx: CanvasRenderingContext2D, item: SceneryItem, time: number) {
-  const breath = 0.75 + 0.25 * Math.sin(time / 900 + item.seed * 20);
-  ctx.fillStyle = colors.glow;
-  for (const radius of [26, 18, 11]) {
-    ctx.globalAlpha = 0.12 * breath;
-    ctx.beginPath();
-    ctx.arc(item.x, item.y - 22, radius, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = colors.night;
-  ctx.fillRect(item.x - 1.5, item.y - 20, 3, 22);
-  ctx.fillRect(item.x - 4, item.y, 8, 3);
-  ctx.fillStyle = colors.gold;
-  ctx.beginPath();
-  ctx.arc(item.x, item.y - 22, 4, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawScenery(
-  ctx: CanvasRenderingContext2D,
-  scenery: readonly SceneryItem[],
-  view: View,
-  time: number,
-) {
-  for (const item of scenery) {
-    if (!inView(view, item.x, item.y, 60)) continue;
-    if (item.kind === 'tree') drawTree(ctx, item);
-    else if (item.kind === 'drift') drawDrift(ctx, item);
-    else if (item.kind === 'fence') drawFence(ctx, item);
-    else drawLamp(ctx, item, time);
-  }
-}
-
-/** The big tree in the middle of the town square, its baubles twinkling. */
-function drawTownTree(ctx: CanvasRenderingContext2D, layout: MapLayout, time: number) {
-  const { x, y } = layout.plaza;
-  ctx.save();
-  ctx.translate(x, y - 40);
-  ctx.scale(2.6, 2.6);
-  drawTree(ctx, { kind: 'tree', x: 0, y: 0, seed: 0 });
-  const baubles = [
-    [-6, -18],
-    [5, -12],
-    [-10, -4],
-    [9, 0],
-    [-3, 6],
-    [14, 10],
-    [-15, 10],
-  ];
-  baubles.forEach(([bx, by], n) => {
-    ctx.globalAlpha = Math.sin(time / 500 + n * 1.9) > -0.2 ? 1 : 0.35;
-    ctx.fillStyle = n % 2 ? colors.gold : colors.berry;
-    ctx.beginPath();
-    ctx.arc(bx, by, 1.6, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = colors.gold;
-  ctx.beginPath();
-  ctx.arc(0, -36, 2.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-/** Snow falling gently over whatever part of the town is on screen. */
-function drawSnowfall(ctx: CanvasRenderingContext2D, view: View, time: number) {
-  ctx.fillStyle = colors.snow;
-  const flakes = Math.round((view.width * view.height) / 9000);
-  for (let n = 0; n < flakes; n++) {
-    const speed = 0.015 + 0.02 * hash(n, 20);
-    const fall = (hash(n, 21) * view.height + time * speed) % (view.height + 20);
-    const sway = Math.sin(time / 1500 + n) * 12;
-    ctx.globalAlpha = 0.5 + 0.4 * hash(n, 22);
-    ctx.beginPath();
-    ctx.arc(
-      view.x + hash(n, 23) * view.width + sway,
-      view.y + fall - 10,
-      1 + 1.5 * hash(n, 24),
-      0,
-      Math.PI * 2,
-    );
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
-
-/** An open spot: a staked-out square of fresh snow, waiting for a booth. */
-function drawOpenSpot(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.fillStyle = colors.snow;
-  ctx.fillRect(x, y, SQUARE_SIZE, SQUARE_SIZE);
-  ctx.save();
-  ctx.strokeStyle = colors.muted;
-  ctx.lineWidth = 2;
-  ctx.setLineDash([8, 6]);
-  ctx.strokeRect(x + 4, y + 4, SQUARE_SIZE - 8, SQUARE_SIZE - 8);
-  ctx.restore();
-  ctx.fillStyle = colors.muted;
-  ctx.font = canvasFont('body', 'bold');
-  ctx.textAlign = 'center';
-  ctx.fillText('+', x + SQUARE_SIZE / 2, y + SQUARE_SIZE / 2);
-}
-
-/** The sign under a square: its name, and whose it is. */
-function drawSign(ctx: CanvasRenderingContext2D, name: string, by: string, x: number, y: number) {
-  const width = SIGN_WIDTH;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  ctx.fillStyle = colors.night;
-  ctx.font = canvasFont('small', 'bold');
-  ctx.fillText(name, x + SQUARE_SIZE / 2, y + SQUARE_SIZE + 6, width);
-  ctx.fillStyle = colors.surface;
-  ctx.font = canvasFont('small');
-  ctx.fillText(by, x + SQUARE_SIZE / 2, y + SQUARE_SIZE + 22, width);
-  ctx.textBaseline = 'alphabetic';
-}
-
-/** How long a square the map opens on stays highlighted, in milliseconds. */
-const HIGHLIGHT_TIME = 6000;
-/** How long the highlight takes to fade at the end. */
-const HIGHLIGHT_FADE = 1500;
-
-/**
- * A ring of twinkling lights round the square at the origin, over a soft glow,
- * `age` milliseconds after the map opened on it. It fades out at the end.
- */
-function drawHighlight(ctx: CanvasRenderingContext2D, age: number, time: number) {
-  if (age < 0 || age > HIGHLIGHT_TIME) return;
-  const strength = Math.min(1, (HIGHLIGHT_TIME - age) / HIGHLIGHT_FADE, age / 300);
-  const half = SQUARE_SIZE / 2;
-  const reach = half + 14;
-  ctx.save();
-  ctx.globalAlpha = 0.35 * strength * (0.75 + 0.25 * Math.sin(time / 300));
-  ctx.strokeStyle = colors.glow;
-  ctx.lineJoin = 'round';
-  for (const width of [24, 14]) {
-    ctx.lineWidth = width;
-    ctx.strokeRect(-reach + 4, -reach + 4, 2 * reach - 8, 2 * reach - 8);
-  }
-  // Bulbs evenly round the square's edge, each twinkling in its own time.
-  const perSide = 8;
-  for (let n = 0; n < perSide * 4; n++) {
-    const along = ((n % perSide) / perSide) * 2 * reach - reach;
-    const side = Math.floor(n / perSide);
-    const [x, y] =
-      side === 0
-        ? [along, -reach]
-        : side === 1
-          ? [reach, along]
-          : side === 2
-            ? [-along, reach]
-            : [-reach, -along];
-    const twinkle = 0.5 + 0.5 * Math.sin(time / 180 + n * 2.3);
-    ctx.globalAlpha = strength * (0.4 + 0.6 * twinkle);
-    ctx.fillStyle = n % 3 === 0 ? colors.berry : n % 3 === 1 ? colors.gold : colors.aurora;
-    ctx.beginPath();
-    ctx.arc(x, y, 3.5 + 1.5 * twinkle, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
 export type SquareKind = 'attraction' | 'booth';
 
 export interface MapOptions {
@@ -426,184 +82,361 @@ export interface MapOptions {
   booths: readonly NorthPoleSquare[];
   /** Opens a square: `id` is a booth's owner or an attraction's id. */
   onOpen(kind: SquareKind, id: string): void;
-  /** A square to open the map on, scrolled into view and highlighted for a few seconds. */
+  /** A square to open the map on: the player starts in front of it, and it glows for a few seconds. */
   focus?: { kind: SquareKind; id: string };
 }
 
-/** How far a mouse may move while pressed and still count as a click, not a drag. */
-const DRAG = 6;
+/** Where the player stood when they last opened a square, so coming back puts them there. */
+let remembered: Tile | undefined;
+
+/** How fast the player walks, in tiles a second. */
+const SPEED = 4.5;
+/** How long a square the map opens on glows, in milliseconds, and how long it takes to fade. */
+const HIGHLIGHT_TIME = 6000;
+const HIGHLIGHT_FADE = 1500;
+/** How far above the player the camera looks, in pixels, so more of what's ahead shows. */
+const LOOK_UP = 40;
+
+const KEYS: Record<string, [number, number]> = {
+  arrowup: [0, -1],
+  w: [0, -1],
+  arrowdown: [0, 1],
+  s: [0, 1],
+  arrowleft: [-1, 0],
+  a: [-1, 0],
+  arrowright: [1, 0],
+  d: [1, 0],
+};
+
+const PLAYER: Look = { coat: colors.berry, hat: colors.pine, scale: 1.25 };
+const LOOKS: Look[] = [
+  { coat: colors.pine, hat: colors.berry, scale: 0.95 },
+  { coat: colors.violet, hat: colors.gold, scale: 1 },
+  { coat: colors.gingerbread, hat: colors.pine, scale: 0.9 },
+  { coat: colors.surface, hat: colors.berry, scale: 1.05 },
+];
+
+/** Whether a key press belongs to a text field. */
+const typing = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+
+/** Whether Enter on `target` already does something of its own, as on a link or a button. */
+const pressable = (target: EventTarget | null) =>
+  target instanceof HTMLElement && /^(BUTTON|A)$/.test(target.tagName);
+
+/** Opens the Claim your booth form in a new tab. */
+function claim() {
+  const link = document.createElement('a');
+  link.href = CLAIM_URL;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.click();
+}
 
 /**
- * Draws the town and animates it, and returns a function that stops it.
- * `frame` scrolls over `town`, which is as big as the whole town, and `canvas`
- * sticks to the frame's corner and draws only the part of the town on show,
- * so the town can be far larger than the screen. It starts centred on the town
- * square, or on `options.focus` when that names a square on the map, and
- * scrolls, swipes or drags to anywhere else.
+ * Draws the North Pole as an isometric world on `canvas`, which fills `frame`,
+ * and lets the player walk round it with WASD, the arrow keys, or by clicking
+ * or tapping the ground. Standing at a booth or an attraction, or at an open
+ * plot, `prompt` offers to open it, as do E, Enter and a click on it. Returns
+ * a function that stops it all.
  */
 export function startMap(
   frame: HTMLElement,
-  town: HTMLElement,
   canvas: HTMLCanvasElement,
+  prompt: HTMLButtonElement,
   options: MapOptions,
 ): () => void {
   const ctx = canvas.getContext('2d')!;
   const scratch = document.createElement('canvas');
-  const { attractions, booths } = options;
-  const squareAt = (slot: Slot) =>
-    slot.kind === 'attraction'
-      ? attractions[slot.index]
-      : slot.kind === 'booth'
-        ? booths[slot.index]
-        : undefined;
-  const layout = layoutMap(attractions.length, booths.length);
-  const scenery = placeScenery(layout);
-  const { bounds } = layout;
-  let frameId = 0;
-  let scale = 1;
+  const byId = {
+    attraction: new Map(options.attractions.map((square) => [square.id, square])),
+    booth: new Map(options.booths.map((square) => [square.id, square])),
+  };
+  const world = buildWorld(
+    options.attractions.map((square) => square.id),
+    options.booths.map((square) => square.id),
+    pinned,
+  );
+  const squareOf = (plot: Plot) =>
+    plot.kind === 'open' ? undefined : byId[plot.kind].get(plot.id!);
   const focused = options.focus
-    ? layout.slots.find((slot) => {
-        const square = slot.kind === options.focus!.kind ? squareAt(slot) : undefined;
-        return square?.id === options.focus!.id;
-      })
+    ? world.plots.find((plot) => plot.kind === options.focus!.kind && plot.id === options.focus!.id)
     : undefined;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  let player: Tile = focused ? { ...focused.door } : (remembered ?? { ...world.start });
+  let path: Tile[] = [];
+  let facing = 1;
+  let moving = false;
+  let camera: Tile | undefined;
+  let near: Plot | undefined;
+  let scale = 1;
+  let last: number | undefined;
   let focusedAt: number | undefined;
-
-  town.style.width = `${bounds.width}px`;
-  town.style.height = `${bounds.height}px`;
-
-  const view = (): View => ({
-    x: bounds.x + frame.scrollLeft,
-    y: bounds.y + frame.scrollTop,
-    width: frame.clientWidth,
-    height: frame.clientHeight,
-  });
+  let frameId = 0;
+  /** What can be clicked this frame, back to front: each plot's panel or sign. */
+  let targets: { plot: Plot; box: Box }[] = [];
+  const held = new Set<string>();
 
   const resize = () => {
     scale = Math.min(2, window.devicePixelRatio || 1);
-    canvas.style.width = `${frame.clientWidth}px`;
-    canvas.style.height = `${frame.clientHeight}px`;
     canvas.width = Math.round(frame.clientWidth * scale);
     canvas.height = Math.round(frame.clientHeight * scale);
   };
 
+  const open = (plot: Plot) => {
+    if (plot.kind === 'open') return claim();
+    remembered = { ...player };
+    options.onOpen(plot.kind, plot.id!);
+  };
+
+  const showPrompt = () => {
+    const square = near && squareOf(near);
+    const text = !near
+      ? ''
+      : near.kind === 'open'
+        ? 'Claim this plot for your booth (E)'
+        : `Visit ${square?.name ?? near.id} (E)`;
+    if (prompt.textContent !== text) prompt.textContent = text;
+    prompt.hidden = !near;
+    const at = `${Math.round(player.x)},${Math.round(player.y)}`;
+    if (canvas.dataset.player !== at) canvas.dataset.player = at;
+    const nearBy = near ? `${near.kind}:${near.id ?? near.number}` : '';
+    if (canvas.dataset.near !== nearBy) canvas.dataset.near = nearBy;
+  };
+
+  const walk = (dt: number) => {
+    let right = 0;
+    let down = 0;
+    for (const name of held) {
+      right += KEYS[name][0];
+      down += KEYS[name][1];
+    }
+    const direction = screenDirection(Math.sign(right), Math.sign(down));
+    const before = player;
+    if (direction.x || direction.y) {
+      path = [];
+      player = moveBy(world, player, direction.x * SPEED * dt, direction.y * SPEED * dt);
+    } else if (path.length) {
+      ({ position: player, path } = walkAlong(player, path, SPEED * dt));
+    }
+    moving = player !== before;
+    const dx = toScreen(player).x - toScreen(before).x;
+    if (Math.abs(dx) > 0.01) facing = Math.sign(dx);
+    near = plotAtDoor(world, player);
+  };
+
   const render = (time: number) => {
-    const shown = view();
-    ctx.setTransform(scale, 0, 0, scale, -shown.x * scale, -shown.y * scale);
-    ctx.fillStyle = colors.snowShade;
-    ctx.fillRect(shown.x, shown.y, shown.width, shown.height);
-    drawPaths(ctx, layout, time);
-    drawScenery(ctx, scenery, shown, time);
-    drawTownTree(ctx, layout, time);
+    const dt = last === undefined ? 0 : Math.min(0.1, (time - last) / 1000);
+    last = time;
+    // Decoration stands still for anyone who'd rather nothing moved.
+    const still = reduced.matches;
+    const motion = still ? 0 : time;
+    walk(dt);
+    showPrompt();
 
-    for (const slot of layout.slots) {
-      if (!inView(shown, slot.x, slot.y, SQUARE_SIZE)) continue;
-      const square = squareAt(slot);
-      const corner = -SQUARE_SIZE / 2;
-      ctx.save();
-      ctx.translate(slot.x, slot.y);
-      ctx.rotate(slot.angle);
-      ctx.fillStyle = colors.night;
-      ctx.globalAlpha = 0.15;
-      ctx.fillRect(corner + 5, corner + 7, SQUARE_SIZE, SQUARE_SIZE);
-      ctx.globalAlpha = 1;
-      if (square) {
-        drawSquare(ctx, scratch, square, corner, corner, SQUARE_SIZE, time);
-        const by = slot.kind === 'attraction' ? 'North Pole' : `@${square.id}`;
-        drawSign(ctx, square.name, by, corner, corner);
-      } else {
-        drawOpenSpot(ctx, corner, corner);
-        drawSign(ctx, 'Open booth', 'Claim it', corner, corner);
-      }
-      ctx.restore();
+    const width = frame.clientWidth;
+    const height = frame.clientHeight;
+    const target = toScreen(player);
+    target.y -= LOOK_UP;
+    if (!camera || still) camera = target;
+    else {
+      const ease = Math.min(1, dt * 6);
+      camera = {
+        x: camera.x + (target.x - camera.x) * ease,
+        y: camera.y + (target.y - camera.y) * ease,
+      };
     }
+    const view = { x: camera.x - width / 2, y: camera.y - height / 2, w: width, h: height };
 
-    if (focused) {
-      focusedAt ??= time;
-      ctx.save();
-      ctx.translate(focused.x, focused.y);
-      ctx.rotate(focused.angle);
-      drawHighlight(ctx, time - focusedAt, time);
-      ctx.restore();
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.fillStyle = colors.night;
+    ctx.fillRect(0, 0, width, height);
+    drawAurora(ctx, width, motion);
+    ctx.setTransform(scale, 0, 0, scale, -view.x * scale, -view.y * scale);
+
+    // The tiles in view, with room below for things standing tall from there.
+    const reach = [
+      toTile({ x: view.x - TILE_W, y: view.y - TILE_H }),
+      toTile({ x: view.x + view.w + TILE_W, y: view.y - TILE_H }),
+      toTile({ x: view.x - TILE_W, y: view.y + view.h + 200 }),
+      toTile({ x: view.x + view.w + TILE_W, y: view.y + view.h + 200 }),
+    ];
+    const range = {
+      minX: Math.max(-world.extent, Math.floor(Math.min(...reach.map((t) => t.x)))),
+      maxX: Math.min(world.extent, Math.ceil(Math.max(...reach.map((t) => t.x)))),
+      minY: Math.max(-world.extent, Math.floor(Math.min(...reach.map((t) => t.y)))),
+      maxY: Math.min(world.extent, Math.ceil(Math.max(...reach.map((t) => t.y)))),
+    };
+    const shown = (box: Box) => {
+      const { x, y } = middle(box);
+      return (
+        x > view.x - 200 &&
+        x < view.x + view.w + 200 &&
+        y > view.y - 60 &&
+        y < view.y + view.h + 260
+      );
+    };
+    drawGround(ctx, world, range, motion);
+
+    // Everything standing, drawn back to front so what's in front hides what's behind.
+    const scene: { depth: number; draw: () => void }[] = [];
+    const add = (depth: number, draw: () => void) => scene.push({ depth, draw });
+    for (const thing of world.things) {
+      if (!shown(thing)) continue;
+      if (thing.kind === 'drift') drawThing(ctx, thing, motion);
+      else add(thing.x + thing.w + thing.y + thing.h - 2, () => drawThing(ctx, thing, motion));
     }
+    targets = [];
+    const paint = (square: NorthPoleSquare, x: number, y: number, size: number) => {
+      // The square draws at the screen's own resolution, so its drawing stays sharp.
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(1 / scale, 1 / scale);
+      drawSquare(ctx, scratch, square, 0, 0, Math.round(size * scale), time);
+      ctx.restore();
+    };
+    for (const plot of world.plots) {
+      if (!shown(plot)) continue;
+      add(plot.x + plot.w + plot.y + plot.h - 2, () => {
+        const glowFor =
+          plot === focused && focusedAt !== undefined
+            ? Math.min(1, (HIGHLIGHT_TIME - (time - focusedAt)) / HIGHLIGHT_FADE)
+            : 0;
+        const strength = Math.max(plot === near ? 0.7 : 0, glowFor);
+        if (strength > 0) drawPlotGlow(ctx, plot, strength);
+        targets.push({ plot, box: drawPlot(ctx, plot, squareOf(plot), paint, motion) });
+      });
+    }
+    world.strolls.forEach((stroll, n) => {
+      const at = strollAt(stroll, still ? 0 : time);
+      add(at.x + at.y, () => drawPerson(ctx, at, LOOKS[n % LOOKS.length], at.facing, !still, time));
+    });
+    const { pond, paddock } = world;
+    for (let n = 0; n < 3; n++) {
+      const turn = motion / (2600 + n * 500) + n * 2.1;
+      const at = {
+        x: pond.x + (pond.w - 1) / 2 + Math.cos(turn) * (pond.w / 2 - 1),
+        y: pond.y + (pond.h - 1) / 2 + Math.sin(turn) * (pond.h / 2 - 0.9),
+      };
+      add(at.x + at.y, () =>
+        drawPerson(ctx, at, LOOKS[(n + 1) % LOOKS.length], Math.sin(turn) < 0 ? 1 : -1, false, 0),
+      );
+    }
+    for (let n = 0; n < 3; n++) {
+      const wander = motion / (6000 + n * 1300) + n * 2;
+      const at = {
+        x: paddock.x + ((paddock.w - 1) * (1 + Math.sin(wander))) / 2,
+        y: paddock.y + ((paddock.h - 1) * (1 + Math.sin(wander * 1.7 + n))) / 2,
+      };
+      add(at.x + at.y, () =>
+        drawReindeer(ctx, at, Math.cos(wander) >= 0 ? 1 : -1, n === 0, motion),
+      );
+    }
+    add(player.x + player.y, () => {
+      drawPerson(ctx, player, PLAYER, facing, moving, time);
+      // A marker over the player's head, so they can find themselves.
+      const { x, y } = toScreen(player);
+      const bob = still ? 0 : Math.sin(time / 300) * 3;
+      ctx.fillStyle = colors.gold;
+      ctx.beginPath();
+      ctx.moveTo(x - 6, y - 72 + bob);
+      ctx.lineTo(x + 6, y - 72 + bob);
+      ctx.lineTo(x, y - 64 + bob);
+      ctx.fill();
+    });
+    scene.sort((a, b) => a.depth - b.depth);
+    for (const item of scene) item.draw();
+    if (focused) focusedAt ??= time;
 
-    drawSnowfall(ctx, shown, time);
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    drawAurora(ctx, width, motion, 0.3);
+    if (!still) drawSnowfall(ctx, width, height, time);
     frameId = requestAnimationFrame(render);
   };
 
-  const slotUnder = (event: MouseEvent) => {
+  /** Where a click landed, in world pixels. */
+  const pointAt = (event: MouseEvent): Tile => {
     const box = canvas.getBoundingClientRect();
-    const shown = view();
-    const slot = slotAt(
-      layout,
-      event.clientX - box.left + shown.x,
-      event.clientY - box.top + shown.y,
-    );
-    return slot && slot.kind !== 'open' ? slot : undefined;
-  };
-
-  // A mouse drags the town about. Touch screens swipe it with the frame's own scrolling.
-  let press: { x: number; y: number; left: number; top: number; moved: boolean } | undefined;
-  let dragged = false;
-  const onDown = (event: PointerEvent) => {
-    if (event.pointerType !== 'mouse' || event.button !== 0) return;
-    press = {
-      x: event.clientX,
-      y: event.clientY,
-      left: frame.scrollLeft,
-      top: frame.scrollTop,
-      moved: false,
+    const middleOf = camera ?? toScreen(player);
+    return {
+      x: event.clientX - box.left - box.width / 2 + middleOf.x,
+      y: event.clientY - box.top - box.height / 2 + middleOf.y,
     };
   };
-  const onMove = (event: PointerEvent) => {
-    if (press && event.buttons & 1) {
-      const [dx, dy] = [event.clientX - press.x, event.clientY - press.y];
-      press.moved ||= Math.hypot(dx, dy) > DRAG;
-      if (press.moved) {
-        frame.scrollLeft = press.left - dx;
-        frame.scrollTop = press.top - dy;
-        canvas.style.cursor = 'grabbing';
-        return;
-      }
+
+  const plotUnder = (point: Tile) => {
+    for (let n = targets.length - 1; n >= 0; n--) {
+      const { plot, box } = targets[n];
+      if (
+        point.x >= box.x &&
+        point.x <= box.x + box.w &&
+        point.y >= box.y &&
+        point.y <= box.y + box.h
+      )
+        return plot;
     }
-    if (event.target !== canvas) return;
-    canvas.style.cursor = slotUnder(event) ? 'pointer' : 'grab';
-  };
-  const onUp = () => {
-    dragged = press?.moved ?? false;
-    press = undefined;
-  };
-  const onClick = (event: MouseEvent) => {
-    if (dragged) return void (dragged = false);
-    const slot = slotUnder(event);
-    const square = slot && squareAt(slot);
-    if (slot && square) options.onOpen(slot.kind as SquareKind, square.id);
+    return undefined;
   };
 
+  const onClick = (event: MouseEvent) => {
+    const point = pointAt(event);
+    const plot = plotUnder(point);
+    if (plot) return open(plot);
+    // Walk to the tile clicked, or the nearest one beside it you can stand on.
+    const tile = tileOf(toTile(point));
+    const goals: Tile[] = [];
+    for (let ring = 0; ring <= 2; ring++)
+      for (let dx = -ring; dx <= ring; dx++)
+        for (let dy = -ring; dy <= ring; dy++)
+          if (Math.max(Math.abs(dx), Math.abs(dy)) === ring)
+            goals.push({ x: tile.x + dx, y: tile.y + dy });
+    // The walk starts by stepping to the middle of the player's own tile, so it
+    // keeps clear of whatever is beside them, the way the keys do.
+    const from = tileOf(player);
+    const way = findPathToFirst(world, from, goals);
+    if (way) path = [from, ...way];
+  };
+
+  const onPointerMove = (event: PointerEvent) => {
+    canvas.style.cursor = plotUnder(pointAt(event)) ? 'pointer' : 'default';
+  };
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (typing(event.target) || event.metaKey || event.ctrlKey || event.altKey) return;
+    const name = event.key.toLowerCase();
+    if (name in KEYS) {
+      held.add(name);
+      event.preventDefault();
+    } else if ((name === 'e' || (name === 'enter' && !pressable(event.target))) && near) {
+      event.preventDefault();
+      open(near);
+    }
+  };
+  const onKeyUp = (event: KeyboardEvent) => held.delete(event.key.toLowerCase());
+  const onBlur = () => held.clear();
+  const onPrompt = () => near && open(near);
+
   resize();
-  // Start on the focused square, or else the town square, in the middle of the frame.
-  const start = scrollToward(
-    bounds,
-    focused ?? layout.plaza,
-    frame.clientWidth,
-    frame.clientHeight,
-  );
-  frame.scrollLeft = start.left;
-  frame.scrollTop = start.top;
   window.addEventListener('resize', resize);
-  canvas.addEventListener('pointerdown', onDown);
-  window.addEventListener('pointermove', onMove);
-  window.addEventListener('pointerup', onUp);
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('blur', onBlur);
   canvas.addEventListener('click', onClick);
+  canvas.addEventListener('pointermove', onPointerMove);
+  prompt.addEventListener('click', onPrompt);
   frameId = requestAnimationFrame(render);
 
   return () => {
     cancelAnimationFrame(frameId);
     window.removeEventListener('resize', resize);
-    canvas.removeEventListener('pointerdown', onDown);
-    window.removeEventListener('pointermove', onMove);
-    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('keyup', onKeyUp);
+    window.removeEventListener('blur', onBlur);
     canvas.removeEventListener('click', onClick);
+    canvas.removeEventListener('pointermove', onPointerMove);
+    prompt.removeEventListener('click', onPrompt);
   };
 }
 

@@ -1,0 +1,13 @@
+{
+  "attractions": {
+    "big-top": 0,
+    "cocoa-stand": 1,
+    "ferris-wheel": 2,
+    "frozen-pond": 3,
+    "gingerbread-fun-house": 4,
+    "reindeer-carousel": 5,
+    "sleigh-coaster": 6,
+    "snowball-toss": 7
+  },
+  "booths": { "jedi4ever": 0 }
+}

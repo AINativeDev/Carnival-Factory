@@ -50,17 +50,16 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
   app.innerHTML = `
     <section class="map">
       <p class="map-help">
-        Welcome to the North Pole. The attractions round the town square are part of the
-        North Pole itself, and the booths along the lanes each belong to one person. Scroll,
-        swipe or drag to wander the town, and click any square to see it up close. The open
-        spots at the end of the lanes are waiting for a booth:
-        <a href="${CLAIM_URL}" target="_blank" rel="noopener">claim your own</a>.
+        Welcome to the North Pole. Walk around with WASD or the arrow keys, or click or tap
+        where you'd like to go. The attractions round the town square are part of the North
+        Pole itself, and the stalls along the lanes each belong to one person: walk up to one
+        and press E, or click it, to see it up close. The plots marked "For claim" are waiting
+        for a booth: <a href="${CLAIM_URL}" target="_blank" rel="noopener">claim your own</a>.
       </p>
       <p class="map-note" role="status" hidden></p>
       <div class="map-frame">
-        <div class="map-town">
-          <canvas class="map-canvas" aria-label="The North Pole map. Click an attraction or a booth to preview it."></canvas>
-        </div>
+        <canvas class="map-canvas" tabindex="0" aria-label="The North Pole. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a booth or an attraction to visit it, or at an open plot to claim it."></canvas>
+        <button class="map-prompt" type="button" hidden></button>
       </div>
       <nav class="map-guide" aria-label="Attractions">
         <h2>Attractions</h2>
@@ -85,8 +84,8 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
 
   stop = startMap(
     app.querySelector('.map-frame')!,
-    app.querySelector('.map-town')!,
     app.querySelector('canvas')!,
+    app.querySelector('.map-prompt')!,
     {
       attractions: attractionRegistry.all(),
       booths: boothRegistry.all(),

@@ -50,20 +50,44 @@ a {
   text-align: center;
 }
 
-/* The frame scrolls over the whole town, and the canvas sticks to its corner. */
+/* The canvas fills the frame, and the camera follows the player round the world in it. */
 .map-frame {
+  position: relative;
   height: min(75vh, 760px);
-  overflow: auto;
   border-radius: var(--radius);
-  background: var(--color-snowShade);
-  overscroll-behavior: contain;
+  overflow: hidden;
+  background: var(--color-night);
 }
 
 .map-canvas {
-  position: sticky;
-  top: 0;
-  left: 0;
   display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: manipulation;
+}
+
+.map-canvas:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: -3px;
+}
+
+/* What you can do where you stand: visit a square, or claim a plot. */
+.map-prompt {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  border: 2px solid var(--color-gold);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: bold 16px var(--font-family);
+  cursor: pointer;
+}
+
+.map-prompt[hidden] {
+  display: none;
 }
 
 .map-guide ul {

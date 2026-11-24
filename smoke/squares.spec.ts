@@ -1,6 +1,9 @@
 import { mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
+import { CLAIM_URL } from '../northpole/links';
+import { middle } from '../northpole/render';
+import { buildWorld, toScreen, type PinnedPlots } from '../northpole/world';
 
 /**
  * Plays every booth and attraction for a few seconds in its sandboxed frame,
@@ -185,4 +188,63 @@ test("a square's page shares its deep link", async ({ page, context }) => {
   await page.getByRole('link', { name: 'See it on the map' }).click();
   await expect(page).toHaveURL(/#\/\?booth=jedi4ever$/);
   await expect(page.locator('.map-canvas')).toBeVisible();
+});
+
+const booths = squares.filter((square) => square.kind === 'booth').map((square) => square.id);
+const attractions = squares.filter((s) => s.kind === 'attraction').map((s) => s.id);
+const pinned = JSON.parse(readFileSync(join(root, 'northpole/plots.json'), 'utf8')) as PinnedPlots;
+
+test('the player walks the world with the keyboard, and it stays quiet', async ({ page }) => {
+  const problems = watch(page);
+  await page.goto('#/');
+  const canvas = page.locator('.map-canvas');
+  await expect(canvas).toHaveAttribute('data-player', '2,-2');
+  await canvas.focus();
+  for (const key of ['ArrowRight', 'd', 'ArrowDown', 's']) {
+    const before = await canvas.getAttribute('data-player');
+    await page.keyboard.down(key);
+    await page.waitForTimeout(400);
+    await page.keyboard.up(key);
+    await expect(canvas).not.toHaveAttribute('data-player', before!);
+  }
+  expect(problems).toEqual([]);
+});
+
+test('pressing E at a booth opens it, and coming back puts the player there', async ({ page }) => {
+  const problems = watch(page);
+  await page.goto('#/?booth=jedi4ever');
+  const canvas = page.locator('.map-canvas');
+  await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever');
+  await expect(page.locator('.map-prompt')).toBeVisible();
+  const at = await canvas.getAttribute('data-player');
+  await canvas.focus();
+  await page.keyboard.press('e');
+  await expect(page).toHaveURL(/#\/booth\/jedi4ever$/);
+  await page.getByRole('link', { name: '← Back to the map' }).click();
+  await expect(page.locator('.map-canvas')).toHaveAttribute('data-player', at!);
+  expect(problems).toEqual([]);
+});
+
+test('clicking an open plot opens the form to claim a booth', async ({ page, context }) => {
+  await context.route('https://github.com/**', (route) => route.fulfill({ body: 'claim form' }));
+  await page.goto('#/?booth=jedi4ever');
+  const canvas = page.locator('.map-canvas');
+  await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever');
+  await page.waitForTimeout(500);
+  // The camera centres on the player, a little above them, so the open plot
+  // next door is where the world puts it relative to them.
+  const world = buildWorld(attractions, booths, pinned);
+  const booth = world.plots.find((plot) => plot.id === 'jedi4ever')!;
+  const open = world.plots.find((plot) => plot.kind === 'open')!;
+  const player = toScreen(booth.door);
+  const sign = middle(open);
+  const box = (await canvas.boundingBox())!;
+  const form = context.waitForEvent('page');
+  await canvas.click({
+    position: {
+      x: box.width / 2 + sign.x - player.x,
+      y: box.height / 2 + sign.y - 50 - (player.y - 40),
+    },
+  });
+  expect((await form).url()).toBe(CLAIM_URL);
 });
