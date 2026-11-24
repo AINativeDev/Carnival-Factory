@@ -109,6 +109,22 @@
         ]
       }
     },
+    "assess-advent-challenge": {
+      "tags": [
+        "Ticket to PR"
+      ],
+      "agent": "claude",
+      "model": "claude-sonnet-5-5",
+      "skill": "file:plugins/north-pole#assess-advent-challenge",
+      "concurrency": {
+        "keys": [
+          {
+            "key": "assess-advent-challenge:github-issue:{{ inputs.GITHUB_ISSUE_NUMBER }}",
+            "limit": 1
+          }
+        ]
+      }
+    },
     "assess-booth-risk": {
       "tags": [
         "Ticket to PR"
@@ -522,6 +538,25 @@
       },
       "action": {
         "use": "assess-badge-request",
+        "inputs": {
+          "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
+        }
+      }
+    },
+    "assess-advent-challenge-opened": {
+      "on": [
+        "github:issues.opened"
+      ],
+      "when": {
+        "event.issue.labels.*.name": {
+          "any": {
+            "equals": "advent-done"
+          }
+        },
+        "event.sender.type": "User"
+      },
+      "action": {
+        "use": "assess-advent-challenge",
         "inputs": {
           "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
         }

@@ -531,6 +531,55 @@ kbd {
   cursor: pointer;
 }
 
+/* The advent calendar: the factory page's panel, with a door a day. */
+.advent-doors {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr));
+  gap: 8px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.advent-door {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px dashed color-mix(in srgb, var(--color-cocoa) 50%, transparent);
+  border-radius: var(--radius);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.advent-door[data-open] {
+  border: 1px solid var(--color-gold);
+}
+
+.advent-day {
+  color: var(--color-berry);
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.advent-title {
+  font-size: 14px;
+}
+
+.advent-check,
+.advent-shut {
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.advent .history-offer {
+  margin-top: 8px;
+}
+
 /* Inside a square: the map draws the room, the world's HUD steps aside, and the visit's HUD stands beside the room. */
 .map-frame[data-visiting] .map-prompt,
 .map-frame[data-visiting] .hud-actions,
@@ -555,6 +604,11 @@ kbd {
   text-align: center;
   transform: translateX(-50%);
   animation: visit-in 0.5s ease-out;
+}
+
+/* The advent calendar is wider, for its doors. */
+.advent {
+  width: min(720px, calc(100% - 24px));
 }
 
 .factory-intro,

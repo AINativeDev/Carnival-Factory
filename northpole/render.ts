@@ -5,6 +5,7 @@
  * town square's centre at (0, 0), and the map moves the camera.
  */
 import type { NorthPoleSquare, StallShape, StallStyle } from './square';
+import { adventCountFor, decorationsFor, MAX_ORNAMENTS, type AdventDecorations } from './advent';
 import { badgeFor, type BadgeTier } from './badges';
 import { alongEdge } from './camera';
 import { canvasFont, theme } from './theme';
@@ -1110,6 +1111,17 @@ function drawStall(
     const pin = onFace(face, 0.94, (signLow + STALL.wall - 2) / 2, 0.1);
     drawElfHatPin(ctx, pin.x, pin.y, (STALL.wall - 2 - signLow) * 0.42, badge.tier);
   }
+  // The owner's advent challenges, as decorations the map hangs on whatever shape the stall is.
+  const decorations = decorationsFor(adventCountFor(square.id));
+  const crown = stallReach(look.shape) + 6;
+  drawAdventDecorations(
+    ctx,
+    face,
+    plotPoint(face, deep, { along: 0.5, depth: 0.5 }),
+    crown,
+    decorations,
+    time,
+  );
   // The owner's pennant, on a pole at the front's far corner, over whatever shape the stall is.
   const top = look.shape === 'stall' ? STALL.wall + 22 : wall;
   const foot = onFace(face, 0.96, top, look.shape === 'stall' ? -0.5 : 0);
@@ -1124,7 +1136,7 @@ function drawStall(
     { x: foot.x + 1, y: foot.y - pole + 12 },
   ]);
   ctx.fill();
-  const reach = Math.max(stallReach(look.shape), top + pole);
+  const reach = Math.max(stallReach(look.shape), top + pole, crown + adventCrown(decorations));
   if (owner.you) youTag(ctx, onFace(face, 0.5, reach + 8, -0.5));
   return standing(plot, reach + (owner.you ? 22 : 0));
 }
@@ -1253,6 +1265,116 @@ function cabinRoof(
     ctx.fill();
   }
   slope(near);
+}
+
+/** How much higher than the stall its advent decorations reach: the glowing sign, then the star over it. */
+export function adventCrown(decorations: AdventDecorations): number {
+  return (decorations.sign ? ADVENT_SIGN.h + 6 : 0) + (decorations.star ? 22 : 0);
+}
+
+/** The glowing sign over a booth whose owner did all 24 challenges. */
+export const ADVENT_SIGN = { w: 76, h: 20 };
+
+/**
+ * A booth's advent decorations: ornaments hanging under its name board, a
+ * string of lights along the board's top, and over the stall, from `crown`
+ * up at `middle`, its glowing sign and its star. Each moves from `time`, slowly.
+ */
+function drawAdventDecorations(
+  ctx: CanvasRenderingContext2D,
+  face: Face,
+  middle: Tile,
+  crown: number,
+  decorations: AdventDecorations,
+  time: number,
+) {
+  const signLow = stallSignLow(face);
+  const baubles = [colors.berry, colors.gold, colors.ice, colors.violet, colors.mint, colors.snow];
+  for (let n = 0; n < decorations.ornaments; n++) {
+    const along = 0.14 + (0.72 * n) / Math.max(1, MAX_ORNAMENTS - 1);
+    const hook = onFace(face, along, signLow, 0.08);
+    const sway = Math.sin(time / 900 + n * 1.3) * 1.5;
+    const drop = 7 + (n % 2) * 3;
+    ctx.strokeStyle = colors.cocoa;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(hook.x, hook.y);
+    ctx.lineTo(hook.x + sway, hook.y + drop);
+    ctx.stroke();
+    ctx.fillStyle = baubles[n % baubles.length];
+    ctx.beginPath();
+    ctx.arc(hook.x + sway, hook.y + drop + 3, 3.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = colors.snowLit;
+    ctx.beginPath();
+    ctx.arc(hook.x + sway - 1, hook.y + drop + 2, 1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (decorations.lights) {
+    const bulbs = 11;
+    const hue = [colors.berry, colors.gold, colors.aurora, colors.ice];
+    ctx.strokeStyle = colors.pineDark;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let n = 0; n < bulbs; n++) {
+      const at = onFace(
+        face,
+        0.04 + (0.92 * n) / (bulbs - 1),
+        STALL.wall - 1 - (n % 2 ? 3 : 0),
+        0.1,
+      );
+      if (n) ctx.lineTo(at.x, at.y);
+      else ctx.moveTo(at.x, at.y);
+    }
+    ctx.stroke();
+    for (let n = 0; n < bulbs; n++) {
+      const at = onFace(
+        face,
+        0.04 + (0.92 * n) / (bulbs - 1),
+        STALL.wall - 1 - (n % 2 ? 3 : 0),
+        0.1,
+      );
+      bulb(ctx, at.x, at.y + 2, hue[n % hue.length], twinkle(time, n));
+    }
+  }
+  let lift = crown;
+  if (decorations.sign) {
+    const { w, h } = ADVENT_SIGN;
+    const y = middle.y - lift - h;
+    glow(ctx, middle.x, y + h / 2, w * 0.7, 0.8 + 0.2 * Math.sin(time / 1400));
+    ctx.fillStyle = colors.cocoa;
+    ctx.fillRect(middle.x - 1, y + h, 2, 6);
+    ctx.fillRect(middle.x - w / 2 - 2, y - 2, w + 4, h + 4);
+    ctx.fillStyle = colors.glow;
+    ctx.fillRect(middle.x - w / 2, y, w, h);
+    ctx.fillStyle = colors.ink;
+    ctx.font = canvasFont('small', 'bold');
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('24 of 24', middle.x, y + h / 2 + 1, w - 6);
+    ctx.textBaseline = 'alphabetic';
+    lift += h + 6;
+  }
+  if (decorations.star) {
+    const cx = middle.x;
+    const cy = middle.y - lift - 11;
+    glow(ctx, cx, cy, 16, 0.9);
+    ctx.fillStyle = colors.gold;
+    ctx.strokeStyle = colors.cocoa;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let k = 0; k < 10; k++) {
+      const r = k % 2 ? 4 : 10;
+      const angle = -Math.PI / 2 + (k * Math.PI) / 5;
+      const x = cx + Math.cos(angle) * r;
+      const y = cy + Math.sin(angle) * r;
+      if (k) ctx.lineTo(x, y);
+      else ctx.moveTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
 }
 
 /** The pom-pom of an Elf Engineer's hat, by tier. */

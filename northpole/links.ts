@@ -12,6 +12,12 @@ export const BOOTH_REQUEST_URL = `${REPO_URL}/issues/new?template=01-your-booth.
  */
 export const BADGE_REQUEST_URL = `${REPO_URL}/issues/new?template=02-elf-engineer.yml`;
 
+/**
+ * The Advent challenge form: marks one of the advent calendar's challenges
+ * done, with a link that shows it, so the owner's booth gets a decoration.
+ */
+export const ADVENT_REQUEST_URL = `${REPO_URL}/issues/new?template=03-advent-challenge.yml`;
+
 /** Where "claim a booth" links go: the same form, for someone without a booth. */
 export const CLAIM_URL = BOOTH_REQUEST_URL;
 

@@ -38,7 +38,8 @@ src/
   main.ts                   the router: #/ is the map, #/booth/<login> and
                             #/attraction/<id> the map with the player inside that
                             square, #/?booth=<login> or #/?attraction=<id> the map
-                            showing that square, and #/factory the factory's numbers
+                            showing that square, #/factory the factory's numbers,
+                            and #/advent the advent calendar
   route.ts                  reading the hash (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
   booths-hud.ts             the Booths panel: search, Featured, Near you, Recently added,
@@ -47,6 +48,10 @@ src/
   pending.ts                reading pending.json, the booths being built, every 2 minutes
   history.ts                the "How was this built?" panel: each square's requests and
                             pull requests, bundled from square-history.json at build time
+  advent.ts                 the advent calendar page, #/advent: its doors by date
+                            (plain functions), over the map like the factory's numbers
+  offer.ts                  the free credits offer beside "Run this on your own repo",
+                            hidden until TESSL_SIGNUP_URL and TESSL_SIGNUP_OFFER are set
   factory.ts                the factory's numbers page, #/factory: its counts and figures
                             (plain functions), over the map like a visit's panel
   style.css
@@ -83,6 +88,9 @@ northpole/                  the map itself
   pointer.ts                where the pointer is inside a square, through its
                             stall's front or the back wall inside (plain functions)
   theme.ts                  colours, fonts and sizes
+  advent.ts                 the advent calendar: its challenges, its doors by date,
+                            each owner's accepted challenges, baked in at build time,
+                            and which decorations they hang on the booth (plain functions)
   badges.ts                 the Elf Engineer badge: its holders, baked in at build
                             time, its images and its README snippet (plain functions)
   disabled.json             the maintainers' kill switch: closed booths and attractions
@@ -91,6 +99,9 @@ docs/
   style.md                  the diorama style every square follows by default
   booth-ideas.md            ideas and tips for a booth request
   elf-engineer.md           the Elf Engineer badge, and how to get it
+  advent.md                 the advent calendar of factory challenges
+challenges/
+  advent.json               the advent calendar's 24 challenges, one a day
 booths/
   jedi4ever/                a finished booth, and the pattern to copy
     booth.ts
@@ -101,7 +112,8 @@ attractions/
     attraction.test.ts
     README.md
 plugins/north-pole/         the factory's own skills: assessing booth and badge
-                            requests, and the house-rules review lens
+                            requests and advent challenges, and the house-rules
+                            review lens
 plugins/north-pole-gifts/   the gift shelf: small factory loops anyone can install
                             on their own repository, shown at the Gift shop
 scripts/
@@ -126,6 +138,11 @@ scripts/
   avatars.ts                the build-time avatars' rules (plain functions)
   download-avatars.ts       downloads every booth owner's avatar into public/avatars/
                             before the deploy's build (previews show the elf fallback)
+  advent.ts                 the advent challenges' rules: the form, the check, the
+                            record of an acceptance and the counts (plain functions)
+  check-advent.ts           checks one Advent challenge issue, for its assessment skill
+  write-advent.ts           reads the accepted advent challenges from the GitHub API
+                            and writes their counts before the deploy's build
   elf-engineer.ts           the Elf Engineer badge's rules: the form, the check,
                             the tiers and the holders (plain functions)
 ```
