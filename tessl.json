@@ -414,10 +414,7 @@
       "when": {
         "event.issue.labels.*.name": {
           "any": {
-            "in": [
-              "booth-claim",
-              "booth-change"
-            ]
+            "equals": "booth-request"
           }
         },
         "event.sender.type": "User"

@@ -1,20 +1,24 @@
-name: Claim your booth
-description: Get your own square of the North Pole map, built by the factory.
-title: 'Claim my booth: '
-labels: [booth-claim]
+name: Your booth
+description: Ask the factory to build your booth on the North Pole map, or to change it.
+title: 'My booth: '
+labels: [booth-request]
 body:
   - type: markdown
     attributes:
       value: |
         Your booth is yours alone: it lives in `booths/<your GitHub login>/`,
-        and a check stops any change for you from touching anything else. An
-        agent reads this issue with nobody around to answer questions, so say
-        what you want and how you'll know it's done.
+        and a check stops any change for you from touching anything else. If
+        you don't have a booth yet, the factory builds it; if you do, it
+        changes it. Your latest request is the one that counts: opening a new
+        one closes any older one you still have open.
+
+        An agent reads this with nobody around to answer questions, so say what
+        you want people to see and how you'll know it's done.
   - type: textarea
     id: what
     attributes:
       label: What should your booth show?
-      description: What people see on your square of the map. Keep it to one idea.
+      description: What people see on your booth. For a change, what should be different.
       placeholder: A frozen pond with two penguins skating in circles.
     validations:
       required: true
@@ -22,10 +26,8 @@ body:
     id: name
     attributes:
       label: Your booth's name
-      description: Shown under your square on the map.
+      description: Shown on your booth's sign. Leave it empty to keep the name it has.
       placeholder: Penguin Pond
-    validations:
-      required: true
   - type: textarea
     id: done
     attributes:
