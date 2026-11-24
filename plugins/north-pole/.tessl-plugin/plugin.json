@@ -1,0 +1,7 @@
+{
+  "name": "carnival-christmas-public/north-pole",
+  "version": "0.1.0",
+  "description": "Factory skills specific to the North Pole map: assess a participant's plot request before the factory builds it.",
+  "private": true,
+  "skills": ["skills/assess-plot-request"]
+}
