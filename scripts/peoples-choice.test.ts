@@ -13,6 +13,8 @@ import {
 const DISCUSSION = 'https://github.com/AINativeDev/Northpole-Carnival-Factory/discussions/7';
 const CLOSES = '2026-12-31T23:59:59Z';
 
+const OWNERS: Record<string, number> = { jedi4ever: 1, sjmaple: 2, hamzaoza: 3, pstember: 4 };
+
 const vote = (userId: number, createdAt = '2026-12-01T10:00:00Z') => ({ userId, createdAt });
 
 function comment(
@@ -23,7 +25,7 @@ function comment(
 ): RawChoiceComment {
   return {
     url: `${DISCUSSION}#discussioncomment-${login.length}`,
-    body: entryBody(category, login, undefined, undefined),
+    body: entryBody(category, login, OWNERS[login] ?? 99, undefined, undefined),
     createdAt: '2026-11-25T10:00:00Z',
     viewerDidAuthor: true,
     votes,
@@ -39,12 +41,6 @@ const input = (
   comments,
   booths: ['jedi4ever', 'sjmaple', 'hamzaoza'],
   holders: [{ login: 'pstember', repo: 'pstember/factory' }],
-  ownerIds: new Map([
-    ['jedi4ever', 1],
-    ['sjmaple', 2],
-    ['hamzaoza', 3],
-    ['pstember', 4],
-  ]),
   disabled: [],
   closes: CLOSES,
   ...more,
@@ -52,25 +48,27 @@ const input = (
 
 describe('readMarker', () => {
   it('reads whose entry a comment is', () => {
-    expect(readMarker(`hello\n${marker('booth', 'Jedi4ever')}`)).toEqual({
+    expect(readMarker(`hello\n${marker('booth', 'Jedi4ever', 1)}`)).toEqual({
       category: 'booth',
       login: 'jedi4ever',
+      ownerId: 1,
     });
-    expect(readMarker(marker('factory', 'pstember'))?.category).toBe('factory');
+    expect(readMarker(marker('factory', 'pstember', 4))?.category).toBe('factory');
     expect(readMarker('no marker here')).toBeUndefined();
+    expect(readMarker('<!-- peoples-choice:booth:jedi4ever -->')).toBeUndefined();
   });
 });
 
 describe('entryBody', () => {
   it('pings no one, and ends with its marker', () => {
-    const body = entryBody('booth', 'sjmaple', undefined, 'https://example.github.io/carnival/');
+    const body = entryBody('booth', 'sjmaple', 2, undefined, 'https://example.github.io/carnival/');
     expect(body).not.toContain('@sjmaple');
     expect(body).toContain('https://example.github.io/carnival/#/booth/sjmaple');
-    expect(readMarker(body)).toEqual({ category: 'booth', login: 'sjmaple' });
+    expect(readMarker(body)).toEqual({ category: 'booth', login: 'sjmaple', ownerId: 2 });
   });
 
   it('links a home factory to its repository', () => {
-    const body = entryBody('factory', 'pstember', 'pstember/factory', undefined);
+    const body = entryBody('factory', 'pstember', 4, 'pstember/factory', undefined);
     expect(body).toContain('https://github.com/pstember/factory');
   });
 });
@@ -124,6 +122,19 @@ describe('standings', () => {
     expect(result.factories).toEqual([
       expect.objectContaining({ login: 'pstember', votes: 1, repo: 'pstember/factory' }),
     ]);
+  });
+
+  it("leaves out the owner's vote by the id in the comment, not by whoever has the login now", () => {
+    const renamed = comment('booth', 'jedi4ever', [vote(7), vote(20)], {
+      body: entryBody('booth', 'jedi4ever', 7, undefined, undefined),
+    });
+    expect(standings(input([renamed])).booths).toEqual([
+      expect.objectContaining({ login: 'jedi4ever', votes: 1 }),
+    ]);
+    const withoutId = comment('booth', 'jedi4ever', [vote(20)], {
+      body: '<!-- peoples-choice:booth:jedi4ever -->',
+    });
+    expect(standings(input([withoutId])).booths).toEqual([]);
   });
 
   it('drops the booths the kill switch closed', () => {

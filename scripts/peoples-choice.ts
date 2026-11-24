@@ -20,16 +20,24 @@ export interface RawChoiceComment {
   votes: { createdAt: string; userId: number | null }[];
 }
 
-/** The marker on an entry's comment, saying whose entry it is. */
-export const marker = (category: ChoiceCategory, login: string) =>
-  `<!-- peoples-choice:${category}:${login.toLowerCase()} -->`;
+/**
+ * The marker on an entry's comment, saying whose entry it is: the login, and
+ * the owner's numeric user id when the comment was written, so their own vote
+ * stays out even after the login changes hands.
+ */
+export const marker = (category: ChoiceCategory, login: string, ownerId: number) =>
+  `<!-- peoples-choice:${category}:${login.toLowerCase()}:${ownerId} -->`;
 
-const MARKER = /<!-- peoples-choice:(booth|factory):([a-z0-9-]{1,39}) -->/;
+const MARKER = /<!-- peoples-choice:(booth|factory):([a-z0-9-]{1,39}):([1-9]\d{0,15}) -->/;
 
 /** Whose entry a comment is, from its marker, or undefined. */
-export function readMarker(body: string): { category: ChoiceCategory; login: string } | undefined {
+export function readMarker(
+  body: string,
+): { category: ChoiceCategory; login: string; ownerId: number } | undefined {
   const found = MARKER.exec(body);
-  return found ? { category: found[1] as ChoiceCategory, login: found[2] } : undefined;
+  return found
+    ? { category: found[1] as ChoiceCategory, login: found[2], ownerId: Number(found[3]) }
+    : undefined;
 }
 
 /**
@@ -40,6 +48,7 @@ export function readMarker(body: string): { category: ChoiceCategory; login: str
 export function entryBody(
   category: ChoiceCategory,
   login: string,
+  ownerId: number,
   repo: string | undefined,
   site: string | undefined,
 ): string {
@@ -57,7 +66,9 @@ export function entryBody(
           repo && `See it: https://github.com/${path}`,
           'Vote for this home factory with a 👍 on this comment.',
         ];
-  return [title, ...(link ? [link] : []), '', vote, '', marker(category, login)].join('\n');
+  return [title, ...(link ? [link] : []), '', vote, '', marker(category, login, ownerId)].join(
+    '\n',
+  );
 }
 
 /** The entries the discussion should have: every booth, and every Elf Engineer's factory. */
@@ -92,8 +103,6 @@ export function missingEntries(
 export interface StandingsInput extends ChoiceEntrants {
   discussion: string;
   comments: readonly RawChoiceComment[];
-  /** Each owner's numeric GitHub user id, by login in lower case, for leaving out their own vote. */
-  ownerIds: ReadonlyMap<string, number>;
   /** The kill switch's booths. */
   disabled: readonly string[];
   /** When voting closes. */
@@ -103,7 +112,7 @@ export interface StandingsInput extends ChoiceEntrants {
 /** The votes on a comment that count: one per account, not its owner's, and not after closing. */
 export function countVotes(
   votes: RawChoiceComment['votes'],
-  ownerId: number | undefined,
+  ownerId: number,
   closes: string,
 ): number {
   const end = new Date(closes).getTime();
@@ -120,7 +129,8 @@ export function countVotes(
  * The standings: every booth on the map and every Elf Engineer's factory with
  * a comment of the deploy's own, most votes first. A booth the kill switch
  * closed, or a comment anyone else wrote, is left out, and the first comment
- * for an entry is the one that counts.
+ * for an entry is the one that counts. The owner whose vote is left out is the
+ * user id in that comment's marker, never whoever has the login now.
  */
 export function standings(input: StandingsInput): PeoplesChoice {
   const off = new Set(input.disabled.map((login) => login.toLowerCase()));
@@ -136,7 +146,7 @@ export function standings(input: StandingsInput): PeoplesChoice {
     if (found.has(key)) continue;
     if (entry.category === 'booth' && (!booths.has(entry.login) || off.has(entry.login))) continue;
     if (entry.category === 'factory' && !repos.has(entry.login)) continue;
-    const votes = countVotes(comment.votes, input.ownerIds.get(entry.login), input.closes);
+    const votes = countVotes(comment.votes, entry.ownerId, input.closes);
     const repo = entry.category === 'factory' ? repos.get(entry.login) : undefined;
     found.set(key, { login: entry.login, url: comment.url, votes, ...(repo ? { repo } : {}) });
   }

@@ -39,7 +39,10 @@ async function graphql<T>(query: string, variables: Record<string, unknown>): Pr
   });
   if (!response.ok) throw new Error(`GraphQL answered HTTP ${response.status}`);
   const result = (await response.json()) as { data?: T; errors?: { message: string }[] };
-  if (!result.data) throw new Error(`GraphQL failed: ${result.errors?.[0]?.message ?? 'no data'}`);
+  // Any error, even beside some data, means the read or the write is incomplete.
+  if (!result.data || result.errors?.length) {
+    throw new Error(`GraphQL failed: ${result.errors?.[0]?.message ?? 'no data'}`);
+  }
   return result.data;
 }
 
@@ -67,50 +70,53 @@ const REACTION_FIELDS =
 
 // The discussion: the oldest one with the title that a maintainer started, by user id.
 const maintainers = new Set(MAINTAINERS.map((maintainer) => maintainer.id));
-const found = await graphql<{
-  repository: {
-    hasDiscussionsEnabled: boolean;
-    discussions: Page<{
-      id: string;
-      number: number;
-      title: string;
-      url: string;
-      author: { databaseId?: number } | null;
-    }>;
-  };
-}>(
-  `
-    query ($owner: String!, $name: String!) {
-      repository(owner: $owner, name: $name) {
-        hasDiscussionsEnabled
-        discussions(first: 100, orderBy: { field: CREATED_AT, direction: ASC }) {
-          nodes {
-            id
-            number
-            title
-            url
-            author {
-              ... on User {
-                databaseId
+type DiscussionNode = {
+  id: string;
+  number: number;
+  title: string;
+  url: string;
+  author: { databaseId?: number } | null;
+};
+let discussion: DiscussionNode | undefined;
+let afterDiscussion: string | null = null;
+do {
+  const found: {
+    repository: { hasDiscussionsEnabled: boolean; discussions: Page<DiscussionNode> };
+  } = await graphql(
+    `
+      query ($owner: String!, $name: String!, $after: String) {
+        repository(owner: $owner, name: $name) {
+          hasDiscussionsEnabled
+          discussions(first: 100, after: $after, orderBy: { field: CREATED_AT, direction: ASC }) {
+            nodes {
+              id
+              number
+              title
+              url
+              author {
+                ... on User {
+                  databaseId
+                }
               }
             }
-          }
-          pageInfo {
-            hasNextPage
-            endCursor
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
           }
         }
       }
-    }
-  `,
-  { owner, name },
-);
-const discussion = found.repository.hasDiscussionsEnabled
-  ? found.repository.discussions.nodes.find(
-      (node) =>
-        node.title.trim() === DISCUSSION_TITLE && maintainers.has(node.author?.databaseId ?? -1),
-    )
-  : undefined;
+    `,
+    { owner, name, after: afterDiscussion },
+  );
+  if (!found.repository.hasDiscussionsEnabled) break;
+  discussion = found.repository.discussions.nodes.find(
+    (node) =>
+      node.title.trim() === DISCUSSION_TITLE && maintainers.has(node.author?.databaseId ?? -1),
+  );
+  const info = found.repository.discussions.pageInfo;
+  afterDiscussion = !discussion && info.hasNextPage ? info.endCursor : null;
+} while (afterDiscussion);
 if (!discussion) {
   console.log(`No "${DISCUSSION_TITLE}" discussion started by a maintainer: no standings.`);
   process.exit(0);
@@ -186,9 +192,16 @@ const disabled = (
 
 let comments = await readComments();
 
-// A comment for every new entry, while voting is open.
+// A comment for every new entry, while voting is open, with its owner's user id
+// in the marker, so their own vote stays out even if the login changes hands.
 const missing = votingClosed(new Date()) ? [] : missingEntries({ booths, holders }, comments);
+let added = 0;
 for (const entry of missing) {
+  const user = await get<{ id: number }>(`users/${encodeURIComponent(entry.login)}`);
+  if (!user) {
+    console.log(`No GitHub account is ${entry.login} now: no entry for it yet.`);
+    continue;
+  }
   await graphql(
     `
       mutation ($id: ID!, $body: String!) {
@@ -201,29 +214,22 @@ for (const entry of missing) {
     `,
     {
       id: discussion.id,
-      body: entryBody(entry.category, entry.login, entry.repo, siteUrl(process.env)),
+      body: entryBody(entry.category, entry.login, user.id, entry.repo, siteUrl(process.env)),
     },
   );
+  added += 1;
 }
-if (missing.length) comments = await readComments();
-
-// Each owner's user id, to leave their own vote out.
-const ownerIds = new Map<string, number>();
-for (const login of new Set([...booths, ...holders.map((holder) => holder.login)])) {
-  const user = await get<{ id: number }>(`users/${encodeURIComponent(login)}`);
-  if (user) ownerIds.set(login.toLowerCase(), user.id);
-}
+if (added) comments = await readComments();
 
 const result = standings({
   discussion: discussion.url,
   comments,
   booths,
   holders,
-  ownerIds,
   disabled,
   closes: VOTING_CLOSES,
 });
 writeFileSync(out, JSON.stringify(result, null, 2) + '\n');
 console.log(
-  `Wrote ${out}: ${result.booths.length} booths and ${result.factories.length} home factories, ${missing.length} new entries.`,
+  `Wrote ${out}: ${result.booths.length} booths and ${result.factories.length} home factories, ${added} new entries.`,
 );

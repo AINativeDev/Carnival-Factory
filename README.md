@@ -214,7 +214,9 @@ maintainer's account. Every deploy then adds a comment for each new booth and
 Elf Engineer while voting is open (`scripts/write-peoples-choice.ts`, with the
 deploy's own token), and counts the 👍. Until the discussion exists, the map
 shows no standings. To move the closing date, change `VOTING_CLOSES` in
-`northpole/peoples-choice.ts`.
+`northpole/peoples-choice.ts`. On a fork, set `REPO_URL` in
+`northpole/links.ts` to your fork's address too: the build keeps only
+standings whose links are into that repository's discussions.
 
 Every pull request from this repository gets a **Preview** link to its build,
 published next to the live map under `previews/pr-<number>/` and removed when
