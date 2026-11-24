@@ -10,9 +10,11 @@ import type { NorthPoleSquare } from '../northpole/square';
 import { applyTheme, theme } from '../northpole/theme';
 import { boothRegistry } from '../northpole/booths';
 import { avatarPath } from '../northpole/owners';
+import { PEOPLES_CHOICE } from '../northpole/peoples-choice-standings';
 import { sitesToRemember } from '../northpole/plots';
 import { BOOTHS_PANEL, startBoothsPanel, type BoothsPanel } from './booths-hud';
 import { openFactoryHud, readFactoryStats, squareCounts } from './factory';
+import { CHOICE_PANEL, renderChoice } from './peoples-choice-hud';
 import { SQUARE_HISTORY } from './history';
 import { levelLink, parseHash } from './route';
 import { openVisitHud, type VisitHud } from './visit-hud';
@@ -102,6 +104,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
           <button class="hud hud-overview" type="button">Show the whole island</button>
         </div>
       </div>
+      ${CHOICE_PANEL}
       <div class="visually-hidden">
         <p>
           Welcome to the North Pole. The attractions round the town square are part of the North
@@ -120,6 +123,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
       </div>
     </section>`;
 
+  renderChoice(app.querySelector<HTMLDetailsElement>('.choice')!, PEOPLES_CHOICE);
   renderGuide(app.querySelector('.attractions')!, attractionRegistry.all(), 'attraction', () => '');
   renderGuide(app.querySelector('.booths')!, boothRegistry.all(), 'booth', (id) => `@${id}`);
 
