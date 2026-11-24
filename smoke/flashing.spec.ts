@@ -2,9 +2,10 @@ import { readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import {
+  flashingArea,
   luminance,
+  MAX_FLASHING_AREA,
   MAX_PER_SECOND,
-  maxFlashesPerSecond,
   type Sample,
 } from '../scripts/flashing.ts';
 
@@ -26,31 +27,43 @@ for (const { kind, id } of squares) {
   }) => {
     await page.goto(`#/${kind}/${id}`);
     await page.waitForTimeout(1500);
-    const raw = await page.evaluate(async () => {
+    // A 4 by 4 grid of cells, each with its own brightness over time, so
+    // regions flashing out of step can't cancel out.
+    const GRID = 4;
+    const raw = await page.evaluate(async (grid) => {
       const canvas = document.querySelector('canvas')!;
       const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
-      const out: { t: number; rgb: [number, number, number] }[] = [];
+      const frames: { t: number; cells: [number, number, number][] }[] = [];
       const start = performance.now();
       while (performance.now() - start < 3000) {
-        const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        let r = 0;
-        let g = 0;
-        let b = 0;
-        const step = 4 * 16;
-        let n = 0;
-        for (let i = 0; i < data.length; i += step) {
-          r += data[i];
-          g += data[i + 1];
-          b += data[i + 2];
-          n++;
+        const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const sums = Array.from({ length: grid * grid }, () => [0, 0, 0, 0]);
+        for (let y = 0; y < height; y += 4) {
+          for (let x = 0; x < width; x += 4) {
+            const i = (y * width + x) * 4;
+            const cell =
+              sums[Math.floor((y * grid) / height) * grid + Math.floor((x * grid) / width)];
+            cell[0] += data[i];
+            cell[1] += data[i + 1];
+            cell[2] += data[i + 2];
+            cell[3]++;
+          }
         }
-        out.push({ t: performance.now() - start, rgb: [r / n, g / n, b / n] });
+        frames.push({
+          t: performance.now() - start,
+          cells: sums.map(([r, g, b, n]) => [r / n, g / n, b / n] as [number, number, number]),
+        });
         await new Promise((resolve) => requestAnimationFrame(resolve));
       }
-      return out;
-    });
-    const samples: Sample[] = raw.map(({ t, rgb }) => ({ t, brightness: luminance(...rgb) }));
-    expect(samples.length, 'too few frames sampled').toBeGreaterThan(30);
-    expect(maxFlashesPerSecond(samples)).toBeLessThanOrEqual(MAX_PER_SECOND);
+      return frames;
+    }, GRID);
+    expect(raw.length, 'too few frames sampled').toBeGreaterThan(30);
+    const cells: Sample[][] = Array.from({ length: GRID * GRID }, (_, c) =>
+      raw.map(({ t, cells: rgb }) => ({ t, brightness: luminance(...rgb[c]) })),
+    );
+    expect(
+      flashingArea(cells),
+      `share of the square flashing over ${MAX_PER_SECOND} a second`,
+    ).toBeLessThanOrEqual(MAX_FLASHING_AREA);
   });
 }

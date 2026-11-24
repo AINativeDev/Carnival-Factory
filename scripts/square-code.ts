@@ -102,8 +102,15 @@ export const BANNED_PROPERTIES = new Set([
   'toBlob',
 ]);
 
-/** The only files outside its own folder a square may import. */
-const MAP_IMPORT = /^(\.\.\/){2}northpole\/(theme|square)$/;
+/**
+ * The only files outside its own folder a square may import: the map's theme
+ * and square shape, by the right number of `../` for where the importing file
+ * sits (two from the square's folder, one more per nested folder).
+ */
+function isMapImport(folder: string, from: string, specifier: string): boolean {
+  const depth = from.slice(folder.length).split('/').length - 1;
+  return new RegExp(`^(\\.\\./){${depth + 2}}northpole/(theme|square)$`).test(specifier);
+}
 const NOT_A_GLOBAL = new Set([...BANNED_GLOBALS, ...BANNED_PROPERTIES]);
 
 export interface CodeProblem {
@@ -253,12 +260,28 @@ export function checkSquareCode(folder: string, files: readonly SourceFile[]): C
     };
 
     const visit = (node: ts.Node) => {
+      // Code run while the square loads, hidden inside a declaration: an
+      // immediately-invoked function, or a class's static block.
+      if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+        let callee: ts.Expression | undefined = node.expression;
+        while (callee && ts.isParenthesizedExpression(callee)) callee = callee.expression;
+        if (callee && (ts.isFunctionExpression(callee) || ts.isArrowFunction(callee))) {
+          report(
+            node,
+            'top-level',
+            'No immediately-invoked functions: loading a square must not run anything.',
+          );
+        }
+      }
+      if (ts.isClassStaticBlockDeclaration(node)) {
+        report(node, 'top-level', 'No static blocks: loading a square must not run anything.');
+      }
       if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
         const specifier = node.moduleSpecifier;
         if (specifier && ts.isStringLiteral(specifier)) {
           const target = specifier.text;
           const ok =
-            MAP_IMPORT.test(target) ||
+            isMapImport(folder, file.path, target) ||
             (staysInside(folder, file.path, target) &&
               (isTest(file.path) || !/\.test(\.ts)?$/.test(target))) ||
             (isTest(file.path) && target === 'vitest');

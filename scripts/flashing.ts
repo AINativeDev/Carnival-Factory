@@ -26,7 +26,10 @@ export function luminance(r: number, g: number, b: number): number {
   return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
 }
 
-/** The times of each flash: a swing of at least THRESHOLD one way, then the other. */
+/**
+ * The times of each flash: a swing of at least THRESHOLD one way, then one
+ * back. Pairs don't overlap: after a flash, the next one needs two new swings.
+ */
 export function flashTimes(samples: readonly Sample[]): number[] {
   const flashes: number[] = [];
   let anchor = samples[0]?.brightness ?? 0;
@@ -35,9 +38,13 @@ export function flashTimes(samples: readonly Sample[]): number[] {
     const change = brightness - anchor;
     if (Math.abs(change) < THRESHOLD) continue;
     const direction = Math.sign(change);
-    if (lastDirection !== 0 && direction !== lastDirection) flashes.push(t);
-    lastDirection = direction;
     anchor = brightness;
+    if (lastDirection !== 0 && direction !== lastDirection) {
+      flashes.push(t);
+      lastDirection = 0;
+    } else {
+      lastDirection = direction;
+    }
   }
   return flashes;
 }
@@ -53,3 +60,17 @@ export function maxFlashesPerSecond(samples: readonly Sample[]): number {
   }
   return most;
 }
+
+/**
+ * The share of the square that flashes too often: each cell of a grid has its
+ * own brightness samples, so regions flashing out of step can't cancel out in
+ * an average. WCAG counts a flash by area, so this is what the limit applies to.
+ */
+export function flashingArea(cells: readonly (readonly Sample[])[]): number {
+  if (cells.length === 0) return 0;
+  const flashing = cells.filter((cell) => maxFlashesPerSecond(cell) > MAX_PER_SECOND).length;
+  return flashing / cells.length;
+}
+
+/** The largest share of the square that may flash more than MAX_PER_SECOND times a second. */
+export const MAX_FLASHING_AREA = 0.25;

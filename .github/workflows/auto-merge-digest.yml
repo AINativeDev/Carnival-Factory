@@ -24,9 +24,11 @@ jobs:
         run: |
           since=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
           site=$(gh api "repos/$GH_REPO/pages" --jq .html_url 2>/dev/null || echo "")
-          rows=$(gh pr list --state merged --label auto-merged --limit 100 \
-            --json number,title,mergedAt,url \
-            --jq ".[] | select(.mergedAt >= \"$since\") | \"- [#\(.number)](\(.url)) \(.title)\"")
+          # Search by merge date, so every auto-merge in the window is listed.
+          rows=$(gh pr list --state merged --limit 1000 \
+            --search "label:auto-merged merged:>=$since" \
+            --json number,title,url \
+            --jq '.[] | "- [#\(.number)](\(.url)) \(.title)"')
           if [ -z "$rows" ]; then
             echo "Nothing merged on its own since $since."
             exit 0

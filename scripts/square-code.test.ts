@@ -96,7 +96,27 @@ describe('checkSquareCode', () => {
     ).toContain('import');
   });
 
-  it('runs nothing when it loads', () => {
+  it('lets a nested file import the map by its own depth, but nothing else of the map', () => {
+    const lib = (text: string) => ({ 'lib/draw.ts': text });
+    const main = `import { a } from './lib/draw';\nexport default a;`;
+    expect(
+      rules(
+        main,
+        lib(`import { theme } from '../../../northpole/theme';\nexport const a = theme;`),
+      ),
+    ).toEqual([]);
+    expect(
+      rules(main, lib(`import { theme } from '../../northpole/theme';\nexport const a = theme;`)),
+    ).toContain('import');
+    expect(
+      rules(main, lib(`import { x } from '../../../northpole/map';\nexport const a = x;`)),
+    ).toContain('import');
+  });
+
+  it('runs nothing when it loads, not even inside a declaration', () => {
+    expect(rules(`export const x = (() => 1)();`)).toContain('top-level');
+    expect(rules(`export const x = (function () { return 1; })();`)).toContain('top-level');
+    expect(rules(`export class A { static { const y = 1; } }`)).toContain('top-level');
     expect(rules(`console.log('hi');\nexport default 1;`)).toContain('top-level');
     expect(rules(`for (;;) {}\nexport default 1;`)).toContain('top-level');
   });
