@@ -1,0 +1,36 @@
+{
+  "context": "Whether tidy-elf sorts each README result into setup failed, broken or couldn't check, and hides none.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "opens_issue",
+      "description": "`issue.md` exists and is titled `Tidy elf: README needs tidying`.",
+      "max_score": 1,
+      "category": "INTENT"
+    },
+    {
+      "name": "lint_broken",
+      "description": "The issue lists `npm run lint` under a **Broken** section, with its exit code 1 and `Missing script: \"lint\"`.",
+      "max_score": 2,
+      "category": "INTENT"
+    },
+    {
+      "name": "links_broken",
+      "description": "The issue lists both `https://docs.example.com/ice-rink/guide` (404) and `https://example.com/faq` (410) as broken, each with its status.",
+      "max_score": 2,
+      "category": "INTENT"
+    },
+    {
+      "name": "no_setup_failed",
+      "description": "There is no **Setup failed** section, since `npm ci` exited 0.",
+      "max_score": 1,
+      "category": "EDGE_CASE"
+    },
+    {
+      "name": "working_not_listed",
+      "description": "`npm ci` and `npm test` are not listed as broken or couldn't check.",
+      "max_score": 1,
+      "category": "MUST_NOT"
+    }
+  ]
+}

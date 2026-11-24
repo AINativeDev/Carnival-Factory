@@ -29,31 +29,43 @@ every link it gives still goes somewhere.
 3. **Run them** in a fresh clone of the default branch, in the README's order,
    each with a five minute limit. A command that starts a server counts as
    working once it's listening; stop it then. Note each one's exit code and the
-   last lines of its output. A failing command is broken, unless its output
-   shows one of these, and then it is unknown, with why:
-   - it is missing something a skipped or failed command before it would have
-     set up, such as a dependency, a built file or a tool: name which earlier
-     command it needed;
-   - it failed reaching a registry or other server, with a timeout, a refused
-     or dropped connection, a DNS failure, or a 429 or 5xx status: that is the
-     network, not the README, so name the server and the error.
+   first and last lines of its output. Each result is one of these, and none is
+   hidden:
+   - **Setup failed**: a command that installs the project's dependencies, such
+     as `npm ci`, `pip install -r requirements.txt` or `bundle install`, exited
+     non-zero. That is a finding in itself, whatever the error, a network one
+     included. Note its first error line, run nothing after it, and list every
+     later command under **Couldn't check**, naming the setup command it
+     needed.
+   - **Broken**: any other command that ran and exited non-zero.
+   - **Couldn't check**: a command that couldn't run because the setup before
+     it failed, with that setup command named.
+   - **Works**: it exited 0, or its server listened.
 4. **Collect the links**: Markdown links and bare URLs. For a relative link,
-   check the file or heading exists in the repository. For a web link, make one
-   `HEAD` request, then a `GET` if `HEAD` isn't allowed, following redirects.
-   Count 2xx as working, and 401, 403 and 429 as unknown, not broken.
+   check the file or heading exists in the repository; a missing one is
+   broken. For a web link, make one `HEAD` request, then a `GET` if `HEAD`
+   isn't allowed, following redirects. Count 2xx as working, 404 and 410 as
+   **Broken**, and anything else as **Couldn't check**, with the first line of
+   the error: a timeout, a DNS failure, a refused connection, a 5xx, or a 401,
+   403 or 429 that needs signing in or a slower pace.
 5. **Look for an open issue** titled `Tidy elf: README needs tidying`. If one is
    open, comment on it with this run's list instead of opening another, and
    only when the list changed.
-6. **If anything is broken**, open that issue, with:
-   - each broken command, its heading, exit code and the last lines of output;
-   - each broken link, its line and the status it returned;
-   - what you skipped, and why;
-   - what is unknown, and why.
+6. **If setup failed or anything is broken**, open that issue, with these
+   sections, in this order, leaving out an empty one:
+   - **Setup failed**: the setup command, its heading and its first error line;
+   - **Broken**: each broken command, its heading, exit code and the last
+     lines of output, and each broken link, its line and the status it
+     returned, or that the file or heading does not exist;
+   - **Couldn't check**: each command and link you could not check, with the
+     first line of its error, or the setup command it needed;
+   - **Skipped**: what you skipped, and why.
 
-   If nothing is broken, open nothing, and say so in the run output, naming
-   what was skipped or unknown.
+   If setup didn't fail and nothing is broken, open nothing, and say so in the
+   run output, listing what you couldn't check and what you skipped.
 
 ## Done
 
-One issue listing the README's broken commands and links, kept current, or a run
-output saying none is broken and naming any it could not check.
+One issue listing a failed setup and the README's broken commands and links,
+kept current, with what couldn't be checked in its own section; or a run output
+saying none is broken and listing what couldn't be checked.

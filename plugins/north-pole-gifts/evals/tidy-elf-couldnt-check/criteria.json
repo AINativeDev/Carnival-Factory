@@ -1,0 +1,36 @@
+{
+  "context": "Whether tidy-elf sorts each README result into setup failed, broken or couldn't check, and hides none.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "no_issue",
+      "description": "No `issue.md` is written: nothing is broken and setup did not fail.",
+      "max_score": 2,
+      "category": "INTENT"
+    },
+    {
+      "name": "couldnt_check_section",
+      "description": "`run-output.md` has a **Couldn't check** section listing all three links.",
+      "max_score": 2,
+      "category": "INTENT"
+    },
+    {
+      "name": "first_error_lines",
+      "description": "Each of the three links appears with the first line of its error: `ETIMEDOUT`, `ENOTFOUND` and `503`.",
+      "max_score": 2,
+      "category": "INTENT"
+    },
+    {
+      "name": "not_broken",
+      "description": "None of the three links is called broken, and the run output says nothing is broken.",
+      "max_score": 2,
+      "category": "MUST_NOT"
+    },
+    {
+      "name": "none_hidden",
+      "description": "None of the three links is left out of the run output.",
+      "max_score": 1,
+      "category": "MUST_NOT"
+    }
+  ]
+}

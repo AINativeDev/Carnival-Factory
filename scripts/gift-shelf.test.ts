@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { GIFTS } from '../attractions/gift-shop/attraction';
@@ -24,6 +24,16 @@ describe('the gift shelf', () => {
       expect(readFileSync(join(plugin, 'skills', skill, 'example.md'), 'utf8')).toMatch(
         /^# Worked example/,
       );
+    }
+  });
+
+  it("has an eval for each of tidy-elf's outcomes", () => {
+    for (const outcome of ['broken', 'couldnt-check', 'setup-failed']) {
+      const scenario = join(plugin, 'evals', `tidy-elf-${outcome}`);
+      expect(existsSync(join(scenario, 'task.md')), outcome).toBe(true);
+      const criteria = JSON.parse(readFileSync(join(scenario, 'criteria.json'), 'utf8'));
+      expect(criteria.type, outcome).toBe('weighted_checklist');
+      expect(criteria.checklist.length, outcome).toBeGreaterThan(0);
     }
   });
 });

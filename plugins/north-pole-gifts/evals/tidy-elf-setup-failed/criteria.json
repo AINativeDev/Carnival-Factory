@@ -1,0 +1,42 @@
+{
+  "context": "Whether tidy-elf sorts each README result into setup failed, broken or couldn't check, and hides none.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "opens_issue",
+      "description": "`issue.md` exists and is titled `Tidy elf: README needs tidying`.",
+      "max_score": 1,
+      "category": "INTENT"
+    },
+    {
+      "name": "setup_failed_first",
+      "description": "The issue's first section is **Setup failed**, naming `npm ci` and its first error line with `ENOTFOUND registry.npmjs.og`.",
+      "max_score": 3,
+      "category": "INTENT"
+    },
+    {
+      "name": "dependents_couldnt_check",
+      "description": "`npm run build` and `npm test` are listed under **Couldn't check**, each saying it needed `npm ci`.",
+      "max_score": 2,
+      "category": "INTENT"
+    },
+    {
+      "name": "dependents_not_broken",
+      "description": "`npm run build` and `npm test` are not listed as broken.",
+      "max_score": 1,
+      "category": "MUST_NOT"
+    },
+    {
+      "name": "setup_not_hidden",
+      "description": "The failed `npm ci` is not treated as a network outage that couldn't be checked or left out.",
+      "max_score": 2,
+      "category": "MUST_NOT"
+    },
+    {
+      "name": "menu_works",
+      "description": "`https://cocoa.example.com/menu` is not listed as broken or couldn't check.",
+      "max_score": 1,
+      "category": "EDGE_CASE"
+    }
+  ]
+}
