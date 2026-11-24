@@ -1,6 +1,7 @@
 name: Change your plot
 description: Ask the factory for a change to a plot you already own.
 title: 'Change my plot: '
+labels: [plot-change]
 body:
   - type: markdown
     attributes:

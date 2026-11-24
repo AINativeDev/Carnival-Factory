@@ -17,7 +17,10 @@ shares one repo and one factory.
 1. **Claim your plot.** Open **Issues → New issue → Claim your plot**, and say
    what your square should show. Your plot lives in
    `src/plots/<your GitHub login>/`.
-2. **Hand it to the factory.** A maintainer adds the `tessl` label. An agent
+2. **Hand it to the factory.** An agent first assesses your request: if it's
+   a sane change to your own plot, it adds the `tessl` label; if it's unclear,
+   it asks (edit the issue to answer); anything else it declines with a
+   reason. A maintainer can also add `tessl` by hand. An agent then
    picks the issue up, builds your plot on a `tessl/` branch, and opens a pull
    request. If it asks a question on the issue, reply there, and a maintainer
    passes your answer on: only maintainers' comments restart the factory.
