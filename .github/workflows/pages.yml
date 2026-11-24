@@ -80,6 +80,8 @@ jobs:
       # main's own code, never a pull request's.
       - uses: actions/checkout@v7
         with:
+          # Keep the token out of .git/config, where the code that runs next could read it.
+          persist-credentials: false
           ref: ${{ github.event.repository.default_branch }}
           path: main
       - name: Check out gh-pages, or start it
