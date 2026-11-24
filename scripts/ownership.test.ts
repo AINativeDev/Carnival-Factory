@@ -81,6 +81,17 @@ describe('filesOutsideBooth', () => {
     );
   });
 
+  it("allows changes inside the owner's level, and no one else's", () => {
+    expect(
+      filesOutsideBooth(comet, [
+        'levels/comet/level.ts',
+        'levels/comet/squares/hut/square.ts',
+        'levels/cupid/level.ts',
+        'levels/comet-two/level.ts',
+      ]),
+    ).toEqual(['levels/cupid/level.ts', 'levels/comet-two/level.ts']);
+  });
+
   it("flags everything else, a neighbour's booth included", () => {
     expect(
       filesOutsideBooth(comet, [

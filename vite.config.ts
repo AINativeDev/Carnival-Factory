@@ -178,6 +178,6 @@ export default defineConfig(({ command }) => ({
   preview: { cors: { origin: 'null' } },
   test: {
     environment: 'node',
-    include: ['{src,northpole,booths,attractions,scripts}/**/*.test.ts'],
+    include: ['{src,northpole,booths,attractions,levels,scripts}/**/*.test.ts'],
   },
 }));

@@ -20,6 +20,7 @@
     "northpole",
     "booths",
     "attractions",
+    "levels",
     "scripts",
     "vite.config.ts",
     "eslint.config.js"

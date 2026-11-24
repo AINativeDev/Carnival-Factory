@@ -326,10 +326,10 @@ jobs:
             pr=${entry%%:*}
             sha=${entry#*:}
             url="${site%/}/previews/pr-$pr/"
-            # A direct link to every booth and attraction the pull request changes,
+            # A direct link to every booth, attraction and level the pull request changes,
             # and their screenshots side by side under the map's, each opening its square.
             squares=$(gh api "repos/$GH_REPO/pulls/$pr/files" --paginate --jq '.[].filename' |
-              sed -nE 's#^(booth|attraction)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
+              sed -nE 's#^(booth|attraction|level)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
             links=""
             row=""
             shots="${url}screenshots"

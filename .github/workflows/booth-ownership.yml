@@ -1,6 +1,7 @@
 name: Booth ownership
 
-# Every participant may only change their own booth, booths/<login>/. This
+# Every participant may only change their own booth, booths/<login>/, and their
+# own level, levels/<login>/. This
 # runs on pull_request_target so it uses the checker from main, never one a
 # pull request has edited, and it never checks out or runs the pull request's
 # code: it only reads the list of changed files from the API.

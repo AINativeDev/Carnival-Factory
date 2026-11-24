@@ -187,6 +187,17 @@ describe('readPointer', () => {
 });
 
 describe('readFrameAddress', () => {
+  it("reads a level's own square, each part checked", () => {
+    expect(readFrameAddress('#level/jedi4ever/cocoa-hut')).toEqual({
+      kind: 'level',
+      id: 'cocoa-hut',
+      level: 'jedi4ever',
+    });
+    expect(readFrameAddress('#level/jedi4ever/a--b')).toBeUndefined();
+    expect(readFrameAddress('#level/-x/hut')).toBeUndefined();
+    expect(readFrameAddress('#level/jedi4ever/../booths')).toBeUndefined();
+  });
+
   it('reads a booth or an attraction', () => {
     expect(readFrameAddress('#booth/jedi4ever')).toEqual({ kind: 'booth', id: 'jedi4ever' });
     expect(readFrameAddress('#attraction/ferris-wheel')).toEqual({

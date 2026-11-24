@@ -20,7 +20,7 @@ try, and tells the factory how to check it's done.
 A few things that help:
 
 - **One idea.** A pond, a shop, a workshop, a tiny scene. Not a whole town.
-  For a whole world of your own, there will be levels.
+  For a whole world of your own, ask for a [level](level-ideas.md).
 - **What moves, as a loop.** Booths animate from time, so describe something
   that repeats every few seconds: a skater's circuit, smoke rising, lights
   twinkling in turn.
