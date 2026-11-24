@@ -1,5 +1,7 @@
-import { CLAIM_URL } from './links';
+import { boothPlotFiles } from './booths';
+import { CLAIM_URL, REPO_URL } from './links';
 import pinned from './plots.json';
+import { landedBooths, STAGE_TEXT, type PendingBooth } from './plots';
 import {
   duskAt,
   frameCentre,
@@ -27,12 +29,16 @@ import {
   drawSelectionBeam,
   drawSelectionRing,
   drawSky,
+  drawSite,
   drawSnowfall,
+  drawSparkles,
   drawStringLights,
+  drawUpdateSign,
   drawThing,
   faceOf,
   middle,
   setSpriteResolution,
+  SPARKLE_TIME,
   type Look,
   type Mapping,
   type Owner,
@@ -75,6 +81,7 @@ import {
   type Box,
   type Plot,
   type Tile,
+  type World,
 } from './world';
 
 const { colors } = theme;
@@ -138,6 +145,10 @@ export interface MapOptions {
   me?: string;
   /** Says the picked square changed: picked, or let go with Esc, by going inside, or by picking another. */
   onSelect?(selected: { kind: SquareKind; id: string } | undefined): void;
+  /** The accepted booth requests not merged yet, from `pending.json`, if the page has read it. */
+  pending?: readonly PendingBooth[];
+  /** The logins that were construction sites when the page last saw them: the ones with a booth now sparkle, once. */
+  wereSites?: Iterable<string>;
 }
 
 /** Where the player stood when they last opened a square, so coming back puts them there. */
@@ -187,10 +198,10 @@ const typing = (target: EventTarget | null) =>
 const pressable = (target: EventTarget | null) =>
   target instanceof HTMLElement && /^(BUTTON|A)$/.test(target.tagName);
 
-/** Opens the Claim your booth form in a new tab. */
-function claim() {
+/** Opens a link in a new tab: the Claim your booth form by default. */
+function claim(href = CLAIM_URL) {
   const link = document.createElement('a');
-  link.href = CLAIM_URL;
+  link.href = href;
   link.target = '_blank';
   link.rel = 'noopener';
   link.click();
@@ -290,6 +301,10 @@ export interface MapControls {
   nearest(count: number): { kind: SquareKind; id: string }[];
   /** Says who the visitor is, so their own booth stands out, or that the page doesn't know. */
   setMe(login: string | undefined): void;
+  /** Shows the booth requests being built: construction sites on their plots, and "Being updated" on booths. */
+  setPending(pending: readonly PendingBooth[]): void;
+  /** The logins whose booths are being built, on construction sites now. */
+  readonly sites: string[];
   /** Walks the player to the nearest open plot. */
   walkToOpenPlot(): void;
   /** Walks the player to the open plot nearest them, leaving footprints, and bounces its sign. */
@@ -333,13 +348,38 @@ export function startMap(
     attraction: new Map(options.attractions.map((square) => [square.id, square])),
     booth: new Map(options.booths.map((square) => [square.id, square])),
   };
-  const world = buildWorld(
-    options.attractions.map((square) => square.id),
-    options.booths.map((square) => square.id),
-    pinned,
-  );
+  /** The booth requests being built, by login, and the booths they change. */
+  let pending = new Map<string, PendingBooth>();
+  let world!: World;
+  /** The world's layout, so the island is only redrawn when a plot changes. */
+  let layout = '';
+  const build = (list: readonly PendingBooth[]) => {
+    pending = new Map(list.map((entry) => [entry.login, entry]));
+    const made = buildWorld(
+      options.attractions.map((square) => square.id),
+      options.booths.map((square) => square.id),
+      pinned,
+      { files: boothPlotFiles, pending: list },
+    );
+    const plan = made.plots.map((plot) => `${plot.kind}:${plot.id ?? ''}:${plot.number}`).join();
+    if (plan === layout) return false;
+    layout = plan;
+    world = made;
+    return true;
+  };
+  build(options.pending ?? []);
   const squareOf = (plot: Plot) =>
-    plot.kind === 'open' ? undefined : byId[plot.kind].get(plot.id!);
+    plot.kind === 'open' || plot.kind === 'site' ? undefined : byId[plot.kind].get(plot.id!);
+  /** What a construction site's sign says. */
+  const siteLabel = (plot: Plot) => {
+    const entry = pending.get(plot.id!);
+    return { login: plot.id!, stage: entry ? STAGE_TEXT[entry.stage] : STAGE_TEXT.building };
+  };
+  /** The booths that just landed on their construction site's plot, and when their sparkles began. */
+  const boothIds = new Set(options.booths.map((square) => square.id));
+  const landed = new Map<string, number | undefined>(
+    landedBooths(options.wereSites ?? [], boothIds).map((login) => [login, undefined]),
+  );
   const plotOf = (kind: SquareKind, id: string) =>
     world.plots.find((plot) => plot.kind === kind && plot.id === id);
   /** The picked plot, when its highlight began, and whether the player is walking there on a trail. */
@@ -370,8 +410,8 @@ export function startMap(
   let invitedAt = 0;
   const touchScreen = window.matchMedia('(pointer: coarse)');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const island = islandCorners(world);
-  const bounds = islandBounds(world);
+  let island = islandCorners(world);
+  let bounds = islandBounds(world);
 
   let player: Tile = selected ? { ...selected.door } : (remembered ?? { ...world.start });
   let path: Tile[] = [];
@@ -423,12 +463,13 @@ export function startMap(
   let mountains = layer(1, 1);
   let ground = layer(1, 1);
   let front = layer(1, 1);
-  const groundBox: Box = {
+  const boxOf = (): Box => ({
     x: island.left.x - 8,
     y: island.top.y - 40,
     w: island.right.x - island.left.x + 16,
     h: island.bottom.y + SLAB + 80 - (island.top.y - 40),
-  };
+  });
+  let groundBox = boxOf();
 
   const want = (): Framing =>
     framing(world, frame.clientWidth, frame.clientHeight, player, walking, overview);
@@ -470,6 +511,10 @@ export function startMap(
 
   const open = (plot: Plot) => {
     if (plot.kind === 'open') return claim();
+    if (plot.kind === 'site') {
+      const entry = pending.get(plot.id!);
+      return claim(entry ? `${REPO_URL}/issues/${entry.issue}` : CLAIM_URL);
+    }
     remembered = { ...player };
     options.onOpen(plot.kind, plot.id!);
   };
@@ -500,7 +545,9 @@ export function startMap(
       ? ''
       : plot.kind === 'open'
         ? 'Claim this plot'
-        : `Visit ${squareOf(plot)?.name ?? plot.id ?? ''}`;
+        : plot.kind === 'site'
+          ? `Being built for @${plot.id}: ${siteLabel(plot).stage}`
+          : `Visit ${squareOf(plot)?.name ?? plot.id ?? ''}`;
     if (plot && prompt.title !== words) {
       const text = document.createElement('span');
       text.className = 'prompt-text';
@@ -612,7 +659,7 @@ export function startMap(
     }
     if (plot !== tagged) {
       tagged = plot;
-      const text = tagText(plot, squareOf(plot));
+      const text = tagText(plot, squareOf(plot), siteLabel(plot).stage);
       tag.querySelector('.tag-name')!.textContent = text.name;
       tag.querySelector('.tag-owner')!.textContent = text.owner;
       tag.querySelector('.tag-line')!.textContent = text.line;
@@ -805,7 +852,18 @@ export function startMap(
         if (strength > 0) drawPlotGlow(ctx, plot, strength);
         drawSelectionRing(ctx, plot, highlight);
         const bounce = plot === near || plot === claiming;
-        const box = drawPlot(ctx, plot, squareOf(plot), paint, motion, bounce, owner);
+        const box =
+          plot.kind === 'site'
+            ? drawSite(ctx, plot, siteLabel(plot), motion, plot === near)
+            : drawPlot(ctx, plot, squareOf(plot), paint, motion, bounce, owner);
+        if (plot.kind === 'booth' && pending.has(plot.id!)) drawUpdateSign(ctx, plot);
+        if (plot.kind === 'booth' && landed.has(plot.id!)) {
+          // The booth that replaced its construction site sparkles once, the first time it's in view.
+          const began = landed.get(plot.id!) ?? time;
+          landed.set(plot.id!, began);
+          if (still || time - began >= SPARKLE_TIME) landed.delete(plot.id!);
+          else drawSparkles(ctx, plot, time - began);
+        }
         targets.push({ plot, box });
       });
     }
@@ -1128,7 +1186,9 @@ export function startMap(
       select(undefined);
     },
     nearest(count) {
-      const squares = world.plots.filter((plot) => plot.kind !== 'open');
+      const squares = world.plots.filter(
+        (plot) => plot.kind === 'booth' || plot.kind === 'attraction',
+      );
       return nearYou(squares, player, count).map((plot) => ({
         kind: plot.kind as SquareKind,
         id: plot.id!,
@@ -1136,6 +1196,32 @@ export function startMap(
     },
     setMe(login) {
       me = login;
+    },
+    setPending(list) {
+      // A site's tag says its stage, which may have changed.
+      tagged = undefined;
+      if (!build(list)) return;
+      // The new world's plots are new objects: keep hold of the same squares in it.
+      const same = (plot: Plot | undefined) =>
+        plot &&
+        world.plots.find(
+          (p) => p.kind === plot.kind && p.id === plot.id && (p.id || p.number === plot.number),
+        );
+      selected = same(selected);
+      near = same(near);
+      hovered = same(hovered);
+      claiming = same(claiming);
+      invited = same(invited);
+      if (visiting) visiting = same(visiting);
+      if (entered) entered = same(entered);
+      island = islandCorners(world);
+      bounds = islandBounds(world);
+      groundBox = boxOf();
+      targets = [];
+      resize();
+    },
+    get sites() {
+      return world.plots.filter((plot) => plot.kind === 'site').map((plot) => plot.id!);
     },
     walkToOpenPlot() {
       if (visiting) options.onLeave();

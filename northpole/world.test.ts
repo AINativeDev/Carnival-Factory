@@ -127,6 +127,35 @@ describe('buildWorld', () => {
     }
   });
 
+  it('puts construction sites on their held plots, with open plots on top of them', () => {
+    const pending = [
+      { login: 'amy', issue: 7, plot: 4, stage: 'building' as const },
+      { login: 'bob', issue: 9, plot: 5, stage: 'checks' as const },
+    ];
+    const world = buildWorld(ATTRACTIONS, booths(4), undefined, { pending });
+    const sites = world.plots.filter((p) => p.kind === 'site');
+    expect(sites.map((p) => [p.id, p.number])).toEqual([
+      ['amy', 4],
+      ['bob', 5],
+    ]);
+    expect(world.plots.filter((p) => p.kind === 'open').map((p) => p.number)).toEqual([6, 7, 8]);
+    // The site stands where the booth will, and nothing else moves.
+    const landed = buildWorld(ATTRACTIONS, [...booths(4), 'amy'], undefined, {
+      files: { amy: { plot: 4, issue: 7 } },
+      pending: pending.slice(1),
+    });
+    expect(placeOf(landed, 'amy')).toEqual(placeOf(world, 'amy'));
+    for (const id of [...ATTRACTIONS, ...booths(4), 'bob'])
+      expect(placeOf(landed, id)).toEqual(placeOf(world, id));
+  });
+
+  it('shows a change to an existing booth on that booth, not on a new plot', () => {
+    const pending = [{ login: 'elf-1', issue: 7, plot: 1, stage: 'almost' as const }];
+    const world = buildWorld(ATTRACTIONS, booths(3), undefined, { pending });
+    expect(world.plots.filter((p) => p.kind === 'site')).toEqual([]);
+    expect(world.plots.filter((p) => p.id === 'elf-1')).toHaveLength(1);
+  });
+
   it('keeps growing for a big event: open plots, no overlaps, every plot reachable', () => {
     for (const count of [100, 500]) {
       const world = buildWorld(ATTRACTIONS, booths(count));

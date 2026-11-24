@@ -100,6 +100,15 @@ describe('hovering', () => {
     expect(tagText({ kind: 'open' }, undefined).hint).toBe('E or click to claim this plot');
   });
 
+  it('says who a construction site is for and its stage, and nothing from the request', () => {
+    expect(tagText({ kind: 'site', id: 'amy' }, undefined, 'Checks running')).toEqual({
+      name: 'A booth under construction',
+      owner: '',
+      line: 'Being built for @amy: Checks running',
+      hint: 'E or click to see the request',
+    });
+  });
+
   it('puts the tag above the structure, inside the viewport', () => {
     const player = { x: 900, y: 900, w: 20, h: 40 };
     expect(placeTag({ x: 400, y: 300 }, { w: 100, h: 50 }, player, { w: 1000, h: 1000 })).toEqual({

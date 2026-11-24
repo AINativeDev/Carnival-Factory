@@ -9,6 +9,7 @@
  * gate runs them on a pull request's files, fetched as text.
  */
 import ts from 'typescript';
+import { readPlotFile } from '../northpole/plots.ts';
 import { hiddenCharacters, injectionMarkers } from './injection-scan.ts';
 
 /** Globals a square has no business with: the page, the worker, timers, the network, Node. */
@@ -164,6 +165,18 @@ function isNameOnly(node: ts.Identifier): boolean {
   return false;
 }
 
+/** Whether a booth's plot.json is small, and holds only a plot number and maybe an issue number. */
+export function isPlotFile(text: string): boolean {
+  if (text.length > 64) return false;
+  try {
+    const value = JSON.parse(text) as unknown;
+    const plot = readPlotFile(value);
+    return !!plot && Object.keys(value as object).length === Object.keys(plot).length;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Checks every source file of one square (a booth's folder, given as
  * `folder`, e.g. `booths/elf/`). Returns every problem found; empty means the
@@ -185,6 +198,27 @@ export function checkSquareCode(folder: string, files: readonly SourceFile[]): C
     }
     for (const found of injectionMarkers(file.text)) {
       problems.push({ file: file.path, line: found.line, rule: 'injection', message: found.what });
+    }
+  }
+
+  // The only other file a booth's code check lets through: its own plot.json,
+  // a single plot number and maybe its request's issue number, and nothing else.
+  for (const file of files) {
+    if (!file.path.endsWith('.json')) continue;
+    if (file.path !== `${folder}plot.json`) {
+      problems.push({
+        file: file.path,
+        line: 0,
+        rule: 'files',
+        message: 'The only JSON file a booth has is its own plot.json.',
+      });
+    } else if (!isPlotFile(file.text)) {
+      problems.push({
+        file: file.path,
+        line: 0,
+        rule: 'plot-file',
+        message: 'plot.json holds only { "plot": <number> }, and maybe "issue": <number>.',
+      });
     }
   }
 

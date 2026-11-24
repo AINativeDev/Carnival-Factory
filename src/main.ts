@@ -11,6 +11,7 @@ import { avatarPath } from '../northpole/owners';
 import { BOOTHS_PANEL, startBoothsPanel, type BoothsPanel } from './booths-hud';
 import { parseHash } from './route';
 import { openVisitHud, type VisitHud } from './visit-hud';
+import { followPending, knownPending, loadSites, saveSites } from './pending';
 import { keepUpToDate } from './updates';
 
 applyTheme();
@@ -117,10 +118,17 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
       onSelect: (selected) => panel?.showSelected(selected),
       avatars: AVATARS,
       focus,
+      pending: knownPending(),
+      wereSites: loadSites(),
     },
   );
+  const stopPending = followPending((pending) => {
+    started.setPending(pending);
+    saveSites(started.sites);
+  });
   stop = () => {
     closeCard(false);
+    stopPending();
     started.stop();
     panel?.stop();
     panel = undefined;

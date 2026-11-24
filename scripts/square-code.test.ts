@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { checkSquareCode } from './square-code.ts';
+import { checkSquareCode, isPlotFile } from './square-code.ts';
 
 const root = join(import.meta.dirname, '..');
 const FOLDER = 'booths/grinch/';
@@ -166,4 +166,26 @@ describe('every real booth and attraction', () => {
       });
     }
   }
+});
+
+describe("a booth's plot.json", () => {
+  it('passes a plot number, and maybe the issue number', () => {
+    expect(rules(fine, { 'plot.json': '{ "plot": 17 }\n' })).toEqual([]);
+    expect(isPlotFile('{ "plot": 17, "issue": 80 }')).toBe(true);
+  });
+
+  it('fails anything else in it, or any other JSON file', () => {
+    for (const text of [
+      '{ "plot": "17" }',
+      '{ "plot": 1.5 }',
+      '{ "plot": 3, "note": "hi" }',
+      '[3]',
+      '{',
+    ])
+      expect(isPlotFile(text)).toBe(false);
+    expect(isPlotFile(`{ "plot": 3${' '.repeat(80)}}`)).toBe(false);
+    expect(rules(fine, { 'plot.json': '{ "plot": -1 }' })).toEqual(['plot-file']);
+    expect(rules(fine, { 'data.json': '{ "plot": 1 }' })).toEqual(['files']);
+    expect(rules(fine, { 'nested/plot.json': '{ "plot": 1 }' })).toEqual(['files']);
+  });
 });

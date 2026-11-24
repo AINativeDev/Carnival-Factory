@@ -35,6 +35,20 @@ const versionFile: Plugin = {
 };
 
 /**
+ * Writes an empty pending.json, no booths being built, unless the deploy put
+ * the open booth requests in public/pending.json (scripts/write-pending.ts),
+ * which Vite copies as it is. So a preview or a local build shows none.
+ */
+const pendingFile: Plugin = {
+  name: 'pending-file',
+  apply: 'build',
+  generateBundle() {
+    if (existsSync(join(import.meta.dirname, 'public/pending.json'))) return;
+    this.emitFile({ type: 'asset', fileName: 'pending.json', source: '[]\n' });
+  },
+};
+
+/**
  * Writes share/<kind>-<id>.html for every booth and attraction, the pages Share
  * links to so they unfurl with a title, a description and the map's picture
  * (scripts/share-pages.ts), and that picture beside them.
@@ -117,7 +131,7 @@ function squareNames(): Record<string, string> {
 }
 
 export default defineConfig(({ command }) => ({
-  plugins: [versionFile, sharePages, badgePages],
+  plugins: [versionFile, pendingFile, sharePages, badgePages],
   define: {
     __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev'),
     __BADGE_HOLDERS__: JSON.stringify(BADGE_HOLDERS),

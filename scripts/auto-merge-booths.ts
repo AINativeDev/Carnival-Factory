@@ -148,8 +148,11 @@ async function boothFiles(
   }
   const problems: CodeProblem[] = [];
   for (const entry of entries) {
-    if (entry.mode === '120000' || !TEXT_FILES.test(entry.path)) {
-      problems.push(problem(entry.path, 'Only .ts and .md files merge without a person.'));
+    const plotFile = entry.path === `${folder}plot.json`;
+    if (entry.mode === '120000' || !(TEXT_FILES.test(entry.path) || plotFile)) {
+      problems.push(
+        problem(entry.path, 'Only .ts and .md files, and plot.json, merge without a person.'),
+      );
       continue;
     }
     const blob = await get<{ content: string }>(`git/blobs/${entry.sha}`);

@@ -11,6 +11,11 @@ name: Deploy to GitHub Pages
 # drops from the queue, or a build that finishes late, is put right by the
 # next one. Every run also rebuilds the root from main. Nothing here checks out or
 # runs a pull request's code: it only copies the files its build made.
+#
+# An issue labelled, unlabelled or closed also runs it, from main's own code,
+# so a booth request that's just been accepted shows its construction site on
+# the map within a couple of minutes, and one that moved along shows its new
+# stage.
 on:
   push:
     branches: [main]
@@ -19,6 +24,8 @@ on:
     types: [completed]
   pull_request_target:
     types: [closed]
+  issues:
+    types: [labeled, unlabeled, closed]
   workflow_dispatch:
 
 permissions:
@@ -77,6 +84,8 @@ jobs:
       # for the badge holders.
       issues: read
       pull-requests: read
+      # The checks on the booth requests' pull requests, for their stage.
+      checks: read
     outputs:
       placed: ${{ steps.files.outputs.placed }}
     steps:
@@ -119,6 +128,20 @@ jobs:
         run: |
           node scripts/write-square-history.ts ||
             echo "::warning title=No square history::Couldn't read the issues and pull requests, so the squares' timelines are empty in this build."
+
+      # The accepted booth requests not merged yet, for their construction
+      # sites: worked out afresh every run and never committed. The build
+      # copies public/pending.json beside the page. Without it, the build
+      # writes an empty list and the map shows no construction sites.
+      - name: List the booths being built
+        working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          timeout 2m node scripts/write-pending.ts public/pending.json || {
+            rm -f public/pending.json
+            echo "::warning title=No booths being built::Couldn't read the booth requests, so this build shows no construction sites."
+          }
 
       # Every booth owner's avatar, for the signs and the booths' insides,
       # bundled into the site so visitors make no requests to GitHub. An owner

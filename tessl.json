@@ -41,7 +41,7 @@
           }
         ]
       },
-      "instructions": "This is a booth request: the change lives only in booths/<the issue author's login, in lower case>/. Read AGENTS.md, docs/style.md and booths/jedi4ever/ as the pattern, change nothing outside the booth's folder, and keep checks to that folder while you work: npx eslint booths/<login>, npx tsc --noEmit, and npx vitest run booths/<login> northpole/booths.test.ts scripts/square-code.test.ts scripts/square-size.test.ts. Don't run the full smoke test or the whole test suite: CI runs both on the pull request."
+      "instructions": "This is a booth request: the change lives only in booths/<the issue author's login, in lower case>/. Read AGENTS.md, docs/style.md and booths/jedi4ever/ as the pattern, change nothing outside the booth's folder, and keep checks to that folder while you work: npx eslint booths/<login>, npx tsc --noEmit, and npx vitest run booths/<login> northpole/booths.test.ts scripts/square-code.test.ts scripts/square-size.test.ts. Don't run the full smoke test or the whole test suite: CI runs both on the pull request. A new booth (no booths/<login>/ yet) lands on the plot its construction site held: read the live site's pending.json (the site is `gh api repos/<owner>/<repo>/pages --jq .html_url`), and if it has an entry for the login, write {\"plot\": <its plot>, \"issue\": <its issue>} to booths/<login>/plot.json; if it doesn't, or can't be read, write no plot.json. Never add or change plot.json when changing an existing booth."
     },
     "merge-conflict-sweep": {
       "tags": [
