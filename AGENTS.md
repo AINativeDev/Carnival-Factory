@@ -25,6 +25,10 @@ Both draw through the same contract, a `NorthPoleSquare`.
 Run `npm run format`, then `npm run check`, before you finish any change. CI
 runs `npm run check` and `npm run build`.
 
+The factory's sandbox can't start a browser, so agents there never run
+`npm run smoke` or install Playwright: CI runs the smoke test on every pull
+request.
+
 ## Layout
 
 ```txt
