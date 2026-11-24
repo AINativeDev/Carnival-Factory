@@ -115,8 +115,8 @@ export const PLOTS_PER_LANE = 6;
 const LANE_LENGTH = (PLOTS_PER_LANE / 2) * 4;
 /** Attractions in one ring round the town square. */
 const ATTRACTIONS_PER_RING = 8;
-/** How much forest grows round the edge of the town, inside the island's fence. */
-const FOREST = 5;
+/** How much forest grows round the edge of the town, inside the island's fence: a thin band, so the carnival fills the island. */
+const FOREST = 3;
 
 /**
  * A number from 0 to 1 that depends only on its arguments and the world's
@@ -307,7 +307,8 @@ export function buildWorld(
   }
 
   // The island's edge: the forest round the town, and the fence round that.
-  const extent = Math.max(avenueEnd, sights + 14) + FOREST;
+  // The sights end 10 tiles past their first row, and the stream runs on into the forest.
+  const extent = Math.max(avenueEnd, sights + 11) + FOREST;
 
   // The main path runs on from the east avenue to the entrance arch at the
   // front of the island, under bunting strung between poles.
@@ -397,7 +398,7 @@ export function buildWorld(
   place('tent', turnBox({ x: 10, y: sights + 6, w: 2, h: 2 }, 2));
 
   // The pine forest: scattered through the town, and thick round its edge.
-  const town = extent - FOREST + 2;
+  const town = extent - FOREST;
   for (let x = -extent; x <= extent; x++)
     for (let y = -extent; y <= extent; y++) {
       if (kept.has(key(x, y))) continue;

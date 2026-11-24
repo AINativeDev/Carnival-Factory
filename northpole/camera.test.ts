@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   alongEdge,
+  carnivalBounds,
+  CARNIVAL_MARGIN,
   duskAt,
   fitZoom,
   frameCentre,
@@ -74,10 +76,43 @@ describe('the island', () => {
 describe('framing', () => {
   const bounds = islandBounds(world);
 
-  it('fits the whole island on a laptop, with room round it, when the player stands still', () => {
-    const { zoom } = framing(world, 1280, 800, world.start, 0, false);
+  it('fills a laptop with the carnival, every plot in view, when the player stands still', () => {
+    const { zoom, target } = framing(world, 1400, 856, world.start, 0, false);
+    const carnival = carnivalBounds(world);
+    expect(zoom).toBeCloseTo(fitZoom(carnival, 1400, 856, CARNIVAL_MARGIN));
+    // Twice as near as the whole island, or more.
+    expect(zoom).toBeGreaterThan(2 * fitZoom(bounds, 1400, 856));
+    const centre = frameCentre(bounds, 1400, 856, zoom, target);
+    for (const plot of world.plots) {
+      const at = worldToScreen(toScreen(plot.door), 1400, 856, centre, zoom);
+      expect(at.x).toBeGreaterThan(0);
+      expect(at.x).toBeLessThan(1400);
+      expect(at.y).toBeGreaterThan(0);
+      expect(at.y).toBeLessThan(856);
+    }
+  });
+
+  it('keeps a player who wanders off into the forest in view', () => {
+    const away = { x: -world.extent + 1, y: -world.extent + 1 };
+    const { zoom, target } = framing(world, 1400, 856, away, 0, false);
+    const centre = frameCentre(bounds, 1400, 856, zoom, target);
+    const at = worldToScreen(toScreen(away), 1400, 856, centre, zoom);
+    expect(at.y).toBeGreaterThan(0);
+    expect(at.x).toBeGreaterThan(0);
+  });
+
+  it('frames a carnival with more booths a little further out', () => {
+    const big = buildWorld(ATTRACTIONS, booths(40));
+    expect(carnivalBounds(big).w).toBeGreaterThan(carnivalBounds(world).w);
+    expect(framing(big, 1400, 856, big.start, 0, false).zoom).toBeLessThan(
+      framing(world, 1400, 856, world.start, 0, false).zoom,
+    );
+  });
+
+  it('shows the whole island, with room round it, when asked', () => {
+    const { zoom, target } = framing(world, 1280, 800, world.start, 0, true);
     expect(zoom).toBe(fitZoom(bounds, 1280, 800));
-    const centre = frameCentre(bounds, 1280, 800, zoom, toScreen(world.start));
+    const centre = frameCentre(bounds, 1280, 800, zoom, target);
     const corner = worldToScreen(islandCorners(world).left, 1280, 800, centre, zoom);
     expect(corner.x).toBeGreaterThanOrEqual(MARGIN - 1e-9);
     expect(centre).toEqual({ x: bounds.x + bounds.w / 2, y: bounds.y + bounds.h / 2 });

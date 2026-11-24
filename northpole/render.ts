@@ -893,48 +893,93 @@ function drawAttraction(
   return standing(plot, PAVILION.wall + PAVILION.roof + 20);
 }
 
-/** An open plot: a staked-out square of fresh snow, and a "For claim" sign on a little post. */
-function drawOpenPlot(ctx: CanvasRenderingContext2D, plot: Plot, time: number): Box {
+/** The "For claim" sign on an open plot: how tall its post is, and its board's size, in world pixels. */
+export const CLAIM_SIGN = { post: 96, w: 128, h: 40 };
+
+/**
+ * An open plot: a square of fresh snow roped off between stakes, a soft beam
+ * of light rising from it, and a big "For claim" sign on a tall post. The sign
+ * bounces while the player stands at the plot. Everything moves with `time`,
+ * so it all stands still when the map passes 0.
+ */
+function drawOpenPlot(ctx: CanvasRenderingContext2D, plot: Plot, time: number, near: boolean): Box {
   const c = corners(plot);
-  ctx.save();
-  ctx.strokeStyle = colors.berry;
-  ctx.lineWidth = 2;
-  ctx.setLineDash([6, 5]);
-  diamond(ctx, c, 0);
-  ctx.stroke();
-  ctx.restore();
-  for (const p of [c.top, c.right, c.bottom, c.left]) {
-    ctx.fillStyle = colors.wood;
-    ctx.fillRect(p.x - 1.5, p.y - 12, 3, 12);
-    ctx.fillStyle = colors.berry;
-    ctx.fillRect(p.x - 1.5, p.y - 12, 3, 3);
-  }
   const { x, y } = middle(plot);
+  const pulse = 0.75 + 0.25 * Math.sin(time / 700 + plot.number);
+  // The beam: a column of warm light fading upwards, over a glow on the snow.
+  ctx.save();
+  ctx.fillStyle = colors.glow;
+  ctx.globalAlpha = 0.35 * pulse;
+  diamond(ctx, c, 0);
+  ctx.fill();
+  const beam = ctx.createLinearGradient(0, y, 0, y - 190);
+  beam.addColorStop(0, colors.glow);
+  beam.addColorStop(1, `${colors.glow}00`);
+  ctx.fillStyle = beam;
+  ctx.globalAlpha = 0.4 * pulse;
+  ctx.beginPath();
+  ctx.moveTo(c.left.x + 10, c.left.y);
+  ctx.lineTo(c.bottom.x, c.bottom.y);
+  ctx.lineTo(c.right.x - 10, c.right.y);
+  ctx.lineTo(c.right.x - 22, c.right.y - 190);
+  ctx.lineTo(c.left.x + 22, c.left.y - 190);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+  // The rope, sagging a little between its stakes.
+  const stakes = [c.top, c.right, c.bottom, c.left];
+  ctx.strokeStyle = colors.berry;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  stakes.forEach((p, n) => {
+    const q = stakes[(n + 1) % 4];
+    ctx.moveTo(p.x, p.y - 14);
+    ctx.quadraticCurveTo((p.x + q.x) / 2, (p.y + q.y) / 2 - 8, q.x, q.y - 14);
+  });
+  ctx.stroke();
+  for (const p of stakes) {
+    ctx.fillStyle = colors.wood;
+    ctx.fillRect(p.x - 2, p.y - 18, 4, 18);
+    ctx.fillStyle = colors.berry;
+    ctx.fillRect(p.x - 2, p.y - 18, 4, 4);
+  }
+  // The sign on its tall post, bouncing for the player who stands at it.
+  const { post, w, h } = CLAIM_SIGN;
+  const lift = near
+    ? Math.abs(Math.sin(time / 180)) * 10
+    : Math.sin(time / 900 + plot.number) * 1.5;
   ctx.fillStyle = colors.cocoa;
-  ctx.fillRect(x - 2, y - 44, 4, 44);
-  const sway = Math.sin(time / 900 + plot.number) * 1.5;
+  ctx.fillRect(x - 3, y - post, 6, post);
+  const top = y - post - h / 2 - lift;
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(x - w / 2 - 3, top - 3, w + 6, h + 6);
   ctx.fillStyle = colors.gold;
-  ctx.fillRect(x - 40, y - 66 + sway, 80, 26);
+  ctx.fillRect(x - w / 2, top, w, h);
   ctx.fillStyle = colors.snow;
-  ctx.fillRect(x - 41, y - 68 + sway, 82, 3);
+  ctx.fillRect(x - w / 2 - 4, top - 6, w + 8, 5);
   ctx.fillStyle = colors.ink;
-  ctx.font = canvasFont('small', 'bold');
+  ctx.font = canvasFont('body', 'bold');
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('For claim', x, y - 52 + sway, 76);
+  ctx.fillText('For claim', x, top + h / 2, w - 12);
   ctx.textBaseline = 'alphabetic';
-  return { x: x - 44, y: y - 70, w: 88, h: 90 };
+  const reach = post + h / 2 + 16;
+  return { x: x - w / 2 - 8, y: y - reach, w: w + 16, h: reach + 24 };
 }
 
-/** Draws a plot and whatever stands on it. Returns where a click opens it. */
+/**
+ * Draws a plot and whatever stands on it. Returns where a click opens it.
+ * `near` says the player stands at it, which makes an open plot's sign bounce.
+ */
 export function drawPlot(
   ctx: CanvasRenderingContext2D,
   plot: Plot,
   square: NorthPoleSquare | undefined,
   paint: PaintSquare,
   time: number,
+  near = false,
 ): Box {
-  if (plot.kind === 'open' || !square) return drawOpenPlot(ctx, plot, time);
+  if (plot.kind === 'open' || !square) return drawOpenPlot(ctx, plot, time, near);
   if (plot.kind === 'attraction') return drawAttraction(ctx, plot, square, paint, time);
   return drawStall(ctx, plot, square, paint);
 }
@@ -951,7 +996,12 @@ export function drawPlotGlow(ctx: CanvasRenderingContext2D, plot: Plot, strength
   ctx.stroke();
   ctx.restore();
   const { x, y } = middle(plot);
-  const tall = plot.kind === 'attraction' ? PAVILION.wall : plot.kind === 'booth' ? STALL.wall : 40;
+  const tall =
+    plot.kind === 'attraction'
+      ? PAVILION.wall
+      : plot.kind === 'booth'
+        ? STALL.wall
+        : CLAIM_SIGN.post;
   glow(ctx, x, y - tall / 2, tall, strength);
 }
 
