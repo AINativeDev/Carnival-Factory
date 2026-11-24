@@ -36,7 +36,9 @@ Stop with no write when any of these holds:
   its single `Closes #n`) isn't labelled `booth-request`, or was written by a bot.
 - A comment by the Tessl App already starts with
   `<!-- assess-booth-risk sha=<the current head sha>` (you already decided for
-  this commit).
+  this commit), **unless** that verdict was `needs-human` and the pull request
+  no longer has the `needs-human` label: a maintainer removing the label is
+  asking you to look again, for example once a missing preview has appeared.
 
 ## 1. Gather
 

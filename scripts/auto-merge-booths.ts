@@ -33,6 +33,8 @@ const TEXT_FILES = /\.(ts|md)$/;
 const MAX_FILES = 40;
 const MAX_FILE_BYTES = 100 * 1024;
 const MAX_TOTAL_BYTES = 300 * 1024;
+/** Gate steps whose failure is labelled by someone else: the risk check, or a maintainer. */
+const LABELLED_ELSEWHERE = new Set(['Risk and taste check', 'No one has asked to hold it']);
 
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
   const response = await fetch(`${api}/repos/${repository}/${path}`, {
@@ -183,8 +185,15 @@ async function reviewState(pull: Pull): Promise<GateFacts['review']> {
   const reviews = await getAll<{ user: User; commit_id: string; body: string }>(
     `pulls/${pull.number}/reviews`,
   );
+  // Only a review carrying a result counts: the reviewer also posts follow-up
+  // reviews, such as replies on threads, that have none.
   const last = reviews
-    .filter((r) => r.user.login === REVIEWER && r.commit_id === pull.head.sha)
+    .filter(
+      (r) =>
+        r.user.login === REVIEWER &&
+        r.commit_id === pull.head.sha &&
+        r.body.includes('tessl-code-review:result:v1'),
+    )
     .at(-1);
   if (!last) return 'pending';
   return /tessl-code-review:result:v1[^>]*\bapproved=true\b/.test(last.body)
@@ -280,7 +289,13 @@ async function gate(pull: Pull) {
   console.log(`#${pull.number} (booth ${owner}, ${sha.slice(0, 7)}): ${result.decision}`);
   await upsertComment(pull.number, all, gateComment(result, GUIDE));
 
-  if (result.decision === 'human' && !facts.labels.includes('needs-human') && !dryRun) {
+  // Label only the gate's own deterministic failures. The risk check labels its
+  // own verdicts, and a maintainer removing the label is asking it to look
+  // again, so the gate mustn't put the label straight back over that.
+  const ownFailures = result.steps.filter(
+    (step) => step.hard && step.state === 'fail' && !LABELLED_ELSEWHERE.has(step.name),
+  );
+  if (ownFailures.length && !facts.labels.includes('needs-human') && !dryRun) {
     await call('POST', `issues/${pull.number}/labels`, { labels: ['needs-human'] });
   }
   if (result.decision !== 'merge' || dryRun) return;
@@ -303,6 +318,12 @@ async function gate(pull: Pull) {
   }
   merged = true;
   console.log(`#${pull.number}: merged`);
+  // A merge by this workflow's token doesn't close the linked issue, so close
+  // the request here, with a note on how it got onto the map.
+  await call('POST', `issues/${issue.number}/comments`, {
+    body: `Your booth is on the map. It merged on its own in #${pull.number} after passing every check in the auto-merge gate. [How your request is built](${GUIDE}) explains each one.`,
+  });
+  await call('PATCH', `issues/${issue.number}`, { state: 'closed', state_reason: 'completed' });
 }
 
 /**
