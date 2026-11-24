@@ -303,6 +303,24 @@ export function layoutMap(attractions: number, booths: number): MapLayout {
   };
 }
 
+/** How far a frame has scrolled over the town, in pixels from the town's top left corner. */
+export interface Scroll {
+  left: number;
+  top: number;
+}
+
+/**
+ * Where a frame `width` by `height` scrolls to show `point` in its middle, or
+ * as near the middle as the edges of the town allow, so it never scrolls past them.
+ */
+export function scrollToward(bounds: Box, point: Point, width: number, height: number): Scroll {
+  const clamp = (value: number, room: number) => Math.min(Math.max(value, 0), Math.max(room, 0));
+  return {
+    left: clamp(point.x - bounds.x - width / 2, bounds.width - width),
+    top: clamp(point.y - bounds.y - height / 2, bounds.height - height),
+  };
+}
+
 /** Whether `point` is inside `slot`'s square, turned as it is. */
 export function insideSlot(slot: Slot, x: number, y: number): boolean {
   const [dx, dy] = [x - slot.x, y - slot.y];

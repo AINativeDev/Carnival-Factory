@@ -12,6 +12,7 @@ import {
   SIGN_HEIGHT,
   SIGN_WIDTH,
   SQUARE_SIZE,
+  scrollToward,
   slotAt,
   type Box,
   type MapLayout,
@@ -252,5 +253,40 @@ describe('placeScenery', () => {
     };
     expect(near.some((lamp) => !below(lamp))).toBe(true);
     expect(near.some(below)).toBe(true);
+  });
+});
+
+describe('scrollToward', () => {
+  const bounds = { x: -1000, y: -500, width: 2000, height: 1000 };
+
+  it('centres a point in the frame when there is room', () => {
+    expect(scrollToward(bounds, { x: 0, y: 0 }, 400, 300)).toEqual({ left: 800, top: 350 });
+    expect(scrollToward(bounds, { x: 300, y: -100 }, 400, 300)).toEqual({ left: 1100, top: 250 });
+  });
+
+  it('stops at the edges of the town', () => {
+    expect(scrollToward(bounds, { x: -990, y: -490 }, 400, 300)).toEqual({ left: 0, top: 0 });
+    expect(scrollToward(bounds, { x: 990, y: 490 }, 400, 300)).toEqual({ left: 1600, top: 700 });
+  });
+
+  it('never scrolls a frame wider than the town', () => {
+    expect(scrollToward(bounds, { x: 500, y: 0 }, 2400, 300)).toEqual({ left: 0, top: 350 });
+  });
+
+  it('brings every square into view on a narrow phone screen and a wide one', () => {
+    const layout = layoutMap(3, 12);
+    for (const [width, height] of [
+      [360, 560],
+      [1200, 760],
+    ]) {
+      for (const slot of layout.slots) {
+        const { left, top } = scrollToward(layout.bounds, slot, width, height);
+        const [x, y] = [slot.x - layout.bounds.x - left, slot.y - layout.bounds.y - top];
+        expect(x).toBeGreaterThanOrEqual(SQUARE_SIZE / 2);
+        expect(x).toBeLessThanOrEqual(width - SQUARE_SIZE / 2);
+        expect(y).toBeGreaterThanOrEqual(SQUARE_SIZE / 2);
+        expect(y).toBeLessThanOrEqual(height - SQUARE_SIZE / 2);
+      }
+    }
   });
 });

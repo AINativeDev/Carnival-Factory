@@ -144,3 +144,45 @@ test("a square's sandbox keeps it from the network, storage and the page", async
     workerFetch: true,
   });
 });
+
+for (const viewport of [
+  { width: 390, height: 844 },
+  { width: 1200, height: 1000 },
+]) {
+  for (const { kind, id } of squares) {
+    test(`#/?${kind}=${id} opens the map on it at ${viewport.width} wide`, async ({ page }) => {
+      const problems = watch(page);
+      await page.setViewportSize(viewport);
+      await page.goto(`#/?${kind}=${id}`);
+      // The town only opens the squares it has in view.
+      await expect(frameOf(page, kind, id)).toHaveAttribute('data-state', 'ready', {
+        timeout: 5000,
+      });
+      await expect(page.locator('.map-note')).toBeHidden();
+      expect(problems).toEqual([]);
+    });
+  }
+}
+
+test('a deep link to a booth nobody has built says so, as text', async ({ page }) => {
+  await page.goto('#/?booth=nobody-here-yet');
+  await expect(page.locator('.map-note')).toHaveText(
+    "There's no booth for @nobody-here-yet yet. Claim it!",
+  );
+  await expect(page.locator('.map-note a')).toHaveAttribute('href', /claim-your-booth/);
+  await page.goto('#/?booth=%3Cb%3Ehi%3C%2Fb%3E');
+  await expect(page.locator('.map-note')).toBeHidden();
+  await expect(page.locator('.map-note b')).toHaveCount(0);
+});
+
+test("a square's page shares its deep link", async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('#/booth/jedi4ever');
+  await page.getByRole('button', { name: 'Copy link' }).click();
+  await expect(page.getByRole('button', { name: 'Copied!' })).toBeVisible();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toBe('http://localhost:4173/#/?booth=jedi4ever');
+  await page.getByRole('link', { name: 'See it on the map' }).click();
+  await expect(page).toHaveURL(/#\/\?booth=jedi4ever$/);
+  await expect(page.locator('.map-canvas')).toBeVisible();
+});

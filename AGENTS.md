@@ -32,7 +32,9 @@ index.html                  the page
 square.html                 the page each square's sandboxed frame loads
 src/
   main.ts                   the router: #/ is the map, #/booth/<login> one booth,
-                            #/attraction/<id> one attraction
+                            #/attraction/<id> one attraction, and #/?booth=<login>
+                            or #/?attraction=<id> the map showing that square
+  route.ts                  reading the hash (plain functions)
   style.css
 northpole/                  the map itself
   square.ts                 the NorthPoleSquare shape, the registries and the kill switch
