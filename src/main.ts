@@ -7,7 +7,7 @@ import {
   REPO_URL,
   keepPostedHref,
 } from '../northpole/links';
-import { PHONE_WIDTH } from '../northpole/camera';
+import { isPhone } from '../northpole/camera';
 import { startMap, startPreview, type MapControls, type SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
@@ -124,10 +124,11 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
 /**
  * The HUD over the map: the Booths panel, whose entries walk the player to a
  * square, and the button that shows the whole island on a phone. The panels
- * start open on a wide screen and folded to their icons on a phone.
+ * start open on a wide map and folded to their icons on a phone's, judged by
+ * the map frame's width, as the camera judges it.
  */
 function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
-  const wide = window.matchMedia(`(min-width: ${PHONE_WIDTH}px)`).matches;
+  const wide = !isPhone(app.querySelector<HTMLElement>('.map-frame')!.clientWidth);
   for (const panel of app.querySelectorAll<HTMLDetailsElement>('.hud-booths, .hud-controls'))
     panel.open = wide;
   const list = app.querySelector('.hud-list')!;

@@ -57,6 +57,8 @@ a {
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--color-night);
+  /* The HUD sizes itself by the frame, as the camera does, not by the viewport. */
+  container-type: inline-size;
 }
 
 .map-canvas {
@@ -267,7 +269,7 @@ kbd {
 }
 
 /* On a phone the panels fold to their icons, and a button shows the whole island. */
-@media (max-width: 719px) {
+@container (max-width: 719px) {
   .hud-overview {
     display: block;
   }

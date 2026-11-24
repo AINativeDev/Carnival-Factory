@@ -261,6 +261,8 @@ test('the map shows the island, its HUD, and draws within budget while the playe
     await page.waitForTimeout(900);
     await page.keyboard.up(key);
   }
+  // The map publishes its average only after warming up, so wait for a real measurement.
+  await expect(canvas).toHaveAttribute('data-frame-ms', /^\d+(\.\d+)?$/);
   const average = Number(await canvas.getAttribute('data-frame-ms'));
   expect(average, 'the map took too long to draw its frames').toBeLessThanOrEqual(
     MAP_FRAME_BUDGET_MS,
