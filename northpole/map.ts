@@ -494,20 +494,23 @@ export function startMap(
     if (plot !== invited) {
       invited = plot;
       invitedAt = time;
-      if (plot) {
-        const square = squareOf(plot);
-        const name = square?.name ?? plot.id ?? '';
-        prompt.replaceChildren();
-        const words = document.createElement('span');
-        words.className = 'prompt-text';
-        words.textContent = plot.kind === 'open' ? 'Claim this plot' : `Visit ${name}`;
-        const key = document.createElement('kbd');
-        key.textContent = touchScreen.matches ? 'Tap' : 'E';
-        prompt.append(words, ' ', key);
-        prompt.title = plot.kind === 'open' ? 'Claim this plot' : `Visit ${name}`;
-        prompt.dataset.plot = `${plot.kind}:${plot.id ?? plot.number}`;
-      }
     }
+    // Its words follow the square's name, which arrives once its frame has opened.
+    const words = !plot
+      ? ''
+      : plot.kind === 'open'
+        ? 'Claim this plot'
+        : `Visit ${squareOf(plot)?.name ?? plot.id ?? ''}`;
+    if (plot && prompt.title !== words) {
+      const text = document.createElement('span');
+      text.className = 'prompt-text';
+      text.textContent = words;
+      const key = document.createElement('kbd');
+      key.textContent = touchScreen.matches ? 'Tap' : 'E';
+      prompt.replaceChildren(text, ' ', key);
+      prompt.title = words;
+    }
+    if (plot) prompt.dataset.plot = `${plot.kind}:${plot.id ?? plot.number}`;
     prompt.hidden = !plot;
     const target = plot && targets.find((t) => t.plot === plot);
     if (plot && target) {
@@ -520,7 +523,7 @@ export function startMap(
       const x = Math.max(8, Math.min(width - w - 8, anchor.x - w / 2));
       const y = Math.max(8, Math.min(height - h - 8, anchor.y - h));
       prompt.style.translate = `${Math.round(x)}px ${Math.round(y)}px`;
-      prompt.style.opacity = `${reduced.matches ? Math.min(1, inviteOpacity(time - invitedAt) * 4) : inviteOpacity(time - invitedAt)}`;
+      prompt.style.opacity = `${inviteOpacity(time - invitedAt)}`;
     } else if (plot) {
       prompt.style.opacity = '0';
     }

@@ -37,6 +37,9 @@ src/
                             showing that square
   route.ts                  reading the hash (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
+  booths-hud.ts             the Booths panel: search, Featured, Near you, Recently added,
+                            Attractions, All booths a page at a time, and "This is me"
+  booth-panel.ts            the panel's searching, sorting and sections (plain functions)
   history.ts                the "How was this built?" panel: each square's requests and
                             pull requests, bundled from square-history.json at build time
   style.css
@@ -57,6 +60,9 @@ northpole/                  the map itself
                             and going inside a square)
   interior.ts               the room inside a square: its layout, walking in it and
                             out of its doorway, the fade (plain functions), and drawing it
+  owners.ts                 who owns what: each owner's colour, their avatar's address,
+                            and how a picked square's highlight and call to action fade
+                            (plain functions)
   visit.ts                  visiting a square and hovering one: the plot next door,
                             the share line and its link, hover tags (plain functions)
   sandbox.ts                the map's side of the sandbox: one frame per square
@@ -94,6 +100,11 @@ scripts/
                             (plain functions), for the credits (#32) to reuse
   write-square-history.ts   reads them from the GitHub API and writes square-history.json
                             before the deploy's build (previews have none)
+  booth-dates.ts            when each booth's folder first appeared, from git history,
+                            for Recently added (the build reads it)
+  avatars.ts                the build-time avatars' rules (plain functions)
+  download-avatars.ts       downloads every booth owner's avatar into public/avatars/
+                            before the deploy's build (previews show the elf fallback)
 ```
 
 ## Working on an issue

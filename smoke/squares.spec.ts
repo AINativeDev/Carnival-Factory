@@ -259,8 +259,9 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
   const canvas = page.locator('.map-canvas');
   await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever');
   await expect(page.locator('.map-prompt')).toBeVisible();
-  // Standing at the stall shows its tag.
-  await expect(page.locator('.map-tag.shown')).toHaveAttribute('data-plot', 'booth:jedi4ever');
+  // Standing at the stall invites the player in.
+  await expect(page.locator('.map-prompt')).toHaveAttribute('data-plot', 'booth:jedi4ever');
+  await expect(page.locator('.map-prompt')).toContainText("Visit Santa's Toy Factory");
   const at = await canvas.getAttribute('data-player');
   await canvas.focus();
   await page.keyboard.press('e');
@@ -338,7 +339,8 @@ test('a shared link starts inside the booth, and invites the visitor to claim th
   await page.keyboard.press('e');
   expect((await form).url()).toBe(CLAIM_URL);
   // The invitation shows once a visit: opening the booth again doesn't nag.
-  await page.locator('.hud-list button[data-kind="booth"][data-id="jedi4ever"]').click();
+  await page.locator('.hud-all button[data-kind="booth"][data-id="jedi4ever"]').click();
+  await page.keyboard.press('e');
   await expect(card).toBeVisible();
   await expect(card.locator('.visit-invite')).toBeHidden();
   expect(problems).toEqual([]);
@@ -393,31 +395,74 @@ test("shift-clicking a name in the Booths panel walks the player to a booth's do
   await page.goto('#/');
   const canvas = page.locator('.map-canvas');
   await page
-    .locator('.hud-list button[data-kind="booth"][data-id="jedi4ever"]')
+    .locator('.hud-all button[data-kind="booth"][data-id="jedi4ever"]')
     .click({ modifiers: ['Shift'] });
+  await expect(canvas).toHaveAttribute('data-selected', 'booth:jedi4ever');
   await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 20_000 });
 });
 
-test('the Booths panel and Featured go straight to their square, and inside it', async ({
+test('picking from the Booths panel or Featured highlights the square, and its call to action goes inside', async ({
   page,
 }) => {
   const problems = watch(page);
   await page.goto('#/');
   const canvas = page.locator('.map-canvas');
-  await page.locator('.hud-list button[data-kind="booth"][data-id="jedi4ever"]').click();
+  const entry = page.locator('.hud-all button[data-kind="booth"][data-id="jedi4ever"]');
+  await entry.click();
   await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 1000 });
-  await expect(page.locator('.visit[data-kind="booth"][data-id="jedi4ever"]')).toBeVisible();
-  // Inside, the Booths panel steps aside, so leave first.
+  await expect(canvas).toHaveAttribute('data-selected', 'booth:jedi4ever');
+  await expect(entry).toHaveClass(/selected/);
+  const prompt = page.locator('.map-prompt');
+  await expect(prompt).toHaveAttribute('data-plot', 'booth:jedi4ever');
+  await expect(prompt).toContainText('Visit');
+  // Picking it again lets go of it, and so does Esc.
+  await entry.click();
+  await expect(canvas).toHaveAttribute('data-selected', '');
+  await expect(entry).not.toHaveClass(/selected/);
+  await entry.click();
   await page.keyboard.press('Escape');
-  await expect(page).toHaveURL(/#\/$/);
+  await expect(canvas).toHaveAttribute('data-selected', '');
+
   const featured = page.locator('.hud-featured button[data-kind]');
   await expect(featured).toContainText('Featured');
   await featured.click();
   const id = await featured.getAttribute('data-id');
   await expect(canvas).toHaveAttribute('data-near', `attraction:${id}`, { timeout: 1000 });
+  await expect(canvas).toHaveAttribute('data-selected', `attraction:${id}`);
+  await expect(prompt).toHaveAttribute('data-plot', `attraction:${id}`);
+  await expect(prompt).toHaveCSS('opacity', '1');
+  // It bobs gently, so it never stands still for the click.
+  await prompt.click({ force: true });
   await expect(page).toHaveURL(new RegExp(`#/attraction/${id}$`));
   await expect(page.locator(`.visit[data-kind="attraction"][data-id="${id}"]`)).toBeVisible();
   await expect(page.locator('.visit')).toHaveCount(1);
+  expect(problems).toEqual([]);
+});
+
+test('the Booths panel finds a login, and Enter jumps to it', async ({ page }) => {
+  const problems = watch(page);
+  await page.goto('#/');
+  const canvas = page.locator('.map-canvas');
+  await canvas.focus();
+  await page.keyboard.press('/');
+  const search = page.getByPlaceholder('Find a booth or @login');
+  await expect(search).toBeFocused();
+  await page.keyboard.type('@JEDI4');
+  const found = page.locator('.hud-found button.hud-go');
+  await expect(found).toHaveCount(1);
+  await expect(found).toHaveAttribute('data-id', 'jedi4ever');
+  await expect(page.locator('.hud-results-title')).toHaveText('Results (1)');
+  await page.keyboard.press('Enter');
+  await expect(canvas).toHaveAttribute('data-selected', 'booth:jedi4ever');
+  await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 1000 });
+  // The arrow keys move through the results, and Esc clears the search.
+  await page.keyboard.press('ArrowDown');
+  await expect(found).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(search).toHaveValue('');
+  await expect(page.locator('.hud-section[data-section="all"] > summary')).toHaveText(
+    `All booths (${booths.length})`,
+  );
   expect(problems).toEqual([]);
 });
 
@@ -430,7 +475,7 @@ test('Claim a plot walks the player to an open plot, where E opens the form', as
   const canvas = page.locator('.map-canvas');
   await page.getByRole('button', { name: 'Claim a plot' }).click();
   await expect(canvas).toHaveAttribute('data-near', /^open:/, { timeout: 20_000 });
-  await expect(page.locator('.map-prompt')).toHaveText('Press E to claim this plot');
+  await expect(page.locator('.map-prompt')).toContainText('Claim this plot');
   const form = context.waitForEvent('page');
   await page.keyboard.press('e');
   expect((await form).url()).toBe(CLAIM_URL);
