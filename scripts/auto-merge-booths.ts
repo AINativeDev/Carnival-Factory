@@ -318,6 +318,12 @@ async function gate(pull: Pull) {
   }
   merged = true;
   console.log(`#${pull.number}: merged`);
+  // A merge by this workflow's token doesn't close the linked issue, so close
+  // the request here, with a note on how it got onto the map.
+  await call('POST', `issues/${issue.number}/comments`, {
+    body: `Your booth is on the map. It merged on its own in #${pull.number} after passing every check in the auto-merge gate. [How your request is built](${GUIDE}) explains each one.`,
+  });
+  await call('PATCH', `issues/${issue.number}`, { state: 'closed', state_reason: 'completed' });
 }
 
 /**
