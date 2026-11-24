@@ -1,3 +1,5 @@
+import { canvasFont, theme } from './theme';
+
 /**
  * One person's square of the North Pole map.
  *
@@ -39,4 +41,34 @@ export function createPlotRegistry(plots: readonly NorthPolePlot[]) {
     all: (): NorthPolePlot[] => [...byOwner.values()],
     get: (owner: string): NorthPolePlot | undefined => byOwner.get(owner.toLowerCase()),
   };
+}
+
+/**
+ * A stand-in for a plot a maintainer switched off in `disabled.json`: the same
+ * square, name and owner, but its own `draw` never runs. The plot's module is
+ * still loaded, so to stop code that runs on import, remove its folder.
+ */
+export function closeForRepairs(plot: NorthPolePlot): NorthPolePlot {
+  return {
+    owner: plot.owner,
+    name: plot.name,
+    description: 'Closed for repairs.',
+    draw(ctx, size) {
+      ctx.fillStyle = theme.colors.surface;
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = theme.colors.muted;
+      ctx.font = canvasFont('small');
+      ctx.textAlign = 'center';
+      ctx.fillText('Closed for repairs', size / 2, size / 2, size);
+    },
+  };
+}
+
+/** Swaps every plot whose owner is in `disabled` for its closed stand-in. */
+export function applyKillSwitch(
+  plots: readonly NorthPolePlot[],
+  disabled: readonly string[],
+): NorthPolePlot[] {
+  const off = new Set(disabled.map((owner) => owner.toLowerCase()));
+  return plots.map((plot) => (off.has(plot.owner) ? closeForRepairs(plot) : plot));
 }

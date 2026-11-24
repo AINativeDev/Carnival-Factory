@@ -30,8 +30,10 @@ shares one repo and one factory.
 
 - **Your plot is yours alone.** The **Plot ownership** check fails any pull
   request that changes a file outside its owner's plot. For a pull request the
-  factory opens, the owner is whoever wrote the issue it closes. For one you
-  open yourself, it's you.
+  factory opens, the owner is whoever wrote the issue it closes.
+- **Issues, not pull requests.** Every change starts as an issue. A pull
+  request from someone who isn't a collaborator is closed automatically with a
+  pointer to the issue forms, and its code never runs.
 - **Only maintainers merge.** For now that's
   [@jedi4ever](https://github.com/jedi4ever). `.github/CODEOWNERS` asks for
   their review on every pull request, and the maintainers may change any file,
@@ -39,23 +41,32 @@ shares one repo and one factory.
 - **A plot can't break the map.** Each plot draws on a canvas of its own,
   and a plot that throws shows "Under construction" instead of taking the map
   down.
+- **A plot only draws.** ESLint's house rules in `eslint.config.js` stop a
+  plot from importing anything but the map and its own files, and from using
+  the network, storage, other windows, the page's address, `eval` or string
+  timers.
 
 ## For maintainers
 
-Three repository settings make the rules binding. They aren't in the code, so
+These repository settings make the rules binding. They aren't in the code, so
 set them once in **Settings → Branches** with a protection rule for `main`:
 
 - **Require a pull request before merging**, with **Require review from Code
   Owners**, so every merge needs a maintainer's approval.
 - **Require status checks to pass**, with **ownership** (from **Plot
   ownership**) and **check** (from **CI**).
+- In **Settings → Actions → General**, require approval for workflows from
+  outside contributors, and set the workflow token to read-only by default.
 - **Restrict who can push to matching branches**, listing only the
   maintainers. Approval alone doesn't decide who merges: anyone with write
   access could still merge an approved pull request. Merging is a push to
   `main`, so this is what keeps the merge itself with the maintainers.
 
 To add a maintainer, add them to `.github/CODEOWNERS` and to `MAINTAINERS` in
-`scripts/ownership.ts`. To publish the map, go to **Settings → Pages** and set
+`scripts/ownership.ts`. To switch a misbehaving plot off, add its owner's
+login to `src/northpole/disabled.json`: it shows "Closed for repairs" and its
+`draw` never runs. Its code is still loaded, so for code that misbehaves as
+soon as it loads, remove the plot's folder instead. To publish the map, go to **Settings → Pages** and set
 **Source** to **GitHub Actions**: every merge to `main` then redeploys it.
 
 ## Commands

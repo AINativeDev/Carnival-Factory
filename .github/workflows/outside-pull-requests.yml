@@ -1,0 +1,32 @@
+name: Outside pull requests
+
+# Changes reach the map through issues and the factory, never through a pull
+# request from outside. This closes a pull request whose author is not a
+# collaborator, with a pointer to the issue forms. It runs on
+# pull_request_target and never checks out or runs the pull request's code: it
+# only reads the event and calls the API. The factory's own pull requests, from
+# tessl/ branches of this repository, are left alone.
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  close:
+    if: >-
+      !contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.pull_request.author_association) &&
+      !(github.event.pull_request.head.repo.full_name == github.repository &&
+        startsWith(github.event.pull_request.head.ref, 'tessl/'))
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          gh pr close "$PR_NUMBER" --comment "Thanks for wanting to build on the North Pole! Changes here come from issues, not pull requests: open one at $SERVER_URL/$GH_REPO/issues/new/choose and a maintainer hands it to the factory, which builds your plot and opens the pull request for you. This one is closed, and none of its code was run."
