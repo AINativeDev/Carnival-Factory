@@ -10,6 +10,8 @@ import { boothRegistry } from '../northpole/booths';
 import { avatarPath } from '../northpole/owners';
 import { sitesToRemember } from '../northpole/plots';
 import { BOOTHS_PANEL, startBoothsPanel, type BoothsPanel } from './booths-hud';
+import { openFactoryHud, readFactoryStats, squareCounts } from './factory';
+import { SQUARE_HISTORY } from './history';
 import { parseHash } from './route';
 import { openVisitHud, type VisitHud } from './visit-hud';
 import { followPending, knownPending, loadSites, saveSites } from './pending';
@@ -71,7 +73,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
         <canvas class="map-canvas" tabindex="0" aria-label="The North Pole. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a booth or an attraction to go inside, or at an open plot to claim it. Inside, Esc or walking out through the doorway leaves."></canvas>
         <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
-        <p class="hud hud-tessl">Built with Tessl</p>
+        <a class="hud hud-tessl" href="#/factory">Built with Tessl</a>
         ${BOOTHS_PANEL}
         <details class="hud hud-controls">
           <summary>Controls</summary>
@@ -216,7 +218,7 @@ function renderKeepPosted() {
     </section>`;
 }
 
-/** The map running now, the HUD of the square the player is inside, and how they came in. */
+/** The map running now, the HUD of the square the player is inside or of the factory's numbers, and how they came in. */
 let map: MapControls | undefined;
 let card: VisitHud | undefined;
 /**
@@ -237,7 +239,7 @@ let invite: string | undefined =
       ? arrival.focus.id
       : undefined;
 
-/** Leaves the square the player is inside. `address` says to take the address back off the square, too. */
+/** Leaves the square the player is inside, or the factory's numbers. `address` says to take the address back off it, too. */
 function closeCard(address: boolean) {
   if (!card) return;
   card.close();
@@ -280,6 +282,21 @@ function visit(kind: SquareKind, id: string, fromHistory: boolean) {
   });
 }
 
+/** Shows the factory's numbers over the map. */
+function showFactory(fromHistory: boolean) {
+  const fromMap = fromHistory && !card;
+  closeCard(false);
+  cardFromHistory = fromMap;
+  card = openFactoryHud(app.querySelector('.map-frame')!, {
+    squares: squareCounts(
+      boothRegistry.all().map((square) => square.id),
+      attractionRegistry.all().map((square) => square.id),
+    ),
+    stats: readFactoryStats(SQUARE_HISTORY?.factory),
+    onClose: () => closeCard(true),
+  });
+}
+
 function route(event?: HashChangeEvent) {
   if (ignoreNextRoute) {
     ignoreNextRoute = false;
@@ -302,6 +319,11 @@ function route(event?: HashChangeEvent) {
   if (route.view === 'square') {
     if (!map) renderMap();
     return visit(route.kind, route.id, fromHistory);
+  }
+
+  if (route.view === 'factory') {
+    if (!map) renderMap();
+    return showFactory(fromHistory);
   }
 
   // Back from a visit, or See it on the map: the player comes out, and the world stays.

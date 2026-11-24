@@ -273,6 +273,18 @@ body[data-view='map'] .map {
   font-weight: bold;
 }
 
+/* The pill opens the factory's numbers. */
+a.hud-tessl {
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+a.hud-tessl:hover,
+a.hud-tessl:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
 .hud-booths {
   top: 12px;
   right: 12px;
@@ -523,8 +535,81 @@ kbd {
 .map-frame[data-visiting] .map-prompt,
 .map-frame[data-visiting] .hud-actions,
 .map-frame[data-visiting] .hud-booths,
-.map-frame[data-visiting] .hud-controls {
+.map-frame[data-visiting] .hud-controls,
+.map-frame[data-factory] .hud-booths,
+.map-frame[data-factory] .hud-controls {
   display: none;
+}
+
+/* The factory's numbers: a visit's panel, wider, in the middle of the map. */
+.factory {
+  top: 56px;
+  left: 50%;
+  z-index: 5;
+  box-sizing: border-box;
+  width: min(560px, calc(100% - 24px));
+  max-height: calc(100% - 68px);
+  overflow: auto;
+  padding: 12px 18px 16px;
+  border: 3px solid var(--color-gold);
+  text-align: center;
+  transform: translateX(-50%);
+  animation: visit-in 0.5s ease-out;
+}
+
+.factory-intro,
+.factory-note,
+.factory-how {
+  margin: 6px 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.factory-note {
+  font-size: 12px;
+  font-style: italic;
+}
+
+.factory-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+  gap: 10px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.factory-figure {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-gold) 70%, transparent);
+  border-radius: var(--radius);
+  overflow-wrap: anywhere;
+}
+
+.factory-value {
+  color: var(--color-berry);
+  font-size: 34px;
+  font-weight: bold;
+  line-height: 1.1;
+}
+
+.factory-label {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.factory-detail {
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.factory a {
+  color: var(--color-cocoa);
+  font-weight: bold;
 }
 
 .visit {
@@ -780,9 +865,14 @@ kbd {
   opacity: 0.85;
 }
 
-.history-own {
+.history-own,
+.history-factory {
   margin: 10px 0 0;
   font-size: 13px;
+}
+
+.history-factory-link {
+  font-weight: 700;
 }
 
 .history-own-link {
@@ -807,7 +897,8 @@ kbd {
   opacity: 0.8;
 }
 
-.visit :focus-visible {
+.visit :focus-visible,
+.factory :focus-visible {
   outline: 3px solid var(--color-gold);
   outline-offset: 2px;
 }
@@ -855,7 +946,8 @@ kbd {
     transition: none;
   }
 
-  .visit {
+  .visit,
+  .factory {
     animation: none;
   }
 }
