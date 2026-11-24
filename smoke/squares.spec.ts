@@ -68,16 +68,26 @@ for (const { kind, id } of squares) {
   });
 }
 
-test('the map opens every square and stays quiet', async ({ page }) => {
+test('the map opens the squares in view and stays quiet', async ({ page }) => {
   const problems = watch(page);
   await page.goto('#/');
-  for (const { kind, id } of squares) {
-    await expect(frameOf(page, kind, id)).toHaveAttribute('data-state', 'ready', {
-      timeout: 5000,
-    });
-  }
-  await page.waitForTimeout(1000);
-  await page.locator('canvas').screenshot({ path: join(SHOTS, 'map.png') });
+  // The town only draws, and so only opens, the squares in view: each one's
+  // own test above opens it on its own page.
+  await expect(page.locator('iframe[data-kind]').first()).toBeAttached({ timeout: 5000 });
+  await page.waitForTimeout(3000);
+  const states = await page
+    .locator('iframe[data-kind]')
+    .evaluateAll((frames) =>
+      frames.map(
+        (f) =>
+          `${(f as HTMLElement).dataset.kind} ${(f as HTMLElement).dataset.id}: ${(f as HTMLElement).dataset.state}`,
+      ),
+    );
+  expect(states.filter((state) => !state.endsWith(': ready'))).toEqual([]);
+  await page
+    .locator('canvas')
+    .first()
+    .screenshot({ path: join(SHOTS, 'map.png') });
   expect(problems).toEqual([]);
 });
 
