@@ -38,6 +38,26 @@ A few things that help:
   bold poster, papercut, pixel art, tiny model railway, or a glowing night
   scene. The factory keeps it in the dusk light and the North Pole's palette.
 
+## Your stall
+
+Your drawing goes on the front of your stall on the map. The stall itself can
+be one of a few shapes the map knows how to draw, with its roof in one of the
+North Pole's colours:
+
+- **Market stall**, the usual one: wooden walls, a counter and a striped
+  awning.
+- **Shed**: long and low, with a flat roof.
+- **Tent**: round, with a striped canvas roof and a pennant on top.
+- **Cabin**: a log cabin with a snowy pitched roof.
+- **Kiosk**: a small hexagonal kiosk with a pointed roof.
+
+Pick one under **Stall shape** in the form, and name a roof colour, and a
+second colour for the stripes or the awning if you like, in your request: "a
+shed with a gold roof", "a tent in pine green and cream". The colours are the
+palette's: snow, ice, pine, berry, gold, wood, cocoa, gingerbread, cream,
+violet, mint, aurora and the rest of the `theme`. Your sign and door stay where
+they are, so people find you in the same place.
+
 ## What a booth can't do
 
 A booth only draws on its own square, so it can't play sound, load pictures or
@@ -91,7 +111,8 @@ someone else owns, though anything _in the spirit of_ one is fine.
 ## Changing your booth later
 
 Open **Your booth** again and describe what should be different: "Add a third
-penguin", "Make it night time", "Give the snowman a scarf". Your latest request
+penguin", "Make it night time", "Give the snowman a scarf", "Make my stall a
+cabin with a berry roof". Your latest request
 is the one that counts.
 
 ## Games

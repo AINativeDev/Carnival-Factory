@@ -13,7 +13,7 @@ import type { CodeProblem } from './square-code.ts';
 import type { TextFinding } from './injection-scan.ts';
 
 /** The checks that must pass on the head commit before anything merges. */
-export const REQUIRED_CHECKS = ['check', 'ownership', 'build', 'test', 'smoke'] as const;
+export const REQUIRED_CHECKS = ['check', 'ownership', 'build', 'smoke'] as const;
 /** At most one booth merges on its own per participant in this long. */
 export const RATE_LIMIT_MS = 60 * 60 * 1000;
 

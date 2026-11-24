@@ -4,7 +4,7 @@
  * a loop can't freeze any other square. It has no DOM at all: it draws onto an
  * OffscreenCanvas and sends each frame to the frame as a bitmap.
  */
-import { readDrawRequest, readFrameAddress } from './frame-protocol';
+import { readDrawRequest, readFrameAddress, readStall } from './frame-protocol';
 import type { NorthPoleSquare } from './square';
 
 type Loader = () => Promise<NorthPoleSquare | undefined>;
@@ -46,7 +46,9 @@ addEventListener('message', (event: MessageEvent) => {
     load(data.hash).then(
       (loaded) => {
         square = loaded;
-        send({ type: 'ready', name: loaded.name, description: loaded.description });
+        // Only the checked fields, so nothing the square hangs on its option is sent.
+        const stall = readStall(loaded.stall);
+        send({ type: 'ready', name: loaded.name, description: loaded.description, stall });
       },
       (error) => send({ type: 'error', message: String(error) }),
     );

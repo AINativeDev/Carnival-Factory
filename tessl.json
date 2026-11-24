@@ -40,7 +40,8 @@
             "limit": 1
           }
         ]
-      }
+      },
+      "instructions": "This is a booth request: the change lives only in booths/<the issue author's login, in lower case>/. Read AGENTS.md, docs/style.md and booths/jedi4ever/ as the pattern, change nothing outside the booth's folder, and keep checks to that folder while you work: npx eslint booths/<login>, npx tsc --noEmit, and npx vitest run booths/<login> northpole/booths.test.ts scripts/square-code.test.ts scripts/square-size.test.ts. Don't run the full smoke test or the whole test suite: CI runs both on the pull request."
     },
     "merge-conflict-sweep": {
       "tags": [
@@ -525,7 +526,8 @@
         },
         "event.check_suite.pull_requests.0.number": {
           "exists": true
-        }
+        },
+        "event.check_suite.app.slug": "github-actions"
       },
       "action": {
         "use": "assess-booth-risk",
