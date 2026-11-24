@@ -53,12 +53,21 @@ jobs:
         with:
           # Keep the token out of .git/config, where the code that runs next could read it.
           persist-credentials: false
+          # The merge commit's first parent is the base: enough to see what changed.
+          fetch-depth: 2
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Play only the changed booth, if that's all that changes
+        run: |
+          scope=$(git diff --name-only HEAD^1 HEAD | node scripts/smoke-scope.ts)
+          if [ -n "$scope" ]; then
+            echo "SMOKE_ONLY=$scope" >> "$GITHUB_ENV"
+            echo "Playing only $scope one by one; the map-wide tests still run."
+          fi
       - run: npm run smoke
         env:
           CI: 'true'

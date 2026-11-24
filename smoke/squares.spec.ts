@@ -50,6 +50,11 @@ const squares = (['booth', 'attraction'] as const).flatMap((kind) => {
     .map((id) => ({ kind, id }));
 });
 
+// On a pull request that only changes one booth, CI plays just that booth
+// one by one (scripts/smoke-scope.ts). The map-wide tests still see every square.
+const only = process.env.SMOKE_ONLY;
+const played = only ? squares.filter(({ kind, id }) => `${kind}/${id}` === only) : squares;
+
 /** A square's frame: booths and attractions may share an id, so match both. */
 const frameOf = (page: Page, kind: string, id: string) =>
   page.locator(`iframe[data-kind="${kind}"][data-id="${id}"]`);
@@ -72,7 +77,7 @@ function watch(page: Page) {
 
 mkdirSync(SHOTS, { recursive: true });
 
-for (const { kind, id } of squares) {
+for (const { kind, id } of played) {
   test(`${kind} ${id} opens, draws within budget and stays quiet`, async ({ page }) => {
     const problems = watch(page);
     await page.goto(`#/${kind}/${id}`);
@@ -180,7 +185,7 @@ for (const viewport of [
   { width: 390, height: 844 },
   { width: 1200, height: 1000 },
 ]) {
-  for (const { kind, id } of squares) {
+  for (const { kind, id } of played) {
     test(`#/?${kind}=${id} opens the map on it at ${viewport.width} wide`, async ({ page }) => {
       const problems = watch(page);
       await page.setViewportSize(viewport);
