@@ -14,17 +14,17 @@ describe('keepPostedHref', () => {
 });
 
 describe('signupOffer', () => {
-  it('is hidden until both its link and its wording are filled in', () => {
-    expect(signupOffer('', '')).toBeUndefined();
+  it('stays hidden until both its link and its wording are filled in', () => {
+    expect(signupOffer()).toBeUndefined();
     expect(signupOffer('https://tessl.io/signup', '')).toBeUndefined();
-    expect(signupOffer('', 'Free credits when you sign up')).toBeUndefined();
-    expect(signupOffer('  ', 'Free credits when you sign up')).toBeUndefined();
+    expect(signupOffer('', 'Free credits')).toBeUndefined();
+    expect(signupOffer('http://tessl.io/signup', 'Free credits')).toBeUndefined();
   });
 
   it('shows once both are set', () => {
-    expect(signupOffer('https://tessl.io/signup', 'Free credits when you sign up')).toEqual({
+    expect(signupOffer('https://tessl.io/signup', ' Free credits ')).toEqual({
       url: 'https://tessl.io/signup',
-      offer: 'Free credits when you sign up',
+      text: 'Free credits',
     });
   });
 });

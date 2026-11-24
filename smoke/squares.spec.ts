@@ -17,9 +17,13 @@ import { buildWorld, toScreen, type PinnedPlots } from '../northpole/world';
 const root = join(import.meta.dirname, '..');
 const SHOTS = join(root, 'screenshots');
 /** Milliseconds a square may spend drawing one frame. */
-const FRAME_BUDGET_MS = 8;
+// CI's browsers draw without a GPU, in software, several times slower than a
+// laptop, so they get a looser budget. It still catches a real slowdown there,
+// without failing on the runner's speed.
+const ON_CI = !!process.env.CI;
+const FRAME_BUDGET_MS = ON_CI ? 16 : 8;
 /** Milliseconds the map may spend drawing one frame, on average, while the player walks. */
-const MAP_FRAME_BUDGET_MS = 12;
+const MAP_FRAME_BUDGET_MS = ON_CI ? 25 : 12;
 const PLAY_MS = 3000;
 
 // Squares a maintainer switched off show "Closed for repairs" and never open a
@@ -268,6 +272,26 @@ test('a booth links to its season card, which downloads as a PNG and copies its 
   await page.goto('#/season/nobody-here-yet');
   await expect(page.getByRole('heading', { name: 'No season yet' })).toBeVisible();
   await expect(page.getByText("@nobody-here-yet doesn't have a booth yet.")).toBeVisible();
+});
+
+test('the Elf Engineer badges and their snippets are plain files on the site', async ({
+  request,
+}) => {
+  for (const name of [
+    'elf-engineer',
+    'elf-engineer-bronze',
+    'elf-engineer-silver',
+    'elf-engineer-gold',
+  ]) {
+    const badge = await request.get(`badges/${name}.svg`);
+    expect(badge.ok()).toBe(true);
+    const svg = await badge.text();
+    expect(svg).toContain('Elf Engineer');
+    expect(svg).not.toMatch(/<script|href=/i);
+  }
+  const page = await (await request.get('badges/index.html')).text();
+  expect(page).toContain('badges/elf-engineer-gold.svg)]');
+  expect(page).not.toMatch(/<script/i);
 });
 
 const booths = squares.filter((square) => square.kind === 'booth').map((square) => square.id);

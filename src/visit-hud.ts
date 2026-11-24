@@ -1,14 +1,19 @@
+import { badgeFor, factoryUrl } from '../northpole/badges';
 import {
+  BADGE_REQUEST_URL,
   CHANGE_URL,
   CLAIM_URL,
   HOW_IT_WORKS_URL,
   KEEP_POSTED_URL,
+  OWN_REPO_URL,
   keepPostedHref,
+  signupOffer,
 } from '../northpole/links';
 import type { SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { shareLink, shareText } from '../northpole/visit';
+import { SQUARE_HISTORY, emptyHistoryText, historyOf, renderHistory } from './history';
 import { deepLink, seasonLink } from './route';
 
 export interface VisitHudOptions {
@@ -53,6 +58,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>
     <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
     <p class="visit-owner"></p>
+    <p class="visit-factory" hidden><a target="_blank" rel="noopener"></a></p>
     <p class="visit-description" id="visit-description"></p>
     <div class="visit-share">
       <label class="visit-label" for="visit-share-text">Share text</label>
@@ -68,6 +74,16 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       <button class="visit-claim" type="button">Claim the plot next door</button>
       <a class="visit-how" href="${HOW_IT_WORKS_URL}" target="_blank" rel="noopener">How was this built?</a>
     </div>
+    <details class="visit-history">
+      <summary>How was this built?</summary>
+      <ol class="history-list"></ol>
+      <p class="history-empty" hidden></p>
+      <p class="history-own"><a class="history-own-link" href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run this on your own repo</a>: set up a Tessl factory on a repository of yours.</p>
+      <div class="history-offer" hidden>
+        <p><span class="history-offer-tag">Offer</span> <a class="history-offer-link" target="_blank" rel="noopener"></a></p>
+        <p class="history-terms">Terms apply, as set out on Tessl's sign-up page. Tessl makes this offer, not the carnival.</p>
+      </div>
+    </details>
     <p class="visit-help">Want to hear about the next North Pole event? ${KEEP_POSTED_LINK}</p>`;
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
 
@@ -76,9 +92,33 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   $<HTMLElement>('.visit-owner').hidden = !owner;
   $<HTMLAnchorElement>('.visit-map').href = deepLink(kind, square.id);
 
+  // An Elf Engineer's booth links to the factory on their own repository.
+  const badge = kind === 'booth' ? badgeFor(square.id) : undefined;
+  if (badge) {
+    const factory = $<HTMLAnchorElement>('.visit-factory a');
+    factory.href = factoryUrl(badge);
+    factory.textContent = `See ${owner}'s own factory`;
+    $<HTMLElement>('.visit-factory').hidden = false;
+  }
+
+  // How was this built: open beside the room, collapsed on a phone, where it sits below it.
+  const entries = historyOf(SQUARE_HISTORY, kind, square.id);
+  renderHistory($('.history-list'), entries);
+  const empty = $<HTMLElement>('.history-empty');
+  empty.textContent = emptyHistoryText(SQUARE_HISTORY);
+  empty.hidden = entries.length > 0;
+  $<HTMLDetailsElement>('.visit-history').open = !matchMedia('(max-width: 719px)').matches;
+  const offer = signupOffer();
+  if (offer) {
+    const offerLink = $<HTMLAnchorElement>('.history-offer-link');
+    offerLink.href = offer.url;
+    offerLink.textContent = offer.text;
+    $<HTMLElement>('.history-offer').hidden = false;
+  }
+
   const help = $('.visit-help');
   if (kind === 'booth') {
-    help.innerHTML = `Is this yours? <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask the factory for a change</a>, or <button class="visit-mine" type="button">share it as yours</button>. <a class="visit-season">Your season</a>`;
+    help.innerHTML = `Is this yours? <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask the factory for a change</a>, or <button class="visit-mine" type="button">share it as yours</button>. Built a factory of your own? <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Ask for the Elf Engineer badge</a>. <a class="visit-season">Your season</a>`;
     help.querySelector<HTMLAnchorElement>('.visit-season')!.href = seasonLink(square.id);
   } else {
     help.innerHTML = `Attractions belong to the North Pole, so only its maintainers change them. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.`;

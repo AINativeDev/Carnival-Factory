@@ -6,6 +6,12 @@ export const REPO_URL = 'https://github.com/AINativeDev/Northpole-Carnival-Facto
  */
 export const BOOTH_REQUEST_URL = `${REPO_URL}/issues/new?template=01-your-booth.yml`;
 
+/**
+ * The Elf Engineer form: asks for the badge, for someone who set up a Tessl
+ * factory on a repository of their own.
+ */
+export const BADGE_REQUEST_URL = `${REPO_URL}/issues/new?template=02-elf-engineer.yml`;
+
 /** Where "claim a booth" links go: the same form, for someone without a booth. */
 export const CLAIM_URL = BOOTH_REQUEST_URL;
 
@@ -26,18 +32,21 @@ export const keepPostedHref = (url: string = KEEP_POSTED_URL) => url || '#/keep-
 /** How a booth request becomes a booth on the map, for visitors who wonder. */
 export const HOW_IT_WORKS_URL = `${REPO_URL}/blob/main/docs/how-it-works.md`;
 
-/** Where "Keep your factory running" goes: how to set up Tessl on your own repository. */
+/** "Run this on your own repo": how to set up a Tessl factory on a repository of your own. */
 export const OWN_REPO_URL = `${REPO_URL}#try-it-on-your-own`;
 
 /**
  * The free credits offer for people who sign up for Tessl, shown beside the
- * "own repository" link: where it goes, and its one line of wording. Both are
- * empty until a maintainer fills them in, and until then the offer is hidden.
+ * "own repo" link: where it goes, and its one short line. Both empty until a
+ * maintainer fills them in, and until then the offer stays hidden.
  */
 export const TESSL_SIGNUP_URL = '';
 export const TESSL_SIGNUP_OFFER = '';
 
-/** The sign-up offer to show, or undefined while either half of it is missing. */
-export function signupOffer(url: string = TESSL_SIGNUP_URL, offer: string = TESSL_SIGNUP_OFFER) {
-  return url.trim() && offer.trim() ? { url: url.trim(), offer: offer.trim() } : undefined;
+/** The offer to show, or nothing while either half is missing or the link isn't https. */
+export function signupOffer(
+  url: string = TESSL_SIGNUP_URL,
+  text: string = TESSL_SIGNUP_OFFER,
+): { url: string; text: string } | undefined {
+  return /^https:\/\//i.test(url) && text.trim() ? { url, text: text.trim() } : undefined;
 }

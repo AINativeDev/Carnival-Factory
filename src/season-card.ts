@@ -182,7 +182,7 @@ export function renderSeason(app: HTMLElement, login: string): () => void {
   if (offer) {
     const link = $<HTMLAnchorElement>('.season-offer-link');
     link.href = offer.url;
-    link.textContent = offer.offer;
+    link.textContent = offer.text;
     $<HTMLElement>('.season-offer').hidden = false;
   }
 

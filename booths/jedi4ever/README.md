@@ -22,9 +22,14 @@ repeats every 12 seconds:
 - **Cosy details**: a fireplace with gently flickering flames, snow falling past
   the window, a string of lights along the ceiling beam that twinkles slowly,
   and the big "Santa's Toy Factory" sign.
+- **Penguins**: four penguins stand on the workshop floor. They shuffle from
+  side to side with a little waddle and blink now and then. Hover over one and
+  it waves a flipper at you; tap one and it does a little hop.
 
-Everything is drawn from `time`. The timing and movement of the loop
-(`letterAt`, `placeOf`, `buildOf`, `lampAt`, `jingleAt`, `sacksFilled`) are
+Everything is drawn from `time`. The one thing the booth remembers is when
+each penguin was last tapped, so it can hop. The timing and movement of the
+loop (`letterAt`, `placeOf`, `buildOf`, `lampAt`, `jingleAt`, `sacksFilled`)
+and of the penguins (`shuffleOf`, `blinking`, `hopHeight`, `penguinAt`) are
 plain functions in `booth.ts`, tested in `booth.test.ts`.
 
 Preview it at `#/booth/jedi4ever`.
