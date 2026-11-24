@@ -17,9 +17,13 @@ import { buildWorld, toScreen, type PinnedPlots } from '../northpole/world';
 const root = join(import.meta.dirname, '..');
 const SHOTS = join(root, 'screenshots');
 /** Milliseconds a square may spend drawing one frame. */
-const FRAME_BUDGET_MS = 8;
+// CI's browsers draw without a GPU, in software, several times slower than a
+// laptop, so they get a looser budget. It still catches a real slowdown there,
+// without failing on the runner's speed.
+const ON_CI = !!process.env.CI;
+const FRAME_BUDGET_MS = ON_CI ? 16 : 8;
 /** Milliseconds the map may spend drawing one frame, on average, while the player walks. */
-const MAP_FRAME_BUDGET_MS = 12;
+const MAP_FRAME_BUDGET_MS = ON_CI ? 25 : 12;
 const PLAY_MS = 3000;
 
 // Squares a maintainer switched off show "Closed for repairs" and never open a
