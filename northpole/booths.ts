@@ -1,5 +1,6 @@
 import disabled from './disabled.json';
 import { sandboxedSquare } from './sandbox';
+import { readPlotFile, type PlotFile } from './plots';
 import { closeForRepairs, createBoothRegistry, idsFromFolders } from './square';
 
 /**
@@ -17,4 +18,14 @@ export const boothRegistry = createBoothRegistry(
   idsFromFolders(folders).map((id) =>
     off.has(id) ? closeForRepairs({ id, name: id }) : sandboxedSquare('booth', id),
   ),
+);
+
+/**
+ * Each booth's own `plot.json`, by login: the plot its construction site
+ * held, which the factory writes when it builds a new booth. Only valid ones.
+ */
+export const boothPlotFiles: Record<string, PlotFile> = Object.fromEntries(
+  Object.entries(import.meta.glob('../booths/*/plot.json', { eager: true, import: 'default' }))
+    .map(([path, value]) => [path.split('/').at(-2)!, readPlotFile(value)] as const)
+    .filter((entry): entry is readonly [string, PlotFile] => !!entry[1]),
 );

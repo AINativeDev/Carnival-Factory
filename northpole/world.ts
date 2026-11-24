@@ -8,10 +8,11 @@
  * `x` runs down to the right on screen and `y` down to the left. The world is
  * built from a fixed seed and the list of squares only, never from
  * `Math.random()`, so the same squares always make the same world. A square's
- * plot comes from its number in `plots.json` or, for a square not listed there
- * yet, the next free number, and a plot's number always means the same place,
- * so adding a booth never moves an attraction or an existing booth.
+ * plot comes from its number in `plots.json`, a booth's own `plot.json`, or the
+ * next free number (see `plots.ts`), and a plot's number always means the same
+ * place, so adding a booth never moves an attraction or an existing booth.
  */
+import { boothPlotNumbers, placePending, type PendingBooth, type PlotFile } from './plots';
 
 export interface Tile {
   x: number;
@@ -52,12 +53,15 @@ export interface Thing extends Box {
   blocks: boolean;
 }
 
-/** What stands on a plot: an attraction, a participant's booth, or nothing yet. */
-export type PlotKind = 'attraction' | 'booth' | 'open';
+/**
+ * What stands on a plot: an attraction, a participant's booth, the
+ * construction site of a booth being built, or nothing yet.
+ */
+export type PlotKind = 'attraction' | 'booth' | 'site' | 'open';
 
 export interface Plot extends Box {
   kind: PlotKind;
-  /** The attraction's id or the booth's owner. An open plot has none. */
+  /** The attraction's id, or the owner of the booth or the one being built. An open plot has none. */
   id?: string;
   /** The plot's number among its kind's plots. Its number fixes where it is. */
   number: number;
@@ -99,7 +103,7 @@ export interface PinnedPlots {
 /** A tile's width and height on screen, in CSS pixels, before zooming. */
 export const TILE_W = 64;
 export const TILE_H = 32;
-/** The open plots waiting for a booth: there's always at least one. */
+/** The open plots waiting for a booth, on top of the booths and the sites: there's always at least one. */
 export const OPEN_PLOTS = 3;
 /** The world's fixed seed: the same squares always make the same world. */
 export const SEED = 1225;
@@ -228,11 +232,20 @@ export function boothPlot(number: number): Pick<Plot, 'x' | 'y' | 'w' | 'h' | 'd
 const inside = (box: Box, x: number, y: number) =>
   x >= box.x && x < box.x + box.w && y >= box.y && y < box.y + box.h;
 
+/** What else decides where booths stand: their own `plot.json`s, and the booths being built. */
+export interface WorldExtras {
+  /** Each booth's own `plot.json`, by login. */
+  files?: Record<string, PlotFile>;
+  /** The accepted booth requests not merged yet, from `pending.json`. */
+  pending?: readonly PendingBooth[];
+}
+
 /** Builds the world for these squares, in the order their folders sort. */
 export function buildWorld(
   attractionIds: readonly string[],
   boothIds: readonly string[],
   pinned: PinnedPlots = { attractions: {}, booths: {} },
+  extras: WorldExtras = {},
 ): World {
   const ground = new Map<string, Ground>();
   const blocked = new Set<string>();
@@ -270,10 +283,15 @@ export function buildWorld(
   for (const [id, number] of attractionNumbers) {
     plots.push({ kind: 'attraction', id, number, ...attractionPlot(number) });
   }
-  const boothNumbers = plotNumbers(boothIds, pinned.booths);
+  const boothNumbers = boothPlotNumbers(boothIds, pinned.booths, extras.files);
   const taken = new Set(boothNumbers.values());
   for (const [id, number] of boothNumbers) {
     plots.push({ kind: 'booth', id, number, ...boothPlot(number) });
+  }
+  // The booths being built, each on the plot held for it.
+  for (const [id, number] of placePending(extras.pending ?? [], boothNumbers).sites) {
+    plots.push({ kind: 'site', id, number, ...boothPlot(number) });
+    taken.add(number);
   }
   for (let number = 0, open = 0; open < OPEN_PLOTS; number++) {
     if (taken.has(number)) continue;
@@ -454,6 +472,28 @@ export function canStand(world: World, position: Tile): boolean {
     for (const dy of [-BODY, BODY])
       if (!walkable(world, Math.round(position.x + dx), Math.round(position.y + dy))) return false;
   return true;
+}
+
+/**
+ * Where a walker at `position` can stand: there, if they can, else the middle
+ * of the nearest tile they can stand on, such as when the world was rebuilt
+ * with something new where they stood.
+ */
+export function nearestStand(world: World, position: Tile): Tile {
+  if (canStand(world, position)) return position;
+  const { x, y } = tileOf(position);
+  for (let ring = 1; ring <= 2 * world.extent + 1; ring++) {
+    let best: Tile | undefined;
+    for (let dx = -ring; dx <= ring; dx++)
+      for (let dy = -ring; dy <= ring; dy++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== ring) continue;
+        const tile = { x: x + dx, y: y + dy };
+        if (!canStand(world, tile)) continue;
+        if (!best || Math.hypot(dx, dy) < Math.hypot(best.x - x, best.y - y)) best = tile;
+      }
+    if (best) return best;
+  }
+  return { ...world.start };
 }
 
 /**

@@ -1493,6 +1493,194 @@ function drawOpenPlot(ctx: CanvasRenderingContext2D, plot: Plot, time: number, n
   return { x: x - w / 2 - 8, y: y - reach, w: w + 16, h: reach + 24 };
 }
 
+/** A booth being built: who it's for, and how far along it is, already in words. */
+export interface SiteLabel {
+  login: string;
+  stage: string;
+}
+
+/** The construction site's scaffolding height, and its sign's post and board, in world pixels. */
+export const SITE = { scaffold: 84, post: 34, w: 132, h: 44 };
+
+/** A wooden pole from `foot` up `height`. */
+function pole(ctx: CanvasRenderingContext2D, foot: Tile, height: number) {
+  ctx.fillStyle = colors.wood;
+  ctx.fillRect(foot.x - 2, foot.y - height, 4, height);
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(foot.x, foot.y - height, 2, height);
+}
+
+/** A plank from `a` to `b`, both `lift` above the ground. */
+function plank(ctx: CanvasRenderingContext2D, a: Tile, b: Tile, lift: number) {
+  ctx.strokeStyle = colors.wood;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y - lift);
+  ctx.lineTo(b.x, b.y - lift);
+  ctx.stroke();
+}
+
+/**
+ * The construction site of a booth being built: trampled snow, scaffolding
+ * with a plank floor, a few crates, a little elf with a hammer, and a sign
+ * with `@login` and how far along it is. The hammer swings gently with
+ * `time`, so it stands still when the map passes 0. Returns where a click
+ * opens it.
+ */
+export function drawSite(
+  ctx: CanvasRenderingContext2D,
+  plot: Plot,
+  label: SiteLabel,
+  time: number,
+  near = false,
+): Box {
+  const c = corners(plot);
+  const { x, y } = middle(plot);
+  shadow(ctx, x, y + 6, 70);
+  // Trampled snow, roped off like an open plot.
+  ctx.fillStyle = colors.snowShade;
+  diamond(ctx, c, 0);
+  ctx.fill();
+  const inner = { x: plot.x + 0.3, y: plot.y + 0.2, w: plot.w - 0.75, h: plot.h - 0.75 };
+  const s = corners(inner);
+  const { scaffold } = SITE;
+  // The back of the scaffolding, then its floor, then its front.
+  for (const foot of [s.left, s.top, s.right]) pole(ctx, foot, scaffold);
+  for (const lift of [scaffold * 0.45, scaffold - 4]) {
+    plank(ctx, s.left, s.top, lift);
+    plank(ctx, s.top, s.right, lift);
+  }
+  ctx.fillStyle = colors.gingerbread;
+  diamond(ctx, s, scaffold * 0.45);
+  ctx.fill();
+  ctx.strokeStyle = colors.cocoa;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  pole(ctx, s.bottom, scaffold);
+  for (const lift of [scaffold * 0.45, scaffold - 4]) {
+    plank(ctx, s.left, s.bottom, lift);
+    plank(ctx, s.bottom, s.right, lift);
+  }
+  // A brace across each front face.
+  ctx.strokeStyle = colors.cocoa;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(s.left.x, s.left.y);
+  ctx.lineTo(s.bottom.x, s.bottom.y - scaffold * 0.45);
+  ctx.moveTo(s.bottom.x, s.bottom.y);
+  ctx.lineTo(s.right.x, s.right.y - scaffold * 0.45);
+  ctx.stroke();
+  // Crates stacked by the front.
+  const crate = (box: Box, lift = 0) =>
+    block(ctx, box, 12, colors.gingerbread, colors.wood, colors.cocoa, lift);
+  crate({ x: plot.x + plot.w - 0.95, y: plot.y + 0.05, w: 0.4, h: 0.4 });
+  crate({ x: plot.x + plot.w - 0.95, y: plot.y + 0.5, w: 0.4, h: 0.4 });
+  crate({ x: plot.x + plot.w - 0.95, y: plot.y + 0.25, w: 0.4, h: 0.4 }, 12);
+  // The elf at work, swinging a hammer.
+  const elf = { x: plot.x + plot.w - 0.75, y: plot.y + plot.h - 0.95 };
+  drawPerson(ctx, elf, { coat: colors.pine, hat: colors.berry, scale: 0.8 }, -1, false, 0);
+  const hand = toScreen(elf);
+  const swing = -0.5 + 0.45 * Math.sin(time / 320);
+  ctx.save();
+  ctx.translate(hand.x - 4, hand.y - 18);
+  ctx.rotate(swing);
+  ctx.fillStyle = colors.wood;
+  ctx.fillRect(-1.5, -14, 3, 14);
+  ctx.fillStyle = colors.slabShade;
+  ctx.fillRect(-5, -17, 10, 5);
+  ctx.restore();
+  // The sign on its post, at the front: who it's for and how far along it is.
+  const { post, w, h } = SITE;
+  const foot = { x: (c.left.x + c.bottom.x) / 2, y: (c.left.y + c.bottom.y) / 2 + 4 };
+  const lift = near ? Math.abs(Math.sin(time / 180)) * 6 : 0;
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(foot.x - 3, foot.y - post, 6, post);
+  const top = foot.y - post - h - lift;
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(foot.x - w / 2 - 3, top - 3, w + 6, h + 6);
+  ctx.fillStyle = colors.cream;
+  ctx.fillRect(foot.x - w / 2, top, w, h);
+  ctx.fillStyle = colors.gold;
+  ctx.fillRect(foot.x - w / 2, top + h - 5, w, 5);
+  ctx.fillStyle = colors.ink;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = canvasFont('small', 'bold');
+  ctx.fillText(`@${label.login}`, foot.x, top + 12, w - 10);
+  ctx.font = canvasFont('small');
+  ctx.fillText(label.stage, foot.x, top + 29, w - 10);
+  ctx.textBaseline = 'alphabetic';
+  const box = standing(plot, scaffold + 10);
+  const left = Math.min(box.x, foot.x - w / 2 - 4);
+  return {
+    x: left,
+    y: Math.min(box.y, top - 4),
+    w: Math.max(box.x + box.w, foot.x + w / 2 + 4) - left,
+    h: box.y + box.h - Math.min(box.y, top - 4),
+  };
+}
+
+/** A small "Being updated" sign on a post at a booth's side, while a change to it is being built. */
+export function drawUpdateSign(ctx: CanvasRenderingContext2D, plot: Plot) {
+  const c = corners(plot);
+  const foot = { x: (c.bottom.x + c.right.x) / 2 + 10, y: (c.bottom.y + c.right.y) / 2 + 6 };
+  const w = 104;
+  const h = 22;
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(foot.x - 2, foot.y - 30, 4, 30);
+  const top = foot.y - 30 - h;
+  ctx.fillRect(foot.x - w / 2 - 2, top - 2, w + 4, h + 4);
+  ctx.fillStyle = colors.gold;
+  ctx.fillRect(foot.x - w / 2, top, w, h);
+  ctx.fillStyle = colors.ink;
+  ctx.font = canvasFont('small', 'bold');
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Being updated', foot.x, top + h / 2 + 1, w - 6);
+  ctx.textBaseline = 'alphabetic';
+}
+
+/** How long a new booth's sparkles last, in milliseconds. */
+export const SPARKLE_TIME = 2600;
+
+/**
+ * A short burst of gentle sparkles rising round a booth that just landed,
+ * `age` milliseconds in. Each one fades in and out smoothly, so nothing flashes.
+ */
+export function drawSparkles(ctx: CanvasRenderingContext2D, plot: Plot, age: number) {
+  if (age < 0 || age >= SPARKLE_TIME) return;
+  const { x, y } = middle(plot);
+  const along = age / SPARKLE_TIME;
+  const fade = Math.sin(Math.PI * along);
+  const tints = [colors.gold, colors.glow, colors.snow];
+  ctx.save();
+  for (let n = 0; n < 14; n++) {
+    const seed = hash(plot.number, n, 9);
+    const angle = seed * Math.PI * 2;
+    const reach = 30 + 40 * hash(n, plot.number, 10);
+    const at = {
+      x: x + Math.cos(angle) * reach * (0.6 + 0.4 * along),
+      y: y - 30 - along * (60 + 50 * seed) + Math.sin(angle) * reach * 0.3,
+    };
+    const r = 3 + 3 * hash(n, 11);
+    ctx.globalAlpha = 0.75 * fade;
+    ctx.fillStyle = tints[n % tints.length];
+    ctx.beginPath();
+    ctx.moveTo(at.x, at.y - r * 1.8);
+    ctx.lineTo(at.x + r * 0.45, at.y);
+    ctx.lineTo(at.x, at.y + r * 1.8);
+    ctx.lineTo(at.x - r * 0.45, at.y);
+    ctx.closePath();
+    ctx.moveTo(at.x - r * 1.8, at.y);
+    ctx.lineTo(at.x, at.y + r * 0.45);
+    ctx.lineTo(at.x + r * 1.8, at.y);
+    ctx.lineTo(at.x, at.y - r * 0.45);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 /**
  * Draws a plot and whatever stands on it. Returns where a click opens it.
  * `near` says the player stands at it, which makes an open plot's sign bounce.

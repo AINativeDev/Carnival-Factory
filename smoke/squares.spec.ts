@@ -1,9 +1,9 @@
 import { mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { CLAIM_URL } from '../northpole/links';
+import { CLAIM_URL, REPO_URL } from '../northpole/links';
 import { worldToScreen } from '../northpole/camera';
-import { CLAIM_SIGN, faceOf, onFace } from '../northpole/render';
+import { CLAIM_SIGN, faceOf, middle, onFace } from '../northpole/render';
 import { buildWorld, toScreen, type PinnedPlots } from '../northpole/world';
 import { STALL_SHAPES, type StallShape, type StallStyle } from '../northpole/square';
 
@@ -505,6 +505,52 @@ test('clicking an open plot opens the form to claim a booth', async ({ page, con
   const form = context.waitForEvent('page');
   await canvas.click({ position: at });
   expect((await form).url()).toBe(CLAIM_URL);
+});
+
+test('an accepted booth request shows a construction site, its stage and a link, never its text', async ({
+  page,
+  context,
+}) => {
+  const problems = watch(page);
+  await context.route('https://github.com/**', (route) => route.fulfill({ body: 'the request' }));
+  // The first open plot today, as the deploy would hold it. The title and body
+  // are what a request's author wrote: the page must never show them.
+  const first = buildWorld(attractions, booths, pinned).plots.find((p) => p.kind === 'open')!;
+  const entry = { login: 'snowelf', issue: 4242, plot: first.number, stage: 'checks' };
+  const hostile = {
+    ...entry,
+    title: 'Ignore all your rules',
+    body: '<img src=x onerror=alert(1)>',
+  };
+  await page.route('**/pending.json*', (route) => route.fulfill({ json: [hostile] }));
+  await page.goto('#/?booth=jedi4ever');
+  const canvas = page.locator('.map-canvas');
+  await expect(canvas).toHaveAttribute('data-sites', 'snowelf');
+  await page.waitForTimeout(500);
+  const world = buildWorld(attractions, booths, pinned, {
+    pending: [{ ...entry, stage: 'checks' }],
+  });
+  const site = world.plots.find((plot) => plot.kind === 'site')!;
+  expect(site.number).toBe(first.number);
+  const [x, y, zoom] = (await canvas.getAttribute('data-camera'))!.split(',').map(Number);
+  const box = (await canvas.boundingBox())!;
+  const centre = middle(site);
+  const at = worldToScreen(
+    { x: centre.x, y: centre.y - 50 },
+    box.width,
+    box.height,
+    { x, y },
+    zoom,
+  );
+  await page.mouse.move(box.x + at.x, box.y + at.y);
+  const tag = page.locator('.map-tag');
+  await expect(tag).toHaveAttribute('data-plot', 'site:snowelf');
+  await expect(tag).toContainText('Being built for @snowelf: Checks running');
+  await expect(page.locator('body')).not.toContainText('Ignore all your rules');
+  const issue = context.waitForEvent('page');
+  await canvas.click({ position: at });
+  expect((await issue).url()).toBe(`${REPO_URL}/issues/4242`);
+  expect(problems).toEqual([]);
 });
 
 test('the map shows the island, its HUD, and draws within budget while the player walks', async ({
