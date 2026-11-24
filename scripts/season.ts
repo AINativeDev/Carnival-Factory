@@ -53,7 +53,10 @@ export function countSeason(requests: readonly RequestRecord[], countedAt: strin
   for (const request of requests) {
     if (!request.author) continue;
     const login = request.author.toLowerCase();
-    const stats = (participants[login] ??= { requests: 0, shipped: 0, findingsFixed: 0 });
+    // Own properties only: a login such as `constructor` is also a name every object inherits.
+    const stats = Object.hasOwn(participants, login)
+      ? participants[login]
+      : (participants[login] = { requests: 0, shipped: 0, findingsFixed: 0 });
     let counted = countedFor.get(login);
     if (!counted) countedFor.set(login, (counted = new Set()));
     stats.requests++;
@@ -68,6 +71,11 @@ export function countSeason(requests: readonly RequestRecord[], countedAt: strin
     }
   }
   return { countedAt, participants };
+}
+
+/** One participant's counts, if the season has any for them. */
+export function seasonStats(season: SeasonData, login: string): SeasonStats | undefined {
+  return Object.hasOwn(season.participants, login) ? season.participants[login] : undefined;
 }
 
 /** Reads a season file, keeping only well-formed counts, so a bad file is an empty season. */

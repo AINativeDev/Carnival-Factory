@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { countSeason, EMPTY_SEASON, readSeason, REVIEWER, type RequestRecord } from './season';
+import {
+  countSeason,
+  EMPTY_SEASON,
+  readSeason,
+  REVIEWER,
+  seasonStats,
+  type RequestRecord,
+} from './season';
 
 const AT = '2026-12-01T00:00:00.000Z';
 const thread = (resolved: boolean, author: string | null = REVIEWER) => ({ resolved, author });
@@ -73,6 +80,17 @@ describe('countSeason', () => {
     });
   });
 
+  it('counts a login that is also an inherited property name', () => {
+    const requests: RequestRecord[] = [
+      { author: 'constructor', pulls: [{ number: 9, merged: true, threads: [thread(true)] }] },
+      { author: 'toString', pulls: [] },
+    ];
+    expect(countSeason(requests, AT).participants).toEqual({
+      constructor: { requests: 1, shipped: 1, findingsFixed: 1 },
+      tostring: { requests: 1, shipped: 0, findingsFixed: 0 },
+    });
+  });
+
   it('skips a request whose author is gone', () => {
     expect(countSeason([{ author: null, pulls: [] }], AT).participants).toEqual({});
   });
@@ -105,5 +123,18 @@ describe('readSeason', () => {
       countedAt: null,
       participants: { ok: { requests: 0, shipped: 0, findingsFixed: 0 } },
     });
+  });
+});
+
+describe('seasonStats', () => {
+  it("finds a participant's counts, and none for an inherited property name", () => {
+    const season = countSeason([{ author: 'constructor', pulls: [] }], AT);
+    expect(seasonStats(season, 'constructor')).toEqual({
+      requests: 1,
+      shipped: 0,
+      findingsFixed: 0,
+    });
+    expect(seasonStats(season, 'hasownproperty')).toBeUndefined();
+    expect(seasonStats(EMPTY_SEASON, 'constructor')).toBeUndefined();
   });
 });

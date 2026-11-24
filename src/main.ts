@@ -504,7 +504,10 @@ function route(event?: HashChangeEvent) {
   }
 
   if (route.view === 'advent') {
-    if (!map) renderMap();
+    if (!map) {
+      stop?.();
+      renderMap();
+    }
     return showAdvent(fromHistory);
   }
 

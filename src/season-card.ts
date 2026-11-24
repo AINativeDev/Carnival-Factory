@@ -8,7 +8,7 @@ import {
   signupOffer,
 } from '../northpole/links';
 import type { SandboxedSquare } from '../northpole/sandbox';
-import type { SeasonStats } from '../scripts/season';
+import { seasonStats } from '../scripts/season';
 import { canvasFont, theme } from '../northpole/theme';
 import { deepLink } from './route';
 import { SEASON, seasonHeadline, seasonLines, seasonShareText, type SeasonLine } from './season';
@@ -186,7 +186,7 @@ export function renderSeason(app: HTMLElement, login: string): () => void {
     $<HTMLElement>('.season-offer').hidden = false;
   }
 
-  const stats: SeasonStats | undefined = SEASON.participants[login];
+  const stats = seasonStats(SEASON, login);
   const lines = seasonLines(stats);
   const mapLink = new URL(deepLink('booth', login), document.baseURI).href;
   const name = () => square.name.slice(0, MAX_NAME);
