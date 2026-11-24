@@ -127,6 +127,26 @@ describe('buildWorld', () => {
     }
   });
 
+  it('keeps growing for a big event: open plots, no overlaps, every plot reachable', () => {
+    for (const count of [100, 500]) {
+      const world = buildWorld(ATTRACTIONS, booths(count));
+      expect(world.plots.filter((p) => p.kind === 'open')).toHaveLength(OPEN_PLOTS);
+      const overlapping = world.plots.some((a, i) =>
+        world.plots.some(
+          (b, j) =>
+            i < j && a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h,
+        ),
+      );
+      expect(overlapping).toBe(false);
+      const e = world.extent;
+      expect(
+        world.plots.every((p) => p.x >= -e && p.y >= -e && p.x + p.w <= e && p.y + p.h <= e),
+      ).toBe(true);
+      const reach = reachable(world, world.start);
+      expect(world.plots.filter((p) => !reach.has(key(p.door.x, p.door.y)))).toEqual([]);
+    }
+  });
+
   it('grows new lanes as booths fill the old ones', () => {
     const small = buildWorld(ATTRACTIONS, booths(2));
     const big = buildWorld(ATTRACTIONS, booths(40));

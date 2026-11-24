@@ -17,6 +17,46 @@ import type { NorthPoleSquare } from './square';
 export const READY_TIMEOUT = 10_000;
 /** Frames left out of the slowest-frame record while a square warms up. */
 const WARM_UP_FRAMES = 5;
+/** A frame not drawn for this long is released, and restarts when it's drawn again. */
+export const IDLE_RELEASE_MS = 20_000;
+/** The most squares running at once; starting another releases the least recently drawn. */
+export const MAX_LIVE_FRAMES = 24;
+
+/**
+ * Which running frames to release: any idle for `idleMs`, and then the least
+ * recently drawn, until there's room for `adding` more within `max`. Pure, so
+ * the policy can be tested without a browser.
+ */
+export function framesToRelease<T extends { lastDrawn: number }>(
+  live: readonly T[],
+  now: number,
+  { max = MAX_LIVE_FRAMES, idleMs = IDLE_RELEASE_MS, adding = 0 } = {},
+): T[] {
+  const idle = live.filter((frame) => now - frame.lastDrawn > idleMs);
+  const rest = live
+    .filter((frame) => !idle.includes(frame))
+    .sort((a, b) => a.lastDrawn - b.lastDrawn);
+  const over = Math.max(0, rest.length + adding - max);
+  return [...idle, ...rest.slice(0, over)];
+}
+
+interface LiveFrame {
+  lastDrawn: number;
+  release(): void;
+}
+/** Every square whose frame is running now. */
+const live = new Set<LiveFrame>();
+let sweeper: ReturnType<typeof setInterval> | undefined;
+
+/** Releases what `framesToRelease` picks; `adding` makes room for frames about to start. */
+function sweep(adding = 0) {
+  for (const frame of framesToRelease([...live], performance.now(), { adding })) frame.release();
+  if (live.size === 0 && sweeper) {
+    clearInterval(sweeper);
+    sweeper = undefined;
+  }
+}
+
 /** Errors in a row after which a square counts as broken. */
 export const MAX_ERRORS = 3;
 /** How long a frame may take to answer before it counts as an error. */
@@ -74,6 +114,24 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
   let errors = 0;
   let frames = 0;
   let slowest = 0;
+  /** Counts the frames started, so a released frame's timers can't touch the next one. */
+  let generation = 0;
+  const self: LiveFrame = { lastDrawn: 0, release: () => release() };
+
+  /**
+   * Stops this square's frame, keeping its name and last picture, so it shows
+   * at once when it's next drawn while a new frame starts.
+   */
+  const release = () => {
+    if (!iframe) return;
+    window.removeEventListener('message', onMessage);
+    iframe.remove();
+    iframe = undefined;
+    live.delete(self);
+    waitingFor = undefined;
+    errors = 0;
+    if (state !== 'broken') state = 'loading';
+  };
 
   const fail = (why: string) => {
     waitingFor = undefined;
@@ -95,6 +153,7 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
         if (state !== 'loading') return;
         info = { name: message.name, description: message.description };
         setState('ready');
+        if (frames > 0) break; // a restarted frame: the page already knows its name
         for (const listener of listeners.splice(0)) {
           // One page's listener failing mustn't keep the others from hearing.
           try {
@@ -122,6 +181,8 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
   };
 
   const start = () => {
+    sweep(1);
+    const mine = ++generation;
     iframe = document.createElement('iframe');
     iframe.sandbox.add('allow-scripts');
     iframe.referrerPolicy = 'no-referrer';
@@ -133,8 +194,10 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
     iframe.src = new URL(`square.html#${kind}/${id}`, document.baseURI).href;
     window.addEventListener('message', onMessage);
     frameHolder().append(iframe);
+    live.add(self);
+    sweeper ??= setInterval(() => sweep(), 5000);
     setTimeout(() => {
-      if (state === 'loading') {
+      if (generation === mine && iframe && state === 'loading') {
         console.error(`The ${kind} ${id} didn't open within ${READY_TIMEOUT / 1000}s`);
         setState('broken');
       }
@@ -155,7 +218,8 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
       else listeners.push(listener);
     },
     draw(ctx: CanvasRenderingContext2D, size: number, time: number) {
-      if (!iframe) start();
+      self.lastDrawn = performance.now();
+      if (!iframe && state !== 'broken') start();
       if (state === 'broken') {
         // Its frame already said why, once: draw the placeholder, quietly.
         ctx.fillStyle = theme.colors.surface;
