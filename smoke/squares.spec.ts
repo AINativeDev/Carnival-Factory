@@ -802,3 +802,13 @@ test("inside a square, the pill's corner is a way back to the map", async ({ pag
   expect(page.url()).not.toContain('#/booth/');
   expect(problems).toEqual([]);
 });
+
+test('the banner links to the repository, where every booth starts', async ({ page }) => {
+  await page.goto('#/');
+  const link = page.getByRole('link', { name: "See how it's built on GitHub" });
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAttribute(
+    'href',
+    'https://github.com/AINativeDev/Northpole-Carnival-Factory',
+  );
+});
