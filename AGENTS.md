@@ -71,8 +71,11 @@ dependency or reaching the network, comment on the issue saying so and stop.
    enforces the house rules in `eslint.config.js` on every plot: no network
    (`fetch`, `XMLHttpRequest`, `WebSocket`), no storage (`localStorage`,
    `sessionStorage`, `document.cookie`), no other windows or page address
-   (`window.parent`, `window.top`, `window.open`, `location`), and no `eval`,
-   `new Function`, `import()` or string timers.
+   (`window`, `document`, `globalThis`, `location`), and no `eval`,
+   `new Function`, `.constructor`, `import()` or string timers. A plot in a
+   nested folder imports the map and its own plot by relative paths from where
+   it sits. These rules catch the plain ways out, not every one, so never look
+   for a way around them.
 5. A `README.md` that says what the plot shows and stays true to the code.
 
 Pure logic a plot has, such as movement, goes in plain exported functions with

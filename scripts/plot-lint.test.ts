@@ -43,6 +43,28 @@ describe('plot house rules', () => {
     expect(await problems(code)).toContain('no-restricted-imports');
   });
 
+  it('pass a nested helper that imports the map and its own plot', async () => {
+    expect(
+      await problems(
+        `
+          import { theme } from '../../../northpole/theme';
+          import { wobble } from '../wobble';
+          import { star } from './star';
+          export const colour = wobble(star(theme.colors.snow.length));
+        `,
+        'src/plots/grinch/lib/draw.ts',
+      ),
+    ).toEqual([]);
+  });
+
+  it.each([
+    ['another plot', `import other from '../../jedi4ever/plot';`],
+    ['a way out of its folder', `import x from '../../../main';`],
+    ['the map at the wrong depth', `import x from '../../northpole/theme';`],
+  ])('stop a nested helper importing %s', async (_, code) => {
+    expect(await problems(code, 'src/plots/grinch/lib/draw.ts')).toContain('no-restricted-imports');
+  });
+
   it.each([
     ['fetch', `fetch('https://example.com');`],
     ['XMLHttpRequest', `new XMLHttpRequest();`],
@@ -56,6 +78,13 @@ describe('plot house rules', () => {
     ['window.location', `window.location.assign('https://example.com');`],
     ['document.cookie', `console.log(document.cookie);`],
     ['navigator.sendBeacon', `navigator.sendBeacon('https://example.com');`],
+    ['window.WebSocket', `new window.WebSocket('wss://example.com');`],
+    ['window.Worker', `new window.Worker('/worker.js');`],
+    ['an alias of window', `const w = window; void w.fetch('https://example.com');`],
+    ['globalThis', `void globalThis.fetch('https://example.com');`],
+    ['self', `void self.fetch('https://example.com');`],
+    ['the canvas back to the window', `void ctx.canvas.ownerDocument.defaultView.fetch('/');`],
+    ['the Function constructor', `const f = (() => {}).constructor('return 1');`],
   ])('stop %s', async (_, code) => {
     expect(await problems(code)).not.toEqual([]);
   });
@@ -66,8 +95,16 @@ describe('plot house rules', () => {
     ['dynamic import()', `import('https://example.com/x.js');`],
     ['a string timer', `setTimeout('alert(1)', 10);`],
     ['a template string timer', 'setInterval(`alert(1)`, 10);'],
+    ['a joined string timer', `setTimeout('alert(' + 1 + ')', 10);`],
   ])('stop %s', async (_, code) => {
     expect(await problems(code)).not.toEqual([]);
+  });
+
+  it.each([
+    ['a method', `const callbacks = { tick() {} }; setTimeout(callbacks.tick, 10);`],
+    ['a bound method', `const a = { step() {} }; setInterval(a.step.bind(a), 10);`],
+  ])('pass a timer given %s', async (_, code) => {
+    expect(await problems(code)).toEqual([]);
   });
 
   it('leave the map itself alone', async () => {

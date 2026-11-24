@@ -24,26 +24,47 @@ const plotGlobals = [
   'location',
   'eval',
   'Function',
+  // The global object and the document lead to all of the above, as
+  // window.fetch or const w = window; w.fetch, so a plot may not touch them.
+  'window',
+  'globalThis',
+  'self',
+  'frames',
+  'document',
 ].map((name) => ({ name, message: `${ESCAPE} ${name}.` }));
 
 const plotProperties = [
-  ...['window', 'globalThis', 'self', 'document'].flatMap((object) =>
-    [
-      'fetch',
-      'localStorage',
-      'sessionStorage',
-      'indexedDB',
-      'parent',
-      'top',
-      'opener',
-      'open',
-      'location',
-      'eval',
-      'cookie',
-    ].map((property) => ({ object, property, message: `${ESCAPE} ${object}.${property}.` })),
-  ),
   { object: 'navigator', property: 'sendBeacon', message: `${ESCAPE} navigator.sendBeacon.` },
+  // The other ways back to the window: ctx.canvas.ownerDocument.defaultView,
+  // and the Function constructor through any function's .constructor.
+  ...['ownerDocument', 'defaultView', 'constructor'].map((property) => ({
+    property,
+    message: `${ESCAPE} .${property}.`,
+  })),
 ];
+
+// A file depth folders below src/plots/<login>/ imports from the map, which is
+// depth + 2 folders up, or from its own plot folder, never above it.
+function importRule(depth) {
+  const map = `(\\.\\./){${depth + 2}}northpole/[\\w-]+(\\.json)?$`;
+  const own = `(\\./${depth > 0 ? `|(\\.\\./){1,${depth}}` : ''})(?!.*\\.\\.)[\\w./-]+$`;
+  return [
+    'error',
+    {
+      patterns: [
+        {
+          regex: `^(?!${map}|${own})`,
+          message:
+            'A plot imports only from src/northpole/ and from its own folder, so it adds no dependencies.',
+        },
+      ],
+    },
+  ];
+}
+
+// Helpers may sit in folders inside a plot, up to this deep. Deeper files keep
+// the rule for depth 0, so they can import only from beside themselves.
+const NESTED_DEPTH = 4;
 
 export default tseslint.config(
   {
@@ -78,18 +99,7 @@ export default tseslint.config(
       'no-new-func': 'error',
       'no-restricted-globals': ['error', ...plotGlobals],
       'no-restricted-properties': ['error', ...plotProperties],
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              regex: '^(?!\\.\\./\\.\\./northpole/[\\w-]+(\\.json)?$|\\./(?!.*\\.\\.)[\\w./-]+$)',
-              message:
-                'A plot imports only from ../../northpole/ and from its own folder, so it adds no dependencies.',
-            },
-          ],
-        },
-      ],
+      'no-restricted-imports': importRule(0),
       'no-restricted-syntax': [
         'error',
         {
@@ -98,10 +108,14 @@ export default tseslint.config(
         },
         {
           selector:
-            "CallExpression[callee.name=/^set(Timeout|Interval)$/][arguments.0.type!='ArrowFunctionExpression'][arguments.0.type!='FunctionExpression'][arguments.0.type!='Identifier']",
+            'CallExpression[callee.name=/^set(Timeout|Interval)$/][arguments.0.type=/^(Literal|TemplateLiteral|BinaryExpression)$/]',
           message: 'Pass setTimeout and setInterval a function, never a string.',
         },
       ],
     },
   },
+  ...Array.from({ length: NESTED_DEPTH }, (_, index) => ({
+    files: [`src/plots/*/${'*/'.repeat(index + 1)}*`],
+    rules: { 'no-restricted-imports': importRule(index + 1) },
+  })),
 );

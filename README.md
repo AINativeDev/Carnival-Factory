@@ -33,7 +33,9 @@ shares one repo and one factory.
   factory opens, the owner is whoever wrote the issue it closes.
 - **Issues, not pull requests.** Every change starts as an issue. A pull
   request from someone who isn't a collaborator is closed automatically with a
-  pointer to the issue forms, and its code never runs.
+  pointer to the issue forms. Closing it doesn't stop **CI**, which checks out
+  and runs a pull request's code, so keep outside contributors' workflows
+  waiting for approval (see below) and don't approve them.
 - **Only maintainers merge.** For now that's
   [@jedi4ever](https://github.com/jedi4ever). `.github/CODEOWNERS` asks for
   their review on every pull request, and the maintainers may change any file,
@@ -44,7 +46,9 @@ shares one repo and one factory.
 - **A plot only draws.** ESLint's house rules in `eslint.config.js` stop a
   plot from importing anything but the map and its own files, and from using
   the network, storage, other windows, the page's address, `eval` or string
-  timers.
+  timers, or `window`, `document` and the other ways back to them. A lint rule
+  reads code, it doesn't sandbox it, so it catches the plain ways in, not
+  every one: a maintainer still reads each plot before merging it.
 
 ## For maintainers
 
