@@ -33,7 +33,8 @@ northpole/                  the map itself
   square.ts                 the NorthPoleSquare shape, the registries and the kill switch
   booths.ts                 finds every booth folder and puts it on the map
   attractions.ts            finds every attraction folder and puts it on the midway
-  layout.ts                 the midway: where each square sits (plain functions)
+  layout.ts                 the town: its paths, where each square sits, and its
+                            scenery (plain functions)
   map.ts                    drawing the map and a single square's preview
   theme.ts                  colours, fonts and sizes
   disabled.json             the maintainers' kill switch: closed booths and attractions

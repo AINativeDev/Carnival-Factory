@@ -49,14 +49,20 @@ a {
   text-align: center;
 }
 
+/* The frame scrolls over the whole town, and the canvas sticks to its corner. */
 .map-frame {
-  overflow-x: auto;
-  text-align: center;
+  height: min(75vh, 760px);
+  overflow: auto;
+  border-radius: var(--radius);
+  background: var(--color-snowShade);
+  overscroll-behavior: contain;
 }
 
 .map-canvas {
-  max-width: 100%;
-  border-radius: var(--radius);
+  position: sticky;
+  top: 0;
+  left: 0;
+  display: block;
 }
 
 .map-guide ul {

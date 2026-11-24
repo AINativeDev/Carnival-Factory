@@ -156,7 +156,7 @@ native dependencies, so `npm ci` is the whole setup. Node 22.13 or later.
 - `index.html` and `src/main.ts`: the page and the router: `#/` is the map,
   `#/booth/<login>` shows one booth and `#/attraction/<id>` one attraction.
 - `northpole/`: the map: the `NorthPoleSquare` shape and registries, the
-  midway layout, drawing and the theme.
+  town's layout, drawing and the theme.
 - `booths/<login>/`: one folder per participant. `booths/jedi4ever/` is the
   pattern to copy.
 - `attractions/<id>/`: one folder per attraction the North Pole owns.
