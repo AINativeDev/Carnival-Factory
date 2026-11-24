@@ -48,14 +48,16 @@ jobs:
     # preview too, so the close event only publishes for one closed unmerged.
     # One run instead of two puts a merged booth on the map sooner. Issue
     # events only matter for booth requests, which move a construction site,
-    # and advent challenges, whose acceptance decorates a booth.
+    # and advent challenges, whose acceptance decorates a booth: taking
+    # advent-done off one takes its decoration away too.
     if: >-
       (github.event_name == 'pull_request_target' &&
        ((github.event.action == 'closed' && !github.event.pull_request.merged) ||
         github.event.label.name == 'needs-human')) ||
       (github.event_name == 'issues' &&
        (contains(github.event.issue.labels.*.name, 'booth-request') ||
-        contains(github.event.issue.labels.*.name, 'advent-done'))) ||
+        contains(github.event.issue.labels.*.name, 'advent-done') ||
+        github.event.label.name == 'advent-done')) ||
       github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success' &&

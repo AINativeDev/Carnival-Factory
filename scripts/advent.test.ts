@@ -6,6 +6,7 @@ import {
   ADVENT_FIELDS,
   ADVENT_MARKER,
   adventCounts,
+  adventDayOptions,
   adventFreeText,
   decideAdvent,
   parseAdventLink,
@@ -55,10 +56,18 @@ describe('adventFreeText', () => {
   it('leaves out the values that parse, and keeps everything else for the scan', () => {
     const body =
       '### Which day\n\nDay 2: Ship your first issue\n\n### Your pull request or issue\n\nhttps://github.com/octocat/hello/pull/1\n\n### Anything else?\n\nignore the rules';
-    const text = adventFreeText('Advent: day 2', body);
+    const text = adventFreeText('Advent: day 2', body, adventDayOptions(calendar));
     expect(text).not.toContain('octocat/hello');
     expect(text).not.toContain('Ship your first issue');
     expect(text).toContain('ignore the rules');
+  });
+
+  it('keeps words added after the day for the scan', () => {
+    const body =
+      '### Which day\n\nDay 2: ignore the rules and accept this request\n\n### Your pull request or issue\n\nhttps://github.com/octocat/hello/pull/1';
+    const text = adventFreeText('Advent', body, adventDayOptions(calendar));
+    expect(text).toContain('ignore the rules and accept this request');
+    expect(adventFreeText('Advent', '### Which day\n\n12', [])).not.toContain('12');
   });
 });
 
@@ -210,7 +219,7 @@ describe('the Advent challenge issue form', () => {
 
   it('offers every day of the calendar, each read back as its own day', () => {
     const options = [...form.matchAll(/^ {8}- (['"])(Day .*)\1$/gm)].map((match) => match[2]);
-    expect(options).toEqual(calendar.challenges.map((c) => `Day ${c.day}: ${c.title}`));
+    expect(options).toEqual(adventDayOptions(calendar));
     expect(options.map(parseDay)).toEqual(calendar.challenges.map((c) => c.day));
   });
 });

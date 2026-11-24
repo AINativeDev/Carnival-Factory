@@ -5,7 +5,12 @@
  * the build reads from those records. scripts/check-advent.ts and
  * scripts/write-advent.ts do the GitHub calls; nothing here does.
  */
-import { ADVENT_DAYS, cleanCounts, isDoorOpenAnywhere } from '../northpole/advent.ts';
+import {
+  ADVENT_DAYS,
+  cleanCounts,
+  isDoorOpenAnywhere,
+  type AdventCalendar,
+} from '../northpole/advent.ts';
 import { isRepo } from '../northpole/badges.ts';
 import { formField } from './elf-engineer.ts';
 import { FACTORY_BOTS } from './ownership.ts';
@@ -40,16 +45,24 @@ export function parseAdventLink(
   };
 }
 
+/** The form's dropdown options, one a day, as the calendar names them ("Day 5: Install a plugin"). */
+export const adventDayOptions = (calendar: AdventCalendar) =>
+  calendar.challenges.map((challenge) => `Day ${challenge.day}: ${challenge.title}`);
+
 /**
  * The issue's title and body with the form's values taken out wherever they
- * parse, for the injection scan: a day and a link say nothing to an agent.
+ * parse, for the injection scan: a day and a link say nothing to an agent. The
+ * day comes out only as a bare number or one of the dropdown's own `options`,
+ * so words someone added after it are still scanned.
  */
-export function adventFreeText(title: string, body: string): string {
+export function adventFreeText(title: string, body: string, options: readonly string[]): string {
   let text = `${title}\n${body.replace(/\r\n?/g, '\n')}`;
   const link = formField(body, ADVENT_FIELDS.link);
-  const day = formField(body, ADVENT_FIELDS.day);
+  const day = formField(body, ADVENT_FIELDS.day)?.trim();
   if (link && parseAdventLink(link)) text = text.replaceAll(link, '');
-  if (day && parseDay(day)) text = text.replaceAll(day, '');
+  if (day && (/^(?:day\s*)?\d{1,2}$/i.test(day) || options.includes(day))) {
+    text = text.replaceAll(day, '');
+  }
   return text;
 }
 

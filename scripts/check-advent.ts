@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs';
 import { cleanCalendar } from '../northpole/advent.ts';
 import {
   ADVENT_FIELDS,
+  adventDayOptions,
   adventFreeText,
   decideAdvent,
   parseAdventLink,
@@ -43,7 +44,8 @@ const facts: AdventFacts = {
   author: issue.user.login,
   dayField: formField(body, ADVENT_FIELDS.day),
   linkField: formField(body, ADVENT_FIELDS.link),
-  flaggedText: scanParticipantText(adventFreeText(issue.title, body)).length > 0,
+  flaggedText:
+    scanParticipantText(adventFreeText(issue.title, body, adventDayOptions(calendar))).length > 0,
   openedAt: new Date(issue.created_at),
   year: calendar.year,
 };

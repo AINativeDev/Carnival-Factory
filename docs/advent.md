@@ -23,8 +23,9 @@ door had opened, and that the link is a public pull request or issue on a
 repository of yours (or of an organisation you're a public member of), or one
 you opened. The agent then judges whether it plausibly matches the challenge,
 generously, and labels the issue `accepted` or `declined` with a friendly
-comment. A request with text that reads as instructions to an agent waits for
-a maintainer instead.
+comment. A request with text that tries to tell the assessing agent how to
+decide it waits for a maintainer instead. Instructions meant for your own
+factory, such as the issue you handed it on day 2, are just evidence.
 
 That's all the checking there is: it's self-reported, and nothing else is
 tracked.

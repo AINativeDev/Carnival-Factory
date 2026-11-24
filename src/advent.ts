@@ -65,40 +65,48 @@ export function openAdventHud(frame: HTMLElement, options: AdventHudOptions): Vi
     ${SIGNUP_OFFER}`;
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
 
-  const doors = adventDoors(ADVENT_CALENDAR, options.now);
-  $('.factory-note').textContent = adventNote(doors, ADVENT_CALENDAR.year);
-  for (const door of doors) {
-    const item = document.createElement('li');
-    item.className = 'advent-door';
-    const day = document.createElement('span');
-    day.className = 'advent-day';
-    day.textContent = String(door.day);
-    item.append(day);
-    if (door.open) {
-      item.dataset.open = '';
-      const { challenge } = door;
-      const title = document.createElement('strong');
-      title.className = 'advent-title';
-      title.textContent = challenge.title;
-      const what = document.createElement('span');
-      what.textContent = challenge.do;
-      const check = document.createElement('span');
-      check.className = 'advent-check';
-      check.textContent = `You'll know it worked when: ${challenge.check}`;
-      const docs = document.createElement('a');
-      docs.href = challenge.docs;
-      docs.target = '_blank';
-      docs.rel = 'noopener';
-      docs.textContent = 'Read the docs';
-      item.append(title, what, check, docs);
-    } else {
-      const shut = document.createElement('span');
-      shut.className = 'advent-shut';
-      shut.textContent = `Opens on ${door.day} December`;
-      item.append(shut);
+  // The doors as they are at `now`, and again at each midnight while the calendar stays open.
+  let midnight: ReturnType<typeof setTimeout> | undefined;
+  const showDoors = (now: Date) => {
+    const doors = adventDoors(ADVENT_CALENDAR, now);
+    $('.advent-doors').replaceChildren();
+    $('.factory-note').textContent = adventNote(doors, ADVENT_CALENDAR.year);
+    for (const door of doors) {
+      const item = document.createElement('li');
+      item.className = 'advent-door';
+      const day = document.createElement('span');
+      day.className = 'advent-day';
+      day.textContent = String(door.day);
+      item.append(day);
+      if (door.open) {
+        item.dataset.open = '';
+        const { challenge } = door;
+        const title = document.createElement('strong');
+        title.className = 'advent-title';
+        title.textContent = challenge.title;
+        const what = document.createElement('span');
+        what.textContent = challenge.do;
+        const check = document.createElement('span');
+        check.className = 'advent-check';
+        check.textContent = `You'll know it worked when: ${challenge.check}`;
+        const docs = document.createElement('a');
+        docs.href = challenge.docs;
+        docs.target = '_blank';
+        docs.rel = 'noopener';
+        docs.textContent = 'Read the docs';
+        item.append(title, what, check, docs);
+      } else {
+        const shut = document.createElement('span');
+        shut.className = 'advent-shut';
+        shut.textContent = `Opens on ${door.day} December`;
+        item.append(shut);
+      }
+      $('.advent-doors').append(item);
     }
-    $('.advent-doors').append(item);
-  }
+    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    midnight = setTimeout(() => showDoors(new Date()), next.getTime() - now.getTime() + 1000);
+  };
+  showDoors(options.now);
   showSignupOffer(card);
 
   $('.visit-close').addEventListener('click', () => options.onClose());
@@ -118,6 +126,7 @@ export function openAdventHud(frame: HTMLElement, options: AdventHudOptions): Vi
 
   return {
     close() {
+      clearTimeout(midnight);
       document.removeEventListener('keydown', onKeyDown);
       delete frame.dataset.factory;
       const hadFocus = card.contains(document.activeElement);
