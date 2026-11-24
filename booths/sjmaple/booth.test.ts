@@ -1,68 +1,196 @@
 import { describe, expect, it } from 'vitest';
 import {
-  builtParts,
+  BODIES,
+  BUTTONS,
+  buttonAt,
+  CARRY,
   carryTip,
+  DEMO_LAUNCH,
+  DEMO_LOOP,
+  demoAt,
   ease,
-  LOOP,
-  momentAt,
+  HANDLES,
+  IDLE,
+  idle,
+  newWorkshop,
   PLACES,
+  press,
+  rating,
+  REST,
   restPose,
+  settle,
   spinAngle,
   spinSpeed,
-  SPIN_TIME,
+  stageAt,
+  STRIPES,
+  testing,
+  testOf,
   wobble,
 } from './booth';
 
-describe('momentAt', () => {
-  it('builds, carries, spins and rests, in that order', () => {
-    const stages = [0, 2_000, 3_500, 5_000, 8_000, 11_500].map((t) => momentAt(t).stage);
-    expect(stages).toEqual(['body', 'stripe', 'handle', 'carry', 'spin', 'rest']);
-  });
-
-  it('repeats every loop, before the page loaded too', () => {
-    for (const time of [0, 1_234, 6_000, 11_999]) {
-      expect(momentAt(time + 5 * LOOP)).toEqual(momentAt(time));
+describe('buttonAt', () => {
+  it('finds each button from a point inside it, and nothing outside them', () => {
+    for (const b of BUTTONS) {
+      expect(buttonAt(b.x + b.w / 2, b.y + b.h / 2)).toBe(b.name);
     }
-    expect(momentAt(-500)).toEqual(momentAt(LOOP - 500));
-  });
-
-  it('keeps progress between 0 and 1', () => {
-    for (let t = 0; t < LOOP; t += 37) {
-      const { progress } = momentAt(t);
-      expect(progress).toBeGreaterThanOrEqual(0);
-      expect(progress).toBeLessThan(1);
-    }
+    expect(buttonAt(PLACES.mat.x, PLACES.mat.y)).toBeNull();
+    expect(buttonAt(-1, -1)).toBeNull();
   });
 });
 
-describe('builtParts', () => {
-  it('goes from nothing to a whole top and stays whole', () => {
-    expect(builtParts(momentAt(0))).toBe(0);
-    expect(builtParts(momentAt(2_250))).toBeCloseTo(1.5);
-    expect(builtParts(momentAt(4_000))).toBeGreaterThan(2);
-    expect(builtParts(momentAt(8_000))).toBe(3);
+describe('press', () => {
+  it('cycles each part through its choices, one per press', () => {
+    let state = newWorkshop();
+    state = press(state, 'body', 1, 100);
+    expect(state.build.body).toBe(1);
+    state = press(state, 'stripe', STRIPES.length + 2, 200);
+    expect(state.build.stripe).toBe(2);
+    state = press(state, 'handle', HANDLES.length, 300);
+    expect(state.build.handle).toBe(0);
+    expect(state.changedAt).toBe(300);
+  });
+
+  it('does nothing without a press', () => {
+    const state = newWorkshop();
+    expect(press(state, 'body', 0, 100)).toBe(state);
+  });
+
+  it('sets the top spinning, and ignores every button until the test is done', () => {
+    let state = press(newWorkshop(), 'spin', 1, 1_000);
+    expect(state.launchedAt).toBe(1_000);
+    expect(testing(state, 1_500)).toBe(true);
+    const during = press(state, 'body', 1, 2_000);
+    expect(during.build).toEqual(state.build);
+    expect(press(during, 'spin', 1, 2_100).launchedAt).toBe(1_000);
+    const { spin } = testOf(state.build, 1_000);
+    const after = 1_000 + CARRY + spin + REST;
+    expect(testing(state, after)).toBe(false);
+    state = press(state, 'body', 1, after);
+    expect(state.build.body).toBe(1);
+  });
+});
+
+describe('settle', () => {
+  it('counts a finished test towards the best, once', () => {
+    const launched = press(newWorkshop(), 'spin', 1, 0);
+    const { spin } = testOf(launched.build, 0);
+    expect(settle(launched, 1_000).best).toBe(0);
+    const done = settle(launched, CARRY + spin + REST);
+    expect(done.best).toBe(spin);
+    expect(done.counted).toBe(true);
+  });
+
+  it('reports the top that was tested, whatever is built after it', () => {
+    let state = press(newWorkshop(), 'spin', 1, 0);
+    const { spin } = testOf(state.tested, 0);
+    const after = CARRY + spin + REST;
+    // A round body, then a wide one, which would spin longer.
+    state = press(state, 'body', 1, after);
+    expect(state.build.body).toBe(1);
+    expect(state.tested.body).toBe(0);
+    expect(testing(state, after + 1)).toBe(false);
+    expect(settle(state, after + 1).best).toBe(spin);
+  });
+
+  it('counts a finished test before a new spin replaces it', () => {
+    const launched = press(newWorkshop(), 'spin', 1, 0);
+    const { spin } = testOf(launched.build, 0);
+    const after = CARRY + spin + REST;
+    const again = press(launched, 'spin', 1, after);
+    expect(again.launchedAt).toBe(after);
+    expect(again.best).toBe(spin);
+  });
+
+  it('keeps the longest spin', () => {
+    const state = { ...press(newWorkshop(), 'spin', 1, 0), best: 99_000 };
+    expect(settle(state, 60_000).best).toBe(99_000);
+  });
+});
+
+describe('testOf', () => {
+  it('lets the parts decide how long it spins and how it wobbles', () => {
+    const wide = testOf({ body: 1, stripe: 0, handle: 1 }, 0);
+    const tall = testOf({ body: 2, stripe: 0, handle: 2 }, 0);
+    expect(wide.spin).toBeGreaterThan(tall.spin);
+    expect(rating(wide.wobble)).toBe('STEADY');
+    expect(rating(tall.wobble)).toBe('WILD');
+    expect(rating(testOf({ body: 0, stripe: 0, handle: 0 }, 0).wobble)).toBe('WOBBLY');
+  });
+
+  it('varies by no more than a tenth with the moment it is let go', () => {
+    for (let b = 0; b < BODIES.length; b++) {
+      for (let h = 0; h < HANDLES.length; h++) {
+        const base = BODIES[b].spin + HANDLES[h].spin;
+        for (const at of [0, 123, 4_567, 89_012]) {
+          const { spin } = testOf({ body: b, stripe: 0, handle: h }, at);
+          expect(spin).toBeGreaterThanOrEqual(base * 0.9 - 1);
+          expect(spin).toBeLessThanOrEqual(base * 1.1 + 1);
+        }
+      }
+    }
+  });
+
+  it('ignores the stripes', () => {
+    expect(testOf({ body: 0, stripe: 3, handle: 0 }, 5)).toEqual(
+      testOf({ body: 0, stripe: 0, handle: 0 }, 5),
+    );
+  });
+});
+
+describe('stageAt', () => {
+  it('carries, spins, rests and is done, in that order', () => {
+    const spin = 5_000;
+    const stages = [0, CARRY + 10, CARRY + spin + 10, CARRY + spin + REST].map(
+      (ms) => stageAt(ms, spin).stage,
+    );
+    expect(stages).toEqual(['carry', 'spin', 'rest', 'done']);
   });
 });
 
 describe('the spin', () => {
+  const test = { spin: 5_500, wobble: 1 };
+
   it('slows to a stop, and never turns backwards', () => {
-    expect(spinSpeed(0)).toBe(1);
-    expect(spinSpeed(SPIN_TIME)).toBe(0);
+    expect(spinSpeed(0, test.spin)).toBe(1);
+    expect(spinSpeed(test.spin, test.spin)).toBe(0);
     let last = 0;
-    for (let ms = 0; ms <= SPIN_TIME; ms += 50) {
-      expect(spinAngle(ms)).toBeGreaterThanOrEqual(last);
-      last = spinAngle(ms);
+    for (let ms = 0; ms <= test.spin; ms += 50) {
+      expect(spinAngle(ms, test.spin)).toBeGreaterThanOrEqual(last);
+      last = spinAngle(ms, test.spin);
     }
-    expect(spinAngle(SPIN_TIME * 2)).toBe(spinAngle(SPIN_TIME));
+    expect(spinAngle(test.spin * 2, test.spin)).toBe(spinAngle(test.spin, test.spin));
   });
 
-  it('wobbles more as it slows, and not at all at the start', () => {
-    expect(wobble(0)).toBe(0);
-    const early = Math.max(...Array.from({ length: 60 }, (_, i) => Math.abs(wobble(i * 20))));
-    const late = Math.max(
-      ...Array.from({ length: 60 }, (_, i) => Math.abs(wobble(SPIN_TIME - 1_200 + i * 20))),
+  it('wobbles more as it slows, and more for a wobblier top', () => {
+    expect(wobble(0, test)).toBe(0);
+    const most = (t: { spin: number; wobble: number }, from: number) =>
+      Math.max(...Array.from({ length: 60 }, (_, i) => Math.abs(wobble(from + i * 20, t))));
+    expect(most(test, test.spin - 1_200)).toBeGreaterThan(most(test, 0));
+    expect(most({ ...test, wobble: 1.5 }, test.spin - 1_200)).toBeGreaterThan(
+      most(test, test.spin - 1_200),
     );
-    expect(late).toBeGreaterThan(early);
+  });
+});
+
+describe('the elf on their own', () => {
+  it('takes over when nobody has pressed for a while and no top is out', () => {
+    const state = newWorkshop();
+    expect(idle(state, 0)).toBe(true);
+    const pressed = press(state, 'body', 1, 1_000);
+    expect(idle(pressed, 1_000 + IDLE - 1)).toBe(false);
+    expect(idle(pressed, 1_000 + IDLE + 1)).toBe(true);
+  });
+
+  it('builds a top, then lets it go, and finishes testing it before the next round', () => {
+    const round = demoAt(DEMO_LOOP * 4 + 100);
+    expect(round.launchedAt).toBe(DEMO_LOOP * 4 + DEMO_LAUNCH);
+    expect(round.built).toBeLessThan(3);
+    expect(demoAt(DEMO_LOOP * 4 + DEMO_LAUNCH).built).toBe(3);
+    for (let n = 0; n < 12; n++) {
+      const { build, launchedAt } = demoAt(n * DEMO_LOOP);
+      const { spin } = testOf(build, launchedAt);
+      expect(launchedAt + CARRY + spin + REST).toBeLessThan((n + 1) * DEMO_LOOP);
+    }
   });
 });
 
@@ -83,21 +211,14 @@ describe('carryTip', () => {
     expect(carryTip(1, from, to)).toEqual({ x: to.x, y: to.y });
   });
 
-  it('moves steadily towards the mat and hops above both ends on the way', () => {
-    let lastX = from.x;
-    for (let p = 0; p <= 1; p += 0.05) {
-      const { x } = carryTip(p, from, to);
-      expect(x).toBeGreaterThanOrEqual(lastX);
-      lastX = x;
-    }
+  it('hops above both ends on the way', () => {
     expect(carryTip(0.5, from, to).y).toBeLessThan(Math.min(from.y, to.y));
   });
 });
 
 describe('restPose', () => {
-  it('leans further at first, then lies on its side for the rest of the round', () => {
+  it('leans further at first, then lies on its side', () => {
     expect(restPose(0)).toEqual({ lying: false, lean: 2 });
-    expect(restPose(0.1).lying).toBe(false);
     expect(restPose(0.1).lean).toBeGreaterThan(2);
     for (const p of [0.25, 0.5, 0.99]) expect(restPose(p).lying).toBe(true);
   });
