@@ -14,6 +14,7 @@ import {
   type BadgeFacts,
 } from './elf-engineer.ts';
 import { exists, get, repoPath } from './github-api.ts';
+import { scanParticipantText } from './injection-scan.ts';
 
 const repository = process.env.GITHUB_REPOSITORY;
 const number = process.env.ISSUE_NUMBER;
@@ -21,7 +22,7 @@ if (!repository || !number || !/^\d+$/.test(number)) {
   throw new Error('Set GITHUB_REPOSITORY and ISSUE_NUMBER');
 }
 
-const issue = await get<{ user: { login: string }; body: string | null }>(
+const issue = await get<{ user: { login: string }; title: string; body: string | null }>(
   `${repoPath(repository)}/issues/${number}`,
 );
 if (!issue) throw new Error(`Issue ${number} not found`);
@@ -31,6 +32,7 @@ const facts: BadgeFacts = {
   author: issue.user.login,
   repoField: formField(body, FORM_FIELDS.repo),
   pullField: formField(body, FORM_FIELDS.pull),
+  flaggedText: scanParticipantText(`${issue.title}\n${body}`).length > 0,
 };
 
 const named = parseRepository(facts.repoField);

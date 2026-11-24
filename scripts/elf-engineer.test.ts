@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ASSESSMENT_MARKER,
   badgeHolders,
   badgePage,
   decideBadge,
@@ -124,6 +125,7 @@ describe('decideBadge', () => {
       /Tessl App/,
     ],
     ['a user named like the app', { pull: { ...working.pull!, authorIsBot: false } }, /Tessl App/],
+    ['a request with text aimed at an agent', { flaggedText: true }, /beyond its two fields/],
   ];
   it.each(declines)('declines %s', (_, change, reason) => {
     const decision = decideBadge({ ...working, ...change });
@@ -149,7 +151,11 @@ describe('badgeHolders', () => {
     number: number,
     login: string,
     comments: BadgeRequestRecord['comments'],
-  ): BadgeRequestRecord => ({ issue: { number, user: { login } }, comments });
+    labels: string[] = ['badge-request', 'badge-granted'],
+  ): BadgeRequestRecord => ({
+    issue: { number, user: { login }, labels: labels.map((name) => ({ name })) },
+    comments,
+  });
 
   it("lists each issue's author with the Tessl App's newest grant", () => {
     const holders = badgeHolders([
@@ -193,6 +199,27 @@ describe('badgeHolders', () => {
           },
         ]),
       ]),
+    ).toEqual([]);
+  });
+  it("counts a request only by the Tessl App's latest decision on it", () => {
+    const grant = {
+      user: app,
+      body: `${ASSESSMENT_MARKER}\n${grantMarker('octocat/workshop', 'gold')}\nCongratulations!`,
+      created_at: '2026-12-01T00:00:00Z',
+    };
+    const decline = {
+      user: app,
+      body: `${ASSESSMENT_MARKER}\nThanks for asking.`,
+      created_at: '2026-12-03T00:00:00Z',
+    };
+    expect(badgeHolders([record(1, 'octocat', [grant, decline])])).toEqual([]);
+    expect(
+      badgeHolders([
+        record(1, 'octocat', [decline, { ...grant, created_at: '2026-12-04T00:00:00Z' }]),
+      ]),
+    ).toEqual([{ login: 'octocat', repo: 'octocat/workshop', tier: 'gold' }]);
+    expect(
+      badgeHolders([record(1, 'octocat', [grant], ['badge-request', 'badge-granted', 'declined'])]),
     ).toEqual([]);
   });
 });

@@ -69,6 +69,8 @@ export interface BadgeFacts {
   repoField?: string;
   /** The pull request the form names, as written. */
   pullField?: string;
+  /** Whether `scanParticipantText` in scripts/injection-scan.ts found anything in the issue's title or body. */
+  flaggedText?: boolean;
   repo?: { fullName: string; private: boolean; owner: string };
   /** Whether the author is a public member of the organisation that owns the repository. */
   authorIsMember?: boolean;
@@ -91,9 +93,16 @@ const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 /**
  * Grants the badge only when the request names a public repository of the
  * author's own, with a `tessl.json`, and a pull request in it the Tessl App
- * opened. Otherwise declines, with the first reason that applies.
+ * opened, and the request holds nothing aimed at an agent or hidden. Otherwise
+ * declines, with the first reason that applies.
  */
 export function decideBadge(facts: BadgeFacts): BadgeDecision {
+  if (facts.flaggedText) {
+    return {
+      grant: false,
+      reason: 'the request has text beyond its two fields that the factory cannot take',
+    };
+  }
   const named = parseRepository(facts.repoField);
   if (!named) return { grant: false, reason: 'the form needs your repository, as owner/name' };
   const pullAt = parsePullRequest(facts.pullField);
@@ -134,25 +143,36 @@ export function readGrant(body: string): { repo: string; tier?: BadgeTier } | un
 
 /** A badge request as the GitHub API gives it, with its comments. */
 export interface BadgeRequestRecord {
-  issue: { number: number; user: { login: string } };
+  issue: { number: number; user: { login: string }; labels?: { name: string }[] };
   comments: { user: { login: string; type: string }; body: string; created_at: string }[];
 }
+
+/** The start of every comment the assess-badge-request skill writes. */
+export const ASSESSMENT_MARKER = '<!-- assess-badge-request -->';
 
 /**
  * The badge holders, from the accepted badge requests: only grants the Tessl
  * App wrote count, each for the issue's author, and a newer grant replaces an
- * older one, so asking again moves someone up a tier.
+ * older one, so asking again moves someone up a tier. A request counts only by
+ * its latest decision, so a grant a later decline replaced, or one on a request
+ * labelled `declined`, is never published.
  */
 export function badgeHolders(records: readonly BadgeRequestRecord[]): BadgeHolder[] {
   const grants: { at: string; holder: BadgeHolder }[] = [];
   for (const { issue, comments } of records) {
-    for (const comment of comments) {
-      if (comment.user.type !== 'Bot' || !FACTORY_BOTS.includes(comment.user.login.toLowerCase()))
-        continue;
-      const grant = readGrant(comment.body);
-      if (grant)
-        grants.push({ at: comment.created_at, holder: { login: issue.user.login, ...grant } });
-    }
+    if (issue.labels?.some((label) => label.name === 'declined')) continue;
+    const decisions = comments
+      .filter(
+        (comment) =>
+          comment.user.type === 'Bot' &&
+          FACTORY_BOTS.includes(comment.user.login.toLowerCase()) &&
+          (comment.body.trimStart().startsWith(ASSESSMENT_MARKER) || readGrant(comment.body)),
+      )
+      .sort((a, b) => a.created_at.localeCompare(b.created_at));
+    const latest = decisions.at(-1);
+    const grant = latest && readGrant(latest.body);
+    if (latest && grant)
+      grants.push({ at: latest.created_at, holder: { login: issue.user.login, ...grant } });
   }
   grants.sort((a, b) => a.at.localeCompare(b.at));
   return cleanHolders(grants.map((grant) => grant.holder));
