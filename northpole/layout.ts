@@ -53,6 +53,8 @@ export interface MapLayout {
 export const SQUARE_SIZE = 160;
 /** Room under a square for its sign. */
 export const SIGN_HEIGHT = 40;
+/** How wide a sign's text may run, centred under its square: no wider than the square. */
+export const SIGN_WIDTH = SQUARE_SIZE;
 export const MIDWAY_WIDTH = 72;
 export const LANE_WIDTH = 48;
 export const STREAM_WIDTH = 44;
@@ -210,11 +212,22 @@ function sample(from: number, to: number, at: (t: number) => Point): Point[] {
   return Array.from({ length: steps + 1 }, (_, i) => at(from + ((to - from) * i) / steps));
 }
 
-/** The box a square and its sign take up, turned as the square is. */
+/** The box a square and its sign take up, turned about the square's centre as they are drawn. */
 export function footprint(slot: Slot): Box {
-  const half =
-    (SQUARE_SIZE / 2) * (Math.abs(Math.cos(slot.angle)) + Math.abs(Math.sin(slot.angle)));
-  return { x: slot.x - half, y: slot.y - half, width: 2 * half, height: 2 * half + SIGN_HEIGHT };
+  const half = SQUARE_SIZE / 2;
+  const corners = [
+    [-half, -half],
+    [half, -half],
+    [-SIGN_WIDTH / 2, half + SIGN_HEIGHT],
+    [SIGN_WIDTH / 2, half + SIGN_HEIGHT],
+    [-SIGN_WIDTH / 2, half],
+    [SIGN_WIDTH / 2, half],
+  ];
+  const [cos, sin] = [Math.cos(slot.angle), Math.sin(slot.angle)];
+  const xs = corners.map(([x, y]) => slot.x + x * cos - y * sin);
+  const ys = corners.map(([x, y]) => slot.y + x * sin + y * cos);
+  const [left, top] = [Math.min(...xs), Math.min(...ys)];
+  return { x: left, y: top, width: Math.max(...xs) - left, height: Math.max(...ys) - top };
 }
 
 /**
@@ -334,24 +347,42 @@ export interface SceneryItem extends Point {
   seed: number;
 }
 
-/** How much room each kind of scenery takes, from its centre. */
-const SCENERY_RADIUS: Record<SceneryKind, number> = { tree: 26, drift: 24, fence: 34, lamp: 10 };
+/**
+ * The circle that holds everything solid `drawTree`, `drawDrift`, `drawFence`
+ * and `drawLamp` in `map.ts` paint for `item`. A lamp's soft glow is left out,
+ * as it is meant to spill onto the path.
+ */
+export function sceneryExtent(item: SceneryItem): Point & { radius: number } {
+  if (item.kind === 'tree') {
+    // The tree reaches from 35 above its anchor to 18 below, 22 either side, at its scale.
+    const scale = 0.8 + 0.5 * item.seed;
+    return { x: item.x, y: item.y - 8.5 * scale, radius: 34.5 * scale };
+  }
+  if (item.kind === 'drift') return { x: item.x, y: item.y, radius: 22 + 10 * item.seed };
+  if (item.kind === 'fence') return { x: item.x, y: item.y, radius: 34 };
+  // The lamp's head is 26 above its anchor, and its foot 3 below.
+  return { x: item.x, y: item.y - LAMP_LIFT, radius: LAMP_RADIUS };
+}
+
+const LAMP_LIFT = 11.5;
+const LAMP_RADIUS = 15.5;
 const CELL = 100;
 
 /**
  * The trees, drifts, fences and lamps between the squares. Each comes from a
- * fixed cell of the town and the seed, and is only kept where it is clear of
- * every square, sign, path and the town square, so the squares stay the stars.
+ * fixed cell of the town and the seed, and is only kept where all it paints is
+ * clear of every square, sign, path and the town square, so the squares stay
+ * the stars.
  */
 export function placeScenery(layout: MapLayout): SceneryItem[] {
   const boxes = layout.slots.map(footprint);
   const clear = (item: SceneryItem) => {
-    const room = SCENERY_RADIUS[item.kind];
-    if (Math.hypot(item.x - layout.plaza.x, item.y - layout.plaza.y) < layout.plaza.radius + room)
+    const { radius: room, ...at } = sceneryExtent(item);
+    if (Math.hypot(at.x - layout.plaza.x, at.y - layout.plaza.y) < layout.plaza.radius + room)
       return false;
-    if (Math.hypot(item.x - layout.bridge.x, item.y - layout.bridge.y) < 80 + room) return false;
-    if (boxes.some((box) => distanceToBox(box, item) < room + 14)) return false;
-    return layout.paths.every((path) => distanceToPath(path, item) > path.width / 2 + room + 6);
+    if (Math.hypot(at.x - layout.bridge.x, at.y - layout.bridge.y) < 80 + room) return false;
+    if (boxes.some((box) => distanceToBox(box, at) < room + 14)) return false;
+    return layout.paths.every((path) => distanceToPath(path, at) > path.width / 2 + room + 6);
   };
 
   const items: SceneryItem[] = [];
@@ -361,17 +392,25 @@ export function placeScenery(layout: MapLayout): SceneryItem[] {
     for (let i = every / 2, n = 0; i < path.points.length - 1; i += every, n++) {
       const [a, b] = [path.points[i], path.points[i + 1]];
       const length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-      const side = (n % 2 ? 1 : -1) * (path.width / 2 + 18);
+      const normal = { x: -(b.y - a.y) / length, y: (b.x - a.x) / length };
+      // Far enough out that the lamp's head clears the path, whichever way the path runs.
+      const side = (n % 2 ? 1 : -1) * (path.width / 2 + LAMP_RADIUS + 3) + LAMP_LIFT * normal.y;
       const lamp: SceneryItem = {
         kind: 'lamp',
-        x: a.x - ((b.y - a.y) / length) * side,
-        y: a.y + ((b.x - a.x) / length) * side,
+        x: a.x + normal.x * side,
+        y: a.y + normal.y * side,
         seed: hash(a.x, a.y, 11),
       };
+      const at = sceneryExtent(lamp);
       const onPlaza =
-        Math.hypot(lamp.x - layout.plaza.x, lamp.y - layout.plaza.y) < layout.plaza.radius + 20;
-      const onBridge = Math.hypot(lamp.x - layout.bridge.x, lamp.y - layout.bridge.y) < 80;
-      if (!onPlaza && !onBridge && boxes.every((box) => distanceToBox(box, lamp) > 16))
+        Math.hypot(at.x - layout.plaza.x, at.y - layout.plaza.y) < layout.plaza.radius + 20;
+      const onBridge = Math.hypot(at.x - layout.bridge.x, at.y - layout.bridge.y) < 80;
+      if (
+        !onPlaza &&
+        !onBridge &&
+        boxes.every((box) => distanceToBox(box, at) > at.radius + 2) &&
+        layout.paths.every((path) => distanceToPath(path, at) > path.width / 2 + at.radius)
+      )
         items.push(lamp);
     }
   }

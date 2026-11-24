@@ -2,6 +2,7 @@ import {
   hash,
   layoutMap,
   placeScenery,
+  SIGN_WIDTH,
   SQUARE_SIZE,
   slotAt,
   type MapLayout,
@@ -358,7 +359,7 @@ function drawOpenSpot(ctx: CanvasRenderingContext2D, x: number, y: number) {
 
 /** The sign under a square: its name, and whose it is. */
 function drawSign(ctx: CanvasRenderingContext2D, name: string, by: string, x: number, y: number) {
-  const width = SQUARE_SIZE + 40;
+  const width = SIGN_WIDTH;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   ctx.fillStyle = colors.night;

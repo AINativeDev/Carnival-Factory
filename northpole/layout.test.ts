@@ -8,6 +8,9 @@ import {
   layoutMap,
   OPEN_SPOTS,
   placeScenery,
+  sceneryExtent,
+  SIGN_HEIGHT,
+  SIGN_WIDTH,
   SQUARE_SIZE,
   slotAt,
   type Box,
@@ -167,6 +170,18 @@ describe('slotAt', () => {
       expect(slotAt(layout, point.x, point.y)).toBeUndefined();
   });
 
+  it('bounds the whole sign, turned about the centre of its square', () => {
+    const slot = { kind: 'booth' as const, index: 0, x: 0, y: 0, angle: 0.09 };
+    const box = footprint(slot);
+    const [cos, sin] = [Math.cos(slot.angle), Math.sin(slot.angle)];
+    for (const x of [-SIGN_WIDTH / 2, SIGN_WIDTH / 2]) {
+      for (const y of [SQUARE_SIZE / 2, SQUARE_SIZE / 2 + SIGN_HEIGHT]) {
+        expect(distanceToBox(box, { x: x * cos - y * sin, y: x * sin + y * cos })).toBe(0);
+      }
+    }
+    expect(box.width).toBeGreaterThan(SIGN_WIDTH);
+  });
+
   it('finds every square at its centre', () => {
     const layout = layoutMap(8, 30);
     for (const slot of layout.slots) expect(slotAt(layout, slot.x, slot.y)).toBe(slot);
@@ -183,17 +198,59 @@ describe('placeScenery', () => {
     expect([...kinds].sort()).toEqual(['drift', 'fence', 'lamp', 'tree']);
   });
 
-  it('keeps scenery off the squares, their signs, the paths and the town square', () => {
-    const layout = layoutMap(8, 30);
-    const boxes = layout.slots.map(footprint);
-    for (const item of placeScenery(layout)) {
-      for (const box of boxes) expect(distanceToBox(box, item)).toBeGreaterThan(8);
-      expect(Math.hypot(item.x - layout.plaza.x, item.y - layout.plaza.y)).toBeGreaterThan(
-        layout.plaza.radius,
-      );
-      if (item.kind === 'lamp') continue;
-      for (const path of layout.paths)
-        expect(distanceToPath(path, item)).toBeGreaterThan(path.width / 2);
+  it('keeps all the scenery paints off the squares, their signs, the paths and the town square', () => {
+    for (const [attractions, booths] of [
+      [8, 30],
+      [3, 90],
+    ]) {
+      const layout = layoutMap(attractions, booths);
+      const boxes = layout.slots.map(footprint);
+      for (const item of placeScenery(layout)) {
+        const { radius, ...at } = sceneryExtent(item);
+        for (const box of boxes) expect(distanceToBox(box, at)).toBeGreaterThan(radius);
+        expect(Math.hypot(at.x - layout.plaza.x, at.y - layout.plaza.y)).toBeGreaterThan(
+          layout.plaza.radius + radius,
+        );
+        for (const path of layout.paths)
+          expect(distanceToPath(path, at)).toBeGreaterThan(path.width / 2 + radius);
+      }
     }
+  });
+
+  it('holds everything a tree and a lamp paint in their extents', () => {
+    const tree = sceneryExtent({ kind: 'tree', x: 0, y: 0, seed: 1 });
+    // The tallest tree's top, and its lowest branch tips, at 1.3 times its size.
+    for (const [x, y] of [
+      [0, -35],
+      [22, 8],
+      [-22, 8],
+      [3, 18],
+    ]) {
+      expect(Math.hypot(1.3 * x - tree.x, 1.3 * y - tree.y)).toBeLessThanOrEqual(tree.radius);
+    }
+    const lamp = sceneryExtent({ kind: 'lamp', x: 0, y: 0, seed: 0 });
+    for (const [x, y] of [
+      [0, -26],
+      [4, -22],
+      [4, 3],
+      [-4, 3],
+    ]) {
+      expect(Math.hypot(x - lamp.x, y - lamp.y)).toBeLessThanOrEqual(lamp.radius);
+    }
+  });
+
+  it('still lights both sides of the midway', () => {
+    const layout = layoutMap(8, 12);
+    const lamps = placeScenery(layout).filter(({ kind }) => kind === 'lamp');
+    const midway = layout.paths[0];
+    const near = lamps.filter((lamp) => distanceToPath(midway, lamp) < midway.width / 2 + 40);
+    const below = (lamp: { x: number; y: number }) => {
+      const at = midway.points.reduce((a, b) =>
+        Math.abs(b.x - lamp.x) < Math.abs(a.x - lamp.x) ? b : a,
+      );
+      return lamp.y > at.y;
+    };
+    expect(near.some((lamp) => !below(lamp))).toBe(true);
+    expect(near.some(below)).toBe(true);
   });
 });
