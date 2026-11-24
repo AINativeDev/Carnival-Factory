@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vitest/config';
+import { cleanCounts } from './northpole/advent.ts';
 import { cleanHolders } from './northpole/badges.ts';
 import { BADGE_REQUEST_URL, REPO_URL } from './northpole/links.ts';
 import { cleanChoice } from './northpole/peoples-choice.ts';
@@ -112,6 +113,17 @@ const BADGE_HOLDERS = (() => {
 })();
 
 /**
+ * How many advent challenges each participant has had accepted, baked into the
+ * page so it never asks the network: read from ADVENT_FILE, which the deploy
+ * writes from the accepted Advent challenge issues (scripts/write-advent.ts),
+ * or none without it.
+ */
+const ADVENT_COUNTS = (() => {
+  const file = process.env.ADVENT_FILE;
+  return file && existsSync(file) ? cleanCounts(JSON.parse(readFileSync(file, 'utf8'))) : {};
+})();
+
+/**
  * The People's Choice standings, baked into the page so it never asks the
  * network: read from PEOPLES_CHOICE_FILE, which the deploy writes from the
  * votes in its discussion (scripts/write-peoples-choice.ts), or none without it.
@@ -164,6 +176,8 @@ export default defineConfig(({ command }) => ({
     __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev'),
     __BADGE_HOLDERS__: JSON.stringify(BADGE_HOLDERS),
     __PEOPLES_CHOICE__: JSON.stringify(PEOPLES_CHOICE ?? null),
+    // How many advent challenges each booth's owner has done, for their booth's decorations.
+    __ADVENT_COUNTS__: JSON.stringify(ADVENT_COUNTS),
     // When each booth's folder first appeared, for the Booths panel's Recently added.
     __BOOTH_ADDED__: JSON.stringify(readBoothAddedDates(import.meta.dirname)),
     // Every square's name, for searching and sorting the Booths panel.

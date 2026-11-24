@@ -1,0 +1,173 @@
+{
+  "year": 2026,
+  "challenges": [
+    {
+      "day": 1,
+      "title": "Set up a factory",
+      "do": "Run tessl init in a repository of your own and commit the tessl.json it writes.",
+      "check": "Your repository has a tessl.json at its root, and the Tessl app shows the repository.",
+      "docs": "https://docs.tessl.io/introduction-to-tessl/set-up-tessl"
+    },
+    {
+      "day": 2,
+      "title": "Ship your first issue",
+      "do": "Write a small issue, such as fixing a typo or a stale README line, and hand it to your factory.",
+      "check": "The factory opens a pull request that does what the issue asked.",
+      "docs": "https://docs.tessl.io/introduction-to-tessl/build-your-first-factory"
+    },
+    {
+      "day": 3,
+      "title": "Merge the factory's pull request",
+      "do": "Review the factory's first pull request, ask for one change in a review comment, then merge it.",
+      "check": "The factory answers your comment on the same pull request, and it merges.",
+      "docs": "https://docs.tessl.io/introduction-to-tessl/build-your-first-factory"
+    },
+    {
+      "day": 4,
+      "title": "Write an agent guide",
+      "do": "Add an AGENTS.md that tells the factory your test command, your lint command and one house rule.",
+      "check": "The factory's next pull request runs your commands and follows the rule.",
+      "docs": "https://docs.tessl.io/introduction-to-tessl/core-concepts"
+    },
+    {
+      "day": 5,
+      "title": "Install a plugin",
+      "do": "Install a skill or plugin from the Tessl registry into your repository.",
+      "check": "tessl.json lists it, and tessl install fetches it.",
+      "docs": "https://docs.tessl.io/tutorials/using-tessl-as-a-package-manager"
+    },
+    {
+      "day": 6,
+      "title": "Make the factory ask first",
+      "do": "File an issue that leaves out something the factory needs, so it asks a question before building.",
+      "check": "The factory comments with a question instead of opening a pull request, and builds once you answer.",
+      "docs": "https://docs.tessl.io/introduction-to-tessl/build-your-first-factory"
+    },
+    {
+      "day": 7,
+      "title": "Turn on code review",
+      "do": "Set up Tessl Code Review on your repository.",
+      "check": "Your next pull request gets a review from Tessl.",
+      "docs": "https://docs.tessl.io/tutorials/setting-up-agentic-code-review"
+    },
+    {
+      "day": 8,
+      "title": "Add a review lens of your own",
+      "do": "Write one quality standard your team cares about, such as naming or error handling, as a review lens.",
+      "check": "A pull request that breaks the standard gets a finding that names it.",
+      "docs": "https://docs.tessl.io/codifying-and-enforcing/define-your-own-quality-standards"
+    },
+    {
+      "day": 9,
+      "title": "Write a skill",
+      "do": "Write a small skill for a task you repeat, such as writing a release note.",
+      "check": "An agent that has the skill does the task your way.",
+      "docs": "https://docs.tessl.io/creating-skills-and-plugins/create-a-skill"
+    },
+    {
+      "day": 10,
+      "title": "Review your skill",
+      "do": "Run a review on the skill you wrote and fix one thing it suggests.",
+      "check": "The skill's review score goes up.",
+      "docs": "https://docs.tessl.io/improving-your-skills/reviewing-skills"
+    },
+    {
+      "day": 11,
+      "title": "Prove the skill works",
+      "do": "Add an evaluation scenario for your skill and run it.",
+      "check": "The evaluation shows the skill doing better than no skill.",
+      "docs": "https://docs.tessl.io/improving-your-skills/evaluate-skill-quality-using-scenarios"
+    },
+    {
+      "day": 12,
+      "title": "Add a weekly maintenance loop",
+      "do": "Add a schedule that runs a small chore every week, such as checking for stale docs.",
+      "check": "tessl.json has the schedule, and its first run opens an issue or a pull request.",
+      "docs": "https://docs.tessl.io/schedules/overview"
+    },
+    {
+      "day": 13,
+      "title": "Keep the docs in sync",
+      "do": "Set up a loop that checks your README against the code and proposes fixes.",
+      "check": "It opens a pull request that corrects a line the code had made untrue.",
+      "docs": "https://docs.tessl.io/automations/overview/example-schedules/use-case-docs-audit"
+    },
+    {
+      "day": 14,
+      "title": "Write a changelog loop",
+      "do": "Add a weekly loop that writes a changelog from the pull requests merged that week.",
+      "check": "Its run produces a changelog entry that names your merged pull requests.",
+      "docs": "https://docs.tessl.io/automations/overview/example-schedules/use-case-changelog"
+    },
+    {
+      "day": 15,
+      "title": "React to a label",
+      "do": "Add a trigger that starts an action when someone adds a label of your choosing to an issue.",
+      "check": "Adding the label starts a run, and nothing else does.",
+      "docs": "https://docs.tessl.io/reference/actions-triggers-schedules"
+    },
+    {
+      "day": 16,
+      "title": "Fix a failing check",
+      "do": "Push a change that breaks a test on a factory pull request, and let the factory mend it.",
+      "check": "The factory pushes a fix to the same branch and the checks go green.",
+      "docs": "https://docs.tessl.io/automations/troubleshooting-factory-runs"
+    },
+    {
+      "day": 17,
+      "title": "Guard a public repository",
+      "do": "Follow the public repository practices: only people you trust can start the factory.",
+      "check": "An issue from someone outside the list starts no run.",
+      "docs": "https://docs.tessl.io/automations/factory-on-public-repositories"
+    },
+    {
+      "day": 18,
+      "title": "Set up the environment",
+      "do": "Add a setup hook so every run installs your project's dependencies before it starts.",
+      "check": "A run's log shows the hook ran and the tests ran after it.",
+      "docs": "https://docs.tessl.io/automations/cloud-setup-hook"
+    },
+    {
+      "day": 19,
+      "title": "Watch your test health",
+      "do": "Add a loop that looks for slow or flaky tests and reports them.",
+      "check": "Its run opens an issue that names a test, or says all is well.",
+      "docs": "https://docs.tessl.io/automations/overview/example-schedules/use-case-test-health"
+    },
+    {
+      "day": 20,
+      "title": "Bundle a plugin",
+      "do": "Put your skill, and anything it needs, into a plugin in your repository.",
+      "check": "Another repository can install it from yours.",
+      "docs": "https://docs.tessl.io/creating-skills-and-plugins/create-a-plugin"
+    },
+    {
+      "day": 21,
+      "title": "Learn from past work",
+      "do": "Point a loop at your merged pull requests and let it suggest a rule for the next ones.",
+      "check": "It proposes a change to your agent guide or a skill, as a pull request.",
+      "docs": "https://docs.tessl.io/automations/learn-from-past-work"
+    },
+    {
+      "day": 22,
+      "title": "Check a release",
+      "do": "Add a release readiness check that runs before you tag a release.",
+      "check": "Its run lists what is ready and what is not.",
+      "docs": "https://docs.tessl.io/automations/overview/example-schedules/use-case-release-check"
+    },
+    {
+      "day": 23,
+      "title": "Show your badge",
+      "do": "Add the Tessl badge for your repository to its README.",
+      "check": "The README shows the badge, linking to your repository's page on Tessl.",
+      "docs": "https://docs.tessl.io/reference/github-badges"
+    },
+    {
+      "day": 24,
+      "title": "Ship a gift",
+      "do": "Hand the factory a real issue from your backlog, one you have put off, and merge what it builds.",
+      "check": "The issue is closed by a pull request the factory opened.",
+      "docs": "https://docs.tessl.io/introduction-to-tessl/build-your-first-factory"
+    }
+  ]
+}
