@@ -19,7 +19,8 @@ repository of their own, linking back to the North Pole.
    `scripts/check-elf-engineer.ts`, which checks through GitHub's API that the
    repository is public and yours, has a `tessl.json`, and that the pull
    request is in it and was opened by the Tessl App. It grants the badge or
-   declines with a friendly reason.
+   declines with a friendly reason. A request with other text that reads as
+   instructions to an agent waits for a maintainer instead.
 
 **Tiers:** bronze, silver and gold are for 1, 5 and 25 of the factory's pull
 requests merged on your repository. Ask again with the same form to be checked

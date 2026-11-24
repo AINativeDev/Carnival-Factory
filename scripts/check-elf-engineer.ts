@@ -9,6 +9,7 @@ import {
   decideBadge,
   formField,
   FORM_FIELDS,
+  freeText,
   parsePullRequest,
   parseRepository,
   type BadgeFacts,
@@ -32,7 +33,7 @@ const facts: BadgeFacts = {
   author: issue.user.login,
   repoField: formField(body, FORM_FIELDS.repo),
   pullField: formField(body, FORM_FIELDS.pull),
-  flaggedText: scanParticipantText(`${issue.title}\n${body}`).length > 0,
+  flaggedText: scanParticipantText(freeText(issue.title, body)).length > 0,
 };
 
 const named = parseRepository(facts.repoField);
@@ -41,7 +42,9 @@ const repo = named
       repoPath(named),
     )
   : undefined;
-if (repo) {
+// A private repository is left out, as if GitHub couldn't find it, so nothing
+// a token that reads private repositories sees reaches the decision or its facts.
+if (repo && !repo.private) {
   const owner = repo.owner.login;
   facts.repo = { fullName: repo.full_name, private: repo.private, owner };
   facts.authorIsMember =
@@ -56,7 +59,10 @@ if (repo) {
   facts.hasTesslJson = !Array.isArray(config) && config?.type === 'file';
   // The link's repository as GitHub resolves it, which follows a rename.
   const pullAt = parsePullRequest(facts.pullField);
-  const pullRepo = pullAt ? await get<{ full_name: string }>(repoPath(pullAt.repo)) : undefined;
+  const linked = pullAt
+    ? await get<{ full_name: string; private: boolean }>(repoPath(pullAt.repo))
+    : undefined;
+  const pullRepo = linked && !linked.private ? linked : undefined;
   const pull =
     pullAt && pullRepo
       ? await get<{ number: number; user: { login: string; type: string } }>(
