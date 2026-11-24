@@ -49,6 +49,8 @@ src/
                             pull requests, bundled from square-history.json at build time
   factory.ts                the factory's numbers page, #/factory: its counts and figures
                             (plain functions), over the map like a visit's panel
+  peoples-choice-hud.ts     the People's Choice list below the map: the top three, the
+                            Home factory's leader and every entry's votes
   style.css
 northpole/                  the map itself
   square.ts                 the NorthPoleSquare shape, the registries and the kill switch
@@ -86,6 +88,9 @@ northpole/                  the map itself
   badges.ts                 the Elf Engineer badge: its holders, baked in at build
                             time, its images and its README snippet (plain functions)
   disabled.json             the maintainers' kill switch: closed booths and attractions
+  peoples-choice.ts         People's Choice: the closing date, cleaning the baked standings,
+                            places and trophies (plain functions)
+  peoples-choice-standings.ts  the standings the build baked into the page
   links.ts                  links to the repository's issue forms
 docs/
   style.md                  the diorama style every square follows by default
@@ -128,6 +133,10 @@ scripts/
                             before the deploy's build (previews show the elf fallback)
   elf-engineer.ts           the Elf Engineer badge's rules: the form, the check,
                             the tiers and the holders (plain functions)
+  peoples-choice.ts         the People's Choice standings from its discussion's comments:
+                            one vote per account, not the owner's (plain functions)
+  write-peoples-choice.ts   adds a comment for each new entry, reads the votes and writes
+                            the standings before the deploy's build (previews have none)
 ```
 
 ## Working on an issue

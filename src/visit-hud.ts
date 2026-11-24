@@ -1,4 +1,6 @@
 import { badgeFor, factoryUrl } from '../northpole/badges';
+import { voteUrl } from '../northpole/peoples-choice';
+import { PEOPLES_CHOICE } from '../northpole/peoples-choice-standings';
 import {
   BADGE_REQUEST_URL,
   CHANGE_URL,
@@ -63,6 +65,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
     <p class="visit-owner"><a class="visit-profile" target="_blank" rel="noopener"></a></p>
     <p class="visit-factory" hidden><a target="_blank" rel="noopener"></a></p>
+    <p class="visit-vote" hidden><a target="_blank" rel="noopener">Vote for this booth</a> in People's Choice</p>
     <p class="visit-description" id="visit-description"></p>
     <div class="visit-actions">
       <button class="visit-copy" type="button">Share</button>
@@ -116,6 +119,13 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     factory.href = factoryUrl(badge);
     factory.textContent = `See ${owner}'s own factory`;
     $<HTMLElement>('.visit-factory').hidden = false;
+  }
+
+  // A booth's place in the People's Choice discussion, where a 👍 on its comment is a vote.
+  const vote = kind === 'booth' ? voteUrl(square.id, PEOPLES_CHOICE) : undefined;
+  if (vote) {
+    $<HTMLAnchorElement>('.visit-vote a').href = vote;
+    $<HTMLElement>('.visit-vote').hidden = false;
   }
 
   // How was this built: open beside the room, collapsed on a phone, where it sits below it.

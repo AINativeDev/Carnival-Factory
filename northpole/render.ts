@@ -6,6 +6,8 @@
  */
 import type { NorthPoleSquare, StallShape, StallStyle } from './square';
 import { badgeFor, type BadgeTier } from './badges';
+import { trophyFor } from './peoples-choice';
+import { PEOPLES_CHOICE } from './peoples-choice-standings';
 import { alongEdge } from './camera';
 import { canvasFont, theme } from './theme';
 import {
@@ -1110,6 +1112,13 @@ function drawStall(
     const pin = onFace(face, 0.94, (signLow + STALL.wall - 2) / 2, 0.1);
     drawElfHatPin(ctx, pin.x, pin.y, (STALL.wall - 2 - signLow) * 0.42, badge.tier);
   }
+  // A People's Choice trophy for the top three, standing on the name board's left end, clear of the portrait.
+  const place = trophyFor(square.id, PEOPLES_CHOICE);
+  if (place) {
+    const r = (STALL.wall - 2 - stallSignLow(face)) * 0.42;
+    const cup = onFace(face, 0.12, STALL.wall - 2 + r, 0.1);
+    drawTrophy(ctx, cup.x, cup.y, r, place);
+  }
   // The owner's pennant, on a pole at the front's far corner, over whatever shape the stall is.
   const top = look.shape === 'stall' ? STALL.wall + 22 : wall;
   const foot = onFace(face, 0.96, top, look.shape === 'stall' ? -0.5 : 0);
@@ -1295,6 +1304,47 @@ export function drawElfHatPin(
   ctx.beginPath();
   ctx.arc(x + r * 0.55, y - r * 0.55, r * 0.22, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+}
+
+/** A trophy's metal, by place. */
+const TROPHIES: Record<1 | 2 | 3, string> = {
+  1: colors.gold,
+  2: colors.snowShade,
+  3: colors.gingerbread,
+};
+
+/** A People's Choice trophy: a cup with two handles on a stand, `radius` across from its middle. */
+export function drawTrophy(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+  place: 1 | 2 | 3,
+) {
+  const r = radius;
+  ctx.save();
+  ctx.fillStyle = colors.cocoa;
+  ctx.beginPath();
+  ctx.arc(x, y, r + 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = TROPHIES[place];
+  ctx.strokeStyle = TROPHIES[place];
+  ctx.lineWidth = Math.max(1, r * 0.16);
+  // The cup, its handles, the stem and the base.
+  ctx.beginPath();
+  ctx.moveTo(x - r * 0.55, y - r * 0.6);
+  ctx.lineTo(x + r * 0.55, y - r * 0.6);
+  ctx.quadraticCurveTo(x + r * 0.5, y + r * 0.1, x, y + r * 0.15);
+  ctx.quadraticCurveTo(x - r * 0.5, y + r * 0.1, x - r * 0.55, y - r * 0.6);
+  ctx.fill();
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.arc(x + side * r * 0.55, y - r * 0.3, r * 0.22, -Math.PI / 2, Math.PI / 2, side < 0);
+    ctx.stroke();
+  }
+  ctx.fillRect(x - r * 0.08, y + r * 0.1, r * 0.16, r * 0.3);
+  ctx.fillRect(x - r * 0.35, y + r * 0.4, r * 0.7, r * 0.2);
   ctx.restore();
 }
 

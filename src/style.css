@@ -953,3 +953,60 @@ kbd {
     animation: none;
   }
 }
+
+/* People's Choice, below the map: one line folded, the standings open. */
+.choice {
+  flex: none;
+  padding: 6px 16px;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-size: 14px;
+}
+
+.choice summary {
+  cursor: pointer;
+}
+
+.choice-title {
+  font-weight: bold;
+}
+
+.choice-body {
+  max-height: 40vh;
+  overflow: auto;
+}
+
+.choice-note {
+  margin: 6px 0;
+}
+
+.choice-lists {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+}
+
+.choice-group {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.choice-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choice-place {
+  display: inline-block;
+  min-width: 2em;
+}
+
+.choice-votes {
+  opacity: 0.75;
+}
+
+.visit-vote {
+  margin: 6px 0;
+  font-size: 14px;
+}
