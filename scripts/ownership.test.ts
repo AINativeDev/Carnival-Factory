@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  approvedByMaintainer,
   boothFolder,
   boothOwner,
   escapeCommand,
@@ -114,5 +115,27 @@ describe('escapeCommand', () => {
     const escaped = escapeCommand('booths/elf/a.ts\n::warning::fake');
     expect(escaped).not.toContain('\n');
     expect(escaped).not.toContain('::');
+  });
+});
+
+describe('approvedByMaintainer', () => {
+  const labeled = (id: number, name = 'tessl') => ({
+    event: 'labeled',
+    label: { name },
+    actor: { id },
+  });
+
+  it('counts tessl added by a maintainer, by id', () => {
+    expect(approvedByMaintainer([labeled(42), labeled(70908)])).toBe(true);
+  });
+
+  it('ignores tessl added by anyone else, even after a maintainer did', () => {
+    expect(approvedByMaintainer([labeled(70908), labeled(42)])).toBe(false);
+    expect(approvedByMaintainer([labeled(42)])).toBe(false);
+  });
+
+  it('ignores other labels, and issues never labelled', () => {
+    expect(approvedByMaintainer([labeled(70908, 'booth-request')])).toBe(false);
+    expect(approvedByMaintainer([])).toBe(false);
   });
 });
