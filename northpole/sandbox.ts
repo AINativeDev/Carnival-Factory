@@ -12,7 +12,8 @@
 import { canvasFont, theme } from './theme';
 import { BUILD_ID } from '../src/updates';
 import { readFrameMessage, type SquareKind } from './frame-protocol';
-import type { NorthPoleSquare } from './square';
+import { rescale, withOwedPress } from './pointer';
+import { MAX_PRESSES, type NorthPoleSquare, type SquarePointer } from './square';
 
 /** How long a square may take to open, its download included. */
 export const READY_TIMEOUT = 10_000;
@@ -112,6 +113,10 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
   let latest: ImageBitmap | undefined;
   let waitingFor: number | undefined;
   let waitingSince = 0;
+  /** A press drawn while the frame was busy, kept until a request carries it. */
+  let owedPress: { pointer: SquarePointer; size: number } | undefined;
+  /** The presses the map has drawn since the last request, kept until one carries them. */
+  let owedPresses = 0;
   let errors = 0;
   let frames = 0;
   let slowest = 0;
@@ -130,6 +135,8 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
     iframe = undefined;
     live.delete(self);
     waitingFor = undefined;
+    owedPress = undefined;
+    owedPresses = 0;
     errors = 0;
     if (state !== 'broken') state = 'loading';
   };
@@ -220,7 +227,7 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
       if (state === 'ready') listener(info);
       else listeners.push(listener);
     },
-    draw(ctx: CanvasRenderingContext2D, size: number, time: number) {
+    draw(ctx: CanvasRenderingContext2D, size: number, time: number, pointer?: SquarePointer) {
       self.lastDrawn = performance.now();
       if (!iframe && state !== 'broken') start();
       if (state === 'broken') {
@@ -238,10 +245,25 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
       if (state === 'ready' && waitingFor !== undefined) {
         if (performance.now() - waitingSince > FRAME_TIMEOUT) fail('it stopped answering');
       }
+      if (pointer?.down) owedPress = { pointer, size };
+      owedPresses += pointer?.presses ?? 0;
       if (state === 'ready' && waitingFor === undefined) {
         waitingFor = Math.round(size);
         waitingSince = performance.now();
-        iframe!.contentWindow?.postMessage({ type: 'draw', size: waitingFor, time }, '*');
+        // A quick tap may have come and gone while the last frame was drawing.
+        const presses = Math.min(MAX_PRESSES, owedPresses);
+        const sent = withOwedPress(
+          pointer && rescale(pointer, size, waitingFor),
+          owedPress && rescale(owedPress.pointer, owedPress.size, waitingFor),
+          presses,
+        );
+        owedPress = undefined;
+        if (sent) owedPresses -= presses;
+        // The frame checks the pointer again: it only ever passes on x, y, down and presses.
+        const request = sent
+          ? { type: 'draw', size: waitingFor, time, pointer: sent }
+          : { type: 'draw', size: waitingFor, time };
+        iframe!.contentWindow?.postMessage(request, '*');
       }
       if (latest) {
         ctx.drawImage(latest, 0, 0, size, size);
