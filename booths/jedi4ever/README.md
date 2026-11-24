@@ -25,9 +25,12 @@ repeats every 12 seconds:
 - **Penguins**: four penguins stand on the workshop floor. They shuffle from
   side to side with a little waddle and blink now and then. Hover over one and
   it waves a flipper at you; tap one and it does a little hop.
+- **Snow globe**: a small globe with a tiny reindeer sits on a shelf near the
+  front. Tap it and its snow swirls, then settles again over about 4 seconds.
+- **On the map**: the stall is a log cabin with a berry red roof and gold trim.
 
 Everything is drawn from `time`. The one thing the booth remembers is when
-each penguin was last tapped, so it can hop. The timing and movement of the
+each penguin and the snow globe were last tapped, so they can react. The timing and movement of the
 loop (`letterAt`, `placeOf`, `buildOf`, `lampAt`, `jingleAt`, `sacksFilled`)
 and of the penguins (`shuffleOf`, `blinking`, `hopHeight`, `penguinAt`) are
 plain functions in `booth.ts`, tested in `booth.test.ts`.
