@@ -40,9 +40,12 @@ northpole/                  the map itself
   square.ts                 the NorthPoleSquare shape, the registries and the kill switch
   booths.ts                 finds every booth folder and puts it on the map
   attractions.ts            finds every attraction folder and puts it on the midway
-  layout.ts                 the town: its paths, where each square sits, and its
-                            scenery (plain functions)
-  map.ts                    drawing the map and a single square's preview
+  world.ts                  the isometric world: its tiles, where each square's plot
+                            is, walking and pathfinding (plain functions)
+  plots.json                the maintainers' pins: which plot each square keeps
+  render.ts                 drawing the world: ground, cabins, forest, stalls, people
+  map.ts                    the walkable map (camera, keys, clicks) and a single
+                            square's preview
   sandbox.ts                the map's side of the sandbox: one frame per square
   frame.ts                  runs in a square's frame (square.html) and supervises it
   square-worker.ts          runs the square's own code on a thread of its own
@@ -136,6 +139,13 @@ page), inside a worker the frame stops if it hangs, and sends the map a bitmap
 each frame. So `draw` gets an `OffscreenCanvasRenderingContext2D`-like context
 with no `ctx.canvas` DOM element, and a square that throws, hangs or never
 loads shows "Under construction" without touching anything else.
+
+**Plots stay put.** The map is an isometric world, and each square stands on a
+numbered plot: attractions round the town square, booths along the lanes. A
+plot's number always means the same place. `northpole/plots.json` pins each
+square to its number, and a square not in it yet takes the next free number,
+so a new booth needs no change outside its folder. Once a new booth merges, a
+maintainer pins it in `plots.json` so later booths can never move it.
 
 **The kill switch**, `northpole/disabled.json`, has a list of booth logins and
 a separate list of attraction ids. A square in either shows "Closed for
