@@ -964,7 +964,7 @@ function stallFront(
   ctx.fill();
   paintOnFace(paint, square, face, 0.08, 0.92, STALL.art);
   const signLow = stallSignLow(face);
-  faceSign(ctx, face, signLow, STALL.wall - 2, square.name, `@${square.id}`, 0, owner);
+  faceSign(ctx, face, signLow, STALL.wall - 2, square.name, `by @${square.id}`, 0, owner);
 }
 
 /** Where a stall's name board starts, just over the drawing on its front. */

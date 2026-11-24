@@ -21,6 +21,45 @@ export const ADVENT_REQUEST_URL = `${REPO_URL}/issues/new?template=03-advent-cha
 /** Where "claim a booth" links go: the same form, for someone without a booth. */
 export const CLAIM_URL = BOOTH_REQUEST_URL;
 
+/** Where "Build your own" links go: the same form, empty. */
+export const BUILD_YOUR_OWN_URL = BOOTH_REQUEST_URL;
+
+/** The longest booth name a remix link carries. */
+const MAX_REMIX_NAME = 40;
+
+/**
+ * Where "Remix this booth" goes: the booth form, pre-filled to start from
+ * `login`'s booth. The factory copies that booth into the new owner's own
+ * folder and credits the original. The name is the booth's own text, so it's
+ * capped and only ever goes in encoded.
+ */
+export function remixUrl(login: string, name: string): string {
+  // A lone surrogate would make encodeURIComponent throw, so it becomes U+FFFD.
+  const chars = [...name.replace(/\s+/g, ' ').trim()].map((char) =>
+    /^[\uD800-\uDFFF]$/.test(char) ? '\uFFFD' : char,
+  );
+  const short =
+    chars.length > MAX_REMIX_NAME
+      ? `${chars.slice(0, MAX_REMIX_NAME - 1).join('')}…`
+      : chars.join('');
+  const start = `Start from @${login}'s ${short || 'booth'}`;
+  const fields = {
+    title: `My booth: a remix of @${login}'s booth`,
+    what: `${start}, copied into my own booth and credited to @${login}. Then:\n\n`,
+  };
+  const query = Object.entries(fields)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&');
+  return `${BOOTH_REQUEST_URL}&${query}`;
+}
+
+/** A GitHub login's profile, or nothing for text that isn't a login. */
+export function profileUrl(login: string): string | undefined {
+  return /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/i.test(login)
+    ? `https://github.com/${login}`
+    : undefined;
+}
+
 /** Where "ask for a change" links go: the same form, for someone with a booth. */
 export const CHANGE_URL = BOOTH_REQUEST_URL;
 

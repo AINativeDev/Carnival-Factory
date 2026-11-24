@@ -451,6 +451,16 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
   await expect(card).toBeVisible();
   await expect(card.getByRole('heading')).toBeFocused();
   await expect(card).toContainText('@jedi4ever');
+  await expect(card.locator('.visit-owner')).toHaveText('Made by @jedi4ever.');
+  await expect(card.locator('.visit-person')).toHaveAttribute(
+    'href',
+    'https://github.com/jedi4ever',
+  );
+  await expect(card.getByRole('link', { name: 'Remix this booth' })).toHaveAttribute(
+    'href',
+    /template=01-your-booth\.yml&title=.+&what=Start%20from%20%40jedi4ever's%20/,
+  );
+  await expect(card.getByRole('link', { name: 'Build your own' })).toBeVisible();
   await expect(card).toContainText('Esc or walk out to leave');
   await expect(page.locator('.map-frame')).toHaveAttribute('data-visiting', 'booth:jedi4ever');
   // After the fade, the room is drawn, with the player just inside its doorway.

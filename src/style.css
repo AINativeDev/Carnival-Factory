@@ -825,20 +825,25 @@ kbd {
   font-size: 14px;
 }
 
-.visit-profile {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: inherit;
-}
-
 .visit-avatar {
+  margin-right: 4px;
   border: 2px solid var(--color-gold);
   border-radius: 50%;
+  vertical-align: middle;
 }
 
 .visit-owner {
   font-weight: bold;
+}
+
+.visit-remix {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  margin: 4px 0;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .visit-description {

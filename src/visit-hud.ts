@@ -3,18 +3,27 @@ import { voteUrl } from '../northpole/peoples-choice';
 import { PEOPLES_CHOICE } from '../northpole/peoples-choice-standings';
 import {
   BADGE_REQUEST_URL,
+  BUILD_YOUR_OWN_URL,
   CHANGE_URL,
   CLAIM_URL,
   HOW_IT_WORKS_URL,
   KEEP_POSTED_URL,
   OWN_REPO_URL,
   keepPostedHref,
+  remixUrl,
 } from '../northpole/links';
 import type { SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { shareLink, shareText } from '../northpole/visit';
-import { SQUARE_HISTORY, emptyHistoryText, historyOf, renderHistory } from './history';
+import {
+  SQUARE_HISTORY,
+  creditsFor,
+  emptyHistoryText,
+  historyOf,
+  renderCredits,
+  renderHistory,
+} from './history';
 import { SIGNUP_OFFER, showSignupOffer } from './offer';
 import { deepLink, levelLink, seasonLink } from './route';
 
@@ -47,9 +56,10 @@ export interface VisitHud {
 
 /**
  * The HUD inside a square the player has entered, beside the room the map
- * draws: its name, who it belongs to and its description, Share and See it on
- * the map, a link for its owner to ask for a change and one to their season card, for someone who came by
- * a shared link the invitation to claim the plot next door, and how to leave.
+ * draws: its name, who made it and who improved it, Remix this booth and Build
+ * your own, its description, Share and See it on the map, a link for its owner
+ * to ask for a change and one to their season card, for someone who came by a
+ * shared link the invitation to claim the plot next door, and how to leave.
  * Focus moves into it, and back out when it closes. Every name and
  * description is only ever set as text.
  */
@@ -65,7 +75,11 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   card.innerHTML = `
     <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>
     <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
-    <p class="visit-owner"><a class="visit-profile" target="_blank" rel="noopener"></a></p>
+    <p class="visit-owner"></p>
+    <p class="visit-remix">
+      <a class="visit-remix-link" target="_blank" rel="noopener">Remix this booth</a>
+      <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Build your own</a>
+    </p>
     <p class="visit-factory" hidden><a target="_blank" rel="noopener"></a></p>
     <p class="visit-vote" hidden><a target="_blank" rel="noopener">Vote for this booth</a> in People's Choice</p>
     <p class="visit-description" id="visit-description"></p>
@@ -98,19 +112,24 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   const { level } = options;
   const login = level ?? square.id;
   const owner = kind === 'attraction' && !level ? '' : `@${login}`;
-  // The owner, linking to their GitHub profile, with their portrait when the build has it.
-  const profile = $<HTMLAnchorElement>('.visit-profile');
-  profile.href = `https://github.com/${encodeURIComponent(login)}`;
-  if (options.avatar) {
+  // Who made it and who improved it, from the build's history: a booth without any credits its owner,
+  // and a level's square credits the level's owner. The owner's portrait leads the line when the build has it.
+  const credits = level
+    ? { maker: level, improvers: [] }
+    : creditsFor(SQUARE_HISTORY, kind, square.id);
+  const ownerLine = $<HTMLElement>('.visit-owner');
+  if (credits) renderCredits(ownerLine, credits);
+  if (credits && options.avatar) {
     const picture = document.createElement('img');
     picture.className = 'visit-avatar';
     picture.src = options.avatar;
     picture.alt = '';
     picture.width = picture.height = 32;
-    profile.append(picture, ' ');
+    ownerLine.prepend(picture);
   }
-  profile.append(owner);
-  $<HTMLElement>('.visit-owner').hidden = !owner;
+  ownerLine.hidden = !credits;
+  const remix = $<HTMLAnchorElement>('.visit-remix-link');
+  remix.hidden = kind !== 'booth' || !!level;
   const map = $<HTMLAnchorElement>('.visit-map');
   map.href = level ? levelLink(level, square.id) : deepLink(kind, square.id);
   if (level) map.textContent = 'See it in the level';
@@ -167,6 +186,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   const show = () => {
     $('.visit-title').textContent = square.name;
     $('.visit-description').textContent = square.description;
+    remix.href = remixUrl(square.id, square.name);
     $('.visit-invite-text').textContent =
       `${owner} built this by describing it in an issue. An agent built it, checked it and put it on the map. Want one of your own?`;
     showText();
