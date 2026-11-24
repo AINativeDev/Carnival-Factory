@@ -181,4 +181,12 @@ describe('the penguins', () => {
     expect(hopHeight(HOP)).toBe(0);
     expect(hopHeight(Infinity)).toBe(0);
   });
+
+  it('follows a penguin up as it hops', () => {
+    const x = PENGUINS[1].x + shuffleOf(1, 0);
+    const lifts = PENGUINS.map((_, index) => (index === 1 ? hopHeight(HOP / 2) : 0));
+    expect(penguinAt(x, PENGUIN_FEET - 20, 0, lifts)).toBe(1);
+    expect(penguinAt(x, PENGUIN_FEET - 20, 0)).toBe(-1);
+    expect(penguinAt(x, PENGUIN_FEET + 1, 0, lifts)).toBe(-1);
+  });
 });

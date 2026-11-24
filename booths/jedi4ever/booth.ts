@@ -208,14 +208,22 @@ export function hopHeight(since: number): number {
   return since >= 0 && since < HOP ? Math.sin((since / HOP) * Math.PI) * 6 : 0;
 }
 
-/** Which penguin is at `x`, `y` (in hundredths of the square) at `time`, or -1 for none. */
-export function penguinAt(x: number, y: number, time: number): number {
-  return PENGUINS.findIndex(
-    (penguin, index) =>
-      Math.abs(x - (penguin.x + shuffleOf(index, time))) <= 4.5 &&
-      y >= PENGUIN_FEET - 16 &&
-      y <= PENGUIN_FEET + 1.5,
-  );
+/**
+ * Which penguin is at `x`, `y` (in hundredths of the square) at `time`, or -1 for none.
+ * `lifts` is how high each penguin is off the floor, so a hopping one is found where it is.
+ */
+export function penguinAt(
+  x: number,
+  y: number,
+  time: number,
+  lifts: readonly number[] = [],
+): number {
+  return PENGUINS.findIndex((penguin, index) => {
+    const feet = PENGUIN_FEET - (lifts[index] ?? 0);
+    return (
+      Math.abs(x - (penguin.x + shuffleOf(index, time))) <= 4.5 && y >= feet - 16 && y <= feet + 1.5
+    );
+  });
 }
 
 type Ctx = CanvasRenderingContext2D;
@@ -669,11 +677,10 @@ const booth: NorthPoleSquare = {
     }
 
     // The penguins on the floor: one waves while the pointer is over it, and hops when tapped.
-    const over = pointer ? penguinAt(pointer.x / u, pointer.y / u, time) : -1;
+    const lifts = tapped.map((at) => hopHeight(time - at));
+    const over = pointer ? penguinAt(pointer.x / u, pointer.y / u, time, lifts) : -1;
     if (pointer && pointer.presses > 0 && over >= 0) tapped[over] = time;
-    PENGUINS.forEach((_, index) =>
-      penguin(ctx, u, index, time, index === over, hopHeight(time - tapped[index])),
-    );
+    PENGUINS.forEach((_, index) => penguin(ctx, u, index, time, index === over, lifts[index]));
   },
 };
 
