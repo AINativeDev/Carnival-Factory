@@ -257,8 +257,8 @@ async function upsertComment(number: number, existing: Comment[], body: string) 
 }
 
 let merged = false;
-/** Whether the gate put needs-human on a pull request, which changes its booth's stage on the map. */
-let labelled = false;
+/** Factory pull requests with needs-human, which puts their booth's site at "Waiting for a maintainer". */
+const held = new Set<number>();
 
 async function gate(pull: Pull) {
   const issue = await boothRequest(pull);
@@ -314,8 +314,9 @@ async function gate(pull: Pull) {
   );
   if (ownFailures.length && !facts.labels.includes('needs-human') && !dryRun) {
     await call('POST', `issues/${pull.number}/labels`, { labels: ['needs-human'] });
-    labelled = true;
+    held.add(pull.number);
   }
+  if (facts.labels.includes('needs-human')) held.add(pull.number);
   if (result.decision !== 'merge' || dryRun) return;
   // Label first, so the merge counts for the rate limit and the digest even if
   // a later step fails; take the label off again if the merge doesn't happen.
@@ -344,12 +345,23 @@ async function gate(pull: Pull) {
   await call('PATCH', `issues/${issue.number}`, { state: 'closed', state_reason: 'completed' });
 }
 
+/** Whether needs-human was last put on a pull request after `since`. */
+async function labelledSince(number: number, since: number): Promise<boolean> {
+  type Event = { event: string; label?: Label; created_at: string };
+  const events = await getAll<Event>(`issues/${number}/events`);
+  const last = events
+    .filter((e) => e.event === 'labeled' && e.label?.name === 'needs-human')
+    .at(-1);
+  return !!last && new Date(last.created_at).getTime() > since;
+}
+
 /**
- * Publishes the map if an auto-merge is newer than the last successful Pages
- * run, or this run put needs-human on a pull request, which moves its booth's
- * construction site to "Waiting for a maintainer". A merge or a label by this
- * workflow's token starts no other workflows, so this is how the map updates,
- * and checking on every run retries a failed dispatch.
+ * Publishes the map if an auto-merge, or needs-human going on a pull request
+ * (which moves its booth's construction site to "Waiting for a maintainer"),
+ * is newer than the last successful Pages run. A merge or a label by this
+ * workflow's token starts no other workflows, so this is how the map updates.
+ * Both are read from GitHub rather than remembered, so every run retries a
+ * dispatch that failed or was skipped while a deploy was already running.
  */
 async function publishIfBehind() {
   type Runs = { workflow_runs: { created_at: string }[] };
@@ -362,7 +374,10 @@ async function publishIfBehind() {
       names(pull.labels).includes('auto-merged') &&
       new Date(pull.merged_at).getTime() > lastPublished,
   );
-  if (!(behind || merged || labelled) || running.workflow_runs.length > 0) return;
+  if (running.workflow_runs.length > 0) return;
+  let stale = behind || merged;
+  for (const number of held) stale ||= await labelledSince(number, lastPublished);
+  if (!stale) return;
   if (dryRun) return console.log('would publish the map');
   await call('POST', 'actions/workflows/pages.yml/dispatches', { ref: 'main' });
   console.log('published the map');
