@@ -132,8 +132,8 @@ export function factoryFigures(squares: SquareCounts, stats?: FactoryStats): Fig
   if (stats.toMap) {
     figures.push({
       value: number(stats.toMap.fastest),
-      label: `${plural(stats.toMap.fastest, 'minute')} from request to map, at the fastest`,
-      detail: `typically ${number(stats.toMap.median)} ${plural(stats.toMap.median, 'minute')}, over ${number(stats.toMap.count)} ${plural(stats.toMap.count, 'booth')}`,
+      label: `${plural(stats.toMap.fastest, 'minute')} from accepted request to map, at the fastest`,
+      detail: `typically ${number(stats.toMap.median)} ${plural(stats.toMap.median, 'minute')}, over ${number(stats.toMap.count)} ${plural(stats.toMap.count, 'request')}`,
     });
   }
   return figures;
@@ -192,7 +192,9 @@ export function openFactoryHud(frame: HTMLElement, options: FactoryHudOptions): 
   $('.factory-note').textContent = factoryNote(options.stats);
 
   $('.visit-close').addEventListener('click', () => options.onClose());
+  // The page has every key: the map behind it never walks, enters a square or opens its search.
   const onKeyDown = (event: KeyboardEvent) => {
+    event.stopPropagation();
     if (event.key === 'Escape') {
       event.preventDefault();
       options.onClose();

@@ -83,8 +83,8 @@ describe('factoryFigures', () => {
       { value: '1,204', label: 'review findings', detail: '1,100 fixed' },
       {
         value: '12',
-        label: 'minutes from request to map, at the fastest',
-        detail: 'typically 38 minutes, over 30 booths',
+        label: 'minutes from accepted request to map, at the fastest',
+        detail: 'typically 38 minutes, over 30 requests',
       },
     ]);
   });
