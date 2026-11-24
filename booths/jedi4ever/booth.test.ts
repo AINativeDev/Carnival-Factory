@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   blinking,
+  globeFlake,
+  onGlobe,
+  swirlOf,
+  SWIRL,
   buildOf,
   HOP,
   hopHeight,
@@ -188,5 +192,17 @@ describe('the penguins', () => {
     expect(penguinAt(x, PENGUIN_FEET - 20, 0, lifts)).toBe(1);
     expect(penguinAt(x, PENGUIN_FEET - 20, 0)).toBe(-1);
     expect(penguinAt(x, PENGUIN_FEET + 1, 0, lifts)).toBe(-1);
+  });
+});
+
+describe('the snow globe', () => {
+  it('swirls after a tap and settles in four seconds', () => {
+    expect(swirlOf(0)).toBe(1);
+    expect(swirlOf(SWIRL)).toBe(0);
+    expect(swirlOf(-Infinity)).toBe(0);
+    expect(globeFlake(3, 0)).not.toEqual(globeFlake(3, SWIRL));
+    expect(globeFlake(3, SWIRL)).toEqual(globeFlake(3, SWIRL + 5_000));
+    expect(onGlobe(60, 76)).toBe(true);
+    expect(onGlobe(10, 10)).toBe(false);
   });
 });
