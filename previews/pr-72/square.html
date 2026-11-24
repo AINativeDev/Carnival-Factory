@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      One booth or attraction runs here, in an <iframe sandbox="allow-scripts">
+      the map creates: an opaque origin, no storage, no cookies, no access to
+      the page. This policy also stops it reaching the network, starting
+      workers, framing anything or loading anything but the site's own scripts.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; img-src 'self' data: blob:; connect-src 'none'; worker-src blob:; frame-src 'none'; form-action 'none'; base-uri 'none'"
+    />
+    <title>A North Pole square</title>
+    <script type="module" crossorigin src="./assets/square-Ctz1eRd7.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/frame-protocol-BKUuYPKq.js">
+  </head>
+  <body>
+  </body>
+</html>
