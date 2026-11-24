@@ -1,7 +1,7 @@
 {
   "name": "carnival-christmas-public/north-pole",
   "version": "0.1.0",
-  "description": "Factory skills specific to the North Pole map: assess a participant's plot request before the factory builds it.",
+  "description": "Factory skills specific to the North Pole map: assess a participant's booth request before the factory builds it, and review booths and attractions against the house rules.",
   "private": true,
-  "skills": ["skills/assess-plot-request"]
+  "skills": ["skills/assess-booth-request", "skills/review-house-rules"]
 }

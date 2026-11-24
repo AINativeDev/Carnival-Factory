@@ -16,6 +16,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Two jobs on two runners: the tests run a booth's test code, so they never
+  # share a machine with the files that get published. "Deploy to GitHub
+  # Pages" only places a preview when the whole run succeeded, tests included.
   build:
     # Outside pull requests are closed (see outside-pull-requests.yml), and
     # their previews would publish code nobody here wrote.
@@ -28,10 +31,21 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run check
       - run: npm run build
       - uses: actions/upload-artifact@v7
         with:
           name: preview
           path: dist
           retention-days: 7
+
+  test:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run check

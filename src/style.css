@@ -1,4 +1,4 @@
-/* Colours and fonts come from src/northpole/theme.ts via applyTheme(). */
+/* Colours and fonts come from northpole/theme.ts via applyTheme(). */
 
 * {
   box-sizing: border-box;
@@ -44,7 +44,7 @@ a {
 }
 
 .map-help,
-.plot-help {
+.booth-help {
   color: var(--color-muted);
   text-align: center;
 }
@@ -71,27 +71,27 @@ a {
   color: var(--color-muted);
 }
 
-.plot {
+.booth {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.plot-header {
+.booth-header {
   text-align: center;
 }
 
-.plot-header h1 {
+.booth-header h1 {
   margin: 12px 0 4px;
 }
 
-.plot-header .owner,
-.plot-header .description {
+.booth-header .owner,
+.booth-header .description {
   margin: 4px 0;
   color: var(--color-muted);
 }
 
-.plot-canvas {
+.booth-canvas {
   width: min(480px, 100%);
   margin-top: 16px;
   border-radius: var(--radius);

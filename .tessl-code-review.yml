@@ -1,0 +1,21 @@
+# Tessl Code Review for the North Pole map. A lens list here replaces the
+# default one, so the six default lenses are listed and pinned (the versions
+# the built-in standard profile ran on 24 Nov 2026), and the house-rules lens
+# is added for booths and attractions only. Only maintainers can change this
+# file and the lens: the Booth ownership check keeps everyone else inside their
+# own booth.
+schemaVersion: 1
+effort: adaptive
+reviewMode: standard
+requestChangesAt: major
+lenses:
+  - ref: tessl/code-review@0.5.0#review-correctness-and-data-integrity
+  - ref: tessl/code-review@0.5.0#review-security-and-privacy
+  - ref: tessl/code-review@0.5.0#review-scale-and-resilience
+  - ref: tessl/code-review@0.5.0#review-maintainability-and-code-quality
+  - ref: tessl/code-review@0.5.0#review-markdown
+  - ref: tessl/code-review@0.5.0#review-plugin-content
+  - ref: ./plugins/north-pole/skills/review-house-rules/SKILL.md
+    globs:
+      - booths/**
+      - attractions/**
