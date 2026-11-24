@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { arcSteps, cone, drum } from './diorama';
 
@@ -44,5 +46,19 @@ describe('drum and cone', () => {
       cone(ctx, 50, 40, 35, 24, ['a', 'b'], 12, base + d * 1e-15);
     }
     expect(ctx.calls).toBeLessThan(100_000);
+  });
+});
+
+describe('diorama.ts', () => {
+  // Every booth may import it, so it must never reach the rest of the map.
+  it('imports nothing but ./theme', () => {
+    const source = readFileSync(join(import.meta.dirname, 'diorama.ts'), 'utf8');
+    const imports = [
+      ...source.matchAll(/\b(?:import|export)\b[^'"`;]*?\bfrom\s*['"]([^'"]+)['"]/g),
+      ...source.matchAll(/\bimport\s*['"]([^'"]+)['"]/g),
+      ...source.matchAll(/\bimport\s*\(/g),
+      ...source.matchAll(/\brequire\s*\(/g),
+    ].map((match) => match[1] ?? match[0]);
+    expect(imports).toEqual(['./theme']);
   });
 });

@@ -8,6 +8,10 @@ import { theme } from './theme';
  * Everything here works in the square's own 0 to 100 units: `scene` scales the
  * context to the square's size before it calls `paint`, so a square drawn with
  * these reads the same on the map and on its visit card.
+ *
+ * Every booth may import this file, so it imports nothing but `./theme`: an
+ * import of anything else would hand every booth that part of the map too.
+ * `diorama.test.ts` fails if it does.
  */
 
 const { colors } = theme;
