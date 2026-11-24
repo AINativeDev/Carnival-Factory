@@ -12,7 +12,6 @@ const green: GateFacts = {
     check: 'success',
     ownership: 'success',
     build: 'success',
-    test: 'success',
     smoke: 'success',
   },
   review: 'approved',

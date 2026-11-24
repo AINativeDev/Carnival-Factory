@@ -17,6 +17,11 @@ on:
     types: [completed]
   pull_request_target:
     types: [labeled, unlabeled, synchronize]
+  # When the Tessl Reviewer's check finishes, so an approval that comes in
+  # last doesn't wait for the schedule. check_run events always run main's
+  # own workflow.
+  check_run:
+    types: [completed]
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
@@ -30,6 +35,8 @@ concurrency:
 
 jobs:
   gate:
+    # Of all check runs, only the Tessl Reviewer's finishing is news to the gate.
+    if: github.event_name != 'check_run' || github.event.check_run.name == 'Tessl Reviewer'
     runs-on: ubuntu-latest
     permissions:
       contents: write
