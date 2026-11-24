@@ -2,21 +2,31 @@
 
 Owned by [@sjmaple](https://github.com/sjmaple).
 
-A chunky pixel-art workshop under the dusk light, on a loop that repeats every
-12 seconds. Visitors can't build tops themselves, because booths can't react to
-clicks or keys, so an elf does it for them:
+A chunky pixel-art workshop under the dusk light, where visitors build their
+own spinning top and test it. Go inside the booth to play:
 
-- **Building**: at the workbench the elf hammers a top together piece by piece:
-  the body first, then its coloured stripes, then the handle.
-- **Carrying**: the finished top hops across to the test mat.
-- **Testing**: on the mat the top spins, its stripes sliding round the body,
-  and slowly loses speed. As it slows it starts to lean and wobble, then tips
-  over and lies on its side on the mat until the next round.
-- **Cosy details**: a shelf of finished striped tops behind the bench, a lamp
-  on the bench and a few slowly twinkling stars.
+- **Build**: the parts board has three buttons. Click or tap one to try the
+  next choice, and the elf hammers it onto the top on the workbench:
+  - **Body**: round, wide or tall.
+  - **Stripes**: berry, violet, mint or ice.
+  - **Handle**: knob, short or long.
+- **Test**: press **SPIN IT!** and the top hops onto the test mat and spins,
+  its stripes sliding round the body, slowing as it goes. The test board counts
+  how long it spins, and once it wobbles to a stop and tips over it says how it
+  behaved: STEADY, WOBBLY or WILD, with your best spin this visit. Then the top
+  goes back on the bench for the next try. The buttons wait while a top is out.
+- **What makes a good top**: a wide body spins longest and steadiest, a tall
+  one is quick to fall and wobbles. A long handle adds spin but wobble too, a
+  short one is steadiest. The stripes are for looks. Each spin varies a little
+  with the moment you let it go.
+- **When nobody plays**: after 30 seconds without a press, and on the map, the
+  elf builds and tests a different top every 16 seconds. Tap a part to take
+  over from the elf's top.
 
-Everything is drawn from `time` on a 64 by 64 board of pixels. The timing of the
-round, the carry, the spin and the tip-over (`momentAt`, `builtParts`,
-`carryTip`, `spinAngle`, `spinSpeed`, `wobble`, `restPose`) are plain functions in `booth.ts`, tested in `booth.test.ts`.
+The pixels are drawn from `time` on a 64 by 64 board. The parts, the test and
+the buttons (`testOf`, `rating`, `stageAt`, `spinAngle`, `wobble`, `press`,
+`settle`, `idle`, `demoAt`, `buttonAt`) are plain functions in `booth.ts`,
+tested in `booth.test.ts`. The booth remembers only what has been built and
+tested this visit.
 
 Preview it at `#/booth/sjmaple`.
