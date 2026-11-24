@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { HistoryPull, SquareHistory } from '../scripts/square-history';
 import {
+  creditsFor,
   day,
   emptyHistoryText,
   historyOf,
@@ -20,9 +21,31 @@ const merged: HistoryPull = {
   mergedAt: '2026-11-24T15:18:46Z',
 };
 
+describe('creditsFor', () => {
+  const data: SquareHistory = {
+    builtAt: '',
+    squares: {},
+    credits: {
+      'booth/ana': { maker: 'ana', improvers: ['bob'] },
+      'attraction/ferris-wheel': { maker: 'jedi4ever', improvers: [] },
+    },
+  };
+
+  it("reads a square's credits from the build's history", () => {
+    expect(creditsFor(data, 'booth', 'Ana')).toEqual({ maker: 'ana', improvers: ['bob'] });
+    expect(creditsFor(data, 'attraction', 'ferris-wheel')?.maker).toBe('jedi4ever');
+  });
+
+  it('credits a booth to its owner, and an attraction to nobody, without any', () => {
+    expect(creditsFor(data, 'booth', 'carol')).toEqual({ maker: 'carol', improvers: [] });
+    expect(creditsFor(undefined, 'booth', 'carol')).toEqual({ maker: 'carol', improvers: [] });
+    expect(creditsFor(undefined, 'attraction', 'ferris-wheel')).toBeUndefined();
+  });
+});
+
 describe('historyOf', () => {
   it("finds a square's requests, and none without data", () => {
-    const data: SquareHistory = { builtAt: '', squares: { 'booth/ana': [] } };
+    const data: SquareHistory = { builtAt: '', squares: { 'booth/ana': [] }, credits: {} };
     expect(historyOf(data, 'booth', 'Ana')).toBe(data.squares['booth/ana']);
     expect(historyOf(data, 'attraction', 'ferris-wheel')).toEqual([]);
     expect(historyOf(undefined, 'booth', 'ana')).toEqual([]);
@@ -31,7 +54,7 @@ describe('historyOf', () => {
 
 describe('emptyHistoryText', () => {
   it('says why a square has no timeline', () => {
-    expect(emptyHistoryText({ builtAt: '', squares: {} })).toBe(
+    expect(emptyHistoryText({ builtAt: '', squares: {}, credits: {} })).toBe(
       'No requests for this square are on record in this build.',
     );
     expect(emptyHistoryText(undefined)).toBe('Timelines appear once this is on the live map.');

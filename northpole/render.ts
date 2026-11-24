@@ -744,7 +744,7 @@ function drawStall(
   ctx.fill();
   paintOnFace(paint, square, face, 0.08, 0.92, STALL.art);
   const signLow = STALL.art + art + 5;
-  faceSign(ctx, face, signLow, STALL.wall - 2, square.name, `@${square.id}`);
+  faceSign(ctx, face, signLow, STALL.wall - 2, square.name, `by @${square.id}`);
   // The counter, standing out in front of the drawing.
   const counter: Box =
     face.out.x > 0

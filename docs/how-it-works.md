@@ -12,6 +12,11 @@ You open the **Your booth** issue form and describe what your booth should
 show. The same form builds a new booth or changes yours. Your latest request is
 the one that counts.
 
+Every booth's page says who made it and who improved it since. **Remix this
+booth** opens the same form, pre-filled to start from that booth: the factory
+copies its code into your own booth and credits the original in its README.
+**Build your own** opens it empty.
+
 ## 2. The assessment reads it
 
 An agent reads your request first, following the

@@ -772,7 +772,7 @@ export function startMap(
     const square = squareOf(plot)!;
     const room = roomLayout(roomArea(width, height));
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    drawRoom(ctx, room, width, height, square.name, plot.kind === 'booth' ? `@${plot.id}` : '');
+    drawRoom(ctx, room, width, height, square.name, plot.kind === 'booth' ? `by @${plot.id}` : '');
     const { stage } = room;
     // The stage is the square's drawing scaled, so the pointer scales with it.
     const pressed = pointer.now();

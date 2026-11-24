@@ -37,8 +37,9 @@ src/
                             showing that square
   route.ts                  reading the hash (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
-  history.ts                the "How was this built?" panel: each square's requests and
-                            pull requests, bundled from square-history.json at build time
+  history.ts                the credits and the "How was this built?" panel: who made
+                            each square and improved it, its requests and pull
+                            requests, bundled from square-history.json at build time
   style.css
 northpole/                  the map itself
   square.ts                 the NorthPoleSquare shape, the registries and the kill switch
@@ -90,8 +91,8 @@ scripts/
   check-booth-ownership.ts  the CI check that enforces it
   square-size.ts            the size budget for every square
   share-pages.ts            the link-preview page the build writes for every square
-  square-history.ts         every square's history from its issues and pull requests
-                            (plain functions), for the credits (#32) to reuse
+  square-history.ts         every square's history and credits from its issues and
+                            pull requests (plain functions)
   write-square-history.ts   reads them from the GitHub API and writes square-history.json
                             before the deploy's build (previews have none)
 ```
@@ -123,6 +124,21 @@ booth if `booths/<author>/` doesn't exist yet, and change it if it does.
 builds it (it adds `tessl`), asks a question (`needs-info`) or declines it
 (`declined`). The latest request wins: accepting one closes the author's older
 open requests as superseded. Keep its rules in step with this file.
+
+**A remix starts from someone else's booth.** A square's page shows who made
+it and who improved it, and a booth's has **Remix this booth**, which opens
+the booth form pre-filled with "Start from @<login>'s <name>". It's a request
+for the author's own booth like any other, so the factory builds it in
+`booths/<author>/` and never touches `booths/<login>/`:
+
+- Copy the files of `booths/<login>/` as they are on the base into
+  `booths/<author>/`, replacing any booth the author already had there.
+- Set `id` to `<author>`, and change whatever else the request asks for.
+- Say at the top of its `README.md` that it's a remix: "Remixed from
+  [@<login>'s <name>](../<login>/)", with `<login>` in lower case.
+
+A remix of a booth that doesn't exist, or that is switched off in
+`northpole/disabled.json`, is a question for the author.
 
 **Booth changes can merge on their own.** `.github/workflows/auto-merge-booths.yml`
 runs the gate in `scripts/booth-gate.ts`. It merges a factory pull request for

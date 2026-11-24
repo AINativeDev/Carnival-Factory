@@ -1,17 +1,26 @@
 import {
+  BUILD_YOUR_OWN_URL,
   CHANGE_URL,
   CLAIM_URL,
   HOW_IT_WORKS_URL,
   KEEP_POSTED_URL,
   OWN_REPO_URL,
   keepPostedHref,
+  remixUrl,
   signupOffer,
 } from '../northpole/links';
 import type { SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { shareLink, shareText } from '../northpole/visit';
-import { SQUARE_HISTORY, emptyHistoryText, historyOf, renderHistory } from './history';
+import {
+  SQUARE_HISTORY,
+  creditsFor,
+  emptyHistoryText,
+  historyOf,
+  renderCredits,
+  renderHistory,
+} from './history';
 import { deepLink } from './route';
 
 export interface VisitHudOptions {
@@ -37,9 +46,10 @@ export interface VisitHud {
 
 /**
  * The HUD inside a square the player has entered, beside the room the map
- * draws: its name, who it belongs to and its description, Share and See it on
- * the map, a link for its owner to ask for a change, for someone who came by
- * a shared link the invitation to claim the plot next door, and how to leave.
+ * draws: its name, who made it and who improved it, Remix this booth and Build
+ * your own, its description, Share and See it on the map, a link for its owner
+ * to ask for a change, for someone who came by a shared link the invitation to
+ * claim the plot next door, and how to leave.
  * Focus moves into it, and back out when it closes. Every name and
  * description is only ever set as text.
  */
@@ -56,6 +66,10 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>
     <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
     <p class="visit-owner"></p>
+    <p class="visit-remix">
+      <a class="visit-remix-link" target="_blank" rel="noopener">Remix this booth</a>
+      <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Build your own</a>
+    </p>
     <p class="visit-description" id="visit-description"></p>
     <div class="visit-share">
       <label class="visit-label" for="visit-share-text">Share text</label>
@@ -85,8 +99,12 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
 
   const owner = kind === 'attraction' ? '' : `@${square.id}`;
-  $('.visit-owner').textContent = owner;
-  $<HTMLElement>('.visit-owner').hidden = !owner;
+  // Who made it and who improved it, from the build's history: a booth without any credits its owner.
+  const credits = creditsFor(SQUARE_HISTORY, kind, square.id);
+  if (credits) renderCredits($('.visit-owner'), credits);
+  $<HTMLElement>('.visit-owner').hidden = !credits;
+  const remix = $<HTMLAnchorElement>('.visit-remix-link');
+  remix.hidden = kind !== 'booth';
   $<HTMLAnchorElement>('.visit-map').href = deepLink(kind, square.id);
 
   // How was this built: open beside the room, collapsed on a phone, where it sits below it.
@@ -123,6 +141,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   const show = () => {
     $('.visit-title').textContent = square.name;
     $('.visit-description').textContent = square.description;
+    remix.href = remixUrl(square.id, square.name);
     $('.visit-invite-text').textContent =
       `${owner} built this by describing it in an issue. An agent built it, checked it and put it on the map. Want one of your own?`;
     showText();

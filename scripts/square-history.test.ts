@@ -3,6 +3,7 @@ import {
   branchIssue,
   cap,
   countFindings,
+  creditsOf,
   decisionOf,
   shapeHistory,
   squaresTouched,
@@ -184,6 +185,31 @@ describe('shapeHistory', () => {
       ],
     );
     expect(history.squares).toEqual({});
+    expect(history.credits).toEqual({});
+  });
+
+  it('credits who made each square and who improved it, from the requests that merged', () => {
+    const at = (day: number) => `2026-11-${day}T10:00:00Z`;
+    const history = shape(
+      [
+        issue(1, 'Ana', ['booth-request', 'tessl'], at(10)),
+        issue(3, 'maintainer', ['tessl'], at(11)),
+        issue(5, 'bob', ['tessl'], at(12)),
+        issue(7, 'carol', ['tessl'], at(13)),
+      ],
+      [
+        pull(2, 'tessl/issue-1', ['booths/ana/booth.ts'], { mergedAt: at(14) }),
+        pull(4, 'tessl/issue-3', ['booths/ana/booth.ts', 'attractions/ferris-wheel/a.ts'], {
+          mergedAt: at(15),
+        }),
+        pull(6, 'tessl/issue-5', ['booths/ana/booth.ts'], { mergedAt: at(16) }),
+        pull(8, 'tessl/issue-7', ['booths/ana/booth.ts'], { state: 'OPEN', mergedAt: null }),
+      ],
+    );
+    expect(history.credits).toEqual({
+      'booth/ana': { maker: 'Ana', improvers: ['maintainer', 'bob'] },
+      'attraction/ferris-wheel': { maker: 'maintainer', improvers: [] },
+    });
   });
 
   it("links an open pull request's preview of the square, when the site is known", () => {
@@ -197,5 +223,32 @@ describe('shapeHistory', () => {
       preview: 'https://o.github.io/r/previews/pr-2/#/booth/ana',
     });
     expect(history.squares['booth/ana'][0].pulls[0].mergedAt).toBeUndefined();
+  });
+});
+
+describe('creditsOf', () => {
+  const entry = (author: string, pulls: { state: 'merged' | 'open'; mergedAt?: string }[]) => ({
+    issue: 1,
+    title: 'Request',
+    url: `${REPO}/issues/1`,
+    author,
+    openedAt: '2026-11-01T10:00:00Z',
+    decision: 'accepted' as const,
+    pulls: pulls.map((p, n) => ({ number: n, url: '', findings: 0, fixed: 0, commits: 1, ...p })),
+  });
+
+  it('orders people by when their change first merged, and names each once', () => {
+    expect(
+      creditsOf([
+        entry('bob', [{ state: 'merged', mergedAt: '2026-11-03T00:00:00Z' }]),
+        entry('ana', [{ state: 'merged', mergedAt: '2026-11-02T00:00:00Z' }]),
+        entry('Bob', [{ state: 'merged', mergedAt: '2026-11-05T00:00:00Z' }]),
+        entry('ANA', [{ state: 'merged', mergedAt: '2026-11-04T00:00:00Z' }]),
+      ]),
+    ).toEqual({ maker: 'ana', improvers: ['bob'] });
+  });
+
+  it('credits nobody for requests that never merged', () => {
+    expect(creditsOf([entry('ana', [{ state: 'open' }]), entry('bob', [])])).toBeUndefined();
   });
 });
