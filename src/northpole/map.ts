@@ -5,35 +5,40 @@ import { canvasFont, theme } from './theme';
 const { colors } = theme;
 
 /**
- * Draws one plot into the square at (x, y), clipped so it cannot paint over a
- * neighbour. A plot that throws gets a placeholder instead of breaking the
- * whole map.
+ * Draws one plot into the square at (x, y). The plot paints on `scratch`, a
+ * canvas of its own that is reset first, and only its pixels are copied onto
+ * the map. Whatever state a plot leaves behind, even when it throws halfway
+ * through a save, stays on the scratch canvas, and nothing it draws can spill
+ * onto a neighbour. A plot that throws gets a placeholder instead of breaking
+ * the whole map.
  */
 export function drawPlot(
   ctx: CanvasRenderingContext2D,
+  scratch: HTMLCanvasElement,
   plot: NorthPolePlot,
   x: number,
   y: number,
   size: number,
   time: number,
 ) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(x, y, size, size);
-  ctx.clip();
-  ctx.translate(x, y);
+  // Setting the size resets the scratch canvas: its pixels, transform, clip and styles.
+  scratch.width = size;
+  scratch.height = size;
   try {
-    plot.draw(ctx, size, time);
+    plot.draw(scratch.getContext('2d')!, size, time);
   } catch (error) {
     console.error(`The plot owned by ${plot.owner} failed to draw`, error);
+    ctx.save();
     ctx.fillStyle = colors.surface;
-    ctx.fillRect(0, 0, size, size);
+    ctx.fillRect(x, y, size, size);
     ctx.fillStyle = colors.muted;
     ctx.font = canvasFont('small');
     ctx.textAlign = 'center';
-    ctx.fillText('Under construction', size / 2, size / 2);
+    ctx.fillText('Under construction', x + size / 2, y + size / 2);
+    ctx.restore();
+    return;
   }
-  ctx.restore();
+  ctx.drawImage(scratch, x, y);
 }
 
 function drawGround(ctx: CanvasRenderingContext2D, layout: MapLayout) {
@@ -62,6 +67,7 @@ export interface MapOptions {
 /** Draws the whole map, animates it, and returns a function that stops it. */
 export function startMap(canvas: HTMLCanvasElement, options: MapOptions): () => void {
   const ctx = canvas.getContext('2d')!;
+  const scratch = document.createElement('canvas');
   const plots = options.plots;
   let layout = layoutMap(plots.length, 0);
   let frame = 0;
@@ -76,7 +82,7 @@ export function startMap(canvas: HTMLCanvasElement, options: MapOptions): () => 
     drawGround(ctx, layout);
     for (const slot of layout.slots) {
       const plot = plots[slot.index];
-      drawPlot(ctx, plot, slot.x, slot.y, PLOT_SIZE, time);
+      drawPlot(ctx, scratch, plot, slot.x, slot.y, PLOT_SIZE, time);
       drawSign(ctx, plot, slot.x, slot.y);
     }
     frame = requestAnimationFrame(render);
@@ -115,12 +121,13 @@ export function startMap(canvas: HTMLCanvasElement, options: MapOptions): () => 
 /** Animates a single plot, large, on its own canvas. Returns a function that stops it. */
 export function startPreview(canvas: HTMLCanvasElement, plot: NorthPolePlot, size = 480) {
   const ctx = canvas.getContext('2d')!;
+  const scratch = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
   let frame = 0;
   const render = (time: number) => {
     ctx.clearRect(0, 0, size, size);
-    drawPlot(ctx, plot, 0, 0, size, time);
+    drawPlot(ctx, scratch, plot, 0, 0, size, time);
     frame = requestAnimationFrame(render);
   };
   frame = requestAnimationFrame(render);

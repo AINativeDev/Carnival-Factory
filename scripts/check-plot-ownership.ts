@@ -5,7 +5,14 @@
  * GITHUB_REPOSITORY and PR_NUMBER set. It only reads from the GitHub API and
  * never runs the pull request's code.
  */
-import { filesOutsidePlot, linkedIssue, plotFolder, plotOwner, type Author } from './ownership.ts';
+import {
+  filesOutsidePlot,
+  isFactory,
+  linkedIssue,
+  plotFolder,
+  plotOwner,
+  type Author,
+} from './ownership.ts';
 
 const token = process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY;
@@ -31,27 +38,45 @@ interface User {
 
 const author = (user: User): Author => ({ login: user.login, isBot: user.type === 'Bot' });
 
-const pr = await get<{ user: User; body: string | null }>(`pulls/${number}`);
+const pr = await get<{ user: User; body: string | null; changed_files: number }>(`pulls/${number}`);
 
 const files: string[] = [];
+let listed = 0;
 for (let page = 1; ; page++) {
   const batch = await get<{ filename: string; previous_filename?: string }[]>(
     `pulls/${number}/files?per_page=100&page=${page}`,
   );
   for (const file of batch) {
+    listed++;
     files.push(file.filename);
     if (file.previous_filename) files.push(file.previous_filename);
   }
   if (batch.length < 100) break;
 }
 
-const issueNumber = linkedIssue(pr.body ?? '', repository);
-const issue = issueNumber ? await get<{ user: User }>(`issues/${issueNumber}`) : undefined;
-const owner = plotOwner(author(pr.user), issue && author(issue.user));
+// GitHub lists at most 3,000 files of a pull request. Fail rather than pass one
+// whose files were not all checked.
+if (listed < pr.changed_files) {
+  console.log(
+    `::error title=Too many files::This pull request changes ${pr.changed_files} files and GitHub listed only ${listed}, so they can't all be checked. Split it up.`,
+  );
+  process.exit(1);
+}
+
+// Only the factory's pull requests take their owner from an issue, so a person's
+// pull request never depends on looking one up.
+const prAuthor = author(pr.user);
+const issueNumber = isFactory(prAuthor) ? linkedIssue(pr.body ?? '', repository) : undefined;
+const issue = issueNumber
+  ? await get<{ user: User; pull_request?: unknown }>(`issues/${issueNumber}`)
+  : undefined;
+// The issues endpoint also returns pull requests, which are not issues.
+const issueAuthor = issue && !issue.pull_request ? author(issue.user) : undefined;
+const owner = plotOwner(prAuthor, issueAuthor);
 
 if (!owner) {
   console.log(
-    `::error title=No plot owner::@${pr.user.login} is a bot, and this pull request links no issue written by a person. Link the issue it is for with "Closes #<n>".`,
+    `::error title=No plot owner::@${pr.user.login} is not a person, and this is not a factory pull request for an issue written by a person. A factory pull request links the issue it is for with "Closes #<n>".`,
   );
   process.exit(1);
 }

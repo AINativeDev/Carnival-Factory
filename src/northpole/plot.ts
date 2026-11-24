@@ -2,8 +2,8 @@
  * One person's square of the North Pole map.
  *
  * `draw` paints the plot into a `size` by `size` square whose top-left corner
- * is the context's origin. The map clips to that square, so nothing a plot
- * draws can spill onto a neighbour. `time` is milliseconds since the page
+ * is the context's origin. Each plot draws on a canvas of its own that size,
+ * so nothing a plot draws can spill onto a neighbour. `time` is milliseconds since the page
  * loaded, for plots that animate.
  */
 export interface NorthPolePlot {

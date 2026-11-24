@@ -36,19 +36,23 @@ shares one repo and one factory.
   [@jedi4ever](https://github.com/jedi4ever). `.github/CODEOWNERS` asks for
   their review on every pull request, and the maintainers may change any file,
   such as the map itself.
-- **A plot can't break the map.** Each plot draws into its own clipped square,
+- **A plot can't break the map.** Each plot draws on a canvas of its own,
   and a plot that throws shows "Under construction" instead of taking the map
   down.
 
 ## For maintainers
 
-Two repository settings make the rules binding. They aren't in the code, so
+Three repository settings make the rules binding. They aren't in the code, so
 set them once in **Settings → Branches** with a protection rule for `main`:
 
 - **Require a pull request before merging**, with **Require review from Code
-  Owners**, so only a maintainer can approve a merge.
+  Owners**, so every merge needs a maintainer's approval.
 - **Require status checks to pass**, with **ownership** (from **Plot
   ownership**) and **check** (from **CI**).
+- **Restrict who can push to matching branches**, listing only the
+  maintainers. Approval alone doesn't decide who merges: anyone with write
+  access could still merge an approved pull request. Merging is a push to
+  `main`, so this is what keeps the merge itself with the maintainers.
 
 To add a maintainer, add them to `.github/CODEOWNERS` and to `MAINTAINERS` in
 `scripts/ownership.ts`. To publish the map, go to **Settings → Pages** and set

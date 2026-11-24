@@ -39,6 +39,12 @@ describe('plotOwner', () => {
     ).toBe('comet');
   });
 
+  it("gives another bot's pull request to nobody, whoever wrote the issue", () => {
+    expect(
+      plotOwner({ login: 'evil-app[bot]', isBot: true }, { login: 'jedi4ever', isBot: false }),
+    ).toBeUndefined();
+  });
+
   it('gives a bot nothing without a person behind it', () => {
     expect(plotOwner({ login: 'tessl-app[bot]', isBot: true }, undefined)).toBeUndefined();
     expect(

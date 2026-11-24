@@ -67,6 +67,10 @@ a `plot.test.ts` next to them.
 **In the pull request,** say what changed and how to preview it:
 `npm run dev`, then `#/plot/<login>`.
 
+The `.tessl/` rules linked below are not committed. `tessl install` fetches
+them, and the factory runs it before every session. If `.tessl/RULES.md` is
+missing, run `tessl install` first.
+
 # Agent Rules <!-- tessl-managed -->
 
 @.tessl/RULES.md follow the [instructions](.tessl/RULES.md)

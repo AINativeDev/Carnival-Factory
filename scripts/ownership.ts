@@ -10,12 +10,19 @@
 /** GitHub logins that may change any file, and who merge every pull request. */
 export const MAINTAINERS = ['jedi4ever'];
 
+/** The bots whose pull requests are for the person who wrote the linked issue. */
+export const FACTORY_BOTS = ['tessl-app[bot]'];
+
 export function plotFolder(login: string): string {
   return `src/plots/${login.toLowerCase()}/`;
 }
 
 export function isMaintainer(login: string): boolean {
   return MAINTAINERS.includes(login.toLowerCase());
+}
+
+export function isFactory(author: Author): boolean {
+  return author.isBot && FACTORY_BOTS.includes(author.login.toLowerCase());
 }
 
 /**
@@ -51,12 +58,14 @@ export interface Author {
 
 /**
  * Whose plot a pull request may change. A person's own pull request is for
- * them. A bot's pull request, such as the factory's, is for whoever wrote the
- * issue it links to. Undefined when there is no person to tie it to.
+ * them. The factory's pull request is for whoever wrote the issue it links to.
+ * Any other bot's pull request is for nobody, and so is the factory's when no
+ * person wrote the issue.
  */
 export function plotOwner(author: Author, issueAuthor: Author | undefined): string | undefined {
   if (!author.isBot) return author.login.toLowerCase();
-  if (issueAuthor && !issueAuthor.isBot) return issueAuthor.login.toLowerCase();
+  if (isFactory(author) && issueAuthor && !issueAuthor.isBot)
+    return issueAuthor.login.toLowerCase();
   return undefined;
 }
 
