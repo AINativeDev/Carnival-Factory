@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { filesOutsidePlot, linkedIssue, plotFolder, plotOwner } from './ownership';
 
-const REPO = 'AINativeDev/carnival-christmas-public';
+const REPO = 'AINativeDev/Northpole-Carnival-Factory';
 
 describe('linkedIssue', () => {
   it("reads the factory's issue marker", () => {
