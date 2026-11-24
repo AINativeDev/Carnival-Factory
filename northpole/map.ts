@@ -427,8 +427,8 @@ export function startMap(
   let overview = false;
   /**
    * Where a finger dragged the camera, which it stays at until the player
-   * walks, and the finger dragging it now: where it was last, once it has
-   * moved too far to be a tap.
+   * walks or goes to a square, and the finger dragging it now: where it was
+   * last, once it has moved too far to be a tap.
    */
   let panned: Tile | undefined;
   let dragging: { id: number; from: Tile; moved: boolean } | undefined;
@@ -1219,6 +1219,7 @@ export function startMap(
       player = { ...plot.door };
       path = [];
       overview = false;
+      panned = undefined;
       // The camera comes in on the square, and eases back out a little later, as after a walk.
       walking = 1;
       movedAt = performance.now();
@@ -1303,6 +1304,7 @@ export function startMap(
       claiming = undefined;
       held.clear();
       overview = false;
+      panned = undefined;
       if (!visiting) fading = performance.now();
       visiting = plot;
       select(undefined);
