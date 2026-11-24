@@ -105,8 +105,12 @@ function frameHolder(): HTMLElement {
   return holder;
 }
 
-/** A sandboxed stand-in for the booth or attraction `id`. Its frame starts on first draw. */
-export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
+/**
+ * A sandboxed stand-in for the booth or attraction `id`, or for the square
+ * `id` of the level `level`. Its frame starts on first draw.
+ */
+export function sandboxedSquare(kind: SquareKind, id: string, level?: string): SandboxedSquare {
+  const address = kind === 'level' ? `${level}/${id}` : id;
   let state: State = 'loading';
   let info: SquareInfo = { name: id, description: '' };
   const listeners: ((info: SquareInfo) => void)[] = [];
@@ -196,13 +200,13 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
     iframe.sandbox.add('allow-scripts');
     iframe.referrerPolicy = 'no-referrer';
     iframe.tabIndex = -1;
-    iframe.title = `${kind} ${id}`;
+    iframe.title = `${kind} ${address}`;
     iframe.dataset.kind = kind;
-    iframe.dataset.id = id;
+    iframe.dataset.id = address;
     iframe.dataset.state = state;
     // The frame page of this page's own build, so a cached page and its frames
     // always come from the same build, even while caches catch up.
-    iframe.src = new URL(`square.html?v=${BUILD_ID}#${kind}/${id}`, document.baseURI).href;
+    iframe.src = new URL(`square.html?v=${BUILD_ID}#${kind}/${address}`, document.baseURI).href;
     window.addEventListener('message', onMessage);
     frameHolder().append(iframe);
     live.add(self);

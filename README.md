@@ -78,6 +78,13 @@ starter repo for the "Build your own software factory with context" workshop.
    request is the one that counts, so a new one closes any older one you still
    have open.
 
+**Want a whole world of your own?** Open **Issues → New issue → Your level**
+for a level: a patch of the North Pole laid out how you like, with up to 8
+squares of its own, that visitors reach by sleigh from the sleigh station by
+the entrance. It lives in `levels/<your-login>/` and opens at
+`…/#/level/<your-login>`. [Level ideas](docs/level-ideas.md) helps you write
+the request.
+
 **Built a factory of your own?** Set up Tessl on a repository of yours, then
 ask for the [Elf Engineer badge](docs/elf-engineer.md) with **Issues → New
 issue → Elf Engineer badge**. Once it's granted, your booth gets an elf-hat pin
@@ -87,6 +94,27 @@ Booths are drawn in the [diorama style](docs/style.md) by default, the same
 as the North Pole's attractions: a little isometric scene at dusk, lit warm.
 A booth built before that keeps its own look until its owner asks for a
 restyle, which is a request like any other through **Your booth**.
+
+## People's Choice
+
+Vote for your favourite booth. Every booth has a comment in the **People's
+Choice** discussion, and a 👍 on it is a vote: its page links to it with **Vote
+for this booth**. There's a second category, **Home factory**, for what people's
+own factories built on their own repositories: every
+[Elf Engineer](docs/elf-engineer.md) gets a comment there too, linking their
+repository, voted on the same way.
+
+- One vote per GitHub account, because GitHub keeps one 👍 per account on a
+  comment. A booth's owner's vote for their own booth doesn't count.
+- A booth switched off by the kill switch drops out.
+- Voting closes at the end of **31 December 2026** (UTC). A 👍 given after
+  that doesn't count. The date is `VOTING_CLOSES` in
+  `northpole/peoples-choice.ts`.
+- The standings are counted every time the site is deployed, so they lag the
+  votes by a deploy. The map shows a trophy on the top three booths' signs, and
+  the People's Choice list below the map has every entry's votes and the Home
+  factory's leader. The page itself never asks GitHub: the build bakes the
+  standings in.
 
 ## Try it on your own
 
@@ -193,6 +221,16 @@ To switch a misbehaving square off, add its login to `booths`, or its id to
 `attractions`, in `northpole/disabled.json`: it shows "Closed for repairs" and
 its `draw` never runs. Its code is still loaded, so for code that misbehaves as
 soon as it loads, remove its folder instead.
+
+To open People's Choice, turn on **Settings → General → Features →
+Discussions**, then start a discussion titled exactly `People's Choice`, from a
+maintainer's account. Every deploy then adds a comment for each new booth and
+Elf Engineer while voting is open (`scripts/write-peoples-choice.ts`, with the
+deploy's own token), and counts the 👍. Until the discussion exists, the map
+shows no standings. To move the closing date, change `VOTING_CLOSES` in
+`northpole/peoples-choice.ts`. On a fork, set `REPO_URL` in
+`northpole/links.ts` to your fork's address too: the build keeps only
+standings whose links are into that repository's discussions.
 
 Every pull request from this repository gets a **Preview** link to its build,
 published next to the live map under `previews/pr-<number>/` and removed when

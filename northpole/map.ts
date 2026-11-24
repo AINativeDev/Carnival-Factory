@@ -1,6 +1,9 @@
-import { CLAIM_URL } from './links';
+import { boothPlotFiles } from './booths';
+import { CLAIM_URL, REPO_URL } from './links';
 import pinned from './plots.json';
+import { landedBooths, STAGE_TEXT, type PendingBooth } from './plots';
 import {
+  dragCentre,
   duskAt,
   frameCentre,
   framing,
@@ -21,18 +24,23 @@ import {
   drawMountains,
   drawPerson,
   drawPlot,
+  drawPlatform,
   drawPlotGlow,
   drawReindeer,
   drawRipples,
   drawSelectionBeam,
   drawSelectionRing,
   drawSky,
+  drawSite,
   drawSnowfall,
+  drawSparkles,
   drawStringLights,
+  drawUpdateSign,
   drawThing,
   faceOf,
   middle,
   setSpriteResolution,
+  SPARKLE_TIME,
   type Look,
   type Mapping,
   type Owner,
@@ -60,11 +68,12 @@ import {
   roomLayout,
   stepInRoom,
 } from './interior';
-import { nearestOpenPlot, nearYou, placeTag, tagText, targetAt } from './visit';
+import { nearestOpenPlot, nearYou, placeTag, platformTag, tagText, targetAt } from './visit';
 import {
   buildWorld,
   findPathToFirst,
   moveBy,
+  nearestStand,
   plotAtDoor,
   screenDirection,
   strollAt,
@@ -75,6 +84,7 @@ import {
   type Box,
   type Plot,
   type Tile,
+  type World,
 } from './world';
 
 const { colors } = theme;
@@ -138,10 +148,31 @@ export interface MapOptions {
   me?: string;
   /** Says the picked square changed: picked, or let go with Esc, by going inside, or by picking another. */
   onSelect?(selected: { kind: SquareKind; id: string } | undefined): void;
+  /** The accepted booth requests not merged yet, from `pending.json`, if the page has read it. */
+  pending?: readonly PendingBooth[];
+  /** The logins that were construction sites when the page last saw them: the ones with a booth now sparkle, once. */
+  wereSites?: Iterable<string>;
+  /** The levels, each with a platform at the sleigh station, and whether it's closed for repairs. */
+  levels?: readonly StationEntry[];
+  /**
+   * A participant's level to walk instead of the North Pole: its laid-out
+   * world (`levelWorld` in level.ts), with its squares as `attractions`.
+   */
+  level?: { id: string; name: string; world: World; tint: string };
+  /** Takes the sleigh from a platform: to the level of `login`, or, without one, back to the North Pole. */
+  onTravel?(login: string | undefined): void;
 }
 
-/** Where the player stood when they last opened a square, so coming back puts them there. */
-let remembered: Tile | undefined;
+/** A level's platform at the sleigh station: its name, its owner, its sign's colour, and whether it's closed. */
+export interface StationEntry {
+  login: string;
+  name: string;
+  color: string;
+  closed: boolean;
+}
+
+/** Where the player stood when they last opened a square, in each world, so coming back puts them there. */
+const remembered = new Map<string, Tile>();
 
 /** How fast the player walks, in tiles a second. */
 const SPEED = 4.5;
@@ -187,10 +218,10 @@ const typing = (target: EventTarget | null) =>
 const pressable = (target: EventTarget | null) =>
   target instanceof HTMLElement && /^(BUTTON|A)$/.test(target.tagName);
 
-/** Opens the Claim your booth form in a new tab. */
-function claim() {
+/** Opens a link in a new tab: the Claim your booth form by default. */
+function claim(href = CLAIM_URL) {
   const link = document.createElement('a');
-  link.href = CLAIM_URL;
+  link.href = href;
   link.target = '_blank';
   link.rel = 'noopener';
   link.click();
@@ -290,6 +321,10 @@ export interface MapControls {
   nearest(count: number): { kind: SquareKind; id: string }[];
   /** Says who the visitor is, so their own booth stands out, or that the page doesn't know. */
   setMe(login: string | undefined): void;
+  /** Shows the booth requests being built: construction sites on their plots, and "Being updated" on booths. */
+  setPending(pending: readonly PendingBooth[]): void;
+  /** The logins whose booths are being built, on construction sites now. */
+  readonly sites: string[];
   /** Walks the player to the nearest open plot. */
   walkToOpenPlot(): void;
   /** Walks the player to the open plot nearest them, leaving footprints, and bounces its sign. */
@@ -333,13 +368,60 @@ export function startMap(
     attraction: new Map(options.attractions.map((square) => [square.id, square])),
     booth: new Map(options.booths.map((square) => [square.id, square])),
   };
-  const world = buildWorld(
-    options.attractions.map((square) => square.id),
-    options.booths.map((square) => square.id),
-    pinned,
-  );
+  /** The booth requests being built, by login, and the booths they change. */
+  let pending = new Map<string, PendingBooth>();
+  let world!: World;
+  /** The world's layout, so the island is only redrawn when a plot changes. */
+  let layout = '';
+  const build = (list: readonly PendingBooth[]) => {
+    pending = new Map(list.map((entry) => [entry.login, entry]));
+    const made =
+      options.level?.world ??
+      buildWorld(
+        options.attractions.map((square) => square.id),
+        options.booths.map((square) => square.id),
+        pinned,
+        { files: boothPlotFiles, pending: list, levels: options.levels?.map((l) => l.login) },
+      );
+    const plan = made.plots.map((plot) => `${plot.kind}:${plot.id ?? ''}:${plot.number}`).join();
+    if (plan === layout) return false;
+    layout = plan;
+    world = made;
+    return true;
+  };
+  build(options.pending ?? []);
   const squareOf = (plot: Plot) =>
-    plot.kind === 'open' ? undefined : byId[plot.kind].get(plot.id!);
+    plot.kind === 'attraction' || plot.kind === 'booth' ? byId[plot.kind].get(plot.id!) : undefined;
+  /** Which world this is, for where the player stood in it: the North Pole, or a level's owner. */
+  const place = options.level?.id ?? '';
+  const stations = new Map((options.levels ?? []).map((entry) => [entry.login, entry]));
+  /** What a sleigh platform's sign says: the level it goes to, or, inside a level, the way home. */
+  const platformLabel = (plot: Plot) => {
+    if (plot.kind === 'exit')
+      return {
+        name: 'The North Pole',
+        by: 'Sleigh home',
+        color: options.level?.tint ?? colors.gold,
+        closed: false,
+      };
+    const entry = stations.get(plot.id!);
+    return {
+      name: entry?.name ?? plot.id!,
+      by: `@${plot.id}`,
+      color: entry?.color ?? colors.gold,
+      closed: entry?.closed ?? true,
+    };
+  };
+  /** What a construction site's sign says. */
+  const siteLabel = (plot: Plot) => {
+    const entry = pending.get(plot.id!);
+    return { login: plot.id!, stage: entry ? STAGE_TEXT[entry.stage] : STAGE_TEXT.building };
+  };
+  /** The booths that just landed on their construction site's plot, and when their sparkles began. */
+  const boothIds = new Set(options.booths.map((square) => square.id));
+  const landed = new Map<string, number | undefined>(
+    landedBooths(options.wereSites ?? [], boothIds).map((login) => [login, undefined]),
+  );
   const plotOf = (kind: SquareKind, id: string) =>
     world.plots.find((plot) => plot.kind === kind && plot.id === id);
   /** The picked plot, when its highlight began, and whether the player is walking there on a trail. */
@@ -370,10 +452,12 @@ export function startMap(
   let invitedAt = 0;
   const touchScreen = window.matchMedia('(pointer: coarse)');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const island = islandCorners(world);
-  const bounds = islandBounds(world);
+  let island = islandCorners(world);
+  let bounds = islandBounds(world);
 
-  let player: Tile = selected ? { ...selected.door } : (remembered ?? { ...world.start });
+  let player: Tile = selected
+    ? { ...selected.door }
+    : (remembered.get(place) ?? { ...world.start });
   let path: Tile[] = [];
   let facing = 1;
   let moving = false;
@@ -383,6 +467,13 @@ export function startMap(
   let walking = 0;
   let movedAt = -Infinity;
   let overview = false;
+  /**
+   * Where a finger dragged the camera, which it stays at until the player
+   * walks or goes to a square, and the finger dragging it now: where it was
+   * last, once it has moved too far to be a tap.
+   */
+  let panned: Tile | undefined;
+  let dragging: { id: number; from: Tile; moved: boolean } | undefined;
   let near: Plot | undefined;
   let scale = 1;
   let last: number | undefined;
@@ -423,12 +514,13 @@ export function startMap(
   let mountains = layer(1, 1);
   let ground = layer(1, 1);
   let front = layer(1, 1);
-  const groundBox: Box = {
+  const boxOf = (): Box => ({
     x: island.left.x - 8,
     y: island.top.y - 40,
     w: island.right.x - island.left.x + 16,
     h: island.bottom.y + SLAB + 80 - (island.top.y - 40),
-  };
+  });
+  let groundBox = boxOf();
 
   const want = (): Framing =>
     framing(world, frame.clientWidth, frame.clientHeight, player, walking, overview);
@@ -470,7 +562,16 @@ export function startMap(
 
   const open = (plot: Plot) => {
     if (plot.kind === 'open') return claim();
-    remembered = { ...player };
+    if (plot.kind === 'site') {
+      const entry = pending.get(plot.id!);
+      return claim(entry ? `${REPO_URL}/issues/${entry.issue}` : CLAIM_URL);
+    }
+    remembered.set(place, { ...player });
+    if (plot.kind === 'exit') return options.onTravel?.(undefined);
+    if (plot.kind === 'platform') {
+      if (!platformLabel(plot).closed) options.onTravel?.(plot.id);
+      return;
+    }
     options.onOpen(plot.kind, plot.id!);
   };
 
@@ -500,7 +601,15 @@ export function startMap(
       ? ''
       : plot.kind === 'open'
         ? 'Claim this plot'
-        : `Visit ${squareOf(plot)?.name ?? plot.id ?? ''}`;
+        : plot.kind === 'site'
+          ? `Being built for @${plot.id}: ${siteLabel(plot).stage}`
+          : plot.kind === 'exit'
+            ? 'Take the sleigh back to the North Pole'
+            : plot.kind === 'platform'
+              ? platformLabel(plot).closed
+                ? `${platformLabel(plot).name} is closed for repairs`
+                : `Take the sleigh to ${platformLabel(plot).name}`
+              : `Visit ${squareOf(plot)?.name ?? plot.id ?? ''}`;
     if (plot && prompt.title !== words) {
       const text = document.createElement('span');
       text.className = 'prompt-text';
@@ -612,7 +721,10 @@ export function startMap(
     }
     if (plot !== tagged) {
       tagged = plot;
-      const text = tagText(plot, squareOf(plot));
+      const text =
+        plot.kind === 'platform' || plot.kind === 'exit'
+          ? platformTag(plot.kind, platformLabel(plot))
+          : tagText(plot, squareOf(plot), siteLabel(plot).stage);
       tag.querySelector('.tag-name')!.textContent = text.name;
       tag.querySelector('.tag-owner')!.textContent = text.owner;
       tag.querySelector('.tag-line')!.textContent = text.line;
@@ -672,17 +784,22 @@ export function startMap(
       delete canvas.dataset.stage;
     }
     const wanted = want();
+    // A walk, or the overview, takes the camera back from where a finger left it.
+    if (moving || overview) panned = undefined;
     if (!camera || still) {
       zoom = wanted.zoom;
       // On a phone the camera opens on the town square, then finds the player.
-      camera =
-        isPhone(width) && !still
+      camera = panned
+        ? frameCentre(bounds, width, height, zoom, panned)
+        : isPhone(width) && !still
           ? centreFor({ ...wanted, target: toScreen({ x: 0, y: 0 }) }, zoom)
           : centreFor(wanted, zoom);
     } else {
       const ease = Math.min(1, dt * 4);
       zoom += (wanted.zoom - zoom) * ease;
-      const goal = centreFor(wanted, zoom);
+      const goal = panned
+        ? frameCentre(bounds, width, height, zoom, panned)
+        : centreFor(wanted, zoom);
       camera = {
         x: camera.x + (goal.x - camera.x) * ease,
         y: camera.y + (goal.y - camera.y) * ease,
@@ -709,6 +826,12 @@ export function startMap(
     ctx.globalAlpha = 0.3 * duskAt(motion);
     ctx.fillStyle = colors.night;
     ctx.fillRect(0, 0, width, height);
+    // A level's sky takes on its theme's colour.
+    if (options.level) {
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = options.level.tint;
+      ctx.fillRect(0, 0, width, height);
+    }
     ctx.globalAlpha = 1;
 
     const k = scale * zoom;
@@ -805,7 +928,20 @@ export function startMap(
         if (strength > 0) drawPlotGlow(ctx, plot, strength);
         drawSelectionRing(ctx, plot, highlight);
         const bounce = plot === near || plot === claiming;
-        const box = drawPlot(ctx, plot, squareOf(plot), paint, motion, bounce, owner);
+        const box =
+          plot.kind === 'site'
+            ? drawSite(ctx, plot, siteLabel(plot), motion, plot === near)
+            : plot.kind === 'platform' || plot.kind === 'exit'
+              ? drawPlatform(ctx, plot, platformLabel(plot), motion, plot === near)
+              : drawPlot(ctx, plot, squareOf(plot), paint, motion, bounce, owner);
+        if (plot.kind === 'booth' && pending.has(plot.id!)) drawUpdateSign(ctx, plot);
+        if (plot.kind === 'booth' && landed.has(plot.id!)) {
+          // The booth that replaced its construction site sparkles once, the first time it's in view.
+          const began = landed.get(plot.id!) ?? time;
+          landed.set(plot.id!, began);
+          if (still || time - began >= SPARKLE_TIME) landed.delete(plot.id!);
+          else drawSparkles(ctx, plot, time - began);
+        }
         targets.push({ plot, box });
       });
     }
@@ -814,7 +950,8 @@ export function startMap(
       add(at.x + at.y, () => drawPerson(ctx, at, LOOKS[n % LOOKS.length], at.facing, !still, time));
     });
     const { pond, paddock } = world;
-    for (let n = 0; n < 3; n++) {
+    // A level may have no pond, and has no paddock.
+    for (let n = 0; n < (pond.w ? 3 : 0); n++) {
       const turn = motion / (2600 + n * 500) + n * 2.1;
       const at = {
         x: pond.x + (pond.w - 1) / 2 + Math.cos(turn) * (pond.w / 2 - 1),
@@ -824,7 +961,7 @@ export function startMap(
         drawPerson(ctx, at, LOOKS[(n + 1) % LOOKS.length], Math.sin(turn) < 0 ? 1 : -1, false, 0),
       );
     }
-    for (let n = 0; n < 3; n++) {
+    for (let n = 0; n < (paddock.w ? 3 : 0); n++) {
       const wander = motion / (6000 + n * 1300) + n * 2;
       const at = {
         x: paddock.x + ((paddock.w - 1) * (1 + Math.sin(wander))) / 2,
@@ -1031,8 +1168,34 @@ export function startMap(
     walkToward(goals);
   };
 
+  /** On a touch screen a finger drags the map round, and a tap still walks or opens. */
+  const onPointerDown = (event: PointerEvent) => {
+    if (event.pointerType !== 'touch' || visiting || dragging) return;
+    const box = canvas.getBoundingClientRect();
+    dragging = {
+      id: event.pointerId,
+      from: { x: event.clientX - box.left, y: event.clientY - box.top },
+      moved: false,
+    };
+    // The drag goes on when the finger slides off the map.
+    canvas.setPointerCapture(event.pointerId);
+  };
+  const onPointerEnd = (event: PointerEvent) => {
+    if (dragging?.id === event.pointerId) dragging = undefined;
+  };
+
   const onPointerMove = (event: PointerEvent) => {
-    if (event.pointerType === 'touch') return;
+    if (event.pointerType === 'touch') {
+      if (dragging?.id !== event.pointerId || visiting || !camera) return;
+      const box = canvas.getBoundingClientRect();
+      const to = { x: event.clientX - box.left, y: event.clientY - box.top };
+      if (!dragging.moved && isTap(dragging.from, to)) return;
+      dragging.moved = true;
+      // The camera follows the finger at once, without easing.
+      camera = panned = dragCentre(bounds, box.width, box.height, zoom, camera, dragging.from, to);
+      dragging.from = to;
+      return;
+    }
     hovered = visiting ? undefined : plotUnder(pointAt(event));
     canvas.style.cursor = hovered ? 'pointer' : 'default';
   };
@@ -1078,7 +1241,10 @@ export function startMap(
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('blur', onBlur);
   canvas.addEventListener('click', onClick);
+  canvas.addEventListener('pointerdown', onPointerDown);
   canvas.addEventListener('pointermove', onPointerMove);
+  canvas.addEventListener('pointerup', onPointerEnd);
+  canvas.addEventListener('pointercancel', onPointerEnd);
   canvas.addEventListener('pointerleave', onPointerLeave);
   prompt.addEventListener('click', onPrompt);
   frameId = requestAnimationFrame(render);
@@ -1091,7 +1257,10 @@ export function startMap(
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
       canvas.removeEventListener('click', onClick);
+      canvas.removeEventListener('pointerdown', onPointerDown);
       canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerup', onPointerEnd);
+      canvas.removeEventListener('pointercancel', onPointerEnd);
       canvas.removeEventListener('pointerleave', onPointerLeave);
       tag.remove();
       delete frame.dataset.visiting;
@@ -1115,6 +1284,7 @@ export function startMap(
       player = { ...plot.door };
       path = [];
       overview = false;
+      panned = undefined;
       // The camera comes in on the square, and eases back out a little later, as after a walk.
       walking = 1;
       movedAt = performance.now();
@@ -1128,7 +1298,9 @@ export function startMap(
       select(undefined);
     },
     nearest(count) {
-      const squares = world.plots.filter((plot) => plot.kind !== 'open');
+      const squares = world.plots.filter(
+        (plot) => plot.kind === 'booth' || plot.kind === 'attraction',
+      );
       return nearYou(squares, player, count).map((plot) => ({
         kind: plot.kind as SquareKind,
         id: plot.id!,
@@ -1136,6 +1308,40 @@ export function startMap(
     },
     setMe(login) {
       me = login;
+    },
+    setPending(list) {
+      // A site's tag says its stage, which may have changed.
+      tagged = undefined;
+      if (!build(list)) return;
+      // Which construction sites are up, for the smoke test.
+      canvas.dataset.sites = this.sites.join(' ');
+      // The new world's plots are new objects: keep hold of the same squares in it.
+      const same = (plot: Plot | undefined) =>
+        plot &&
+        world.plots.find(
+          (p) => p.kind === plot.kind && p.id === plot.id && (p.id || p.number === plot.number),
+        );
+      selected = same(selected);
+      near = same(near);
+      hovered = same(hovered);
+      claiming = same(claiming);
+      invited = same(invited);
+      if (visiting) visiting = same(visiting);
+      if (entered) entered = same(entered);
+      // A new site may stand where the player is, or across their walk: put
+      // them on clear ground, and plan what's left of the walk again.
+      player = nearestStand(world, player);
+      const goal = path.at(-1);
+      path = [];
+      if (goal) walkToward([goal]);
+      island = islandCorners(world);
+      bounds = islandBounds(world);
+      groundBox = boxOf();
+      targets = [];
+      resize();
+    },
+    get sites() {
+      return world.plots.filter((plot) => plot.kind === 'site').map((plot) => plot.id!);
     },
     walkToOpenPlot() {
       if (visiting) options.onLeave();
@@ -1163,6 +1369,7 @@ export function startMap(
       claiming = undefined;
       held.clear();
       overview = false;
+      panned = undefined;
       if (!visiting) fading = performance.now();
       visiting = plot;
       select(undefined);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deepLink, parseHash, seasonLink } from './route';
+import { deepLink, levelLink, parseHash, seasonLink } from './route';
 
 describe('parseHash', () => {
   it('reads the plain map', () => {
@@ -86,5 +86,38 @@ describe('the season card', () => {
   it('ignores a malformed login and opens the plain map', () => {
     expect(parseHash('#/season/<script>')).toEqual({ view: 'map' });
     expect(parseHash('#/season/')).toEqual({ view: 'map' });
+  });
+});
+
+describe('a level’s links', () => {
+  it('opens a level, in front of one of its squares, or inside one', () => {
+    expect(parseHash('#/level/Jedi4ever')).toEqual({ view: 'level', login: 'jedi4ever' });
+    expect(parseHash('#/level/jedi4ever?square=cocoa-hut')).toEqual({
+      view: 'level',
+      login: 'jedi4ever',
+      focus: 'cocoa-hut',
+    });
+    expect(parseHash('#/level/jedi4ever/cocoa-hut')).toEqual({
+      view: 'level',
+      login: 'jedi4ever',
+      inside: 'cocoa-hut',
+    });
+  });
+
+  it('ignores a malformed square, and anything else is the map', () => {
+    expect(parseHash('#/level/jedi4ever?square=a%20b')).toEqual({
+      view: 'level',
+      login: 'jedi4ever',
+    });
+    expect(parseHash('#/level/a b')).toEqual({ view: 'map' });
+  });
+
+  it('reads back the links it makes', () => {
+    expect(levelLink('jedi4ever')).toBe('#/level/jedi4ever');
+    expect(parseHash(levelLink('jedi4ever', 'ice-fishing'))).toEqual({
+      view: 'level',
+      login: 'jedi4ever',
+      focus: 'ice-fishing',
+    });
   });
 });

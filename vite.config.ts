@@ -3,7 +3,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vitest/config';
 import { cleanHolders } from './northpole/badges.ts';
-import { BADGE_REQUEST_URL } from './northpole/links.ts';
+import { BADGE_REQUEST_URL, REPO_URL } from './northpole/links.ts';
+import { cleanChoice } from './northpole/peoples-choice.ts';
 import { readBoothAddedDates } from './scripts/booth-dates.ts';
 import { badgePage } from './scripts/elf-engineer.ts';
 import {
@@ -48,6 +49,20 @@ const versionFile: Plugin = {
       fileName: 'version.json',
       source: JSON.stringify({ build: BUILD_ID }),
     });
+  },
+};
+
+/**
+ * Writes an empty pending.json, no booths being built, unless the deploy put
+ * the open booth requests in public/pending.json (scripts/write-pending.ts),
+ * which Vite copies as it is. So a preview or a local build shows none.
+ */
+const pendingFile: Plugin = {
+  name: 'pending-file',
+  apply: 'build',
+  generateBundle() {
+    if (existsSync(join(import.meta.dirname, 'public/pending.json'))) return;
+    this.emitFile({ type: 'asset', fileName: 'pending.json', source: '[]\n' });
   },
 };
 
@@ -107,6 +122,21 @@ const BADGE_HOLDERS = (() => {
   return file && existsSync(file) ? cleanHolders(JSON.parse(readFileSync(file, 'utf8'))) : [];
 })();
 
+/**
+ * The People's Choice standings, baked into the page so it never asks the
+ * network: read from PEOPLES_CHOICE_FILE, which the deploy writes from the
+ * votes in its discussion (scripts/write-peoples-choice.ts), or none without it.
+ */
+const PEOPLES_CHOICE = (() => {
+  const file = process.env.PEOPLES_CHOICE_FILE;
+  const disabled = JSON.parse(
+    readFileSync(join(import.meta.dirname, 'northpole/disabled.json'), 'utf8'),
+  ) as { booths: string[] };
+  return file && existsSync(file)
+    ? cleanChoice(JSON.parse(readFileSync(file, 'utf8')), disabled.booths, REPO_URL)
+    : undefined;
+})();
+
 /** Writes badges/index.html: the Elf Engineer badges, and the Markdown to paste for each. */
 const badgePages: Plugin = {
   name: 'badge-pages',
@@ -140,11 +170,12 @@ function squareNames(): Record<string, string> {
 }
 
 export default defineConfig(({ command }) => ({
-  plugins: [versionFile, sharePages, badgePages],
+  plugins: [versionFile, pendingFile, sharePages, badgePages],
   define: {
     __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev'),
     __BADGE_HOLDERS__: JSON.stringify(BADGE_HOLDERS),
     __SEASON__: JSON.stringify(SEASON),
+    __PEOPLES_CHOICE__: JSON.stringify(PEOPLES_CHOICE ?? null),
     // When each booth's folder first appeared, for the Booths panel's Recently added.
     __BOOTH_ADDED__: JSON.stringify(readBoothAddedDates(import.meta.dirname)),
     // Every square's name, for searching and sorting the Booths panel.
@@ -176,6 +207,6 @@ export default defineConfig(({ command }) => ({
   preview: { cors: { origin: 'null' } },
   test: {
     environment: 'node',
-    include: ['{src,northpole,booths,attractions,scripts}/**/*.test.ts'],
+    include: ['{src,northpole,booths,attractions,levels,scripts}/**/*.test.ts'],
   },
 }));

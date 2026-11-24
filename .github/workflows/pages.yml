@@ -11,6 +11,13 @@ name: Deploy to GitHub Pages
 # drops from the queue, or a build that finishes late, is put right by the
 # next one. Every run also rebuilds the root from main. Nothing here checks out or
 # runs a pull request's code: it only copies the files its build made.
+#
+# An issue labelled, unlabelled or closed also runs it, from main's own code,
+# so a booth request that's just been accepted shows its construction site on
+# the map within a couple of minutes, and one that moved along shows its new
+# stage. So does `needs-human` going on or off a pull request, for the
+# "Waiting for a maintainer" stage; the auto-merge gate's own token starts no
+# workflows, so the gate dispatches this one when it puts that label on.
 on:
   push:
     branches: [main]
@@ -18,7 +25,9 @@ on:
     workflows: [Preview build]
     types: [completed]
   pull_request_target:
-    types: [closed]
+    types: [closed, labeled, unlabeled]
+  issues:
+    types: [labeled, unlabeled, closed]
   workflow_dispatch:
 
 permissions:
@@ -37,9 +46,14 @@ jobs:
       pages: read
     # A merged pull request also pushes to main, and that run retires its
     # preview too, so the close event only publishes for one closed unmerged.
-    # One run instead of two puts a merged booth on the map sooner.
+    # One run instead of two puts a merged booth on the map sooner. Issue
+    # events only matter for booth requests: they move a construction site.
     if: >-
-      (github.event_name == 'pull_request_target' && !github.event.pull_request.merged) ||
+      (github.event_name == 'pull_request_target' &&
+       ((github.event.action == 'closed' && !github.event.pull_request.merged) ||
+        github.event.label.name == 'needs-human')) ||
+      (github.event_name == 'issues' &&
+       contains(github.event.issue.labels.*.name, 'booth-request')) ||
       github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success' &&
@@ -82,6 +96,10 @@ jobs:
       # for the badge holders.
       issues: read
       pull-requests: read
+      # The checks on the booth requests' pull requests, for their stage.
+      checks: read
+      # The People's Choice votes, and a comment in its discussion for each new entry.
+      discussions: write
     outputs:
       placed: ${{ steps.files.outputs.placed }}
     steps:
@@ -125,6 +143,20 @@ jobs:
           node scripts/write-square-history.ts ||
             echo "::warning title=No square history::Couldn't read the issues and pull requests, so the squares' timelines are empty in this build."
 
+      # The accepted booth requests not merged yet, for their construction
+      # sites: worked out afresh every run and never committed. The build
+      # copies public/pending.json beside the page. Without it, the build
+      # writes an empty list and the map shows no construction sites.
+      - name: List the booths being built
+        working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          timeout 2m node scripts/write-pending.ts public/pending.json || {
+            rm -f public/pending.json
+            echo "::warning title=No booths being built::Couldn't read the booth requests, so this build shows no construction sites."
+          }
+
       # Every booth owner's avatar, for the signs and the booths' insides,
       # bundled into the site so visitors make no requests to GitHub. An owner
       # without one gets the elf-silhouette fallback.
@@ -161,6 +193,20 @@ jobs:
             rm -f season.json
           }
 
+      # The People's Choice standings, from the 👍 in its discussion, for the
+      # build to bake into the page. It also adds a comment for every new booth
+      # and home factory. Without the discussion, the map shows no standings.
+      - name: Count the People's Choice votes
+        working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BADGE_HOLDERS_FILE: ${{ runner.temp }}/badge-holders.json
+        run: |
+          timeout 2m node scripts/write-peoples-choice.ts "$RUNNER_TEMP/peoples-choice.json" || {
+            rm -f "$RUNNER_TEMP/peoples-choice.json"
+            echo "::warning title=No People's Choice standings::Couldn't read the votes, so this build shows no standings."
+          }
+
       # Every run rebuilds the root from main, not only a push: GitHub keeps one
       # pending run per group and drops the rest, so a push's run can be
       # replaced by the next event, and that run must still publish main.
@@ -168,7 +214,8 @@ jobs:
         working-directory: main
         run: |
           npm ci
-          BADGE_HOLDERS_FILE="$RUNNER_TEMP/badge-holders.json" npm run build
+          BADGE_HOLDERS_FILE="$RUNNER_TEMP/badge-holders.json" \
+            PEOPLES_CHOICE_FILE="$RUNNER_TEMP/peoples-choice.json" npm run build
           # Pages lets caches keep a page for up to 10 minutes, so a visitor can
           # still be on the last build, asking for its files. Built files have
           # a hash in their name, so old and new never clash: keep the old ones
@@ -309,10 +356,10 @@ jobs:
             pr=${entry%%:*}
             sha=${entry#*:}
             url="${site%/}/previews/pr-$pr/"
-            # A direct link to every booth and attraction the pull request changes,
+            # A direct link to every booth, attraction and level the pull request changes,
             # and their screenshots side by side under the map's, each opening its square.
             squares=$(gh api "repos/$GH_REPO/pulls/$pr/files" --paginate --jq '.[].filename' |
-              sed -nE 's#^(booth|attraction)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
+              sed -nE 's#^(booth|attraction|level)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
             links=""
             row=""
             shots="${url}screenshots"

@@ -20,3 +20,6 @@ square-history.json
 
 # Booth owners' avatars, downloaded by scripts/download-avatars.ts before a deploy's build
 public/avatars/
+
+# The booth requests being built, written by scripts/write-pending.ts before a deploy's build
+public/pending.json

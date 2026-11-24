@@ -57,8 +57,8 @@ const squareProperties = [
 // booth could reach them and change what they draw. A test beside it may also
 // import vitest, but nothing else imports a test, so a test file can't carry
 // code past the size budget.
-function importRule(depth, test = false) {
-  const map = `(\\.\\./){${depth + 2}}northpole/(theme|square|diorama)$`;
+function importRule(depth, test = false, up = 2) {
+  const map = `(\\.\\./){${depth + up}}northpole/(theme|square|diorama)$`;
   const own = `(\\./${depth > 0 ? `|(\\.\\./){1,${depth}}` : ''})(?!.*\\.\\.)[\\w./-]+$`;
   return [
     'error',
@@ -86,8 +86,55 @@ function importRule(depth, test = false) {
 // the rule for depth 0, so they can import only from beside themselves.
 const NESTED_DEPTH = 4;
 
-// The folders whose squares draw on the map, one folder each.
-const SQUARE_FOLDERS = ['booths', 'attractions'];
+// The folders whose squares draw on the map, one folder each, and how many
+// folders up the map is from each square's own folder. A level's own squares
+// live in levels/<login>/squares/<id>/.
+const SQUARE_FOLDERS = ['booths', 'attractions', 'levels/*/squares'];
+const UP = { booths: 2, attractions: 2, 'levels/*/squares': 4 };
+
+// A level's level.ts is plain data the page reads, so it holds one object and
+// nothing that runs: no calls, no functions, no getters, no references to
+// anything, and its only import is the level's type.
+const LEVEL_DATA = 'A level.ts is plain data: it holds only its NorthPoleLevel object, so';
+const levelData = [
+  ['CallExpression', 'no calls'],
+  ['NewExpression', 'no new'],
+  ['TaggedTemplateExpression', 'no tagged templates'],
+  [':function', 'no functions'],
+  [':matches(ClassDeclaration, ClassExpression)', 'no classes'],
+  ['Property[kind!="init"]', 'no getters or setters'],
+  ['Property[computed=true]', 'no computed keys'],
+  ['Property[method=true]', 'no methods'],
+  ['SpreadElement', 'no spreads'],
+  ['MemberExpression', 'no reading properties of anything'],
+  ['TemplateLiteral[expressions.length>0]', 'no templates with values in them'],
+  ['ImportDeclaration[importKind!="type"]', 'only `import type`'],
+  ['ImportExpression', 'no import()'],
+  ['AwaitExpression', 'no await'],
+  ['UpdateExpression, AssignmentExpression[left.type!="Identifier"]', 'no changing anything'],
+  ['ExportNamedDeclaration', 'only its default export'],
+  // What may be there at all, so nothing else runs when the page imports it:
+  // `import type`, `const level = { ... }` and `export default level`, with
+  // only objects, arrays and plain values inside.
+  [
+    'Program > :not(ImportDeclaration, VariableDeclaration, ExportDefaultDeclaration)',
+    'only its import, its `const level` and `export default level`',
+  ],
+  ['VariableDeclaration[kind!="const"]', 'only `const`'],
+  [
+    'VariableDeclarator:matches([id.name!="level"], [init.type!="ObjectExpression"])',
+    'only `const level = { ... }`',
+  ],
+  ['ExportDefaultDeclaration > :not(Identifier[name="level"])', 'only `export default level`'],
+  [
+    ':expression:not(ObjectExpression, ArrayExpression, Literal, TemplateLiteral, Identifier, UnaryExpression[operator="-"][argument.type="Literal"])',
+    'only objects, arrays, strings, numbers and booleans',
+  ],
+  [
+    ':matches(Property[value.type="Identifier"], ArrayExpression > Identifier.elements)',
+    'no names of anything as values',
+  ],
+].map(([selector, what]) => ({ selector, message: `${LEVEL_DATA} ${what}.` }));
 
 export default tseslint.config(
   {
@@ -141,12 +188,47 @@ export default tseslint.config(
       ],
     },
   },
-  ...Array.from({ length: NESTED_DEPTH }, (_, index) => ({
-    files: SQUARE_FOLDERS.map((folder) => `${folder}/*/${'*/'.repeat(index + 1)}*`),
-    rules: { 'no-restricted-imports': importRule(index + 1) },
-  })),
-  ...Array.from({ length: NESTED_DEPTH + 1 }, (_, depth) => ({
-    files: SQUARE_FOLDERS.map((folder) => `${folder}/*/${'*/'.repeat(depth)}*.test.ts`),
-    rules: { 'no-restricted-imports': importRule(depth, true) },
-  })),
+  ...SQUARE_FOLDERS.flatMap((folder) => [
+    {
+      files: [`${folder}/*/**`],
+      rules: { 'no-restricted-imports': importRule(0, false, UP[folder]) },
+    },
+    ...Array.from({ length: NESTED_DEPTH }, (_, index) => ({
+      files: [`${folder}/*/${'*/'.repeat(index + 1)}*`],
+      rules: { 'no-restricted-imports': importRule(index + 1, false, UP[folder]) },
+    })),
+    ...Array.from({ length: NESTED_DEPTH + 1 }, (_, depth) => ({
+      files: [`${folder}/*/${'*/'.repeat(depth)}*.test.ts`],
+      rules: { 'no-restricted-imports': importRule(depth, true, UP[folder]) },
+    })),
+  ]),
+  {
+    // A level's own folder: the house rules too, for anything beside its level.ts.
+    files: ['levels/*/*'],
+    rules: {
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-restricted-globals': ['error', ...squareGlobals],
+      'no-restricted-properties': ['error', ...squareProperties],
+    },
+  },
+  {
+    // level.ts: plain data, importing only the level's type from the map.
+    files: ['levels/*/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^(?!\\.\\./\\.\\./northpole/level$)',
+              message: 'A level.ts imports only the level types from ../../northpole/level.',
+            },
+          ],
+        },
+      ],
+      'no-restricted-syntax': ['error', ...levelData],
+    },
+  },
 );

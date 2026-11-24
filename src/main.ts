@@ -2,18 +2,24 @@ import './style.css';
 import { attractionRegistry } from '../northpole/attractions';
 import { CLAIM_URL, REPO_URL } from '../northpole/links';
 import { isPhone } from '../northpole/camera';
-import { startMap, type MapControls, type SquareKind } from '../northpole/map';
+import { LEVEL_THEMES, levelWorld } from '../northpole/level';
+import { levelOf, levels } from '../northpole/levels';
+import { startMap, type MapControls, type SquareKind, type StationEntry } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
-import { applyTheme } from '../northpole/theme';
+import { applyTheme, theme } from '../northpole/theme';
 import { boothRegistry } from '../northpole/booths';
 import { avatarPath } from '../northpole/owners';
+import { PEOPLES_CHOICE } from '../northpole/peoples-choice-standings';
+import { sitesToRemember } from '../northpole/plots';
 import { BOOTHS_PANEL, startBoothsPanel, type BoothsPanel } from './booths-hud';
 import { openFactoryHud, readFactoryStats, squareCounts } from './factory';
+import { CHOICE_PANEL, renderChoice } from './peoples-choice-hud';
 import { SQUARE_HISTORY } from './history';
-import { parseHash } from './route';
+import { levelLink, parseHash } from './route';
 import { renderSeason } from './season-card';
 import { openVisitHud, type VisitHud } from './visit-hud';
+import { followPending, knownPending, loadSites, saveSites } from './pending';
 import { keepUpToDate } from './updates';
 
 applyTheme();
@@ -64,8 +70,23 @@ const AVATARS: ReadonlySet<string> = new Set(typeof __AVATARS__ === 'object' ? _
 /** The Booths panel on the map now. */
 let panel: BoothsPanel | undefined;
 
+/** Every level's platform at the sleigh station. */
+const STATION: StationEntry[] = levels.map((entry) => ({
+  login: entry.login,
+  name: entry.name,
+  color: entry.level ? LEVEL_THEMES[entry.level.theme].sign : theme.colors.muted,
+  closed: !entry.level,
+}));
+
+/** The world on screen: the North Pole, or the login whose level it is. */
+let shown: string | undefined;
+
+/** Takes the sleigh: to a level, or home to the North Pole. */
+const travel = (login: string | undefined) => (location.hash = login ? levelLink(login) : '#/');
+
 function renderMap(focus?: { kind: SquareKind; id: string }) {
   document.body.dataset.view = 'map';
+  shown = '';
   app.innerHTML = `
     <section class="map">
       <div class="map-frame">
@@ -73,6 +94,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
         <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
         <a class="hud hud-tessl" href="#/factory">Built with Tessl</a>
+        <button class="hud hud-back" type="button"><span aria-hidden="true">←</span> Back to the map</button>
         ${BOOTHS_PANEL}
         <details class="hud hud-controls">
           <summary>Controls</summary>
@@ -83,6 +105,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
           <button class="hud hud-overview" type="button">Show the whole island</button>
         </div>
       </div>
+      ${CHOICE_PANEL}
       <div class="visually-hidden">
         <p>
           Welcome to the North Pole. The attractions round the town square are part of the North
@@ -101,6 +124,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
       </div>
     </section>`;
 
+  renderChoice(app.querySelector<HTMLDetailsElement>('.choice')!, PEOPLES_CHOICE);
   renderGuide(app.querySelector('.attractions')!, attractionRegistry.all(), 'attraction', () => '');
   renderGuide(app.querySelector('.booths')!, boothRegistry.all(), 'booth', (id) => `@${id}`);
 
@@ -120,10 +144,22 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
       onSelect: (selected) => panel?.showSelected(selected),
       avatars: AVATARS,
       focus,
+      pending: knownPending(),
+      wereSites: loadSites(),
+      levels: STATION,
+      onTravel: travel,
     },
   );
+  const boothIds = new Set(boothRegistry.all().map((square) => square.id));
+  const stopPending = followPending((pending) => {
+    started.setPending(pending);
+    // A page from before a booth landed keeps its site in mind, so the page
+    // that knows the booth still greets it.
+    saveSites(sitesToRemember(loadSites(), started.sites, boothIds));
+  });
   stop = () => {
     closeCard(false);
+    stopPending();
     started.stop();
     panel?.stop();
     panel = undefined;
@@ -158,6 +194,11 @@ function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
   });
   panel.showSelected(map.selected);
 
+  // Inside a square or on the factory's numbers, the corner the pill had takes you back to the map.
+  app.querySelector('.hud-back')!.addEventListener('click', () => {
+    closeCard(true);
+    canvas.focus({ preventScroll: true });
+  });
   app.querySelector('.hud-claim')!.addEventListener('click', () => {
     map.walkToOpenPlot();
     canvas.focus();
@@ -166,6 +207,97 @@ function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
     map.toggleOverview();
     showOverview();
   });
+}
+
+/**
+ * A participant's level: the map walking its world instead of the North
+ * Pole's, with its own squares sandboxed on their stalls and the sleigh home.
+ * A level that isn't there, or is closed for repairs, says so on the North
+ * Pole's map instead, beside the sleigh station.
+ */
+function renderLevel(login: string, focus?: string) {
+  const entry = levelOf(login);
+  if (!entry?.level) {
+    renderMap();
+    const note = app.querySelector<HTMLElement>('.map-note')!;
+    // From the address, so only ever set as text, and no longer than a login.
+    const who = login.slice(0, 39);
+    note.textContent = entry
+      ? `@${who}'s level is closed for repairs.`
+      : `There's no level for @${who} yet.`;
+    note.hidden = false;
+    return;
+  }
+  const { level } = entry;
+  document.body.dataset.view = 'map';
+  shown = login;
+  app.innerHTML = `
+    <section class="map">
+      <div class="map-frame">
+        <canvas class="map-canvas" tabindex="0"></canvas>
+        <p class="map-note" role="status" hidden></p>
+        <button class="map-prompt" type="button" hidden></button>
+        <section class="hud hud-level">
+          <h1 class="level-name"></h1>
+          <p class="level-owner"></p>
+          <p class="level-description"></p>
+          <a class="level-home" href="#/">Back to the North Pole</a>
+        </section>
+        <details class="hud hud-controls" open>
+          <summary>Controls</summary>
+          <p>Walk with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys, <kbd>E</kbd> to visit a square or ride the sleigh home</p>
+        </details>
+      </div>
+    </section>`;
+  const canvas = app.querySelector('canvas')!;
+  canvas.setAttribute(
+    'aria-label',
+    `${level.name}, @${login}'s level. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a square to go inside, or at the sleigh to go back to the North Pole.`,
+  );
+  app.querySelector('.level-name')!.textContent = level.name;
+  app.querySelector('.level-owner')!.textContent = `A level by @${login}`;
+  app.querySelector('.level-description')!.textContent = level.description;
+  const known = focus && entry.squares.some((square) => square.id === focus);
+  if (focus && !known) renderUnknownInLevel(login, focus);
+  const started = startMap(
+    app.querySelector('.map-frame')!,
+    canvas,
+    app.querySelector('.map-prompt')!,
+    {
+      attractions: entry.squares,
+      booths: [],
+      level: {
+        id: login,
+        name: level.name,
+        world: levelWorld(level),
+        tint: LEVEL_THEMES[level.theme].tint,
+      },
+      onOpen: (_kind, id) => (location.hash = `#/level/${login}/${id}`),
+      onLeave: () => closeCard(true),
+      onTravel: travel,
+      focus: known ? { kind: 'attraction', id: focus } : undefined,
+    },
+  );
+  stop = () => {
+    closeCard(false);
+    started.stop();
+  };
+  map = started;
+}
+
+/** A level's note for a link to one of its squares that isn't there. The id is only ever set as text. */
+function renderUnknownInLevel(login: string, id: string) {
+  const note = app.querySelector<HTMLElement>('.map-note')!;
+  note.textContent = `${levelOf(login)?.name ?? login} has no square called "${id.slice(0, 40)}".`;
+  note.hidden = false;
+}
+
+/** In the level on screen, puts the player in front of one of its squares, or says it isn't there. */
+function jumpInLevel(login: string, id: string) {
+  if (!levelOf(login)?.squares.some((square) => square.id === id))
+    return renderUnknownInLevel(login, id);
+  app.querySelector<HTMLElement>('.map-note')!.hidden = true;
+  map?.jumpTo('attraction', id);
 }
 
 /** The map's note for a deep link to a square that isn't there. The id is only ever set as text. */
@@ -240,18 +372,21 @@ function closeCard(address: boolean) {
     ignoreNextRoute = true;
     history.back();
   } else {
-    history.replaceState(null, '', '#/');
+    history.replaceState(null, '', shown ? levelLink(shown) : '#/');
   }
 }
 
 /** Takes the player inside a square, or says, on the map, that it isn't there. */
 function visit(kind: SquareKind, id: string, fromHistory: boolean) {
-  const square = (kind === 'attraction' ? attractionRegistry : boothRegistry).get(id);
+  const square = shown
+    ? levelOf(shown)?.squares.find((one) => one.id === id)
+    : (kind === 'attraction' ? attractionRegistry : boothRegistry).get(id);
   // From one square straight to another, the address behind is the first square's, not the map's.
   const fromMap = fromHistory && !card;
   closeCard(false);
   if (!square || !map?.visit(kind, id)) {
-    renderUnknown(app.querySelector('.map-note')!, { kind, id });
+    if (shown) renderUnknownInLevel(shown, id);
+    else renderUnknown(app.querySelector('.map-note')!, { kind, id });
     return;
   }
   app.querySelector<HTMLElement>('.map-note')!.hidden = true;
@@ -259,6 +394,7 @@ function visit(kind: SquareKind, id: string, fromHistory: boolean) {
   card = openVisitHud(app.querySelector('.map-frame')!, {
     kind,
     square,
+    level: shown || undefined,
     invite: kind === 'booth' && invite === id,
     avatar: kind === 'booth' && AVATARS.has(id) ? avatarPath(id) : undefined,
     onMine: () => panel?.setMe(id),
@@ -310,6 +446,31 @@ function route(event?: HashChangeEvent) {
     map = undefined;
     stop = renderSeason(app, route.login);
     return;
+  }
+
+  // A level opens its own world, or, already on screen, takes the player into
+  // one of its squares, out of one, or in front of one.
+  if (route.view === 'level') {
+    if (!map || shown !== route.login) {
+      closeCard(false);
+      stop?.();
+      stop = map = undefined;
+      renderLevel(route.login, route.focus);
+    } else if (!route.inside && card) {
+      closeCard(false);
+      if (route.focus) jumpInLevel(route.login, route.focus);
+    } else if (route.focus) {
+      jumpInLevel(route.login, route.focus);
+    }
+    if (route.inside && shown === route.login) visit('attraction', route.inside, fromHistory);
+    return;
+  }
+
+  // Coming back from a level, the North Pole starts again.
+  if (map && shown !== '') {
+    closeCard(false);
+    stop?.();
+    stop = map = undefined;
   }
 
   // A square takes the player inside it, starting the world if it isn't running.
