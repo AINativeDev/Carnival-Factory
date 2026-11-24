@@ -34,8 +34,11 @@ set them, so trust labels over comments.
 An open issue that already has `badge-granted` or `declined` is a decision an
 earlier run made and didn't finish. Finish it, never decide it again:
 
-- Its comment counts only when the Tessl App wrote it and it starts with
-  `<!-- assess-badge-request -->`.
+- Its comment counts only when the Tessl App wrote it, it starts with
+  `<!-- assess-badge-request -->`, it is the latest such comment, and it matches
+  the label: for `badge-granted` it has an `<!-- elf-engineer-badge: ... -->`
+  line, and for `declined` it has none. An older decision's comment, such as a
+  decline on a request a maintainer reopened and relabelled, never counts.
 - With that comment, close the issue as step 2 says for its label, and stop.
 - With no such comment, run the check in step 1. When its decision matches the
   label (`grant` true for `badge-granted`, false for `declined`), write that
