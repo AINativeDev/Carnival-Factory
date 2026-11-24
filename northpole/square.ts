@@ -25,15 +25,21 @@ export interface NorthPoleSquare {
 
 /**
  * The mouse or a finger over a square: `x` and `y` in the square's own
- * coordinates, from 0 to `size` with 0, 0 at its top-left, and whether a
- * button or finger is pressed. A square only ever gets these numbers, never
- * the page's own events.
+ * coordinates, from 0 to `size` with 0, 0 at its top-left, whether a button or
+ * finger is held now, and `presses`, how many times one went down on the square
+ * since its last frame. A tap can come and go between two frames, so a game
+ * counts `presses`, not changes in `down`. A square only ever gets these
+ * numbers, never the page's own events.
  */
 export interface SquarePointer {
   x: number;
   y: number;
   down: boolean;
+  presses: number;
 }
+
+/** The most presses one frame carries. Any more wait for the next frame. */
+export const MAX_PRESSES = 20;
 
 /** A GitHub login: letters, digits and single hyphens, up to 39 characters. */
 const LOGIN_PATTERN = /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/;

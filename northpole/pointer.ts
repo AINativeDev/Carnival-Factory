@@ -55,20 +55,23 @@ export function onRect(
  */
 export function rescale(pointer: SquarePointer, from: number, to: number): SquarePointer {
   const fit = (value: number) => Math.min(to, Math.max(0, (value * to) / from));
-  return { x: fit(pointer.x), y: fit(pointer.y), down: pointer.down };
+  return { ...pointer, x: fit(pointer.x), y: fit(pointer.y) };
 }
 
 /**
  * The pointer to send a square with its next frame, when `owed` is a press it
- * wasn't sent because it was still drawing: `pointer`, pressed, or the press
- * itself when the pointer has gone since. So a quick tap always reaches it.
+ * wasn't sent because it was still drawing, and `presses` the presses it
+ * hasn't been sent yet: `pointer`, pressed, or the press itself when the
+ * pointer has gone since, carrying those presses. So a quick tap always
+ * reaches it, and is counted.
  */
 export function withOwedPress(
   pointer: SquarePointer | undefined,
   owed: SquarePointer | undefined,
+  presses: number,
 ): SquarePointer | undefined {
-  if (!owed) return pointer;
-  return pointer ? { ...pointer, down: true } : owed;
+  const sent = owed ? (pointer ? { ...pointer, down: true } : owed) : pointer;
+  return sent && { ...sent, presses };
 }
 
 /** Whether a press at `from` let go at `to` is a click, not a drag. */

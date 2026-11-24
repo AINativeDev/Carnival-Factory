@@ -71,11 +71,17 @@ describe('onRect', () => {
 
 describe('rescale', () => {
   it('scales to the size the square draws at, and stays within it', () => {
-    expect(rescale({ x: 50, y: 100, down: true }, 100, 64)).toEqual({ x: 32, y: 64, down: true });
-    expect(rescale({ x: 100.4, y: -0.1, down: false }, 100.4, 100)).toEqual({
+    expect(rescale({ x: 50, y: 100, down: true, presses: 2 }, 100, 64)).toEqual({
+      x: 32,
+      y: 64,
+      down: true,
+      presses: 2,
+    });
+    expect(rescale({ x: 100.4, y: -0.1, down: false, presses: 0 }, 100.4, 100)).toEqual({
       x: 100,
       y: 0,
       down: false,
+      presses: 0,
     });
   });
 });
@@ -88,22 +94,38 @@ describe('isTap', () => {
 });
 
 describe('withOwedPress', () => {
-  const tap = { x: 10, y: 20, down: true };
+  const tap = { x: 10, y: 20, down: true, presses: 1 };
 
   it('sends the pointer as it is when no press is owed', () => {
-    expect(withOwedPress({ x: 1, y: 2, down: false }, undefined)).toEqual({
+    expect(withOwedPress({ x: 1, y: 2, down: false, presses: 0 }, undefined, 0)).toEqual({
       x: 1,
       y: 2,
       down: false,
+      presses: 0,
     });
-    expect(withOwedPress(undefined, undefined)).toBeUndefined();
+    expect(withOwedPress(undefined, undefined, 0)).toBeUndefined();
   });
 
   it('keeps a press the square missed, where the pointer is now', () => {
-    expect(withOwedPress({ x: 1, y: 2, down: false }, tap)).toEqual({ x: 1, y: 2, down: true });
+    expect(withOwedPress({ x: 1, y: 2, down: false, presses: 0 }, tap, 1)).toEqual({
+      x: 1,
+      y: 2,
+      down: true,
+      presses: 1,
+    });
   });
 
   it('sends the press itself when the pointer has gone since', () => {
-    expect(withOwedPress(undefined, tap)).toEqual(tap);
+    expect(withOwedPress(undefined, tap, 1)).toEqual(tap);
+  });
+
+  it('counts every press made since the last frame, not just the latest', () => {
+    expect(withOwedPress(undefined, tap, 3)).toEqual({ ...tap, presses: 3 });
+    expect(withOwedPress({ x: 1, y: 2, down: true, presses: 1 }, tap, 4)).toEqual({
+      x: 1,
+      y: 2,
+      down: true,
+      presses: 4,
+    });
   });
 });

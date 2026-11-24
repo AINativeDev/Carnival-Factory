@@ -54,7 +54,7 @@ describe('drawSquare', () => {
   it('passes the square its pointer, and undefined without one', () => {
     const seen: unknown[] = [];
     const square = booth((_ctx, _size, _time, pointer) => seen.push(pointer));
-    const pointer = { x: 4, y: 5, down: true };
+    const pointer = { x: 4, y: 5, down: true, presses: 1 };
     drawSquare(recordingContext().ctx, scratchCanvas().canvas, square, 0, 0, 10, 0, pointer);
     drawSquare(recordingContext().ctx, scratchCanvas().canvas, square, 0, 0, 10, 0);
     expect(seen).toEqual([pointer, undefined]);

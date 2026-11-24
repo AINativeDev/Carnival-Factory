@@ -187,8 +187,8 @@ const PRESS_SHOWN = 150;
 
 /**
  * Follows the mouse or a finger over `element`: where it is, in CSS pixels
- * from the element's top-left, whether it's pressed, and whether the last
- * press was a click or a drag. A quick tap stays pressed for `PRESS_SHOWN`, and
+ * from the element's top-left, whether it's pressed, how many presses began
+ * since the last frame, and whether the last press was a click or a drag. A quick tap stays pressed for `PRESS_SHOWN`, and
  * a finger lifted off stays there as long, so a square asked for its next frame
  * still sees it.
  */
@@ -200,6 +200,8 @@ function trackPointer(element: HTMLElement) {
   /** Whether the press has moved too far to be a click, at any point since it began. */
   let dragged = false;
   let goneAt = Infinity;
+  /** Presses begun since `now` last took them. */
+  let presses = 0;
   const place = (event: PointerEvent): Tile => {
     const box = element.getBoundingClientRect();
     return { x: event.clientX - box.left, y: event.clientY - box.top };
@@ -215,6 +217,7 @@ function trackPointer(element: HTMLElement) {
     at = pressedFrom = place(event);
     held = true;
     dragged = false;
+    presses += 1;
     pressedAt = performance.now();
     goneAt = Infinity;
   };
@@ -235,11 +238,17 @@ function trackPointer(element: HTMLElement) {
   ] as const;
   for (const [name, listener] of events) element.addEventListener(name, listener);
   return {
-    /** Where the pointer is now, and whether it's pressed, or undefined when it's off the element. */
-    now(): { x: number; y: number; down: boolean } | undefined {
+    /**
+     * Where the pointer is now, whether it's pressed and the presses begun
+     * since the last call, or undefined when it's off the element. Call it
+     * once a frame.
+     */
+    now(): { x: number; y: number; down: boolean; presses: number } | undefined {
       const time = performance.now();
+      const fresh = presses;
+      presses = 0;
       if (!at || time > goneAt) return undefined;
-      return { x: at.x, y: at.y, down: held || time - pressedAt < PRESS_SHOWN };
+      return { x: at.x, y: at.y, down: held || time - pressedAt < PRESS_SHOWN, presses: fresh };
     },
     /** Whether a click at `point` ended a press that barely moved, so it opens what it's on. */
     tapped(point: Tile) {
@@ -669,7 +678,7 @@ export function startMap(
         0,
         size,
         time,
-        inside && { ...inside, down: pressed!.down },
+        inside && { ...inside, down: pressed!.down, presses: pressed!.presses },
       );
       ctx.restore();
     };
@@ -781,7 +790,7 @@ export function startMap(
       0,
       VISIT_SIZE,
       time,
-      onStage && { ...onStage, down: pressed!.down },
+      onStage && { ...onStage, down: pressed!.down, presses: pressed!.presses },
     );
     ctx.restore();
     drawRoomPerson(ctx, room, inside, PLAYER, insideFacing, moving, time);

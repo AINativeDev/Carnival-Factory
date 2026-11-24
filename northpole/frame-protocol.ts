@@ -4,7 +4,7 @@
  * trust, so nothing it sends is used before these checks pass.
  */
 
-import { isAttractionId, isBoothOwner, type SquarePointer } from './square';
+import { isAttractionId, isBoothOwner, MAX_PRESSES, type SquarePointer } from './square';
 
 export type SquareKind = 'booth' | 'attraction';
 
@@ -69,14 +69,16 @@ const within = (value: unknown, max: number): value is number =>
 
 /**
  * Checks a pointer for a square `size` across: `x` and `y` finite and within
- * `0..size`, and `down` a boolean. Anything else gives undefined. Only those
- * three numbers are kept, so nothing else the message carried reaches the square.
+ * `0..size`, `down` a boolean, and `presses` a whole number from 0 to
+ * `MAX_PRESSES`. Anything else gives undefined. Only those four fields are
+ * kept, so nothing else the message carried reaches the square.
  */
 export function readPointer(value: unknown, size: number): SquarePointer | undefined {
   if (typeof value !== 'object' || value === null) return undefined;
-  const { x, y, down } = value as Record<string, unknown>;
+  const { x, y, down, presses } = value as Record<string, unknown>;
   if (!within(x, size) || !within(y, size) || typeof down !== 'boolean') return undefined;
-  return { x, y, down };
+  if (!within(presses, MAX_PRESSES) || !Number.isInteger(presses)) return undefined;
+  return { x, y, down, presses };
 }
 
 /**

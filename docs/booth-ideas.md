@@ -93,3 +93,25 @@ someone else owns, though anything _in the spirit of_ one is fine.
 Open **Your booth** again and describe what should be different: "Add a third
 penguin", "Make it night time", "Give the snowman a scarf". Your latest request
 is the one that counts.
+
+## Games
+
+A booth can be a little game. Inside the booth the drawing fills the back
+wall, and it knows where the mouse or a finger is and every tap on it, so
+people can play right there. Keep a round short, and show the score in the
+scene.
+
+- **Snap against the elves.** Cards flip onto a pile; tap when two match before
+  the elf across the table slaps it first.
+- **Catch the snowflakes.** Move a mitten or a mug left and right to catch
+  flakes falling at different speeds.
+- **Ring the bells in order.** Bells light up in a tune, then you tap them back
+  in the same order, one note longer each round.
+- **Feed the reindeer.** Tap a carrot to toss it to whichever reindeer pokes its
+  head out of the stable.
+- **Whack-a-snowman.** Snowmen pop up from drifts; tap one to send its hat
+  flying before it ducks down again.
+
+A game counts every tap, even two quick ones between frames, and its score
+lasts for the visit: it starts again next time, since a booth can't store
+anything.
