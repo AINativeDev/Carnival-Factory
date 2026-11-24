@@ -208,7 +208,7 @@ describe('shapeHistory', () => {
     );
     expect(history.credits).toEqual({
       'booth/ana': { maker: 'Ana', improvers: ['maintainer', 'bob'] },
-      'attraction/ferris-wheel': { maker: 'maintainer', improvers: [] },
+      'attraction/ferris-wheel': { improvers: ['maintainer'] },
     });
   });
 
@@ -239,16 +239,31 @@ describe('creditsOf', () => {
 
   it('orders people by when their change first merged, and names each once', () => {
     expect(
-      creditsOf([
+      creditsOf('attraction/ferris-wheel', [
         entry('bob', [{ state: 'merged', mergedAt: '2026-11-03T00:00:00Z' }]),
         entry('ana', [{ state: 'merged', mergedAt: '2026-11-02T00:00:00Z' }]),
         entry('Bob', [{ state: 'merged', mergedAt: '2026-11-05T00:00:00Z' }]),
         entry('ANA', [{ state: 'merged', mergedAt: '2026-11-04T00:00:00Z' }]),
       ]),
-    ).toEqual({ maker: 'ana', improvers: ['bob'] });
+    ).toEqual({ improvers: ['ana', 'bob'] });
   });
 
-  it('credits nobody for requests that never merged', () => {
-    expect(creditsOf([entry('ana', [{ state: 'open' }]), entry('bob', [])])).toBeUndefined();
+  it("makes a booth's owner its maker, even when someone else's change merged first", () => {
+    const merged = (author: string, day: number) =>
+      entry(author, [{ state: 'merged', mergedAt: `2026-11-0${day}T00:00:00Z` }]);
+    expect(creditsOf('booth/ana', [merged('maintainer', 1), merged('Ana', 2)])).toEqual({
+      maker: 'Ana',
+      improvers: ['maintainer'],
+    });
+    expect(creditsOf('booth/ana', [merged('maintainer', 1)])).toEqual({
+      maker: 'ana',
+      improvers: ['maintainer'],
+    });
+  });
+
+  it('credits nobody for requests that never merged, but a booth still has its owner', () => {
+    const none = [entry('ana', [{ state: 'open' }]), entry('bob', [])];
+    expect(creditsOf('attraction/ferris-wheel', none)).toBeUndefined();
+    expect(creditsOf('booth/bob', none)).toEqual({ maker: 'bob', improvers: [] });
   });
 });

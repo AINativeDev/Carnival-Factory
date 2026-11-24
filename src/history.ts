@@ -45,7 +45,8 @@ const listed = <T, S>(items: T[], and: S, comma: S): (T | S)[] =>
 
 /**
  * Fills `line` with a square's credits, "Made by @a. Improved by @b and @c.",
- * each login set as text and linked to its GitHub profile.
+ * or only who improved an attraction, each login set as text and linked to
+ * its GitHub profile.
  */
 export function renderCredits(line: HTMLElement, credits: Credits) {
   const person = (login: string): Node => {
@@ -59,9 +60,11 @@ export function renderCredits(line: HTMLElement, credits: Credits) {
     a.textContent = `@${login}`;
     return a;
   };
-  const parts: (Node | string)[] = ['Made by ', person(credits.maker), '.'];
+  const parts: (Node | string)[] = [];
+  if (credits.maker) parts.push('Made by ', person(credits.maker), '.');
   if (credits.improvers.length) {
-    parts.push(' Improved by ', ...listed(credits.improvers.map(person), ' and ', ', '), '.');
+    if (parts.length) parts.push(' ');
+    parts.push('Improved by ', ...listed(credits.improvers.map(person), ' and ', ', '), '.');
   }
   line.replaceChildren(...parts);
 }

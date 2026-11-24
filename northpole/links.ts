@@ -22,7 +22,10 @@ const MAX_REMIX_NAME = 40;
  * capped and only ever goes in encoded.
  */
 export function remixUrl(login: string, name: string): string {
-  const chars = [...name.replace(/\s+/g, ' ').trim()];
+  // A lone surrogate would make encodeURIComponent throw, so it becomes U+FFFD.
+  const chars = [...name.replace(/\s+/g, ' ').trim()].map((char) =>
+    /^[\uD800-\uDFFF]$/.test(char) ? '\uFFFD' : char,
+  );
   const short =
     chars.length > MAX_REMIX_NAME
       ? `${chars.slice(0, MAX_REMIX_NAME - 1).join('')}…`

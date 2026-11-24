@@ -27,13 +27,13 @@ describe('creditsFor', () => {
     squares: {},
     credits: {
       'booth/ana': { maker: 'ana', improvers: ['bob'] },
-      'attraction/ferris-wheel': { maker: 'jedi4ever', improvers: [] },
+      'attraction/ferris-wheel': { improvers: ['jedi4ever'] },
     },
   };
 
   it("reads a square's credits from the build's history", () => {
     expect(creditsFor(data, 'booth', 'Ana')).toEqual({ maker: 'ana', improvers: ['bob'] });
-    expect(creditsFor(data, 'attraction', 'ferris-wheel')?.maker).toBe('jedi4ever');
+    expect(creditsFor(data, 'attraction', 'ferris-wheel')).toEqual({ improvers: ['jedi4ever'] });
   });
 
   it('credits a booth to its owner, and an attraction to nobody, without any', () => {

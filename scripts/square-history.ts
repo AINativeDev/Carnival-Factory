@@ -48,7 +48,8 @@ export interface HistoryEntry {
 
 /** Who made a square, and who improved it since, as GitHub shows their logins. */
 export interface Credits {
-  maker: string;
+  /** A booth's owner. An attraction has none on record. */
+  maker?: string;
   /** In the order their changes merged, each once. */
   improvers: string[];
 }
@@ -141,11 +142,12 @@ export function cap(text: string, max = MAX_TITLE): string {
 
 /**
  * A square's credits, from its history: the authors of the requests whose
- * pull requests merged into its folder. The first to merge made it, and the
- * others improved it, each once, in the order they merged. Nothing when the
- * factory never built into it.
+ * pull requests merged into its folder, each once, in the order they merged.
+ * The history shows who changed a square, not who made it, so only a booth
+ * has a maker: its owner, whose login names its folder. Everyone else
+ * improved it. Nothing for an attraction the factory never built into.
  */
-export function creditsOf(entries: HistoryEntry[]): Credits | undefined {
+export function creditsOf(square: string, entries: HistoryEntry[]): Credits | undefined {
   const merged = entries
     .flatMap((entry) => {
       const times = entry.pulls.flatMap((pull) =>
@@ -158,8 +160,10 @@ export function creditsOf(entries: HistoryEntry[]): Credits | undefined {
   for (const { author } of merged) {
     if (!people.some((login) => login.toLowerCase() === author.toLowerCase())) people.push(author);
   }
-  const [maker, ...improvers] = people;
-  return maker ? { maker, improvers } : undefined;
+  const [kind, id] = square.split('/');
+  if (kind !== 'booth') return people.length ? { improvers: people } : undefined;
+  const maker = people.find((login) => login.toLowerCase() === id) ?? id;
+  return { maker, improvers: people.filter((login) => login !== maker) };
 }
 
 export interface ShapeOptions {
@@ -215,7 +219,7 @@ export function shapeHistory(options: ShapeOptions): SquareHistory {
   }
   const credits: Record<string, Credits> = {};
   for (const [square, entries] of Object.entries(squares)) {
-    const credit = creditsOf(entries);
+    const credit = creditsOf(square, entries);
     if (credit) credits[square] = credit;
   }
   return { builtAt: options.builtAt, squares, credits };

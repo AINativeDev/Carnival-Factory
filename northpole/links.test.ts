@@ -45,6 +45,11 @@ describe('remixUrl', () => {
     expect(what).toContain('…,');
     expect(url.hash).toBe('');
   });
+
+  it('survives a name with a lone surrogate', () => {
+    const url = new URL(remixUrl('ana', 'Pond \uD800 \uDC00'));
+    expect(url.searchParams.get('what')).toMatch(/^Start from @ana's Pond \uFFFD \uFFFD, /);
+  });
 });
 
 describe('profileUrl', () => {
