@@ -67,6 +67,8 @@ attractions/
     README.md
 plugins/north-pole/         the factory's own skills: assessing booth requests,
                             and the house-rules review lens
+plugins/north-pole-gifts/   the gift shelf: small factory loops anyone can install
+                            on their own repository, shown at the Gift shop
 scripts/
   ownership.ts              the booth ownership rule (plain functions)
   check-booth-ownership.ts  the CI check that enforces it
