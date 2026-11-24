@@ -990,11 +990,6 @@ function drawStall(
     }
     case 'kiosk': {
       prism(ctx, ground, wall, undefined, look.trim, colors.cocoa);
-      ctx.fillStyle = colors.cocoa;
-      band(ctx, face, 0.03, 0.97, 0, STALL.wall);
-      ctx.fill();
-      stallFront(ctx, face, square, paint);
-      stallCounter(ctx, plot, face);
       const eaves = stallOutline('kiosk').map((at) =>
         plotPoint(face, deep, {
           along: (at.along - 0.5) * 1.15 + 0.5,
@@ -1008,6 +1003,12 @@ function drawStall(
       ctx.beginPath();
       ctx.arc(peak.x, peak.y - 4, 4, 0, Math.PI * 2);
       ctx.fill();
+      // The front on a board after the roof, so the name board stands in front of the eaves, as on the tent.
+      ctx.fillStyle = colors.cocoa;
+      band(ctx, face, 0.03, 0.97, 0, STALL.wall);
+      ctx.fill();
+      stallFront(ctx, face, square, paint);
+      stallCounter(ctx, plot, face);
       break;
     }
   }
