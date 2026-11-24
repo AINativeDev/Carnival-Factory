@@ -17,6 +17,9 @@ that repeats every 8 seconds:
 - **Snow** falls gently over everything. The parcels are wrapped in violet paper
   with gold ribbon. Nothing flashes.
 
+On the map, the depot's stall is a long, low shed with a flat gold roof
+(`stall: { shape: 'shed', roof: 'gold' }` in `booth.ts`).
+
 Everything is drawn from `time`. The timing (`waveAngle`, `stackAt`, `elfWalk`,
 `handoffAt`, `headLift`, `earFlick`, `lanternAt`, `flake`) is plain functions in
 `booth.ts`, tested in `booth.test.ts`.

@@ -631,6 +631,7 @@ const booth: NorthPoleSquare = {
   name: 'North Pole Parcel Depot',
   description:
     'Santa waves at the gate while elves load parcels onto a sleigh and the reindeer graze.',
+  stall: { shape: 'shed', roof: 'gold' },
   draw(ctx, size, time) {
     scene(ctx, size, time, paint);
   },
