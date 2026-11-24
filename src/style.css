@@ -673,7 +673,9 @@ kbd {
 }
 
 .visit .visit-title:focus,
-.visit .visit-title:focus-visible {
+.visit .visit-title:focus-visible,
+.factory .visit-title:focus,
+.factory .visit-title:focus-visible {
   outline: none;
 }
 
