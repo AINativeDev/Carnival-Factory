@@ -19,7 +19,8 @@ shares one repo and one factory.
    `src/plots/<your GitHub login>/`.
 2. **Hand it to the factory.** A maintainer adds the `tessl` label. An agent
    picks the issue up, builds your plot on a `tessl/` branch, and opens a pull
-   request. If it asks a question on the issue, reply there.
+   request. If it asks a question on the issue, reply there, and a maintainer
+   passes your answer on: only maintainers' comments restart the factory.
 3. **Preview it.** Check out the pull request's branch, run `npm ci` and
    `npm run dev`, and open http://localhost:5173/#/plot/<your-login>. Once it
    merges, it's on the live map at the same `#/plot/<your-login>` link.
@@ -66,8 +67,17 @@ set them once in **Settings → Branches** with a protection rule for `main`:
   access could still merge an approved pull request. Merging is a push to
   `main`, so this is what keeps the merge itself with the maintainers.
 
-To add a maintainer, add them to `.github/CODEOWNERS` and to `MAINTAINERS` in
-`scripts/ownership.ts`. To switch a misbehaving plot off, add its owner's
+Only maintainers can start or steer the factory: the `tessl.json` triggers
+that start or steer work (adding `tessl`, commenting on a `tessl` issue, or
+reviewing or commenting on a factory pull request) are filtered on
+`event.sender.id`. The Tessl Reviewer's reviews still reach the shepherd.
+Triggers that only stop work, such as closing an issue, removing `tessl` or
+closing a pull request, aren't filtered, so a participant can still withdraw
+their own request.
+
+To add a maintainer, add them to `.github/CODEOWNERS`, to `MAINTAINERS` in
+`scripts/ownership.ts`, and their numeric GitHub user id
+(`gh api users/<login> -q .id`) to each `event.sender.id` list in `tessl.json`. To switch a misbehaving plot off, add its owner's
 login to `src/northpole/disabled.json`: it shows "Closed for repairs" and its
 `draw` never runs. Its code is still loaded, so for code that misbehaves as
 soon as it loads, remove the plot's folder instead. To publish the map, go to **Settings → Pages** and set
