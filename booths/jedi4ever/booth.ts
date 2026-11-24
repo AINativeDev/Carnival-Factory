@@ -533,6 +533,7 @@ export function onGlobe(x: number, y: number): boolean {
 export function globeFlake(index: number, since: number): { x: number; y: number } {
   const wild = swirlOf(since);
   const rest = { x: ((index * 0.37) % 1) * 1.4 - 0.7, y: 0.78 - ((index * 0.13) % 0.12) };
+  if (wild === 0) return rest;
   const angle = since / (260 + index * 20) + index * 2.1;
   const radius = (0.25 + ((index * 0.17) % 0.55)) * wild;
   const lift = wild * (0.1 + ((index * 0.29) % 0.7));
