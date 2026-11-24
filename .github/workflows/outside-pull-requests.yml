@@ -1,11 +1,14 @@
 name: Outside pull requests
 
 # Changes reach the map through issues and the factory, never through a pull
-# request from outside. This closes a pull request whose author is not a
-# collaborator, with a pointer to the issue forms. It runs on
-# pull_request_target and never checks out or runs the pull request's code: it
-# only reads the event and calls the API. The factory's own pull requests, from
-# tessl/ branches of this repository, are left alone.
+# request from outside. This closes a pull request whose author cannot write to
+# this repository, with a pointer to the issue forms. The event's
+# author_association hides private organization membership, so an author it
+# doesn't recognise is checked again through the API before anything is
+# closed; if that check fails, the job fails and the pull request stays open.
+# It runs on pull_request_target and never checks out or runs the pull
+# request's code: it only reads the event and calls the API. The factory's own
+# pull requests, from tessl/ branches of this repository, are left alone.
 on:
   pull_request_target:
     types: [opened, reopened]
@@ -28,5 +31,11 @@ jobs:
           GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           SERVER_URL: ${{ github.server_url }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
+          permission=$(gh api "repos/$GH_REPO/collaborators/$AUTHOR/permission" --jq .permission)
+          if [ "$permission" = admin ] || [ "$permission" = write ]; then
+            echo "$AUTHOR has $permission access, so this pull request stays open."
+            exit 0
+          fi
           gh pr close "$PR_NUMBER" --comment "Thanks for wanting to build on the North Pole! Changes here come from issues, not pull requests: open one at $SERVER_URL/$GH_REPO/issues/new/choose and a maintainer hands it to the factory, which builds your plot and opens the pull request for you. This one is closed."
