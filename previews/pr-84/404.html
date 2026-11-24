@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>North Pole Carnival</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #0f1b33;
+        color: #eef5fb;
+        font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+        text-align: center;
+      }
+      main {
+        max-width: 30rem;
+        padding: 24px;
+      }
+      h1 {
+        color: #f4c542;
+        font-size: 28px;
+      }
+      p {
+        color: #a9bcd6;
+        line-height: 1.5;
+      }
+      a {
+        color: #f4c542;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1 id="title">This page isn't here</h1>
+      <p id="text">It may have moved. The North Pole is this way:</p>
+      <p><a id="home" href="/">Go to the map</a></p>
+    </main>
+    <script>
+      // GitHub Pages serves this page for any address that doesn't exist yet.
+      // A pull request's preview only appears once its build and checks pass,
+      // so its link can be opened a few minutes too early: wait for it here.
+      const path = location.pathname;
+      const preview = path.match(/^(.*\/)previews\/pr-(\d+)\//);
+      const root = preview ? preview[1] : '/' + (path.split('/')[1] || '') + '/';
+      document.getElementById('home').href = root + location.hash;
+      if (preview) {
+        const folder = `${root}previews/pr-${preview[2]}/`;
+        document.getElementById('title').textContent = 'This preview is still being built';
+        document.getElementById('text').textContent =
+          `Pull request ${preview[2]} is being built and checked. This page checks every 30 seconds and opens the preview as soon as it's ready.`;
+        document.getElementById('home').textContent = 'Go to the live map meanwhile';
+        const check = async () => {
+          try {
+            const response = await fetch(`${folder}preview-sha.txt?t=${Date.now()}`, {
+              cache: 'no-store',
+            });
+            // The same address with only the hash would load nothing new,
+            // so ask for it with a query that changes.
+            if (response.ok) location.replace(`${folder}?ready=${Date.now()}${location.hash}`);
+          } catch {
+            // Not there yet: try again on the next check.
+          }
+        };
+        setInterval(check, 30000);
+      }
+    </script>
+  </body>
+</html>
