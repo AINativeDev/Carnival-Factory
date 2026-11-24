@@ -1,95 +1,199 @@
 import { describe, expect, it } from 'vitest';
-import { GUTTER, layoutMap, MIDWAY, SQUARE_SIZE, sidesFor, slotAt, type MapLayout } from './layout';
-
-const step = SQUARE_SIZE + GUTTER;
-/** Room for two squares on each side of the midway. */
-const wide = 2 * GUTTER + 4 * step + MIDWAY;
+import {
+  distanceToBox,
+  distanceToPath,
+  footprint,
+  hash,
+  insideSlot,
+  layoutMap,
+  OPEN_SPOTS,
+  placeScenery,
+  SQUARE_SIZE,
+  slotAt,
+  type Box,
+  type MapLayout,
+} from './layout';
 
 const of = (layout: MapLayout, kind: string) =>
-  layout.slots.filter((slot) => slot.kind === kind).map(({ index, x, y }) => ({ index, x, y }));
+  layout.slots
+    .filter((slot) => slot.kind === kind)
+    .map(({ index, x, y, angle }) => ({ index, x, y, angle }));
 
-describe('sidesFor', () => {
-  it('fits as many squares a side as the width allows, and always one', () => {
-    expect(sidesFor(wide)).toBe(2);
-    expect(sidesFor(wide - 1)).toBe(1);
-    expect(sidesFor(0)).toBe(1);
+const overlap = (a: Box, b: Box) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+/** The corners and edge midpoints of a box, to check it against a path. */
+const edges = (box: Box) =>
+  [0, 0.5, 1].flatMap((fx) =>
+    [0, 0.25, 0.5, 0.75, 1].map((fy) => ({
+      x: box.x + fx * box.width,
+      y: box.y + fy * box.height,
+    })),
+  );
+
+describe('hash', () => {
+  it('gives the same number for the same values, between 0 and 1', () => {
+    expect(hash(1, 2, 3)).toBe(hash(1, 2, 3));
+    expect(hash(1, 2, 3)).not.toBe(hash(3, 2, 1));
+    for (let i = 0; i < 100; i++) {
+      expect(hash(i)).toBeGreaterThanOrEqual(0);
+      expect(hash(i)).toBeLessThan(1);
+    }
   });
 });
 
 describe('layoutMap', () => {
-  it('puts the attractions in pairs on either edge of the midway', () => {
-    const layout = layoutMap(3, 0, wide);
-    const midway = GUTTER + 2 * step;
-    expect(layout.midway).toEqual({ x: midway, width: MIDWAY });
-    expect(of(layout, 'attraction')).toEqual([
-      { index: 0, x: midway - step, y: GUTTER },
-      { index: 1, x: midway + MIDWAY + GUTTER, y: GUTTER },
-      { index: 2, x: midway - step, y: GUTTER + step },
-    ]);
-    expect(layout.width).toBe(wide);
+  it('makes the same town from the same squares', () => {
+    expect(layoutMap(8, 20)).toEqual(layoutMap(8, 20));
   });
 
-  it('lines booths up beside the attractions, nearest the midway first', () => {
-    const layout = layoutMap(3, 3, wide);
-    const midway = GUTTER + 2 * step;
-    expect(of(layout, 'booth')).toEqual([
-      { index: 0, x: midway - 2 * step, y: GUTTER },
-      { index: 1, x: midway + MIDWAY + GUTTER + step, y: GUTTER },
-      // The square the odd attraction left free, beside the midway.
-      { index: 2, x: midway + MIDWAY + GUTTER, y: GUTTER + step },
-    ]);
+  it('gathers the attractions round the town square', () => {
+    const layout = layoutMap(8, 5);
+    for (const { x, y } of of(layout, 'attraction')) {
+      const distance = Math.hypot(x - layout.plaza.x, y - layout.plaza.y);
+      expect(distance).toBeGreaterThan(layout.plaza.radius);
+      expect(distance).toBeLessThan(layout.plaza.radius + 200);
+    }
   });
 
-  it('carries booths on below the attractions', () => {
-    const layout = layoutMap(2, 3, wide);
-    expect(of(layout, 'booth').map(({ y }) => y)).toEqual([GUTTER, GUTTER, GUTTER + step]);
-    expect(layout.height).toBe(GUTTER + 2 * step);
+  it('turns squares a few degrees, not all the same way', () => {
+    const angles = layoutMap(8, 20).slots.map(({ angle }) => angle);
+    for (const angle of angles) expect(Math.abs(angle)).toBeLessThanOrEqual(0.1);
+    expect(new Set(angles.map((angle) => Math.sign(angle))).size).toBeGreaterThan(1);
   });
 
-  it('leaves the rest of the last row open, and always at least one spot', () => {
-    expect(of(layoutMap(2, 1, wide), 'open')).toHaveLength(1);
-    expect(of(layoutMap(2, 2, wide), 'open')).toHaveLength(4);
-    expect(of(layoutMap(0, 0, wide), 'open')).toHaveLength(4);
+  it('sets booths along the lanes, not on the town square', () => {
+    const layout = layoutMap(8, 20);
+    const lanes = layout.paths.filter((path) => path.kind === 'lane');
+    expect(lanes.length).toBeGreaterThan(1);
+    for (const slot of layout.slots.filter(({ kind }) => kind !== 'attraction')) {
+      expect(Math.min(...lanes.map((lane) => distanceToPath(lane, slot)))).toBeLessThan(200);
+      expect(Math.hypot(slot.x, slot.y)).toBeGreaterThan(layout.plaza.radius + 300);
+    }
+  });
+
+  it('spaces squares unevenly along a lane, leaving gaps', () => {
+    const ys = of(layoutMap(8, 60), 'booth')
+      .filter((_, index) => index % 2 === 0)
+      .map(({ y }) => y);
+    const steps = new Set(ys.slice(1, 4).map((y, i) => Math.round(Math.abs(y - ys[i]))));
+    expect(steps.size).toBeGreaterThan(1);
+  });
+
+  it('keeps a few open spots waiting at the end of the lanes', () => {
+    for (const booths of [0, 1, 7, 40]) {
+      const open = of(layoutMap(8, booths), 'open');
+      expect(open.map(({ index }) => index)).toEqual([0, 1, 2].slice(0, OPEN_SPOTS));
+    }
   });
 
   it('never moves an attraction or an earlier booth when a booth is added', () => {
-    for (const width of [0, wide, 3 * wide]) {
-      for (let booths = 0; booths < 40; booths++) {
-        const before = layoutMap(7, booths, width);
-        const after = layoutMap(7, booths + 1, width);
+    for (const attractions of [0, 3, 8, 20]) {
+      for (let booths = 0; booths < 80; booths++) {
+        const before = layoutMap(attractions, booths);
+        const after = layoutMap(attractions, booths + 1);
         expect(of(after, 'attraction')).toEqual(of(before, 'attraction'));
         expect(of(after, 'booth').slice(0, booths)).toEqual(of(before, 'booth'));
+        // The new booth takes the first spot that was open.
+        expect(of(after, 'booth')[booths]).toEqual({ ...of(before, 'open')[0], index: booths });
       }
     }
   });
 
-  it('never puts two squares in the same place', () => {
-    const layout = layoutMap(8, 25, wide);
-    const places = layout.slots.map(({ x, y }) => `${x},${y}`);
-    expect(new Set(places).size).toBe(places.length);
-    for (const { x, y } of layout.slots) {
-      expect(x + SQUARE_SIZE).toBeLessThanOrEqual(layout.width - GUTTER);
-      expect(y + SQUARE_SIZE).toBeLessThanOrEqual(layout.height - GUTTER);
+  it('opens new lanes as the town grows', () => {
+    const lanes = (booths: number) =>
+      layoutMap(8, booths).paths.filter(({ kind }) => kind === 'lane');
+    expect(lanes(80).length).toBeGreaterThan(lanes(2).length);
+    expect(lanes(80).slice(0, lanes(2).length)).toEqual(lanes(2));
+  });
+
+  it('never puts a square or its sign on another square, a path or the town square', () => {
+    for (const [attractions, booths] of [
+      [8, 0],
+      [8, 30],
+      [3, 90],
+      [20, 60],
+    ]) {
+      const layout = layoutMap(attractions, booths);
+      const boxes = layout.slots.map(footprint);
+      boxes.forEach((box, i) => {
+        for (const other of boxes.slice(i + 1)) expect(overlap(box, other)).toBe(false);
+        expect(distanceToBox(box, layout.plaza)).toBeGreaterThan(layout.plaza.radius);
+        for (const path of layout.paths) {
+          for (const point of edges(box)) {
+            expect(distanceToPath(path, point)).toBeGreaterThan(path.width / 2);
+          }
+        }
+        expect(box.x).toBeGreaterThan(layout.bounds.x);
+        expect(box.y).toBeGreaterThan(layout.bounds.y);
+        expect(box.x + box.width).toBeLessThan(layout.bounds.x + layout.bounds.width);
+        expect(box.y + box.height).toBeLessThan(layout.bounds.y + layout.bounds.height);
+      });
     }
   });
 
-  it('keeps clear of the midway', () => {
-    const { slots, midway } = layoutMap(8, 25, wide);
-    for (const { x } of slots) {
-      expect(x + SQUARE_SIZE <= midway.x || x >= midway.x + midway.width).toBe(true);
-    }
+  it('runs the stream under the midway at the bridge', () => {
+    const layout = layoutMap(8, 10);
+    const [midway] = layout.paths;
+    const stream = layout.paths.find(({ kind }) => kind === 'stream')!;
+    expect(midway.kind).toBe('midway');
+    expect(distanceToPath(midway, layout.bridge)).toBeLessThan(1);
+    expect(distanceToPath(stream, layout.bridge)).toBeLessThan(stream.width);
   });
 });
 
 describe('slotAt', () => {
-  it('finds the square under a point, and nothing on the midway', () => {
-    const layout = layoutMap(2, 1, wide);
-    const [attraction] = layout.slots;
-    expect(slotAt(layout, attraction.x + 10, attraction.y + 10)).toMatchObject({
-      kind: 'attraction',
-      index: 0,
-    });
-    expect(slotAt(layout, layout.midway.x + 10, GUTTER + 10)).toBeUndefined();
-    expect(slotAt(layout, GUTTER / 2, GUTTER / 2)).toBeUndefined();
+  it('finds a turned square at its actual place and turn', () => {
+    const layout = layoutMap(8, 10);
+    const turned = layout.slots.find(({ angle }) => Math.abs(angle) > 0.05)!;
+    expect(slotAt(layout, turned.x, turned.y)).toBe(turned);
+
+    // A corner of the turned square, just inside it.
+    const [cos, sin] = [Math.cos(turned.angle), Math.sin(turned.angle)];
+    const near = SQUARE_SIZE / 2 - 2;
+    const corner = { x: turned.x + near * cos - near * sin, y: turned.y + near * sin + near * cos };
+    expect(slotAt(layout, corner.x, corner.y)).toBe(turned);
+
+    // The same corner of an unturned square is outside the turned one.
+    const far = { x: turned.x + near, y: turned.y - near };
+    expect(insideSlot({ ...turned, angle: 0 }, far.x, far.y)).toBe(true);
+    expect(insideSlot(turned, far.x, far.y)).toBe(false);
+  });
+
+  it('finds nothing on the town square or the midway', () => {
+    const layout = layoutMap(8, 10);
+    expect(slotAt(layout, 0, 0)).toBeUndefined();
+    for (const point of layout.paths[0].points)
+      expect(slotAt(layout, point.x, point.y)).toBeUndefined();
+  });
+
+  it('finds every square at its centre', () => {
+    const layout = layoutMap(8, 30);
+    for (const slot of layout.slots) expect(slotAt(layout, slot.x, slot.y)).toBe(slot);
+  });
+});
+
+describe('placeScenery', () => {
+  it('places the same scenery for the same town', () => {
+    expect(placeScenery(layoutMap(8, 12))).toEqual(placeScenery(layoutMap(8, 12)));
+  });
+
+  it('fills the town with trees, drifts, fences and lamps', () => {
+    const kinds = new Set(placeScenery(layoutMap(8, 12)).map(({ kind }) => kind));
+    expect([...kinds].sort()).toEqual(['drift', 'fence', 'lamp', 'tree']);
+  });
+
+  it('keeps scenery off the squares, their signs, the paths and the town square', () => {
+    const layout = layoutMap(8, 30);
+    const boxes = layout.slots.map(footprint);
+    for (const item of placeScenery(layout)) {
+      for (const box of boxes) expect(distanceToBox(box, item)).toBeGreaterThan(8);
+      expect(Math.hypot(item.x - layout.plaza.x, item.y - layout.plaza.y)).toBeGreaterThan(
+        layout.plaza.radius,
+      );
+      if (item.kind === 'lamp') continue;
+      for (const path of layout.paths)
+        expect(distanceToPath(path, item)).toBeGreaterThan(path.width / 2);
+    }
   });
 });

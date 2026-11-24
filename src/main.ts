@@ -32,13 +32,16 @@ function renderMap() {
   app.innerHTML = `
     <section class="map">
       <p class="map-help">
-        Welcome to the North Pole midway. The attractions down the middle are part of the
-        North Pole itself, and the booths beside them each belong to one person. Click any
-        square to see it up close. The open spots along the midway are waiting for a booth:
+        Welcome to the North Pole. The attractions round the town square are part of the
+        North Pole itself, and the booths along the lanes each belong to one person. Scroll,
+        swipe or drag to wander the town, and click any square to see it up close. The open
+        spots at the end of the lanes are waiting for a booth:
         <a href="${CLAIM_URL}" target="_blank" rel="noopener">claim your own</a>.
       </p>
       <div class="map-frame">
-        <canvas class="map-canvas" aria-label="The North Pole map. Click an attraction or a booth to preview it."></canvas>
+        <div class="map-town">
+          <canvas class="map-canvas" aria-label="The North Pole map. Click an attraction or a booth to preview it."></canvas>
+        </div>
       </div>
       <nav class="map-guide" aria-label="Attractions">
         <h2>Attractions</h2>
@@ -58,11 +61,16 @@ function renderMap() {
   );
   renderGuide(app.querySelector('.booths')!, boothRegistry.all(), 'booth', (id) => `@${id}`);
 
-  stop = startMap(app.querySelector('canvas')!, {
-    attractions: attractionRegistry.all(),
-    booths: boothRegistry.all(),
-    onOpen: (kind, id) => (location.hash = `#/${kind}/${id}`),
-  });
+  stop = startMap(
+    app.querySelector('.map-frame')!,
+    app.querySelector('.map-town')!,
+    app.querySelector('canvas')!,
+    {
+      attractions: attractionRegistry.all(),
+      booths: boothRegistry.all(),
+      onOpen: (kind, id) => (location.hash = `#/${kind}/${id}`),
+    },
+  );
 }
 
 function renderBooth(booth: NorthPoleSquare) {
