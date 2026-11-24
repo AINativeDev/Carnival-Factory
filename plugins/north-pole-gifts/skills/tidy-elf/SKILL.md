@@ -30,9 +30,13 @@ every link it gives still goes somewhere.
    each with a five minute limit. A command that starts a server counts as
    working once it's listening; stop it then. Note each one's exit code and the
    last lines of its output. A failing command is broken, unless its output
-   shows it is missing something a skipped or failed command before it would
-   have set up, such as a dependency, a built file or a tool: list that one as
-   unknown, with which earlier command it needed.
+   shows one of these, and then it is unknown, with why:
+   - it is missing something a skipped or failed command before it would have
+     set up, such as a dependency, a built file or a tool: name which earlier
+     command it needed;
+   - it failed reaching a registry or other server, with a timeout, a refused
+     or dropped connection, a DNS failure, or a 429 or 5xx status: that is the
+     network, not the README, so name the server and the error.
 4. **Collect the links**: Markdown links and bare URLs. For a relative link,
    check the file or heading exists in the repository. For a web link, make one
    `HEAD` request, then a `GET` if `HEAD` isn't allowed, following redirects.
