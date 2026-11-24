@@ -18,7 +18,7 @@
 
 <p align="center">
   <a href="https://ainativedev.github.io/Northpole-Carnival-Factory/">
-    <img alt="The North Pole Carnival map: a town square with a decorated tree, surrounded by a sleigh-ride coaster, a gingerbread fun house, a ferris wheel, a big top, a snowball toss and a hot cocoa stand, with a frozen stream and snowy pines" src="docs/north-pole.png" width="880" />
+    <img alt="The North Pole Carnival map at dusk, in isometric 3D: striped carnival tents round a decorated tree, wooden booth stalls with their owners' pennants, a ferris wheel, snowy log cabins, a frozen pond with skating elves, and plots marked For claim" src="docs/north-pole.png" width="880" />
   </a>
 </p>
 
