@@ -24,13 +24,15 @@ jobs:
         run: |
           since=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
           site=$(gh api "repos/$GH_REPO/pages" --jq .html_url 2>/dev/null || echo "")
+          # Titles come from participants' requests: strip Markdown and HTML, and
+          # keep @mentions from pinging anyone, before they go in our issue.
           # Search by merge date, every page, so every auto-merge in the window
           # is listed. GitHub's search stops at 1000 results: if there are
           # more, the digest says so and links the full search.
           query="repo:$GH_REPO is:pr is:merged label:auto-merged merged:>=$since"
           total=$(gh api -X GET search/issues -f q="$query" --jq .total_count)
           rows=$(gh api -X GET search/issues -f q="$query" -f per_page=100 --paginate \
-            --jq '.items[] | "- [#\(.number)](\(.html_url)) \(.title)"')
+            --jq '.items[] | "- [#\(.number)](\(.html_url)) \(.title | gsub("[\\[\\]()<>`*_#!|~{}\\\\]"; "") | gsub("@"; "(at)") | gsub("\\s+"; " ") | .[0:100])"')
           listed=$(printf '%s\n' "$rows" | grep -c . || true)
           if [ "$total" -gt "$listed" ]; then
             search_url="https://github.com/$GH_REPO/pulls?q=$(jq -rn --arg q "is:pr is:merged label:auto-merged merged:>=$since" '$q|@uri')"
