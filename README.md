@@ -23,7 +23,7 @@ starter repo for the "Build your own software factory with context" workshop.
 
 ## Build it together
 
-1. **Claim your booth.** Open **Issues → New issue → Claim your booth**, and say
+1. **Ask for your booth.** Open **Issues → New issue → Your booth**, and say
    what your square should show. Your booth lives in
    `booths/<your GitHub login>/`.
 2. **Let the factory assess it.** An agent reads your request first. If it's a
@@ -42,8 +42,10 @@ starter repo for the "Build your own software factory with context" workshop.
    map with you standing in front of your booth, lit up for a few seconds, and **Copy
    link**, which copies that link to send to anyone:
    `…/#/?booth=<your-login>`. An attraction's is `…/#/?attraction=<id>`.
-6. **Change it.** Open **Change your booth** for anything after that. Every
-   change goes through the same loop.
+6. **Change it.** Open **Your booth** again for anything after that: the same
+   form builds your booth if it's new and changes it if it's there. Your latest
+   request is the one that counts, so a new one closes any older one you still
+   have open.
 
 ## Try it on your own
 
@@ -67,7 +69,7 @@ yours to change.
    `tessl.json` (the top-level `environment`, and `merge-conflict-sweep`'s
    `environment`). Then run `tessl doctor --automations` and fix what it
    reports.
-4. **Create the labels** the loops use: `tessl`, `booth-claim`, `booth-change`,
+4. **Create the labels** the loops use: `tessl`, `booth-request`,
    `needs-info` and `declined`.
 5. **File your first issue** and watch it come back as a pull request. Then go
    further: ask for a new attraction, tighten the assessment rules in
