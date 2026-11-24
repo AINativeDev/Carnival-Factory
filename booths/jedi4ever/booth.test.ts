@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  blinking,
   buildOf,
+  HOP,
+  hopHeight,
   IN_THE_SACK,
   jingleAt,
   JINGLE,
@@ -8,9 +11,13 @@ import {
   letterAt,
   lettersAt,
   LOOP,
+  PENGUIN_FEET,
+  PENGUINS,
+  penguinAt,
   PLACES,
   placeOf,
   sacksFilled,
+  shuffleOf,
   SLOT,
   snowflake,
   twinkle,
@@ -136,5 +143,50 @@ describe('the room', () => {
       expect(twinkle(3, time)).toBeGreaterThanOrEqual(0.55);
       expect(twinkle(3, time)).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+describe('the penguins', () => {
+  it('finds the penguin under the pointer, and none on the empty floor', () => {
+    PENGUINS.forEach((penguin, index) => {
+      const x = penguin.x + shuffleOf(index, 0);
+      expect(penguinAt(x, PENGUIN_FEET - 8, 0)).toBe(index);
+      expect(penguinAt(x, PENGUIN_FEET - 14, 0)).toBe(index);
+    });
+    expect(penguinAt(PENGUINS[0].x, 40, 0)).toBe(-1);
+    expect(penguinAt(90, PENGUIN_FEET - 8, 0)).toBe(-1);
+  });
+
+  it('follows a penguin as it shuffles, never far from its spot', () => {
+    for (let time = 0; time < 20_000; time += 250) {
+      PENGUINS.forEach((penguin, index) => {
+        const shuffle = shuffleOf(index, time);
+        expect(Math.abs(shuffle)).toBeLessThanOrEqual(1.5);
+        expect(penguinAt(penguin.x + shuffle, PENGUIN_FEET - 6, time)).toBe(index);
+      });
+    }
+  });
+
+  it('blinks now and then, and mostly keeps its eyes open', () => {
+    const times = Array.from({ length: 4_000 }, (_, i) => i * 10);
+    const shut = times.filter((time) => blinking(0, time)).length;
+    expect(shut).toBeGreaterThan(0);
+    expect(shut / times.length).toBeLessThan(0.1);
+  });
+
+  it('hops up and back down after a tap', () => {
+    expect(hopHeight(-1)).toBe(0);
+    expect(hopHeight(0)).toBe(0);
+    expect(hopHeight(HOP / 2)).toBeCloseTo(6);
+    expect(hopHeight(HOP)).toBe(0);
+    expect(hopHeight(Infinity)).toBe(0);
+  });
+
+  it('follows a penguin up as it hops', () => {
+    const x = PENGUINS[1].x + shuffleOf(1, 0);
+    const lifts = PENGUINS.map((_, index) => (index === 1 ? hopHeight(HOP / 2) : 0));
+    expect(penguinAt(x, PENGUIN_FEET - 20, 0, lifts)).toBe(1);
+    expect(penguinAt(x, PENGUIN_FEET - 20, 0)).toBe(-1);
+    expect(penguinAt(x, PENGUIN_FEET + 1, 0, lifts)).toBe(-1);
   });
 });

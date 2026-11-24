@@ -73,9 +73,10 @@ jobs:
     permissions:
       contents: write
       actions: read
-      pull-requests: read
-      # The accepted Elf Engineer badge requests, for the badge holders.
+      # The squares' histories, and the accepted Elf Engineer badge requests
+      # for the badge holders.
       issues: read
+      pull-requests: read
     outputs:
       placed: ${{ steps.files.outputs.placed }}
     steps:
@@ -105,6 +106,17 @@ jobs:
             git -C site remote add origin "$url"
           fi
           touch site/.nojekyll
+
+      # How every square was built, for its "How was this built?" panel: read
+      # from the public issues and pull requests, and bundled into the page by
+      # the build. Without it the site still publishes, with no timelines.
+      - name: Read every square's history
+        working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/write-square-history.ts ||
+            echo "::warning title=No square history::Couldn't read the issues and pull requests, so the squares' timelines are empty in this build."
 
       # The Elf Engineer badge holders, from the accepted badge requests, for
       # the build to bake into the page: the page itself never asks the network.

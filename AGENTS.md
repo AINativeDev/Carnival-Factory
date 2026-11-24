@@ -37,6 +37,8 @@ src/
                             showing that square
   route.ts                  reading the hash (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
+  history.ts                the "How was this built?" panel: each square's requests and
+                            pull requests, bundled from square-history.json at build time
   style.css
 northpole/                  the map itself
   square.ts                 the NorthPoleSquare shape, the registries and the kill switch
@@ -91,6 +93,10 @@ scripts/
   check-booth-ownership.ts  the CI check that enforces it
   square-size.ts            the size budget for every square
   share-pages.ts            the link-preview page the build writes for every square
+  square-history.ts         every square's history from its issues and pull requests
+                            (plain functions), for the credits (#32) to reuse
+  write-square-history.ts   reads them from the GitHub API and writes square-history.json
+                            before the deploy's build (previews have none)
   elf-engineer.ts           the Elf Engineer badge's rules: the form, the check,
                             the tiers and the holders (plain functions)
 ```
