@@ -62,9 +62,10 @@ describe('attraction registry', () => {
   });
 
   it('draws every attraction at any size and time without throwing', () => {
-    // Enough of a canvas context to draw with: every method does nothing.
-    const ctx = new Proxy({} as Record<string, unknown>, {
-      get: (target, key: string) => (key in target ? target[key] : () => {}),
+    // Enough of a canvas context to draw with: every method does nothing, and
+    // returns another of the same, so a gradient takes its colour stops too.
+    const ctx: CanvasRenderingContext2D = new Proxy({} as Record<string, unknown>, {
+      get: (target, key: string) => (key in target ? target[key] : () => ctx),
       set: (target, key: string, value) => ((target[key] = value), true),
     }) as unknown as CanvasRenderingContext2D;
     for (const attraction of squares) {

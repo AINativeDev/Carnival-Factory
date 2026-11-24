@@ -70,6 +70,11 @@ starter repo for the "Build your own software factory with context" workshop.
    request is the one that counts, so a new one closes any older one you still
    have open.
 
+Booths are drawn in the [diorama style](docs/style.md) by default, the same
+as the North Pole's attractions: a little isometric scene at dusk, lit warm.
+A booth built before that keeps its own look until its owner asks for a
+restyle, which is a request like any other through **Your booth**.
+
 ## Try it on your own
 
 Run the whole thing on a fork, with you as the maintainer and the factory

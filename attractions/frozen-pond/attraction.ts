@@ -1,4 +1,5 @@
 import type { NorthPoleSquare } from '../../northpole/square';
+import { glow, iso, pine, scene, shadow } from '../../northpole/diorama';
 import { theme } from '../../northpole/theme';
 
 const { colors } = theme;
@@ -40,67 +41,79 @@ const attraction: NorthPoleSquare = {
   name: 'Frozen Pond',
   description: 'Skaters tracing figure eights on the ice.',
   draw(ctx, size, time) {
-    const u = size / 100;
+    scene(ctx, size, time, () => {
+      // Pines round the back of the pond.
+      for (const [gx, gy, h] of [
+        [-20, -14, 20],
+        [-13, -20, 15],
+        [-19, -4, 13],
+        [16, -20, 17],
+      ]) {
+        const p = iso(gx, gy);
+        pine(ctx, p.x, p.y, h);
+      }
 
-    ctx.fillStyle = colors.snow;
-    ctx.fillRect(0, 0, size, size);
-
-    // Pines round the back of the pond.
-    for (const [x, h] of [
-      [10, 26],
-      [24, 20],
-      [80, 24],
-      [92, 18],
-    ]) {
-      ctx.fillStyle = colors.pineDark;
+      // The ice, sunk a little into the snow, with a shine that drifts across it.
+      const cx = 52;
+      const cy = 70;
+      ctx.fillStyle = colors.slabShade;
       ctx.beginPath();
-      ctx.moveTo(x * u, (34 - h) * u);
-      ctx.lineTo((x + h / 3) * u, 34 * u);
-      ctx.lineTo((x - h / 3) * u, 34 * u);
+      ctx.ellipse(cx, cy, 33, 15.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      const ice = ctx.createLinearGradient(cx - 30, cy - 14, cx + 30, cy + 14);
+      ice.addColorStop(0, colors.ice);
+      ice.addColorStop(1, colors.mountainFar);
+      ctx.fillStyle = ice;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + 0.8, 31.5, 14.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.save();
+      ctx.clip();
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = colors.snowLit;
+      const shine = ((time / 60) % 140) - 20;
+      ctx.beginPath();
+      ctx.moveTo(shine, cy - 16);
+      ctx.lineTo(shine + 6, cy - 16);
+      ctx.lineTo(shine - 8, cy + 16);
+      ctx.lineTo(shine - 14, cy + 16);
       ctx.closePath();
       ctx.fill();
-    }
+      ctx.restore();
 
-    // The ice, with a shine that drifts across it.
-    ctx.fillStyle = colors.ice;
-    ctx.beginPath();
-    ctx.ellipse(50 * u, 62 * u, 46 * u, 28 * u, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.save();
-    ctx.clip();
-    ctx.globalAlpha = 0.35;
-    ctx.fillStyle = colors.snow;
-    const shine = ((time / 60) % 140) - 20;
-    ctx.beginPath();
-    ctx.moveTo(shine * u, 34 * u);
-    ctx.lineTo((shine + 8) * u, 34 * u);
-    ctx.lineTo((shine - 12) * u, 90 * u);
-    ctx.lineTo((shine - 20) * u, 90 * u);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
+      // A lamp by the pond, throwing a warm pool on the ice.
+      const lamp = iso(-8, 18);
+      glow(ctx, lamp.x + 4, lamp.y - 6, 16, 0.85);
+      ctx.fillStyle = colors.ink;
+      ctx.fillRect(lamp.x - 0.5, lamp.y - 16, 1, 16);
+      ctx.fillStyle = colors.lantern;
+      ctx.fillRect(lamp.x - 1.4, lamp.y - 19, 2.8, 3);
 
-    // The figure eight scratched into the ice.
-    const cx = 50 * u;
-    const cy = 62 * u;
-    const across = 34 * u;
-    const down = 30 * u;
-    ctx.strokeStyle = colors.snow;
-    ctx.lineWidth = 0.8 * u;
-    ctx.beginPath();
-    for (let i = 0; i <= 64; i++) {
-      const { x, y } = figureEight(i / 64);
-      if (i === 0) ctx.moveTo(cx + x * across, cy + y * down);
-      else ctx.lineTo(cx + x * across, cy + y * down);
-    }
-    ctx.stroke();
+      // The figure eight scratched into the ice.
+      const across = 25;
+      const down = 22;
+      ctx.strokeStyle = colors.snowLit;
+      ctx.globalAlpha = 0.7;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      for (let i = 0; i <= 64; i++) {
+        const { x, y } = figureEight(i / 64);
+        if (i === 0) ctx.moveTo(cx + x * across, cy + y * down);
+        else ctx.lineTo(cx + x * across, cy + y * down);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
 
-    // Three skaters, a third of a lap apart, the nearer ones drawn last.
-    const skaters = SCARVES.map((scarf, i) => ({
-      scarf,
-      ...figureEight((((time / LAP + i / 3) % 1) + 1) % 1),
-    })).sort((a, b) => a.y - b.y);
-    for (const { scarf, x, y } of skaters) skater(ctx, cx + x * across, cy + y * down, u, scarf);
+      // Three skaters, a third of a lap apart, the nearer ones drawn last.
+      const skaters = SCARVES.map((scarf, i) => ({
+        scarf,
+        ...figureEight((((time / LAP + i / 3) % 1) + 1) % 1),
+      })).sort((a, b) => a.y - b.y);
+      for (const { scarf, x, y } of skaters) {
+        shadow(ctx, cx + x * across, cy + y * down, 6);
+        skater(ctx, cx + x * across, cy + y * down, 0.9, scarf);
+      }
+    });
   },
 };
 

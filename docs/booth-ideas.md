@@ -27,8 +27,12 @@ A few things that help:
 - **A focal point.** One thing the eye lands on first, then the small details.
 - **Little touches.** A sign with a pun, a cat on a roof, a snowman with
   sunglasses. These are what people remember.
-- **Your style.** Pick one in the form: cosy storybook, bold poster, papercut,
-  pixel art, tiny model railway, or a glowing night scene.
+- **Your style.** By default a booth is drawn in the
+  [diorama style](style.md), like the rest of the North Pole: a little
+  isometric scene on a slab of snow at dusk, lit warm from the upper left, so
+  it sits naturally on its stall. Or pick another in the form: cosy storybook,
+  bold poster, papercut, pixel art, tiny model railway, or a glowing night
+  scene. The factory keeps it in the dusk light and the North Pole's palette.
 
 ## What a booth can't do
 
