@@ -1,0 +1,4 @@
+# Every change needs a review from a maintainer before it merges. Turn on
+# "Require review from Code Owners" in the main branch's protection rule for
+# this to block merging. The maintainers are also listed in scripts/ownership.ts.
+* @jedi4ever
