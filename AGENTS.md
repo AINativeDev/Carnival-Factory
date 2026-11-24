@@ -37,6 +37,8 @@ src/
                             showing that square
   route.ts                  reading the hash (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
+  history.ts                the "How was this built?" panel: each square's requests and
+                            pull requests, bundled from square-history.json at build time
   style.css
 northpole/                  the map itself
   square.ts                 the NorthPoleSquare shape, the registries and the kill switch
@@ -84,6 +86,10 @@ scripts/
   check-booth-ownership.ts  the CI check that enforces it
   square-size.ts            the size budget for every square
   share-pages.ts            the link-preview page the build writes for every square
+  square-history.ts         every square's history from its issues and pull requests,
+                            shared with the credits (plain functions)
+  write-square-history.ts   reads them from the GitHub API and writes square-history.json
+                            before the deploy's and the preview's build
 ```
 
 ## Working on an issue

@@ -575,6 +575,75 @@ kbd {
   font-size: 13px;
 }
 
+.visit-history {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 2px solid var(--color-gold);
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+.visit-history summary {
+  cursor: pointer;
+  font-weight: 700;
+  text-align: center;
+}
+
+.history-list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-entry {
+  margin: 0 0 10px;
+  padding-left: 10px;
+  border-left: 3px solid var(--color-gold);
+}
+
+.history-entry[data-decision='declined'],
+.history-entry[data-decision='question'] {
+  border-left-color: var(--color-berry);
+}
+
+.history-entry p,
+.history-empty {
+  margin: 0 0 4px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.history-request {
+  font-weight: 700;
+}
+
+.history-own {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.history-own-link {
+  font-weight: 700;
+}
+
+.history-offer p {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
+.history-offer-tag {
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.history-offer .history-terms {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
 .visit :focus-visible {
   outline: 3px solid var(--color-gold);
   outline-offset: 2px;

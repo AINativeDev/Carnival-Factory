@@ -73,6 +73,7 @@ jobs:
     permissions:
       contents: write
       actions: read
+      issues: read
       pull-requests: read
     outputs:
       placed: ${{ steps.files.outputs.placed }}
@@ -98,6 +99,21 @@ jobs:
             git -C site remote add origin "$url"
           fi
           touch site/.nojekyll
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: main/.nvmrc
+
+      # How every square was built, for its "How was this built?" panel: read
+      # from the public issues and pull requests, and bundled into the page by
+      # the build. Without it the site still publishes, with no timelines.
+      - name: Read every square's history
+        working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/write-square-history.ts ||
+            echo "::warning title=No square history::Couldn't read the issues and pull requests, so the squares' timelines are empty in this build."
 
       # Every run rebuilds the root from main, not only a push: GitHub keeps one
       # pending run per group and drops the rest, so a push's run can be
