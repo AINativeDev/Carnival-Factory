@@ -2,13 +2,14 @@ name: Deploy to GitHub Pages
 
 # Publishes the site: the live map at the root, and a preview of every open
 # pull request at previews/pr-<number>/. The files live on the gh-pages branch,
-# and every change to it is published as a whole.
+# and every run publishes it as a whole.
 #
-# - A push to main builds main into the root, keeping the previews.
-# - A finished "Preview build" copies that pull request's built files into
-#   previews/pr-<number>/ and links them on the pull request. It never checks
-#   out or runs the pull request's code: it only copies files the build made.
-# - A closed pull request removes its preview.
+# Every run reconciles the previews with the open pull requests: a preview is
+# removed once its pull request closes, and replaced by the successful
+# "Preview build" of the pull request's current head commit. So a run GitHub
+# drops from the queue, or a build that finishes late, is put right by the
+# next one. A push to main also rebuilds the root. Nothing here checks out or
+# runs a pull request's code: it only copies the files its build made.
 on:
   push:
     branches: [main]
@@ -31,6 +32,8 @@ jobs:
   # Forks start with Pages switched off. Skip the deploy with a note rather than
   # failing on every merge until someone turns it on.
   check:
+    permissions:
+      pages: read
     if: >-
       github.event_name != 'workflow_run' ||
       (github.event.workflow_run.conclusion == 'success' &&
@@ -69,8 +72,9 @@ jobs:
     permissions:
       contents: write
       actions: read
+      pull-requests: read
     outputs:
-      preview: ${{ steps.files.outputs.preview }}
+      placed: ${{ steps.files.outputs.placed }}
     steps:
       # main's own code, never a pull request's.
       - uses: actions/checkout@v7
@@ -101,35 +105,39 @@ jobs:
           find ../site -mindepth 1 -maxdepth 1 ! -name .git ! -name previews ! -name .nojekyll -exec rm -rf {} +
           cp -R dist/. ../site/
 
-      - name: Copy the pull request's preview
-        if: github.event_name == 'workflow_run'
-        uses: actions/download-artifact@v8
-        with:
-          name: preview
-          path: preview
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ github.token }}
-
       - id: files
-        name: Place or remove the preview
+        name: Reconcile the previews with the open pull requests
         env:
-          EVENT: ${{ github.event_name }}
-          RUN_PR: ${{ github.event.workflow_run.pull_requests[0].number }}
-          CLOSED_PR: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          case "$EVENT" in
-            workflow_run)
-              [[ "$RUN_PR" =~ ^[0-9]+$ ]] || { echo "::error::Not a pull request number: $RUN_PR"; exit 1; }
-              rm -rf "site/previews/pr-$RUN_PR"
-              mkdir -p "site/previews/pr-$RUN_PR"
-              cp -R preview/. "site/previews/pr-$RUN_PR/"
-              echo "preview=$RUN_PR" >> "$GITHUB_OUTPUT"
-              ;;
-            pull_request_target)
-              [[ "$CLOSED_PR" =~ ^[0-9]+$ ]] || exit 1
-              rm -rf "site/previews/pr-$CLOSED_PR"
-              ;;
-          esac
+          mkdir -p site/previews
+          open=$(gh pr list --state open --limit 500 \
+            --json number,headRefOid,isCrossRepository \
+            --jq '.[] | select(.isCrossRepository | not) | "\(.number) \(.headRefOid)"')
+
+          # Remove the previews of pull requests that are no longer open.
+          for dir in site/previews/pr-*; do
+            [ -d "$dir" ] || continue
+            number=${dir##*/pr-}
+            grep -q "^$number " <<<"$open" || rm -rf "$dir"
+          done
+
+          # Place each open pull request's preview from the build of its head.
+          placed=()
+          while read -r number sha; do
+            [[ "$number" =~ ^[0-9]+$ && "$sha" =~ ^[0-9a-f]{40}$ ]] || continue
+            dir="site/previews/pr-$number"
+            [ "$(cat "$dir/.preview-sha" 2>/dev/null)" = "$sha" ] && continue
+            run=$(gh run list --workflow preview-build.yml --commit "$sha" --status success \
+              --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+            [ -n "$run" ] || continue
+            rm -rf "$dir"
+            gh run download "$run" --name preview --dir "$dir"
+            echo "$sha" > "$dir/.preview-sha"
+            placed+=("$number:$sha")
+          done <<<"$open"
+          echo "placed=${placed[*]}" >> "$GITHUB_OUTPUT"
 
       - name: Commit and push gh-pages
         working-directory: site
@@ -161,25 +169,29 @@ jobs:
 
   comment:
     needs: [update, deploy]
-    if: needs.update.outputs.preview != ''
+    if: needs.update.outputs.placed != ''
     runs-on: ubuntu-latest
     permissions:
+      pages: read
       pull-requests: write
     steps:
       - env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          PR: ${{ needs.update.outputs.preview }}
-          SHA: ${{ github.event.workflow_run.head_sha }}
+          PLACED: ${{ needs.update.outputs.placed }}
         run: |
           site=$(gh api "repos/$GH_REPO/pages" --jq .html_url)
-          url="${site%/}/previews/pr-$PR/"
-          body="<!-- pr-preview -->
-          **Preview:** $url (built from ${SHA::7}). It updates on every push and is removed when this pull request closes."
-          id=$(gh api "repos/$GH_REPO/issues/$PR/comments" --paginate \
-            --jq '[.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- pr-preview -->")))][0].id // empty')
-          if [ -n "$id" ]; then
-            gh api -X PATCH "repos/$GH_REPO/issues/comments/$id" -f body="$body" >/dev/null
-          else
-            gh pr comment "$PR" --body "$body"
-          fi
+          for entry in $PLACED; do
+            pr=${entry%%:*}
+            sha=${entry#*:}
+            url="${site%/}/previews/pr-$pr/"
+            body="<!-- pr-preview -->
+          **Preview:** $url (built from ${sha::7}). It updates on every push and is removed when this pull request closes."
+            id=$(gh api "repos/$GH_REPO/issues/$pr/comments" --paginate \
+              --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- pr-preview -->"))) | .id' | head -1)
+            if [ -n "$id" ]; then
+              gh api -X PATCH "repos/$GH_REPO/issues/comments/$id" -f body="$body" >/dev/null
+            else
+              gh pr comment "$pr" --body "$body"
+            fi
+          done
