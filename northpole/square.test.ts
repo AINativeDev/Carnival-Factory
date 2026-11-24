@@ -128,3 +128,14 @@ describe('applyKillSwitch', () => {
     expect(text).toEqual(['Closed for repairs']);
   });
 });
+
+describe('the registries', () => {
+  it("freeze every square, so nobody can swap another square's draw", () => {
+    const registry = createBoothRegistry([booth('elf')]);
+    const elf = registry.get('elf')!;
+    expect(Object.isFrozen(elf)).toBe(true);
+    expect(() => {
+      (elf as { draw: NorthPoleSquare['draw'] }).draw = () => {};
+    }).toThrow();
+  });
+});

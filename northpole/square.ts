@@ -45,7 +45,8 @@ function createRegistry(
     const invalid = problems.invalid(booth.id);
     if (invalid) throw new Error(invalid);
     if (byId.has(booth.id)) throw new Error(problems.twice(booth.id));
-    byId.set(booth.id, booth);
+    // Frozen, so nothing that can reach the registry can swap another square's draw.
+    byId.set(booth.id, Object.freeze(booth));
   }
 
   return {

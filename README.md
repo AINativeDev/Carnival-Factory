@@ -49,9 +49,12 @@ yours to change.
 1. **Fork it**, then in your fork go to **Settings → Pages** and set **Source**
    to **GitHub Actions**, so every merge publishes your map.
 2. **Make yourself the maintainer.** Put your login in `.github/CODEOWNERS` and
-   in `MAINTAINERS` in `scripts/ownership.ts`, and your numeric GitHub user id
-   (`gh api users/<login> -q .id`) in each `event.sender.id` list in
-   `tessl.json`.
+   in `MAINTAINERS` in `scripts/ownership.ts`. In `tessl.json`, put your
+   numeric GitHub user id (`gh api users/<login> -q .id`) in each
+   `event.sender.id` list, and your fork's repository id
+   (`gh api repos/<you>/<fork> -q .id`) in each
+   `event.pull_request.head.repo.id`, so reviews on your fork reach the
+   shepherd.
 3. **Set up your factory.** Install the [Tessl CLI](https://tessl.io), run
    `tessl init` in your clone to register the repository, and install the Tessl
    GitHub App on your fork. Create an environment with GitHub write access,
@@ -107,8 +110,9 @@ Some of the rules live in the repository's settings, not its code:
   maintainer can merge a green pull request straight away. To require one, set
   the ruleset's required approvals to 1 and turn on **Require review from Code
   Owners**.
-- **Settings → Actions → General** requires approval for workflows from
-  first-time contributors, and the workflow token is read-only by default.
+- **Settings → Actions → General** requires approval for workflows from all
+  outside contributors, not only first-time ones, and the workflow token is
+  read-only by default.
 
 Booth requests are assessed before the factory builds them: see
 `plugins/north-pole/skills/assess-booth-request/`. Only maintainers can start or steer the

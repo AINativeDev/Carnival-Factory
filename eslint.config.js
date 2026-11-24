@@ -50,11 +50,15 @@ const squareProperties = [
   })),
 ];
 
-// A file depth folders below booths/<login>/ or attractions/<id>/
-// imports from the map, which is depth + 2 folders up, or from its own folder,
-// never above it. A test beside it may import vitest too.
+// A file depth folders below booths/<login>/ or attractions/<id>/ imports
+// from the map's public parts, which are depth + 2 folders up, or from its own
+// folder, never above it. The public parts are the theme and the square's
+// shape: the registries and the rest of the map hold every other square, so a
+// booth could reach them and change what they draw. A test beside it may also
+// import vitest, but nothing else imports a test, so a test file can't carry
+// code past the size budget.
 function importRule(depth, test = false) {
-  const map = `(\\.\\./){${depth + 2}}northpole/[\\w-]+(\\.json)?$`;
+  const map = `(\\.\\./){${depth + 2}}northpole/(theme|square)$`;
   const own = `(\\./${depth > 0 ? `|(\\.\\./){1,${depth}}` : ''})(?!.*\\.\\.)[\\w./-]+$`;
   return [
     'error',
@@ -63,8 +67,16 @@ function importRule(depth, test = false) {
         {
           regex: `^(?!${map}|${own}${test ? '|vitest$' : ''})`,
           message:
-            'A booth imports only from northpole/ and from its own folder, so it adds no dependencies.',
+            'A square imports only northpole/theme, northpole/square and its own folder, so it adds no dependencies and reaches no other square.',
         },
+        ...(test
+          ? []
+          : [
+              {
+                regex: '\\.test(\\.ts)?$',
+                message: 'Only a test imports a test file, so its code stays out of the site.',
+              },
+            ]),
       ],
     },
   ];

@@ -122,6 +122,30 @@ describe('booth house rules', () => {
   });
 
   it.each([
+    ['the booth registry', `import { boothRegistry } from '../../northpole/booths';`],
+    [
+      'the attraction registry',
+      `import { attractionRegistry } from '../../northpole/attractions';`,
+    ],
+    ['the kill switch', `import off from '../../northpole/disabled.json';`],
+    ['the map', `import { startMap } from '../../northpole/map';`],
+  ])('stop a booth from importing %s', async (_, code) => {
+    expect(await problems(code)).toContain('no-restricted-imports');
+  });
+
+  it('stop a booth from importing a test file, but let a test import one', async () => {
+    expect(await problems(`import { table } from './palette.test';`)).toContain(
+      'no-restricted-imports',
+    );
+    expect(
+      await problems(
+        `import { table } from './palette.test'; export const t = table;`,
+        'booths/grinch/booth.test.ts',
+      ),
+    ).toEqual([]);
+  });
+
+  it.each([
     ['process', `process.getBuiltinModule('node:fs').rmSync('northpole', { recursive: true });`],
     ['require', `require('node:fs').writeFileSync('x', '');`],
     ['global', `global.fetch('https://example.com');`],
