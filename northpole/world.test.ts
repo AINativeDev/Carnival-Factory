@@ -163,13 +163,28 @@ describe('buildWorld', () => {
     for (let n = 0; n < 8; n++) expect(near(attractionPlot(n))).toBeLessThan(near(boothPlot(0)));
   });
 
-  it('has the pond, a stream with a bridge, cabins, a stable and a forest', () => {
+  it('has the pond, a stream with a bridge, cabins, a stable, the ferris wheel, tents, the arch and a forest', () => {
     const world = buildWorld(ATTRACTIONS, booths(3));
     const grounds = new Set(world.ground.values());
     for (const kind of ['ice', 'water', 'bridge', 'path', 'plaza'] as const)
       expect(grounds).toContain(kind);
     const kinds = new Set(world.things.map((t) => t.kind));
-    for (const kind of ['tree', 'cabin', 'lamp', 'fence', 'stable', 'sleigh', 'town-tree'] as const)
+    for (const kind of [
+      'tree',
+      'cabin',
+      'lamp',
+      'fence',
+      'stable',
+      'sleigh',
+      'town-tree',
+      'wheel',
+      'tent',
+      'bench',
+      'cart',
+      'arch',
+      'banner',
+      'bunting',
+    ] as const)
       expect(kinds).toContain(kind);
   });
 });
@@ -177,7 +192,7 @@ describe('buildWorld', () => {
 describe('walking', () => {
   const world = buildWorld(ATTRACTIONS, booths(10));
 
-  it('starts on open ground in the town square', () => {
+  it('starts on open ground inside the entrance arch', () => {
     expect(canStand(world, world.start)).toBe(true);
   });
 

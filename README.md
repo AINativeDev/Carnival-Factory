@@ -191,8 +191,9 @@ native dependencies, so `npm ci` is the whole setup. Node 22.13 or later.
   `#/?booth=<login>` and `#/?attraction=<id>` open the map on that square.
   `src/route.ts` reads the hash.
 - `northpole/`: the map: the `NorthPoleSquare` shape and registries, the
-  isometric world you walk round (`world.ts`), its drawing (`render.ts` and
-  `map.ts`), which plot each square keeps (`plots.json`) and the theme.
+  isometric world you walk round (`world.ts`), how the camera frames its
+  island (`camera.ts`), its drawing (`render.ts` and `map.ts`), which plot
+  each square keeps (`plots.json`) and the theme.
 - `booths/<login>/`: one folder per participant. `booths/jedi4ever/` is the
   pattern to copy.
 - `attractions/<id>/`: one folder per attraction the North Pole owns.
