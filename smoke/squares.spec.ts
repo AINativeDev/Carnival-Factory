@@ -289,6 +289,50 @@ test("Share copies a friendly line with the booth's share page, which unfurls an
   await expect(page.locator('.map-canvas')).toBeVisible();
 });
 
+test('a booth links to its season card, which downloads as a PNG and copies its map link', async ({
+  page,
+  context,
+}) => {
+  const problems = watch(page);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('#/booth/jedi4ever');
+  await page.locator('.visit').getByRole('link', { name: 'Your season' }).click();
+  await expect(page).toHaveURL(/#\/season\/jedi4ever$/);
+  await expect(page.getByRole('heading', { name: 'Your season' })).toBeVisible();
+  const card = page.locator('canvas.season-card');
+  await expect(card).toHaveAttribute('aria-label', /^@jedi4ever's season card: /);
+  // The booth's frame opens and the card draws it.
+  await expect(frameOf(page, 'booth', 'jedi4ever')).toHaveAttribute('data-state', 'ready');
+  await page.waitForTimeout(500);
+  await card.screenshot({ path: join(SHOTS, 'season-jedi4ever.png') });
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Download' }).click(),
+  ]);
+  expect(download.suggestedFilename()).toBe('north-pole-season-jedi4ever.png');
+  const saved = readFileSync(await download.path());
+  expect(saved.subarray(1, 4).toString()).toBe('PNG');
+
+  await page.getByRole('button', { name: 'Copy link' }).click();
+  await expect(page.getByRole('button', { name: 'Copied!' })).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+    'http://localhost:4173/#/?booth=jedi4ever',
+  );
+  await expect(page.getByLabel('Share text')).toHaveValue(
+    /^My season at the North Pole Carnival as @jedi4ever: .+ Come visit: http:\/\/localhost:4173\/#\/\?booth=jedi4ever$/,
+  );
+  await expect(
+    page.getByRole('link', { name: 'Set up Tessl on your own repository' }),
+  ).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Keep me posted' })).toBeVisible();
+  expect(problems).toEqual([]);
+
+  await page.goto('#/season/nobody-here-yet');
+  await expect(page.getByRole('heading', { name: 'No season yet' })).toBeVisible();
+  await expect(page.getByText("@nobody-here-yet doesn't have a booth yet.")).toBeVisible();
+});
+
 test('the Elf Engineer badges and their snippets are plain files on the site', async ({
   request,
 }) => {

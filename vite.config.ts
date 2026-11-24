@@ -15,6 +15,7 @@ import {
   siteUrl,
   type ShareKind,
 } from './scripts/share-pages.ts';
+import { EMPTY_SEASON, readSeason } from './scripts/season.ts';
 
 /** This build's id: the commit and the time, so every build differs. */
 const BUILD_ID = (() => {
@@ -27,6 +28,16 @@ const BUILD_ID = (() => {
     // Not a git checkout: the time alone is enough.
   }
   return `${commit}-${Date.now().toString(36)}`;
+})();
+
+/**
+ * Every participant's season, which scripts/season-data.ts counts into
+ * season.json before a published build. Built into the page, so the season
+ * card makes no request for it. Without the file, the season is empty.
+ */
+const SEASON = (() => {
+  const file = resolve(import.meta.dirname, 'season.json');
+  return existsSync(file) ? readSeason(JSON.parse(readFileSync(file, 'utf8'))) : EMPTY_SEASON;
 })();
 
 /** Writes version.json beside the page, so an open page can tell a newer build is out. */
@@ -175,6 +186,7 @@ export default defineConfig(({ command }) => ({
   define: {
     __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev'),
     __BADGE_HOLDERS__: JSON.stringify(BADGE_HOLDERS),
+    __SEASON__: JSON.stringify(SEASON),
     __PEOPLES_CHOICE__: JSON.stringify(PEOPLES_CHOICE ?? null),
     // How many advent challenges each booth's owner has done, for their booth's decorations.
     __ADVENT_COUNTS__: JSON.stringify(ADVENT_COUNTS),

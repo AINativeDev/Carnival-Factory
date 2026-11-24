@@ -184,6 +184,19 @@ jobs:
             echo '[]' > "$RUNNER_TEMP/badge-holders.json"
           }
 
+      # Every participant's season, for the season card. A failure here, or a
+      # count still running after two minutes, leaves the season empty rather
+      # than stopping or holding up the deploy.
+      - name: Count the season
+        working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          timeout 120 node scripts/season-data.ts > season.json || {
+            echo "::warning title=Season not counted::The season card shows no numbers in this build."
+            rm -f season.json
+          }
+
       # How many advent challenges each participant has had accepted, from the
       # accepted Advent challenge issues, for the build to bake into the page
       # and decorate their booths: the page itself never asks the network.

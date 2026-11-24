@@ -18,6 +18,7 @@ import { openFactoryHud, readFactoryStats, squareCounts } from './factory';
 import { CHOICE_PANEL, renderChoice } from './peoples-choice-hud';
 import { SQUARE_HISTORY } from './history';
 import { levelLink, parseHash } from './route';
+import { renderSeason } from './season-card';
 import { openVisitHud, type VisitHud } from './visit-hud';
 import { followPending, knownPending, loadSites, saveSites } from './pending';
 import { keepUpToDate } from './updates';
@@ -451,6 +452,14 @@ function route(event?: HashChangeEvent) {
   // Booths used to be called plots: keep links shared before the rename working.
   if (route.view === 'legacy') return location.replace(`#/booth/${route.id}`);
 
+  if (route.view === 'season') {
+    closeCard(false);
+    stop?.();
+    map = undefined;
+    stop = renderSeason(app, route.login);
+    return;
+  }
+
   // A level opens its own world, or, already on screen, takes the player into
   // one of its squares, out of one, or in front of one.
   if (route.view === 'level') {
@@ -478,17 +487,27 @@ function route(event?: HashChangeEvent) {
 
   // A square takes the player inside it, starting the world if it isn't running.
   if (route.view === 'square') {
-    if (!map) renderMap();
+    if (!map) {
+      // Coming from a page without the map, such as a season card: stop it first.
+      stop?.();
+      renderMap();
+    }
     return visit(route.kind, route.id, fromHistory);
   }
 
   if (route.view === 'factory') {
-    if (!map) renderMap();
+    if (!map) {
+      stop?.();
+      renderMap();
+    }
     return showFactory(fromHistory);
   }
 
   if (route.view === 'advent') {
-    if (!map) renderMap();
+    if (!map) {
+      stop?.();
+      renderMap();
+    }
     return showAdvent(fromHistory);
   }
 

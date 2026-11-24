@@ -4,6 +4,9 @@ coverage/
 .DS_Store
 *.log
 
+# The season's numbers, counted before a published build (scripts/season-data.ts)
+season.json
+
 # Local preview config
 .claude/launch.json
 

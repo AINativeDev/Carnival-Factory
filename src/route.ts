@@ -15,13 +15,15 @@ const ID = /^[\w-]+$/;
 export type Route =
   | { view: 'map'; focus?: { kind: SquareKind; id: string } }
   | { view: 'square'; kind: SquareKind; id: string }
+  | { view: 'season'; login: string }
   | { view: 'factory' }
   | { view: 'advent' }
   | { view: 'level'; login: string; focus?: string; inside?: string }
   | { view: 'legacy'; id: string };
 
 /**
- * Reads a hash such as `#/booth/<login>`, `#/attraction/<id>`, or the map's
+ * Reads a hash such as `#/booth/<login>`, `#/attraction/<id>`, a participant's
+ * season card `#/season/<login>`, or the map's
  * deep links `#/?booth=<login>` and `#/?attraction=<id>`, or `#/factory`, or `#/advent`. Anything it doesn't
  * know, a malformed name included, is the plain map. A level opens at
  * `#/level/<login>`, in front of one of its squares at
@@ -47,6 +49,9 @@ export function parseHash(hash: string): Route {
   const page = hash.match(/^#\/(booth|attraction)\/([\w-]+)$/);
   if (page) return { view: 'square', kind: page[1] as SquareKind, id: page[2] };
 
+  const season = hash.match(/^#\/season\/([\w-]+)$/);
+  if (season) return { view: 'season', login: season[1].toLowerCase() };
+
   const query = hash.match(/^#\/?\?(.*)$/);
   if (!query) return { view: 'map' };
   const params = new URLSearchParams(query[1]);
@@ -61,6 +66,11 @@ export function parseHash(hash: string): Route {
 /** The hash that opens the map showing one square. */
 export function deepLink(kind: SquareKind, id: string): string {
   return `#/?${kind}=${encodeURIComponent(id)}`;
+}
+
+/** The hash of a participant's season card. */
+export function seasonLink(login: string): string {
+  return `#/season/${encodeURIComponent(login)}`;
 }
 
 /** The hash that opens a level, perhaps in front of one of its squares. */

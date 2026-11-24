@@ -25,7 +25,7 @@ import {
   renderHistory,
 } from './history';
 import { SIGNUP_OFFER, showSignupOffer } from './offer';
-import { deepLink, levelLink } from './route';
+import { deepLink, levelLink, seasonLink } from './route';
 
 export interface VisitHudOptions {
   kind: SquareKind;
@@ -58,8 +58,8 @@ export interface VisitHud {
  * The HUD inside a square the player has entered, beside the room the map
  * draws: its name, who made it and who improved it, Remix this booth and Build
  * your own, its description, Share and See it on the map, a link for its owner
- * to ask for a change, for someone who came by a shared link the invitation to
- * claim the plot next door, and how to leave.
+ * to ask for a change and one to their season card, for someone who came by a
+ * shared link the invitation to claim the plot next door, and how to leave.
  * Focus moves into it, and back out when it closes. Every name and
  * description is only ever set as text.
  */
@@ -164,7 +164,9 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     help.innerHTML = `<p>This square belongs to a participant's own level. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> in the North Pole.</p>`;
   } else if (kind === 'booth') {
     help.innerHTML = `<p><span class="visit-ask">Is this yours?</span> <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask for a change</a> <span aria-hidden="true">·</span> <button class="visit-mine" type="button">Share it as yours</button></p>
-      <p><span class="visit-ask">Built your own factory?</span> <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Get the Elf Engineer badge</a> <span aria-hidden="true">·</span> <a href="#/advent">Open the advent calendar</a></p>`;
+      <p><span class="visit-ask">Built your own factory?</span> <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Get the Elf Engineer badge</a> <span aria-hidden="true">·</span> <a href="#/advent">Open the advent calendar</a></p>
+      <p><a class="visit-season">Your season</a></p>`;
+    help.querySelector<HTMLAnchorElement>('.visit-season')!.href = seasonLink(square.id);
   } else {
     help.innerHTML = `<p>Attractions belong to the North Pole, so only its maintainers change them. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.</p>`;
   }

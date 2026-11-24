@@ -1098,6 +1098,60 @@ kbd {
   }
 }
 
+/* The season card: the canvas fills the column, and scales down on a phone. */
+.season-card {
+  display: block;
+  width: min(100%, 720px);
+  height: auto;
+  aspect-ratio: 600 / 315;
+  margin: 16px 0 0;
+  border-radius: var(--radius);
+}
+
+.season-share,
+.season-last {
+  width: min(100%, 720px);
+  margin-top: 12px;
+  text-align: center;
+}
+
+.season-label {
+  display: block;
+  color: var(--color-muted);
+  font-size: 14px;
+  text-align: left;
+}
+
+.season-share-text {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font: 14px var(--font-family);
+  resize: vertical;
+}
+
+.season-download {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 18px;
+  background: var(--color-berry);
+  color: var(--color-snow);
+  font: bold 15px var(--font-family);
+  cursor: pointer;
+}
+
+.season-note,
+.season-offer small {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.season-offer small {
+  display: block;
+  font-size: 12px;
+}
+
 /* People's Choice, below the map: one line folded, the standings open. */
 .choice {
   flex: none;
