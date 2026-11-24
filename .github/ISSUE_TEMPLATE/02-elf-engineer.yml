@@ -1,0 +1,38 @@
+name: Elf Engineer badge
+description: Built a Tessl factory on a repository of your own? Ask for the Elf Engineer badge, or ask again to move up a tier.
+title: 'Elf Engineer: '
+labels: [badge-request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The **Elf Engineer** badge is for people who set up a [Tessl](https://tessl.io)
+        factory on a repository of their own. An agent checks that the
+        repository is public, has a `tessl.json` at its root, and that the
+        pull request you link was opened by the Tessl App there. If it all
+        holds, you get the badge, a Markdown snippet for your README, an
+        elf-hat pin on your booth's sign and a link from your booth to your
+        factory.
+
+        **Tiers:** bronze, silver and gold are for 1, 5 and 25 factory pull
+        requests merged on your repository. Ask again with this form to be
+        checked again.
+
+        It's opt-in: nothing is listed until you ask, and the badge image is a
+        plain file with nothing tracked.
+  - type: input
+    id: repository
+    attributes:
+      label: Your repository
+      description: The public repository where you set up your factory, as owner/name. It must be yours, or an organisation's you're a public member of.
+      placeholder: octocat/my-project
+    validations:
+      required: true
+  - type: input
+    id: pull-request
+    attributes:
+      label: A pull request the factory opened there
+      description: A link to one pull request the Tessl App opened in that repository.
+      placeholder: https://github.com/octocat/my-project/pull/12
+    validations:
+      required: true
