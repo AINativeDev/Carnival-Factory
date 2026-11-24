@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checksOf, pendingList, stageOf, type Request } from './pending';
+import { checksOf, latestRequests, pendingList, stageOf, type Request } from './pending';
 
 const request = (login: string, issue: number, extra: Partial<Request> = {}): Request => ({
   login,
@@ -51,6 +51,19 @@ describe('checksOf', () => {
       ]),
     ).toBe('passed');
     expect(checksOf([{ status: 'completed', conclusion: 'failure' }])).toBe('failed');
+  });
+});
+
+describe('latestRequests', () => {
+  it("keeps each login's latest request, in order of issue number, and at most a hundred", () => {
+    const many = Array.from({ length: 150 }, (_, n) => request(`elf-${n}`, 300 - n));
+    const chosen = latestRequests([...many, request('Elf-149', 160), request('elf-148', 2)]);
+    expect(chosen).toHaveLength(100);
+    expect(chosen[0].issue).toBe(152);
+    expect(chosen.filter((r) => r.login.toLowerCase() === 'elf-149').map((r) => r.issue)).toEqual([
+      160,
+    ]);
+    expect(chosen.some((r) => r.issue === 2 || r.issue === 151)).toBe(false);
   });
 });
 

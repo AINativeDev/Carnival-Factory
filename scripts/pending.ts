@@ -7,7 +7,13 @@
  * its issue number and labels, and its pull request's checks. Never its title
  * or body.
  */
-import { readPending, reservePlots, type PendingBooth, type Stage } from '../northpole/plots.ts';
+import {
+  MAX_PENDING,
+  readPending,
+  reservePlots,
+  type PendingBooth,
+  type Stage,
+} from '../northpole/plots.ts';
 
 /** The label the gate puts on a request, or its pull request, that a person has to look at. */
 export const NEEDS_HUMAN = 'needs-human';
@@ -45,6 +51,23 @@ export function checksOf(runs: readonly { status: string; conclusion: string | n
 }
 
 /**
+ * The requests `pending.json` can list: each login's latest, in order of issue
+ * number, at most `MAX_PENDING`. The deploy reads only these ones' pull
+ * requests and checks, so its work stays bounded however many are open.
+ */
+export function latestRequests<T extends { login: string; issue: number }>(
+  requests: readonly T[],
+): T[] {
+  const latest = new Map<string, T>();
+  for (const request of requests) {
+    const login = request.login.toLowerCase();
+    const had = latest.get(login);
+    if (!had || request.issue > had.issue) latest.set(login, request);
+  }
+  return [...latest.values()].sort((a, b) => a.issue - b.issue).slice(0, MAX_PENDING);
+}
+
+/**
  * `pending.json`'s entries: one per login, its latest request, in order of
  * issue number. A login with a booth already is changing it, so its entry
  * names that booth's plot. The others get the next free plots after every
@@ -55,13 +78,10 @@ export function pendingList(
   requests: readonly Request[],
   booths: ReadonlyMap<string, number>,
 ): PendingBooth[] {
-  const latest = new Map<string, Request>();
-  for (const request of requests) {
-    const login = request.login.toLowerCase();
-    const had = latest.get(login);
-    if (!had || request.issue > had.issue) latest.set(login, { ...request, login });
-  }
-  const chosen = [...latest.values()].sort((a, b) => a.issue - b.issue);
+  const chosen = latestRequests(requests).map((request) => ({
+    ...request,
+    login: request.login.toLowerCase(),
+  }));
   const reserved = reservePlots(
     chosen.filter((request) => !booths.has(request.login)),
     booths.values(),

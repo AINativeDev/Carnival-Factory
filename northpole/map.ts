@@ -71,6 +71,7 @@ import {
   buildWorld,
   findPathToFirst,
   moveBy,
+  nearestStand,
   plotAtDoor,
   screenDirection,
   strollAt,
@@ -1216,6 +1217,12 @@ export function startMap(
       invited = same(invited);
       if (visiting) visiting = same(visiting);
       if (entered) entered = same(entered);
+      // A new site may stand where the player is, or across their walk: put
+      // them on clear ground, and plan what's left of the walk again.
+      player = nearestStand(world, player);
+      const goal = path.at(-1);
+      path = [];
+      if (goal) walkToward([goal]);
       island = islandCorners(world);
       bounds = islandBounds(world);
       groundBox = boxOf();

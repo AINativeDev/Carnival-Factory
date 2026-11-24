@@ -4,9 +4,11 @@ import {
   landedBooths,
   MAX_PENDING,
   placePending,
+  plotLimit,
   readPending,
   readPlotFile,
   reservePlots,
+  sitesToRemember,
   type PendingBooth,
 } from './plots';
 
@@ -72,6 +74,14 @@ describe('boothPlotNumbers', () => {
     const numbers = boothPlotNumbers(['amy'], {}, { amy: { plot: -2 } });
     expect(numbers.get('amy')).toBe(0);
   });
+
+  it('puts a plot.json claim past the plot limit on the next free plot', () => {
+    const numbers = boothPlotNumbers(['amy', 'bob'], {}, { bob: { plot: 9999, issue: 1 } });
+    expect(numbers.get('bob')).toBe(1);
+    expect(boothPlotNumbers(['amy'], {}, { amy: { plot: plotLimit(1) - 1 } }).get('amy')).toBe(
+      plotLimit(1) - 1,
+    );
+  });
 });
 
 describe('reservePlots', () => {
@@ -118,6 +128,11 @@ describe('placePending', () => {
     expect(sites.get('cat')).toBe(2);
     expect(sites.get('bob')).toBe(3);
   });
+
+  it('moves a site past the plot limit to the next free plot', () => {
+    const { sites } = placePending([entry('bob', 5, 9999)], new Map([['amy', 0]]));
+    expect(sites.get('bob')).toBe(1);
+  });
 });
 
 describe('readPending', () => {
@@ -162,5 +177,15 @@ describe('readPending', () => {
 describe('landedBooths', () => {
   it('names the construction sites that are booths now, once each', () => {
     expect(landedBooths(['amy', 'bob', 'amy'], new Set(['amy', 'cat']))).toEqual(['amy']);
+  });
+});
+
+describe('sitesToRemember', () => {
+  it('keeps the sites up now, and remembered ones that are not booths here yet', () => {
+    expect(sitesToRemember(['amy', 'bob', 'cat'], ['dan', 'cat'], new Set(['amy']))).toEqual([
+      'dan',
+      'cat',
+      'bob',
+    ]);
   });
 });

@@ -178,6 +178,34 @@ export function isPlotFile(text: string): boolean {
 }
 
 /**
+ * Whether a pull request adds, changes or removes a booth's plot.json when the
+ * booth isn't new. Only a new booth's first pull request, the one that adds
+ * its booth.ts, writes the plot its construction site held; after that the
+ * file never changes, so a booth never moves. `files` is the pull request's
+ * changed files, with GitHub's status for each.
+ */
+export function plotFileProblems(
+  folder: string,
+  files: readonly { filename: string; status: string; previous_filename?: string }[],
+): CodeProblem[] {
+  const plot = `${folder}plot.json`;
+  const touched = files.some((file) => file.filename === plot || file.previous_filename === plot);
+  const isNew = files.some(
+    (file) => file.filename === `${folder}booth.ts` && file.status === 'added',
+  );
+  if (!touched || isNew) return [];
+  return [
+    {
+      file: plot,
+      line: 0,
+      rule: 'plot-file',
+      message:
+        "Only a new booth's first pull request writes plot.json: changing it needs a person.",
+    },
+  ];
+}
+
+/**
  * Checks every source file of one square (a booth's folder, given as
  * `folder`, e.g. `booths/elf/`). Returns every problem found; empty means the
  * code keeps to its square as far as a static check can tell.

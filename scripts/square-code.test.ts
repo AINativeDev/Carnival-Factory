@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { checkSquareCode, isPlotFile } from './square-code.ts';
+import { checkSquareCode, isPlotFile, plotFileProblems } from './square-code.ts';
 
 const root = join(import.meta.dirname, '..');
 const FOLDER = 'booths/grinch/';
@@ -187,5 +187,36 @@ describe("a booth's plot.json", () => {
     expect(rules(fine, { 'plot.json': '{ "plot": -1 }' })).toEqual(['plot-file']);
     expect(rules(fine, { 'data.json': '{ "plot": 1 }' })).toEqual(['files']);
     expect(rules(fine, { 'nested/plot.json': '{ "plot": 1 }' })).toEqual(['files']);
+  });
+});
+
+describe('plotFileProblems', () => {
+  const folder = 'booths/elf/';
+  const file = (name: string, status: string, previous_filename?: string) => ({
+    filename: `${folder}${name}`,
+    status,
+    ...(previous_filename ? { previous_filename: `${folder}${previous_filename}` } : {}),
+  });
+
+  it("lets a new booth's first pull request add plot.json", () => {
+    expect(
+      plotFileProblems(folder, [file('booth.ts', 'added'), file('plot.json', 'added')]),
+    ).toEqual([]);
+  });
+
+  it('lets an update that leaves plot.json alone through', () => {
+    expect(plotFileProblems(folder, [file('booth.ts', 'modified')])).toEqual([]);
+  });
+
+  it("stops an existing booth's plot.json being added, changed, renamed or removed", () => {
+    for (const change of [
+      file('plot.json', 'added'),
+      file('plot.json', 'modified'),
+      file('plot.json', 'removed'),
+      file('spot.json', 'renamed', 'plot.json'),
+    ])
+      expect(
+        plotFileProblems(folder, [file('booth.ts', 'modified'), change]).map((p) => p.rule),
+      ).toEqual(['plot-file']);
   });
 });

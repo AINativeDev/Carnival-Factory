@@ -17,7 +17,12 @@ import {
 } from './booth-gate.ts';
 import { injectionMarkers, scanParticipantText } from './injection-scan.ts';
 import { linkedIssue } from './ownership.ts';
-import { checkSquareCode, type CodeProblem, type SourceFile } from './square-code.ts';
+import {
+  checkSquareCode,
+  plotFileProblems,
+  type CodeProblem,
+  type SourceFile,
+} from './square-code.ts';
 
 const token = process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY;
@@ -105,11 +110,10 @@ async function boothRequest(pull: Pull): Promise<Issue | undefined> {
   return issue;
 }
 
-async function changedFiles(pull: Pull): Promise<string[]> {
-  const files = await getAll<{ filename: string; previous_filename?: string }>(
-    `pulls/${pull.number}/files`,
-  );
-  return files.flatMap((f) => [f.filename, ...(f.previous_filename ? [f.previous_filename] : [])]);
+type ChangedFile = { filename: string; status: string; previous_filename?: string };
+
+async function changedFiles(pull: Pull): Promise<ChangedFile[]> {
+  return getAll<ChangedFile>(`pulls/${pull.number}/files`);
 }
 
 /**
@@ -253,6 +257,8 @@ async function upsertComment(number: number, existing: Comment[], body: string) 
 }
 
 let merged = false;
+/** Whether the gate put needs-human on a pull request, which changes its booth's stage on the map. */
+let labelled = false;
 
 async function gate(pull: Pull) {
   const issue = await boothRequest(pull);
@@ -260,7 +266,11 @@ async function gate(pull: Pull) {
   const owner = issue.user.login.toLowerCase();
   const sha = pull.head.sha;
   const now = new Date();
-  const files = await changedFiles(pull);
+  const changed = await changedFiles(pull);
+  const files = changed.flatMap((f) => [
+    f.filename,
+    ...(f.previous_filename ? [f.previous_filename] : []),
+  ]);
   // Only an open request counts: accepting a newer one closes the older, so a
   // superseded request's pull request never merges on its own.
   const accepted = issue.state === 'open' && names(issue.labels).includes('tessl');
@@ -276,7 +286,11 @@ async function gate(pull: Pull) {
     owner,
     accepted,
     changedFiles: files,
-    codeProblems: [...booth.problems, ...checkSquareCode(`booths/${owner}/`, booth.files)],
+    codeProblems: [
+      ...booth.problems,
+      ...plotFileProblems(`booths/${owner}/`, changed),
+      ...checkSquareCode(`booths/${owner}/`, booth.files),
+    ],
     textFindings: [
       ...scanParticipantText(`${issue.title}\n${issue.body ?? ''}`),
       ...injectionMarkers(pull.title),
@@ -300,6 +314,7 @@ async function gate(pull: Pull) {
   );
   if (ownFailures.length && !facts.labels.includes('needs-human') && !dryRun) {
     await call('POST', `issues/${pull.number}/labels`, { labels: ['needs-human'] });
+    labelled = true;
   }
   if (result.decision !== 'merge' || dryRun) return;
   // Label first, so the merge counts for the rate limit and the digest even if
@@ -331,8 +346,10 @@ async function gate(pull: Pull) {
 
 /**
  * Publishes the map if an auto-merge is newer than the last successful Pages
- * run. A merge by this workflow's token starts no push workflows, so this is
- * how the map updates, and checking on every run retries a failed dispatch.
+ * run, or this run put needs-human on a pull request, which moves its booth's
+ * construction site to "Waiting for a maintainer". A merge or a label by this
+ * workflow's token starts no other workflows, so this is how the map updates,
+ * and checking on every run retries a failed dispatch.
  */
 async function publishIfBehind() {
   type Runs = { workflow_runs: { created_at: string }[] };
@@ -345,7 +362,7 @@ async function publishIfBehind() {
       names(pull.labels).includes('auto-merged') &&
       new Date(pull.merged_at).getTime() > lastPublished,
   );
-  if (!(behind || merged) || running.workflow_runs.length > 0) return;
+  if (!(behind || merged || labelled) || running.workflow_runs.length > 0) return;
   if (dryRun) return console.log('would publish the map');
   await call('POST', 'actions/workflows/pages.yml/dispatches', { ref: 'main' });
   console.log('published the map');

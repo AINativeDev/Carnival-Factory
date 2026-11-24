@@ -8,6 +8,7 @@ import type { NorthPoleSquare } from '../northpole/square';
 import { applyTheme } from '../northpole/theme';
 import { boothRegistry } from '../northpole/booths';
 import { avatarPath } from '../northpole/owners';
+import { sitesToRemember } from '../northpole/plots';
 import { BOOTHS_PANEL, startBoothsPanel, type BoothsPanel } from './booths-hud';
 import { parseHash } from './route';
 import { openVisitHud, type VisitHud } from './visit-hud';
@@ -122,9 +123,12 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
       wereSites: loadSites(),
     },
   );
+  const boothIds = new Set(boothRegistry.all().map((square) => square.id));
   const stopPending = followPending((pending) => {
     started.setPending(pending);
-    saveSites(started.sites);
+    // A page from before a booth landed keeps its site in mind, so the page
+    // that knows the booth still greets it.
+    saveSites(sitesToRemember(loadSites(), started.sites, boothIds));
   });
   stop = () => {
     closeCard(false);

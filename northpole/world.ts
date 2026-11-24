@@ -475,6 +475,28 @@ export function canStand(world: World, position: Tile): boolean {
 }
 
 /**
+ * Where a walker at `position` can stand: there, if they can, else the middle
+ * of the nearest tile they can stand on, such as when the world was rebuilt
+ * with something new where they stood.
+ */
+export function nearestStand(world: World, position: Tile): Tile {
+  if (canStand(world, position)) return position;
+  const { x, y } = tileOf(position);
+  for (let ring = 1; ring <= 2 * world.extent + 1; ring++) {
+    let best: Tile | undefined;
+    for (let dx = -ring; dx <= ring; dx++)
+      for (let dy = -ring; dy <= ring; dy++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== ring) continue;
+        const tile = { x: x + dx, y: y + dy };
+        if (!canStand(world, tile)) continue;
+        if (!best || Math.hypot(dx, dy) < Math.hypot(best.x - x, best.y - y)) best = tile;
+      }
+    if (best) return best;
+  }
+  return { ...world.start };
+}
+
+/**
  * Moves a walker by (dx, dy) tiles, stopping at anything blocked. When the way
  * is blocked they slide along it, as far as either half of the move allows.
  */

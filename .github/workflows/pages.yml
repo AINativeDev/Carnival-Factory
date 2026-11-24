@@ -15,7 +15,9 @@ name: Deploy to GitHub Pages
 # An issue labelled, unlabelled or closed also runs it, from main's own code,
 # so a booth request that's just been accepted shows its construction site on
 # the map within a couple of minutes, and one that moved along shows its new
-# stage.
+# stage. So does `needs-human` going on or off a pull request, for the
+# "Waiting for a maintainer" stage; the auto-merge gate's own token starts no
+# workflows, so the gate dispatches this one when it puts that label on.
 on:
   push:
     branches: [main]
@@ -23,7 +25,7 @@ on:
     workflows: [Preview build]
     types: [completed]
   pull_request_target:
-    types: [closed]
+    types: [closed, labeled, unlabeled]
   issues:
     types: [labeled, unlabeled, closed]
   workflow_dispatch:
@@ -43,10 +45,13 @@ jobs:
     permissions:
       pages: read
     if: >-
-      github.event_name != 'workflow_run' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_repository.full_name == github.repository &&
-       github.event.workflow_run.pull_requests[0].number)
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_repository.full_name == github.repository &&
+        github.event.workflow_run.pull_requests[0].number)) &&
+      (github.event_name != 'pull_request_target' ||
+       github.event.action == 'closed' ||
+       github.event.label.name == 'needs-human')
     runs-on: ubuntu-latest
     outputs:
       enabled: ${{ steps.pages.outputs.enabled }}

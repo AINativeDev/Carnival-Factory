@@ -51,6 +51,15 @@ const LOGIN = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 const isPlot = (value: unknown): value is number =>
   typeof value === 'number' && Number.isInteger(value) && value >= 0 && value < 10000;
 
+/**
+ * The first plot number a booth's `plot.json` or a construction site can't
+ * claim, with `booths` booths on the map. A held plot is always the next free
+ * one, so it's below the booths and the most requests pending added together.
+ * A claim past it would stretch the island, and the work of building it, far
+ * beyond every square, so it takes the next free plot instead.
+ */
+export const plotLimit = (booths: number) => booths + MAX_PENDING;
+
 /** A booth's `plot.json` if it's valid: a whole number for the plot, and maybe the issue. */
 export function readPlotFile(value: unknown): PlotFile | undefined {
   if (!value || typeof value !== 'object') return undefined;
@@ -88,8 +97,8 @@ export function readPending(value: unknown): PendingBooth[] {
  * Every booth's plot number. Pins come first, then each booth's own
  * `plot.json`, the lower issue number first when two claim the same plot,
  * then the rest take the lowest free numbers in the order given. A file's
- * plot that's pinned to another booth, or taken by an earlier file, falls back
- * to the next free one.
+ * plot that's pinned to another booth, taken by an earlier file, or past
+ * `plotLimit`, falls back to the next free one.
  */
 export function boothPlotNumbers(
   ids: readonly string[],
@@ -111,9 +120,10 @@ export function boothPlotNumbers(
       (a, b) =>
         (files[a].issue ?? Infinity) - (files[b].issue ?? Infinity) || (a < b ? -1 : a > b ? 1 : 0),
     );
+  const limit = plotLimit(ids.length);
   for (const id of claims) {
     const { plot } = files[id];
-    if (taken.has(plot)) continue;
+    if (taken.has(plot) || plot >= limit) continue;
     numbers.set(id, plot);
     taken.add(plot);
   }
@@ -152,7 +162,8 @@ export function reservePlots(
  * Where the map draws the pending requests, given the booths it has: a
  * request whose login already has a booth is an update, shown on that booth.
  * The others are construction sites on the plot `pending.json` held for them,
- * or, if a booth took that plot meanwhile, the next free one.
+ * or, if a booth took that plot meanwhile or it's past `plotLimit`, the next
+ * free one.
  */
 export function placePending(
   pending: readonly PendingBooth[],
@@ -161,11 +172,12 @@ export function placePending(
   const updates = new Set<string>();
   const sites = new Map<string, number>();
   const used = new Set(booths.values());
+  const limit = plotLimit(booths.size);
   const moved: PendingBooth[] = [];
   for (const entry of [...pending].sort((a, b) => a.issue - b.issue)) {
     if (booths.has(entry.login)) updates.add(entry.login);
     else if (sites.has(entry.login)) continue;
-    else if (used.has(entry.plot)) moved.push(entry);
+    else if (used.has(entry.plot) || entry.plot >= limit) moved.push(entry);
     else {
       sites.set(entry.login, entry.plot);
       used.add(entry.plot);
@@ -181,4 +193,19 @@ export function placePending(
  */
 export function landedBooths(wereSites: Iterable<string>, booths: ReadonlySet<string>): string[] {
   return [...new Set(wereSites)].filter((login) => booths.has(login));
+}
+
+/**
+ * The construction sites to remember for next time: the ones up now, then the
+ * ones remembered before that aren't booths here yet. A page from an older
+ * deploy doesn't know a booth that just landed, so it keeps that site in mind
+ * until a page that knows the booth greets it.
+ */
+export function sitesToRemember(
+  were: Iterable<string>,
+  sites: readonly string[],
+  booths: ReadonlySet<string>,
+): string[] {
+  const now = new Set(sites);
+  return [...sites, ...[...new Set(were)].filter((login) => !now.has(login) && !booths.has(login))];
 }
