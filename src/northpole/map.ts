@@ -1,4 +1,4 @@
-import { GUTTER, layoutMap, PLOT_SIZE, slotAt, type MapLayout } from './layout';
+import { GUTTER, layoutMap, PLOT_SIZE, slotAt, type MapLayout, type PlotSlot } from './layout';
 import type { NorthPolePlot } from './plot';
 import { canvasFont, theme } from './theme';
 
@@ -31,7 +31,7 @@ export function drawPlot(
     // own square. A canvas it emptied makes drawImage throw, which shows the placeholder.
     ctx.drawImage(scratch, 0, 0, size, size, x, y, size, size);
   } catch (error) {
-    console.error(`The plot owned by ${plot.owner} failed to draw`, error);
+    console.error(`The square ${plot.owner} failed to draw`, error);
     ctx.save();
     ctx.fillStyle = colors.surface;
     ctx.fillRect(x, y, size, size);
@@ -52,58 +52,123 @@ function drawGround(ctx: CanvasRenderingContext2D, layout: MapLayout) {
   }
 }
 
-function drawSign(ctx: CanvasRenderingContext2D, plot: NorthPolePlot, x: number, y: number) {
-  ctx.fillStyle = colors.night;
-  ctx.font = canvasFont('small', 'bold');
+/** The midway: a trodden path down the middle, with a string of twinkling lights on each edge. */
+function drawMidway(ctx: CanvasRenderingContext2D, layout: MapLayout, time: number) {
+  const { x, width } = layout.midway;
+  ctx.fillStyle = colors.ice;
+  ctx.fillRect(x, 0, width, layout.height);
+  ctx.fillStyle = colors.snow;
+  ctx.fillRect(x + width * 0.15, 0, width * 0.7, layout.height);
+
+  const spacing = 24;
+  for (let y = spacing / 2, n = 0; y < layout.height; y += spacing, n++) {
+    for (const edge of [x + 4, x + width - 4]) {
+      const on = Math.sin(time / 400 + n * 1.7 + edge) > -0.3;
+      ctx.globalAlpha = on ? 1 : 0.35;
+      ctx.fillStyle = n % 2 ? colors.gold : colors.berry;
+      ctx.beginPath();
+      ctx.arc(edge, y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+/** An open spot: a staked-out square of fresh snow, waiting for a plot. */
+function drawOpenSpot(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.save();
+  ctx.strokeStyle = colors.muted;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 6]);
+  ctx.strokeRect(x + 4, y + 4, PLOT_SIZE - 8, PLOT_SIZE - 8);
+  ctx.restore();
+  ctx.fillStyle = colors.muted;
+  ctx.font = canvasFont('body', 'bold');
+  ctx.textAlign = 'center';
+  ctx.fillText('+', x + PLOT_SIZE / 2, y + PLOT_SIZE / 2);
+}
+
+/** The sign under a square: its name, and whose it is. */
+function drawSign(ctx: CanvasRenderingContext2D, name: string, by: string, x: number, y: number) {
+  const width = PLOT_SIZE + GUTTER - 8;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillText(plot.name, x + PLOT_SIZE / 2, y + PLOT_SIZE + 10, PLOT_SIZE + GUTTER - 8);
+  ctx.fillStyle = colors.night;
+  ctx.font = canvasFont('small', 'bold');
+  ctx.fillText(name, x + PLOT_SIZE / 2, y + PLOT_SIZE + 8, width);
+  ctx.fillStyle = colors.surface;
+  ctx.font = canvasFont('small');
+  ctx.fillText(by, x + PLOT_SIZE / 2, y + PLOT_SIZE + 24, width);
   ctx.textBaseline = 'alphabetic';
 }
 
+export type SquareKind = 'attraction' | 'plot';
+
 export interface MapOptions {
+  /** The North Pole's own attractions, along the midway. */
+  attractions: readonly NorthPolePlot[];
+  /** Participants' plots, beside them. */
   plots: readonly NorthPolePlot[];
-  onOpen(owner: string): void;
+  /** Opens a square: `id` is a plot's owner or an attraction's id. */
+  onOpen(kind: SquareKind, id: string): void;
 }
 
 /** Draws the whole map, animates it, and returns a function that stops it. */
 export function startMap(canvas: HTMLCanvasElement, options: MapOptions): () => void {
   const ctx = canvas.getContext('2d')!;
   const scratch = document.createElement('canvas');
-  const plots = options.plots;
-  let layout = layoutMap(plots.length, 0);
+  const { attractions, plots } = options;
+  const squareAt = (slot: PlotSlot) =>
+    slot.kind === 'attraction'
+      ? attractions[slot.index]
+      : slot.kind === 'plot'
+        ? plots[slot.index]
+        : undefined;
+  let layout = layoutMap(attractions.length, plots.length, 0);
   let frame = 0;
 
   const resize = () => {
-    layout = layoutMap(plots.length, canvas.parentElement?.clientWidth ?? window.innerWidth);
+    layout = layoutMap(
+      attractions.length,
+      plots.length,
+      canvas.parentElement?.clientWidth ?? window.innerWidth,
+    );
     canvas.width = layout.width;
     canvas.height = layout.height;
   };
 
   const render = (time: number) => {
     drawGround(ctx, layout);
+    drawMidway(ctx, layout, time);
     for (const slot of layout.slots) {
-      const plot = plots[slot.index];
-      drawPlot(ctx, scratch, plot, slot.x, slot.y, PLOT_SIZE, time);
-      drawSign(ctx, plot, slot.x, slot.y);
+      const square = squareAt(slot);
+      if (!square) {
+        drawOpenSpot(ctx, slot.x, slot.y);
+        drawSign(ctx, 'Open plot', 'Claim it', slot.x, slot.y);
+        continue;
+      }
+      drawPlot(ctx, scratch, square, slot.x, slot.y, PLOT_SIZE, time);
+      const by = slot.kind === 'attraction' ? 'North Pole' : `@${square.owner}`;
+      drawSign(ctx, square.name, by, slot.x, slot.y);
     }
     frame = requestAnimationFrame(render);
   };
 
-  const plotAt = (event: MouseEvent) => {
+  const slotUnder = (event: MouseEvent) => {
     const box = canvas.getBoundingClientRect();
     const x = ((event.clientX - box.left) * canvas.width) / box.width;
     const y = ((event.clientY - box.top) * canvas.height) / box.height;
     const slot = slotAt(layout, x, y);
-    return slot ? plots[slot.index] : undefined;
+    return slot && slot.kind !== 'open' ? slot : undefined;
   };
 
   const onClick = (event: MouseEvent) => {
-    const plot = plotAt(event);
-    if (plot) options.onOpen(plot.owner);
+    const slot = slotUnder(event);
+    const square = slot && squareAt(slot);
+    if (slot && square) options.onOpen(slot.kind as SquareKind, square.owner);
   };
   const onMove = (event: MouseEvent) => {
-    canvas.style.cursor = plotAt(event) ? 'pointer' : 'default';
+    canvas.style.cursor = slotUnder(event) ? 'pointer' : 'default';
   };
 
   resize();
@@ -120,7 +185,7 @@ export function startMap(canvas: HTMLCanvasElement, options: MapOptions): () => 
   };
 }
 
-/** Animates a single plot, large, on its own canvas. Returns a function that stops it. */
+/** Animates a single plot or attraction, large, on its own canvas. Returns a function that stops it. */
 export function startPreview(canvas: HTMLCanvasElement, plot: NorthPolePlot, size = 480) {
   const ctx = canvas.getContext('2d')!;
   const scratch = document.createElement('canvas');

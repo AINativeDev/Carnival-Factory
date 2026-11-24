@@ -107,6 +107,46 @@ describe('plot house rules', () => {
     expect(await problems(code)).toEqual([]);
   });
 
+  it('let a test beside a plot import vitest, and nothing more', async () => {
+    const file = 'src/plots/grinch/plot.test.ts';
+    expect(
+      await problems(
+        `import { expect } from 'vitest'; import plot from './plot'; expect(plot).toBeDefined();`,
+        file,
+      ),
+    ).toEqual([]);
+    expect(await problems(`import { readFileSync } from 'node:fs';`, file)).toContain(
+      'no-restricted-imports',
+    );
+    expect(await problems(`import { expect } from 'vitest';`)).toContain('no-restricted-imports');
+  });
+
+  it('hold an attraction to the same rules', async () => {
+    const file = 'src/attractions/big-top/plot.ts';
+    expect(
+      await problems(
+        `
+          import type { NorthPolePlot } from '../../northpole/plot';
+          import { theme } from '../../northpole/theme';
+          import { wobble } from './wobble';
+          export const colour = wobble(theme.colors.snow.length) as unknown as NorthPolePlot;
+        `,
+        file,
+      ),
+    ).toEqual([]);
+    expect(await problems(`fetch('https://example.com');`, file)).not.toEqual([]);
+    expect(await problems(`localStorage.getItem('x');`, file)).not.toEqual([]);
+    expect(await problems(`import x from '../../plots/jedi4ever/plot';`, file)).toContain(
+      'no-restricted-imports',
+    );
+    expect(await problems(`import x from '../ferris-wheel/plot';`, file)).toContain(
+      'no-restricted-imports',
+    );
+    expect(
+      await problems(`import x from '../../main';`, 'src/attractions/big-top/lib/draw.ts'),
+    ).toContain('no-restricted-imports');
+  });
+
   it('leave the map itself alone', async () => {
     expect(await problems(`localStorage.getItem('x');`, 'src/northpole/map.ts')).toEqual([]);
   });

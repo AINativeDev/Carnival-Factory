@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { applyKillSwitch, createPlotRegistry, isPlotOwner, type NorthPolePlot } from './plot';
+import {
+  applyKillSwitch,
+  createAttractionRegistry,
+  createPlotRegistry,
+  fromFolders,
+  isAttractionId,
+  isPlotOwner,
+  type NorthPolePlot,
+} from './plot';
 
 const plot = (owner: string): NorthPolePlot => ({
   owner,
@@ -37,6 +45,58 @@ describe('createPlotRegistry', () => {
 
   it('refuses an owner that is not a login', () => {
     expect(() => createPlotRegistry([plot('Not A Login')])).toThrow(/GitHub login/);
+  });
+});
+
+describe('isAttractionId', () => {
+  it('accepts kebab-case ids', () => {
+    expect(isAttractionId('ferris-wheel')).toBe(true);
+    expect(isAttractionId('big-top')).toBe(true);
+    expect(isAttractionId('carousel')).toBe(true);
+  });
+
+  it('rejects anything else', () => {
+    expect(isAttractionId('Ferris-Wheel')).toBe(false);
+    expect(isAttractionId('ferris_wheel')).toBe(false);
+    expect(isAttractionId('ferris--wheel')).toBe(false);
+    expect(isAttractionId('-wheel')).toBe(false);
+    expect(isAttractionId('')).toBe(false);
+  });
+});
+
+describe('createAttractionRegistry', () => {
+  it('finds an attraction by id, whatever the case', () => {
+    const registry = createAttractionRegistry([plot('big-top')]);
+    expect(registry.get('Big-Top')?.owner).toBe('big-top');
+    expect(registry.get('ferris-wheel')).toBeUndefined();
+  });
+
+  it('refuses two attractions with one id', () => {
+    expect(() => createAttractionRegistry([plot('big-top'), plot('big-top')])).toThrow(
+      /Two attractions/,
+    );
+  });
+
+  it('refuses an id that is not kebab-case', () => {
+    expect(() => createAttractionRegistry([plot('Big Top')])).toThrow(/kebab-case/);
+  });
+});
+
+describe('fromFolders', () => {
+  it('sorts the squares by folder', () => {
+    const found = fromFolders({
+      './vixen/plot.ts': plot('vixen'),
+      './comet/plot.ts': plot('comet'),
+    });
+    expect(found.map((p) => p.owner)).toEqual(['comet', 'vixen']);
+  });
+
+  it('refuses a folder without a default export', () => {
+    expect(() => fromFolders({ './comet/plot.ts': undefined })).toThrow(/default export/);
+  });
+
+  it('refuses a square whose owner is not its folder', () => {
+    expect(() => fromFolders({ './comet/plot.ts': plot('vixen') })).toThrow(/folder is "comet"/);
   });
 });
 

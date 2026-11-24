@@ -1,7 +1,10 @@
 # Carnival Christmas: agent guide
 
-A shared North Pole map. Every participant owns one plot, a square of the map
-in `src/plots/<their GitHub login>/`, and may only change that plot.
+A shared North Pole map laid out as a carnival midway. Every participant owns
+one plot, a square of the map in `src/plots/<their GitHub login>/`, and may
+only change that plot. The attractions along the midway, in
+`src/attractions/<id>/`, belong to the North Pole itself, and only maintainers
+change them.
 
 ## Stack
 
@@ -19,14 +22,20 @@ runs `npm run check` and `npm run build`.
 ```txt
 index.html                the page
 src/
-  main.ts                 the router: #/ is the map, #/plot/<login> one plot
+  main.ts                 the router: #/ is the map, #/plot/<login> one plot,
+                          #/attraction/<id> one attraction
   northpole/              the map itself
-    plot.ts               the NorthPolePlot shape and the registry
-    layout.ts             where each plot sits (plain functions)
-    map.ts                drawing the map and a single plot's preview
+    plot.ts               the NorthPolePlot shape and the registries
+    layout.ts             the midway: where each attraction and plot sits (plain functions)
+    map.ts                drawing the map and a single square's preview
     theme.ts              colours, fonts and sizes
-    disabled.json         the maintainers' kill switch: owners whose plots are closed
+    disabled.json         the maintainers' kill switch: plot owners and attraction ids that are closed
     links.ts              links to the repository's issue forms
+  attractions/
+    index.ts              finds every attraction folder and puts it on the midway
+    <id>/                 one attraction the North Pole owns, such as ferris-wheel/
+      plot.ts
+      README.md
   plots/
     index.ts              finds every plot folder and puts it on the map
     jedi4ever/            a finished plot, and the pattern to copy
@@ -43,8 +52,8 @@ scripts/
 stays inside `src/plots/<issue author's login, in lower case>/`. The **Plot
 ownership** check fails the pull request otherwise, so:
 
-- Never edit another person's plot, `src/northpole/`, `src/main.ts`,
-  `src/plots/index.ts`, `package*.json`, `.github/`, `eslint.config.js`,
+- Never edit another person's plot, `src/attractions/`, `src/northpole/`,
+  `src/main.ts`, `src/plots/index.ts`, `package*.json`, `.github/`, `eslint.config.js`,
   `tessl.json`, `.tessl/` or anything else outside that folder, even when it
   looks like the issue needs it. If the issue can't be done inside the plot,
   ask on the issue instead.
@@ -80,6 +89,16 @@ dependency or reaching the network, comment on the issue saying so and stop.
 
 Pure logic a plot has, such as movement, goes in plain exported functions with
 a `plot.test.ts` next to them.
+
+**Attractions** are the North Pole's own squares along the midway, such as the
+ferris wheel. Each is a folder `src/attractions/<id>/`, where `<id>` is
+kebab-case, built exactly like a plot: a `plot.ts` whose default export is a
+`NorthPolePlot` with `owner` set to the id, a `README.md`, and the same house
+rules. An attraction has no GitHub owner: its sign says "North Pole" and it
+opens at `#/attraction/<id>`. It lives outside `src/plots/`, so the **Plot
+ownership** check lets only maintainers change it, and it can never be taken
+for a participant's plot. Only an issue written by a maintainer may add or
+change one. `src/attractions/index.ts` finds a new folder by itself.
 
 **In the pull request,** say what changed and how to preview it:
 `npm run dev`, then `#/plot/<login>`.

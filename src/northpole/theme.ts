@@ -17,6 +17,12 @@ export const theme = {
     gold: '#f4c542',
     wood: '#8a5a3b',
     glow: '#ffe9a8',
+    // The northern lights, and the midway's treats.
+    aurora: '#5ef2b8',
+    violet: '#a98bff',
+    mint: '#7fe3c8',
+    cocoa: '#5b3521',
+    gingerbread: '#c27a3e',
   },
   font: {
     family: '"Trebuchet MS", "Segoe UI", system-ui, sans-serif',
