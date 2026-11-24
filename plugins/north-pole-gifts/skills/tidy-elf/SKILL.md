@@ -34,12 +34,15 @@ every link it gives still goes somewhere.
    - **Setup failed**: a command that installs the project's dependencies, such
      as `npm ci`, `pip install -r requirements.txt` or `bundle install`, exited
      non-zero. That is a finding in itself, whatever the error, a network one
-     included. Note its first error line, run nothing after it, and list every
-     later command under **Couldn't check**, naming the setup command it
-     needed.
+     included. Note its first error line, and don't run the commands that
+     depend on it: the later ones that use what it installs, such as
+     `npm run build` after `npm ci`. Keep running the ones that don't, such as
+     a frontend's own install and build after a backend's `pip install` failed.
    - **Broken**: any other command that ran and exited non-zero.
-   - **Couldn't check**: a command that couldn't run because the setup before
-     it failed, with that setup command named.
+   - **Couldn't check**: a command that depends on a setup that failed, with
+     that setup command named.
+   - **Skipped**: a command the Rules don't let you run stays skipped, with
+     why, whatever failed before it.
    - **Works**: it exited 0, or its server listened.
 4. **Collect the links**: Markdown links and bare URLs. For a relative link,
    check the file or heading exists in the repository; a missing one is
