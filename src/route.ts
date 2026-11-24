@@ -1,6 +1,9 @@
 import type { SquareKind } from '../northpole/map';
 
-/** A booth's owner or an attraction's id, as the URL may name it. */
+/**
+ * A booth's owner or an attraction's id, as the URL may name it. Squares are
+ * named in lower case, so a deep link is read in lower case too.
+ */
 const ID = /^[\w-]+$/;
 
 /**
@@ -29,7 +32,8 @@ export function parseHash(hash: string): Route {
   const params = new URLSearchParams(query[1]);
   for (const kind of ['booth', 'attraction'] as const) {
     const id = params.get(kind);
-    if (id !== null) return ID.test(id) ? { view: 'map', focus: { kind, id } } : { view: 'map' };
+    if (id !== null)
+      return ID.test(id) ? { view: 'map', focus: { kind, id: id.toLowerCase() } } : { view: 'map' };
   }
   return { view: 'map' };
 }

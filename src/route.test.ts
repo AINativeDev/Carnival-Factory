@@ -39,6 +39,17 @@ describe('parseHash', () => {
     });
   });
 
+  it('reads a mixed-case deep link as the square it names', () => {
+    expect(parseHash('#/?booth=Jedi4Ever')).toEqual({
+      view: 'map',
+      focus: { kind: 'booth', id: 'jedi4ever' },
+    });
+    expect(parseHash('#/?attraction=Ferris-Wheel')).toEqual({
+      view: 'map',
+      focus: { kind: 'attraction', id: 'ferris-wheel' },
+    });
+  });
+
   it('ignores a malformed name and opens the plain map', () => {
     for (const hash of [
       '#/?booth=',
