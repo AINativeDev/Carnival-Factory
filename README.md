@@ -30,7 +30,8 @@ agent checks the request, builds it on a branch and opens a pull request with a
 preview, and code review checks the result before it lands on the map.
 
 Each booth runs sandboxed in its own frame, so the worst a booth can do is
-break itself.
+break itself. A booth can react to the mouse or a finger over it, hover and
+taps, so it can be something people play with, not just watch.
 
 There are two ways to play:
 

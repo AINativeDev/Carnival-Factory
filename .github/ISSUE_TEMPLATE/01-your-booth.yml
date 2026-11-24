@@ -70,7 +70,7 @@ body:
     id: motion
     attributes:
       label: What moves?
-      description: The animation, if any. Booths animate from time, so describe a loop that repeats every few seconds.
+      description: The animation, if any. Booths animate from time, so describe a loop that repeats every few seconds. A booth can also react to hover, clicks and taps, so say what happens when someone points at it or taps it, or what game it plays.
       placeholder: |
         The penguins skate a slow figure eight every 6 seconds. Steam rises
         from the cocoa. Snow falls gently. The lantern flickers.

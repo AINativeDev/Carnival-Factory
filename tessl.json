@@ -521,6 +521,27 @@
           "GITHUB_PR_NUMBER": "{{ event.pull_request.number }}"
         }
       }
+    },
+    "assess-booth-request-replied": {
+      "on": [
+        "github:issue_comment.created"
+      ],
+      "when": {
+        "isPullRequest": "false",
+        "event.issue.state": "open",
+        "event.sender.type": "User",
+        "event.issue.labels.*.name": {
+          "any": {
+            "equals": "needs-info"
+          }
+        }
+      },
+      "action": {
+        "use": "assess-booth-request",
+        "inputs": {
+          "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
+        }
+      }
     }
   },
   "environment": "northpole-carnival-factory-env"
