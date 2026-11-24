@@ -1,0 +1,61 @@
+name: Advent challenge
+description: Did one of the advent calendar's challenges on your own repository? Mark it done, and your booth gets a decoration.
+title: 'Advent: day '
+labels: [advent-done]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The **advent calendar** has a small challenge a day, from 1 to 24
+        December, each about 15 minutes with a [Tessl](https://tessl.io) factory
+        on a repository of your own. See them all on the map, at `#/advent`.
+
+        Mark one done here with a link to the pull request or issue on your
+        repository that shows it. An agent checks the link is public, on your
+        repository (or opened by you) and plausibly matches the challenge. Once
+        it's accepted, your booth on the map gets a decoration: ornaments
+        first, then a string of lights, then a star after 12 challenges and a
+        glowing sign after all 24.
+
+        It's opt-in and self-reported: nothing else is checked or tracked, and
+        nobody is pinged or emailed.
+  - type: dropdown
+    id: day
+    attributes:
+      label: Which day
+      description: The challenge you did. Its door must be open.
+      options:
+        - 'Day 1: Set up a factory'
+        - 'Day 2: Ship your first issue'
+        - "Day 3: Merge the factory's pull request"
+        - 'Day 4: Write an agent guide'
+        - 'Day 5: Install a plugin'
+        - 'Day 6: Make the factory ask first'
+        - 'Day 7: Turn on code review'
+        - 'Day 8: Add a review lens of your own'
+        - 'Day 9: Write a skill'
+        - 'Day 10: Review your skill'
+        - 'Day 11: Prove the skill works'
+        - 'Day 12: Add a weekly maintenance loop'
+        - 'Day 13: Keep the docs in sync'
+        - 'Day 14: Write a changelog loop'
+        - 'Day 15: React to a label'
+        - 'Day 16: Fix a failing check'
+        - 'Day 17: Guard a public repository'
+        - 'Day 18: Set up the environment'
+        - 'Day 19: Watch your test health'
+        - 'Day 20: Bundle a plugin'
+        - 'Day 21: Learn from past work'
+        - 'Day 22: Check a release'
+        - 'Day 23: Show your badge'
+        - 'Day 24: Ship a gift'
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Your pull request or issue
+      description: A link to the public pull request or issue on your own repository that shows the challenge done.
+      placeholder: https://github.com/octocat/my-project/pull/12
+    validations:
+      required: true

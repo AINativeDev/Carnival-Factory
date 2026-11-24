@@ -9,13 +9,13 @@ import {
   KEEP_POSTED_URL,
   OWN_REPO_URL,
   keepPostedHref,
-  signupOffer,
 } from '../northpole/links';
 import type { SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { shareLink, shareText } from '../northpole/visit';
 import { SQUARE_HISTORY, emptyHistoryText, historyOf, renderHistory } from './history';
+import { SIGNUP_OFFER, showSignupOffer } from './offer';
 import { deepLink, levelLink, seasonLink } from './route';
 
 export interface VisitHudOptions {
@@ -89,10 +89,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       <p class="history-empty" hidden></p>
       <p class="history-factory"><a class="history-factory-link" href="#/factory">See the factory's numbers</a></p>
       <p class="history-own"><a class="history-own-link" href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run this on your own repo</a>: set up a Tessl factory on a repository of yours.</p>
-      <div class="history-offer" hidden>
-        <p><span class="history-offer-tag">Offer</span> <a class="history-offer-link" target="_blank" rel="noopener"></a></p>
-        <p class="history-terms">Terms apply, as set out on Tessl's sign-up page. Tessl makes this offer, not the carnival.</p>
-      </div>
+      ${SIGNUP_OFFER}
     </details>
     <div class="visit-help"></div>
     <p class="visit-foot">Next North Pole event? ${KEEP_POSTED_LINK}</p>`;
@@ -141,20 +138,14 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   empty.textContent = emptyHistoryText(SQUARE_HISTORY);
   empty.hidden = entries.length > 0;
   $<HTMLDetailsElement>('.visit-history').open = !matchMedia('(max-width: 719px)').matches;
-  const offer = signupOffer();
-  if (offer) {
-    const offerLink = $<HTMLAnchorElement>('.history-offer-link');
-    offerLink.href = offer.url;
-    offerLink.textContent = offer.text;
-    $<HTMLElement>('.history-offer').hidden = false;
-  }
+  showSignupOffer(card);
 
   const help = $('.visit-help');
   if (level) {
     help.innerHTML = `<p>This square belongs to a participant's own level. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> in the North Pole.</p>`;
   } else if (kind === 'booth') {
     help.innerHTML = `<p><span class="visit-ask">Is this yours?</span> <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask for a change</a> <span aria-hidden="true">·</span> <button class="visit-mine" type="button">Share it as yours</button></p>
-      <p><span class="visit-ask">Built your own factory?</span> <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Get the Elf Engineer badge</a></p>
+      <p><span class="visit-ask">Built your own factory?</span> <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Get the Elf Engineer badge</a> <span aria-hidden="true">·</span> <a href="#/advent">Open the advent calendar</a></p>
       <p><a class="visit-season">Your season</a></p>`;
     help.querySelector<HTMLAnchorElement>('.visit-season')!.href = seasonLink(square.id);
   } else {

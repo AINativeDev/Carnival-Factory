@@ -90,6 +90,12 @@ ask for the [Elf Engineer badge](docs/elf-engineer.md) with **Issues → New
 issue → Elf Engineer badge**. Once it's granted, your booth gets an elf-hat pin
 and a link to your factory, and you get a badge for your README.
 
+**Keep going in December.** The [advent calendar](docs/advent.md), at
+`#/advent` on the map, has a small factory challenge a day from 1 to 24
+December, each about 15 minutes on a repository of your own. Mark one done
+with **Issues → New issue → Advent challenge**, and once it's accepted your
+booth gets a decoration.
+
 Booths are drawn in the [diorama style](docs/style.md) by default, the same
 as the North Pole's attractions: a little isometric scene at dusk, lit warm.
 A booth built before that keeps its own look until its owner asks for a

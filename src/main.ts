@@ -13,6 +13,7 @@ import { avatarPath } from '../northpole/owners';
 import { PEOPLES_CHOICE } from '../northpole/peoples-choice-standings';
 import { sitesToRemember } from '../northpole/plots';
 import { BOOTHS_PANEL, startBoothsPanel, type BoothsPanel } from './booths-hud';
+import { openAdventHud } from './advent';
 import { openFactoryHud, readFactoryStats, squareCounts } from './factory';
 import { CHOICE_PANEL, renderChoice } from './peoples-choice-hud';
 import { SQUARE_HISTORY } from './history';
@@ -360,7 +361,7 @@ let invite: string | undefined =
       ? arrival.focus.id
       : undefined;
 
-/** Leaves the square the player is inside, or the factory's numbers. `address` says to take the address back off it, too. */
+/** Leaves the square the player is inside, or the factory's numbers or the advent calendar. `address` says to take the address back off it, too. */
 function closeCard(address: boolean) {
   if (!card) return;
   card.close();
@@ -418,6 +419,17 @@ function showFactory(fromHistory: boolean) {
       attractionRegistry.all().map((square) => square.id),
     ),
     stats: readFactoryStats(SQUARE_HISTORY?.factory),
+    onClose: () => closeCard(true),
+  });
+}
+
+/** Shows the advent calendar over the map. */
+function showAdvent(fromHistory: boolean) {
+  const fromMap = fromHistory && !card;
+  closeCard(false);
+  cardFromHistory = fromMap;
+  card = openAdventHud(app.querySelector('.map-frame')!, {
+    now: new Date(),
     onClose: () => closeCard(true),
   });
 }
@@ -489,6 +501,11 @@ function route(event?: HashChangeEvent) {
       renderMap();
     }
     return showFactory(fromHistory);
+  }
+
+  if (route.view === 'advent') {
+    if (!map) renderMap();
+    return showAdvent(fromHistory);
   }
 
   // Back from a visit, or See it on the map: the player comes out, and the world stays.

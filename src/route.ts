@@ -8,7 +8,8 @@ const ID = /^[\w-]+$/;
 
 /**
  * What the page's hash asks for: the map, perhaps focused on one square; the
- * player inside one square, in the world; the factory's numbers over the map;
+ * player inside one square, in the world; the factory's numbers or the advent
+ * calendar over the map;
  * or a link shared from before booths were called plots.
  */
 export type Route =
@@ -16,19 +17,21 @@ export type Route =
   | { view: 'square'; kind: SquareKind; id: string }
   | { view: 'season'; login: string }
   | { view: 'factory' }
+  | { view: 'advent' }
   | { view: 'level'; login: string; focus?: string; inside?: string }
   | { view: 'legacy'; id: string };
 
 /**
  * Reads a hash such as `#/booth/<login>`, `#/attraction/<id>`, a participant's
  * season card `#/season/<login>`, or the map's
- * deep links `#/?booth=<login>` and `#/?attraction=<id>`, or `#/factory`. Anything it doesn't
+ * deep links `#/?booth=<login>` and `#/?attraction=<id>`, or `#/factory`, or `#/advent`. Anything it doesn't
  * know, a malformed name included, is the plain map. A level opens at
  * `#/level/<login>`, in front of one of its squares at
  * `#/level/<login>?square=<id>`, and inside one at `#/level/<login>/<id>`.
  */
 export function parseHash(hash: string): Route {
   if (hash === '#/factory') return { view: 'factory' };
+  if (hash === '#/advent') return { view: 'advent' };
 
   const level = hash.match(/^#\/level\/([\w-]+)(?:\/([\w-]+)|\?(.*))?$/);
   if (level) {
