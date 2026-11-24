@@ -285,13 +285,13 @@ export function drum(
     ctx.beginPath();
     const p = rim(x, y, rx, from);
     ctx.moveTo(p.x, p.y);
-    for (let t = from; t <= to + 1e-6; t += (to - from) / 4) {
+    for (const t of arcSteps(from, to)) {
       const q = rim(x, y, rx, t);
       ctx.lineTo(q.x, q.y);
     }
     const q = rim(x, y, rx, to);
     ctx.lineTo(q.x, q.y - h);
-    for (let t = to; t >= from - 1e-6; t -= (to - from) / 4) {
+    for (const t of arcSteps(to, from)) {
       const r = rim(x, y, rx, t);
       ctx.lineTo(r.x, r.y - h);
     }
@@ -308,6 +308,11 @@ export function drum(
   ctx.beginPath();
   ctx.ellipse(x, y - h, rx, ry, 0, 0, Math.PI * 2);
   ctx.fill();
+}
+
+/** Five evenly spaced angles from `from` to `to`, both ends included, however close they are. */
+export function arcSteps(from: number, to: number) {
+  return [0, 1, 2, 3, 4].map((i) => from + ((to - from) * i) / 4);
 }
 
 /** An angle moved into the half turn from -PI/2 to 3PI/2, so the front half is 0 to PI. */
@@ -340,7 +345,7 @@ export function cone(
     ctx.fillStyle = colours[k % colours.length];
     ctx.beginPath();
     ctx.moveTo(peak.x, peak.y);
-    for (let t = from; t <= to + 1e-6; t += (to - from) / 4) {
+    for (const t of arcSteps(from, to)) {
       const p = rim(x, y, rx, t);
       ctx.lineTo(p.x, p.y);
     }

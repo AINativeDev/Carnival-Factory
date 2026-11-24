@@ -54,7 +54,7 @@ const attraction: NorthPoleSquare = {
     scene(ctx, size, time, () => {
       // The booth: two back walls meeting behind, a lamp in the corner, and striped awnings.
       const wall = 34;
-      shadow(ctx, 54, 70, 80);
+      shadow(ctx, 53, 70, 80);
       box(ctx, -21, -21, 3, 40, wall, colors.slab, colors.surface, colors.night);
       box(ctx, -21, -21, 40, 3, wall, colors.slab, colors.surface, colors.night);
       const lamp = iso(-17, -17, 24);

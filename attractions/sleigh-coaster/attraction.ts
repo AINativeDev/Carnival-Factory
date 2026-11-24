@@ -32,9 +32,18 @@ export function sleighAt(time: number): { x: number; y: number; angle: number } 
  * near one) and `drop` below the rail. The track runs across the slab from its
  * left corner to its right one, so it reads left to right as it always has.
  */
-function at(x: number, across: number, drop = 0) {
+export function ridePoint(x: number, across: number, drop = 0) {
   const z = (78 - trackY(x)) * 0.72 + 4;
   return iso(-20 + x * 0.4 + across, 20 - x * 0.4 + across, Math.max(0, z - drop));
+}
+
+/** Where the sleigh is drawn at `time`, on the track's near rail, and its tilt in radians. */
+export function sleighPose(time: number, near: number): { x: number; y: number; angle: number } {
+  const { x } = sleighAt(time);
+  const p = ridePoint(x, near);
+  const ahead = ridePoint(Math.min(x + 1, 100), near);
+  const behind = ridePoint(Math.max(x - 1, 0), near);
+  return { ...p, angle: Math.atan2(ahead.y - behind.y, ahead.x - behind.x) };
 }
 
 /** A sleigh-ride roller coaster that loops over a snowy hill. */
@@ -48,17 +57,17 @@ const attraction: NorthPoleSquare = {
       const far = -3;
       const hill = 7;
 
-      shadow(ctx, 52, 70, 86);
+      shadow(ctx, 50, 70, 86);
 
       // The snowy hill under the track: its slopes lit where they face the light.
       for (let x = 0; x < 100; x += 2) {
         const rising = trackY(x + 2) < trackY(x);
         ctx.fillStyle = rising ? colors.snowLit : colors.snowShade;
         const top = [
-          at(x, near + 3, hill),
-          at(x + 2, near + 3, hill),
-          at(x + 2, far - 3, hill),
-          at(x, far - 3, hill),
+          ridePoint(x, near + 3, hill),
+          ridePoint(x + 2, near + 3, hill),
+          ridePoint(x + 2, far - 3, hill),
+          ridePoint(x, far - 3, hill),
         ];
         ctx.beginPath();
         top.forEach((p, n) => (n ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
@@ -68,12 +77,12 @@ const attraction: NorthPoleSquare = {
       ctx.fillStyle = colors.slab;
       ctx.beginPath();
       for (let x = 0; x <= 100; x += 2) {
-        const p = at(x, near + 3, hill);
+        const p = ridePoint(x, near + 3, hill);
         if (x === 0) ctx.moveTo(p.x, p.y);
         else ctx.lineTo(p.x, p.y);
       }
       for (const x of [100, 0]) {
-        const p = at(x, near + 3, 99);
+        const p = ridePoint(x, near + 3, 99);
         ctx.lineTo(p.x, p.y);
       }
       ctx.fill();
@@ -84,8 +93,8 @@ const attraction: NorthPoleSquare = {
       ctx.beginPath();
       for (let x = 4; x < 100; x += 8) {
         for (const gy of [far, near]) {
-          const a = at(x, gy);
-          const b = at(x, gy, hill);
+          const a = ridePoint(x, gy);
+          const b = ridePoint(x, gy, hill);
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
         }
@@ -96,7 +105,7 @@ const attraction: NorthPoleSquare = {
       const rail = (gy: number) => {
         ctx.beginPath();
         for (let x = 0; x <= 100; x += 1) {
-          const p = at(x, gy);
+          const p = ridePoint(x, gy);
           if (x === 0) ctx.moveTo(p.x, p.y);
           else ctx.lineTo(p.x, p.y);
         }
@@ -109,8 +118,8 @@ const attraction: NorthPoleSquare = {
       ctx.lineWidth = 0.7;
       ctx.beginPath();
       for (let x = 2; x < 100; x += 4) {
-        const a = at(x, far);
-        const b = at(x, near);
+        const a = ridePoint(x, far);
+        const b = ridePoint(x, near);
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
       }
@@ -128,13 +137,10 @@ const attraction: NorthPoleSquare = {
       ctx.setLineDash([]);
 
       // The sleigh, tilted with the track, with a sack of presents and a lantern.
-      const { x } = sleighAt(time);
-      const p = at(x, near);
-      const ahead = at(Math.min(x + 1, 100), near);
-      const behind = at(Math.max(x - 1, 0), near);
+      const pose = sleighPose(time, near);
       ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(Math.atan2(ahead.y - behind.y, ahead.x - behind.x));
+      ctx.translate(pose.x, pose.y);
+      ctx.rotate(pose.angle);
       ctx.scale(0.8, 0.8);
       glow(ctx, 6, -8, 10, 0.8);
       ctx.fillStyle = colors.gold;

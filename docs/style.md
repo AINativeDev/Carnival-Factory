@@ -31,8 +31,10 @@ to copy.
   volumes as filled faces, not outlined ones.
 - **Motion.** Gentle loops from `time`, a few seconds long. Nothing flashes:
   lights shimmer or chase slowly, a bright accent never blinks across the whole
-  square, and the smoke test fails a square that flashes more than three times
-  a second.
+  square. The smoke test's flashing check is only a floor: it fails a square
+  when more than a quarter of it swings in brightness more than three times a
+  second, so a small accent that blinks can still pass it and still break this
+  rule.
 - **Readability.** One clear focal point that reads at the map's size, a few
   dozen pixels across on a stall's front, and still holds up at full size on
   the visit card. Keep the details round it small.
