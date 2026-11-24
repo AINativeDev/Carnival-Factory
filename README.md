@@ -172,6 +172,11 @@ To add a maintainer, find their numeric GitHub user id
 `event.sender.id` list in `tessl.json`. Maintainers are checked by id, because
 a login can be renamed and taken by someone else.
 
+To let the factory build a participant's issue that changes more than their
+booth, such as the map's scenery, add `tessl` to it yourself: the **Booth
+ownership** check treats an issue a maintainer labelled, by user id, like a
+maintainer's own.
+
 To switch a misbehaving square off, add its login to `booths`, or its id to
 `attractions`, in `northpole/disabled.json`: it shows "Closed for repairs" and
 its `draw` never runs. Its code is still loaded, so for code that misbehaves as
