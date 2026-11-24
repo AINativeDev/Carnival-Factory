@@ -81,6 +81,31 @@ body[data-view='map'] .map {
   border: 0;
 }
 
+/* Tabbing into it shows it over the map, so a keyboard never lands on a link it can't see. */
+.visually-hidden:focus-within {
+  position: fixed;
+  z-index: 10;
+  top: 56px;
+  left: 12px;
+  width: auto;
+  max-width: min(480px, calc(100vw - 24px));
+  height: auto;
+  max-height: calc(100vh - 68px);
+  margin: 0;
+  padding: 12px 16px;
+  overflow: auto;
+  clip-path: none;
+  white-space: normal;
+  border: 2px solid var(--color-gold);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.visually-hidden:focus-within a {
+  color: var(--color-gold);
+}
+
 #app {
   max-width: 1200px;
   margin: 0 auto;

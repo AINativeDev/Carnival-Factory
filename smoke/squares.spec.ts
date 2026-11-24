@@ -312,6 +312,17 @@ test('Claim a plot walks the player to an open plot, where E opens the form', as
   expect((await form).url()).toBe(CLAIM_URL);
 });
 
+test('the screen-reader guide shows itself when a link in it has keyboard focus', async ({
+  page,
+}) => {
+  await page.goto('#/');
+  const guide = page.locator('.map > .visually-hidden');
+  expect((await guide.boundingBox())!.width).toBeLessThanOrEqual(1);
+  await page.locator('.map > .visually-hidden a').first().focus();
+  expect((await guide.boundingBox())!.width).toBeGreaterThan(100);
+  await expect(page.getByRole('link', { name: 'claim your own' })).toBeInViewport();
+});
+
 for (const viewport of [
   { width: 1400, height: 900 },
   { width: 390, height: 844 },
