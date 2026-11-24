@@ -53,7 +53,7 @@ a {
 /* The canvas fills the frame, and the camera follows the player round the world in it. */
 .map-frame {
   position: relative;
-  height: min(75vh, 760px);
+  height: min(80vh, 820px);
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--color-night);
@@ -160,4 +160,136 @@ a {
   padding: 4px 8px;
   border-radius: var(--radius);
   font: inherit;
+}
+
+/* The HUD over the map: small rounded cream panels, out of the way of the island. */
+.hud {
+  position: absolute;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-size: 14px;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-night) 35%, transparent);
+}
+
+.hud-tessl {
+  top: 12px;
+  left: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: bold;
+}
+
+.hud-booths {
+  top: 12px;
+  right: 12px;
+  max-width: 260px;
+  max-height: calc(100% - 140px);
+  overflow: auto;
+}
+
+.hud-controls {
+  bottom: 12px;
+  left: 12px;
+  max-width: 320px;
+}
+
+.hud summary {
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.hud-icon {
+  margin-right: 6px;
+}
+
+.hud-hint {
+  margin: 4px 0;
+  color: var(--color-slabShade);
+  font-size: 12px;
+}
+
+.hud ul {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hud li {
+  margin: 4px 0;
+}
+
+.hud-list button {
+  width: 100%;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--color-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hud-list button:hover,
+.hud-list button:focus-visible {
+  background: var(--color-glow);
+}
+
+.hud-list .owner {
+  color: var(--color-berry);
+  font-size: 12px;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 20px;
+  margin: 0 2px;
+  padding: 1px 5px;
+  border: 1px solid var(--color-slabShade);
+  border-bottom-width: 3px;
+  border-radius: 5px;
+  background: var(--color-snow);
+  color: var(--color-ink);
+  font: bold 12px var(--font-family);
+  text-align: center;
+}
+
+.hud-overview {
+  display: none;
+  right: 12px;
+  bottom: 12px;
+  border: 0;
+  font: bold 14px var(--font-family);
+  cursor: pointer;
+}
+
+/* On a phone the panels fold to their icons, and a button shows the whole island. */
+@media (max-width: 719px) {
+  .hud-overview {
+    display: block;
+  }
+
+  .hud-booths:not([open]) .hud-title,
+  .hud-controls:not([open]) .hud-title {
+    display: none;
+  }
+
+  .hud-booths:not([open]) summary,
+  .hud-controls:not([open]) summary {
+    list-style: none;
+  }
+
+  .hud-controls {
+    bottom: 64px;
+  }
+
+  .map-prompt {
+    bottom: 64px;
+    left: auto;
+    right: 12px;
+    transform: none;
+  }
 }

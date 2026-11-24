@@ -5,6 +5,7 @@
  * town square's centre at (0, 0), and the map moves the camera.
  */
 import type { NorthPoleSquare } from './square';
+import { alongEdge } from './camera';
 import { canvasFont, theme } from './theme';
 import {
   hash,
@@ -21,10 +22,6 @@ import {
 } from './world';
 
 const { colors } = theme;
-
-/** The side of a booth's front panel, and of an attraction's, in world pixels. */
-export const BOOTH_PANEL = 84;
-export const ATTRACTION_PANEL = 124;
 
 /** Where a box's ground diamond has its corners on screen. */
 function corners(box: Box) {
@@ -59,24 +56,25 @@ function block(
   top: string,
   left: string,
   right: string,
+  lift = 0,
 ) {
   const c = corners(box);
   ctx.fillStyle = left;
   ctx.beginPath();
-  ctx.moveTo(c.left.x, c.left.y);
-  ctx.lineTo(c.bottom.x, c.bottom.y);
-  ctx.lineTo(c.bottom.x, c.bottom.y - height);
-  ctx.lineTo(c.left.x, c.left.y - height);
+  ctx.moveTo(c.left.x, c.left.y - lift);
+  ctx.lineTo(c.bottom.x, c.bottom.y - lift);
+  ctx.lineTo(c.bottom.x, c.bottom.y - lift - height);
+  ctx.lineTo(c.left.x, c.left.y - lift - height);
   ctx.fill();
   ctx.fillStyle = right;
   ctx.beginPath();
-  ctx.moveTo(c.bottom.x, c.bottom.y);
-  ctx.lineTo(c.right.x, c.right.y);
-  ctx.lineTo(c.right.x, c.right.y - height);
-  ctx.lineTo(c.bottom.x, c.bottom.y - height);
+  ctx.moveTo(c.bottom.x, c.bottom.y - lift);
+  ctx.lineTo(c.right.x, c.right.y - lift);
+  ctx.lineTo(c.right.x, c.right.y - lift - height);
+  ctx.lineTo(c.bottom.x, c.bottom.y - lift - height);
   ctx.fill();
   ctx.fillStyle = top;
-  diamond(ctx, c, height);
+  diamond(ctx, c, lift + height);
   ctx.fill();
 }
 
@@ -115,13 +113,8 @@ const GROUND: Record<Ground, string> = {
   bridge: colors.gingerbread,
 };
 
-/** The ground: snow, the cleared paths, the town square, the ice and the stream. */
-export function drawGround(
-  ctx: CanvasRenderingContext2D,
-  world: World,
-  range: TileRange,
-  time: number,
-) {
+/** The ground: snow, the cleared paths, the town square, the ice and the stream. The stream's ripples run in `drawRipples`. */
+export function drawGround(ctx: CanvasRenderingContext2D, world: World, range: TileRange) {
   const half = { w: TILE_W / 2, h: TILE_H / 2 };
   for (let x = range.minX; x <= range.maxX; x++)
     for (let y = range.minY; y <= range.maxY; y++) {
@@ -151,13 +144,6 @@ export function drawGround(
         ctx.fillStyle = colors.surface;
         ctx.globalAlpha = 0.35;
         ctx.fill();
-        ctx.globalAlpha = 0.7;
-        ctx.strokeStyle = colors.snow;
-        const ripple = ((time / 40 + y * 13) % 24) - 12;
-        ctx.beginPath();
-        ctx.moveTo(sx - 10 + ripple / 2, sy + ripple / 4);
-        ctx.lineTo(sx + ripple / 2, sy + ripple / 4 + 2);
-        ctx.stroke();
         ctx.globalAlpha = 1;
       } else if (ground === 'ice') {
         ctx.strokeStyle = colors.snow;
@@ -242,10 +228,46 @@ export function drawPine(ctx: CanvasRenderingContext2D, x: number, y: number, sc
   ctx.restore();
 }
 
+/** Pine trees drawn once each size, at the resolution the map asked for, to copy rather than redraw. */
+const pines = new Map<number, HTMLCanvasElement>();
+let pineResolution = 0;
+const PINE_SIZES = 4;
+
+/** Sets how many device pixels a world pixel covers at the nearest the camera comes, for the trees drawn ahead. */
+export function setSpriteResolution(resolution: number) {
+  const rounded = Math.max(0.25, Math.round(resolution * 8) / 8);
+  if (rounded === pineResolution) return;
+  pineResolution = rounded;
+  pines.clear();
+}
+
+function pineSprite(size: number): HTMLCanvasElement | undefined {
+  if (!pineResolution || typeof document === 'undefined') return undefined;
+  let sprite = pines.get(size);
+  if (!sprite) {
+    const scale = 0.8 + (0.45 * size) / (PINE_SIZES - 1);
+    sprite = document.createElement('canvas');
+    sprite.width = Math.ceil(50 * scale * pineResolution);
+    sprite.height = Math.ceil(70 * scale * pineResolution);
+    const ctx = sprite.getContext('2d')!;
+    ctx.scale(pineResolution, pineResolution);
+    drawPine(ctx, 25 * scale, 66 * scale, scale);
+    pines.set(size, sprite);
+  }
+  return sprite;
+}
+
 function drawTree(ctx: CanvasRenderingContext2D, thing: Thing) {
   const { x, y } = toScreen(thing);
   shadow(ctx, x, y + 2, 16);
-  drawPine(ctx, x + (thing.seed - 0.5) * 10, y + 2, 0.8 + 0.45 * thing.seed);
+  const size = Math.round(thing.seed * (PINE_SIZES - 1));
+  const sprite = pineSprite(size);
+  const at = x + (thing.seed - 0.5) * 10;
+  if (!sprite) return drawPine(ctx, at, y + 2, 0.8 + (0.45 * size) / (PINE_SIZES - 1));
+  const w = sprite.width / pineResolution;
+  const h = sprite.height / pineResolution;
+  const scale = 0.8 + (0.45 * size) / (PINE_SIZES - 1);
+  ctx.drawImage(sprite, at - 25 * scale, y + 2 - 66 * scale, w, h);
 }
 
 /** The town square's tree, decorated, its baubles twinkling and a star on top. */
@@ -516,54 +538,193 @@ export function drawThing(ctx: CanvasRenderingContext2D, thing: Thing, time: num
       return drawSleigh(ctx, thing);
     case 'drift':
       return drawDrift(ctx, thing);
+    case 'wheel':
+      return drawWheel(ctx, thing, time);
+    case 'tent':
+      return drawTent(ctx, thing, time);
+    case 'bench':
+      return drawBench(ctx, thing);
+    case 'cart':
+      return drawCart(ctx, thing, time);
+    case 'arch':
+      return drawArch(ctx, thing, time);
+    case 'banner':
+      return drawBanner(ctx, thing, time);
+    case 'bunting':
+      return drawBunting(ctx, thing, time);
   }
 }
 
-/** The box two boxes span together. */
-function span(a: Box, b: Box): Box {
-  const x = Math.min(a.x, b.x);
-  const y = Math.min(a.y, b.y);
+/** One of a plot's faces we see: its ends on the ground, left to right on screen, and a tile's step outwards. */
+export interface Face {
+  a: Tile;
+  b: Tile;
+  out: Tile;
+}
+
+/**
+ * The face of a plot its square's drawing goes on: the one its door is on, or,
+ * when the door is round the back, the face we see on the same side.
+ */
+export function faceOf(plot: Box & { door: Tile }): Face {
+  const c = corners(plot);
+  const sideways = plot.door.x >= plot.x + plot.w || plot.door.x < plot.x;
+  return sideways
+    ? { a: c.bottom, b: c.right, out: { x: TILE_W / 2, y: TILE_H / 2 } }
+    : { a: c.left, b: c.bottom, out: { x: -TILE_W / 2, y: TILE_H / 2 } };
+}
+
+/** The point `along` the way across a face, `lift` up it and `outward` tiles out from it. */
+export function onFace(face: Face, along: number, lift: number, outward = 0): Tile {
   return {
-    x,
-    y,
-    w: Math.max(a.x + a.w, b.x + b.w) - x,
-    h: Math.max(a.y + a.h, b.y + b.h) - y,
+    x: face.a.x + (face.b.x - face.a.x) * along + face.out.x * outward,
+    y: face.a.y + (face.b.y - face.a.y) * along + face.out.y * outward - lift,
   };
 }
 
-/** A sign on a board: a name, and whose it is under it. Returns where the board is. */
-function sign(ctx: CanvasRenderingContext2D, x: number, y: number, name: string, by: string): Box {
-  ctx.font = canvasFont('small', 'bold');
-  const width = Math.min(190, Math.max(ctx.measureText(name).width, by.length * 7) + 16);
-  ctx.fillStyle = colors.cocoa;
-  ctx.fillRect(x - width / 2, y, width, 38);
-  ctx.fillStyle = colors.wood;
-  ctx.fillRect(x - width / 2 + 2, y + 2, width - 4, 34);
-  ctx.fillStyle = colors.snow;
-  ctx.fillRect(x - width / 2 - 1, y - 2, width + 2, 3);
+function quad(ctx: CanvasRenderingContext2D, points: Tile[]) {
+  ctx.beginPath();
+  points.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+  ctx.closePath();
+}
+
+/** A strip of a face from `from` to `to` across it, `low` to `high` up it, `outward` tiles out. */
+function band(
+  ctx: CanvasRenderingContext2D,
+  face: Face,
+  from: number,
+  to: number,
+  low: number,
+  high: number,
+  outward = 0,
+) {
+  quad(ctx, [
+    onFace(face, from, high, outward),
+    onFace(face, to, high, outward),
+    onFace(face, to, low, outward),
+    onFace(face, from, low, outward),
+  ]);
+}
+
+/**
+ * Where a square's drawing goes on a face: a parallelogram whose top edge runs
+ * along the face and whose sides stand upright. `u` and `v` are its top and
+ * left edges from `origin`, its top-left corner.
+ */
+export interface Mapping {
+  origin: Tile;
+  u: Tile;
+  v: Tile;
+}
+
+/** What draws a square onto a face of the world: the map's own `drawSquare`, through an affine transform. */
+export type PaintSquare = (square: NorthPoleSquare, mapping: Mapping) => void;
+
+/** Paints text along a face, the way a shop sign follows its wall, centred on `along` at height `lift`. */
+function faceText(
+  ctx: CanvasRenderingContext2D,
+  face: Face,
+  text: string,
+  along: number,
+  lift: number,
+  width: number,
+  font: string,
+  color: string,
+  outward = 0,
+) {
+  const at = onFace(face, along, lift, outward);
+  const slope = (face.b.y - face.a.y) / (face.b.x - face.a.x);
+  ctx.save();
+  ctx.transform(1, slope, 0, 1, at.x, at.y);
+  ctx.font = font;
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  ctx.fillStyle = colors.text;
-  ctx.fillText(name, x, y + 4, width - 8);
-  ctx.font = canvasFont('small');
-  ctx.fillStyle = colors.glow;
-  ctx.fillText(by, x, y + 20, width - 8);
-  ctx.textBaseline = 'alphabetic';
-  return { x: x - width / 2 - 1, y: y - 2, w: width + 2, h: 40 };
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = color;
+  const measured = ctx.measureText(text).width;
+  if (measured > width) ctx.scale(width / measured, width / measured);
+  ctx.fillText(text, 0, 0);
+  ctx.restore();
 }
 
-/** Where a plot's front panel is, in world pixels: its top-left corner and size. */
-export function panelBox(plot: Plot): Box {
-  const { x, y } = middle(plot);
-  const size = plot.kind === 'attraction' ? ATTRACTION_PANEL : BOOTH_PANEL;
-  const lift = plot.kind === 'attraction' ? 56 : 30;
-  return { x: x - size / 2, y: y - lift - size, w: size, h: size };
+/** A name board along a face: the name, and whose it is under it. */
+function faceSign(
+  ctx: CanvasRenderingContext2D,
+  face: Face,
+  low: number,
+  high: number,
+  name: string,
+  by: string,
+  outward = 0,
+) {
+  const width = Math.abs(face.b.x - face.a.x);
+  ctx.fillStyle = colors.cocoa;
+  band(ctx, face, 0.04, 0.96, low, high, outward);
+  ctx.fill();
+  ctx.fillStyle = colors.cream;
+  band(ctx, face, 0.07, 0.93, low + 2, high - 2, outward);
+  ctx.fill();
+  const line = (high - low) / 2;
+  faceText(
+    ctx,
+    face,
+    name,
+    0.5,
+    high - line * 0.62,
+    width * 0.8,
+    canvasFont('small', 'bold'),
+    colors.ink,
+    outward,
+  );
+  faceText(
+    ctx,
+    face,
+    by,
+    0.5,
+    low + line * 0.5,
+    width * 0.8,
+    canvasFont('small'),
+    colors.berry,
+    outward,
+  );
 }
 
-/** What draws a square onto a panel: the map's own `drawSquare`. */
-export type PaintSquare = (square: NorthPoleSquare, x: number, y: number, size: number) => void;
+/** Maps a square onto a face, from `from` to `to` across it and `low` up it, as tall as it is wide on screen. */
+function paintOnFace(
+  paint: PaintSquare,
+  square: NorthPoleSquare,
+  face: Face,
+  from: number,
+  to: number,
+  low: number,
+  outward = 0,
+) {
+  const left = onFace(face, from, 0, outward);
+  const right = onFace(face, to, 0, outward);
+  const tall = Math.abs(right.x - left.x);
+  paint(square, {
+    origin: { x: left.x, y: left.y - low - tall },
+    u: { x: right.x - left.x, y: right.y - left.y },
+    v: { x: 0, y: tall },
+  });
+}
 
-/** A participant's market stall: a counter, a striped awning and its square on the front panel. */
+/** How tall each part of a booth's stall is, in world pixels. */
+const STALL = { counter: 16, art: 18, wall: 104 };
+/** How tall each part of an attraction's pavilion is. */
+const PAVILION = { stage: 10, art: 24, wall: 150, roof: 64 };
+
+/** Where a click opens a plot: round everything standing on it. */
+function standing(plot: Box, height: number): Box {
+  const c = corners(plot);
+  return {
+    x: c.left.x,
+    y: c.top.y - height,
+    w: c.right.x - c.left.x,
+    h: c.bottom.y - c.top.y + height,
+  };
+}
+
+/** A participant's market stall: wooden walls, its square on the front, a counter, a name board and a striped awning. */
 function drawStall(
   ctx: CanvasRenderingContext2D,
   plot: Plot,
@@ -571,44 +732,136 @@ function drawStall(
   paint: PaintSquare,
 ): Box {
   const { x, y } = middle(plot);
-  const panel = panelBox(plot);
-  shadow(ctx, x, y + 6, 44);
-  // The posts behind the panel and the counter in front of it.
+  const face = faceOf(plot);
+  const width = Math.abs(face.b.x - face.a.x);
+  const art = width * 0.84;
+  shadow(ctx, x, y + 6, 48);
+  block(ctx, plot, STALL.wall, colors.snowShade, colors.wood, colors.cocoa);
+  // A frame round the drawing, and the drawing itself, along the stall's front.
   ctx.fillStyle = colors.cocoa;
-  ctx.fillRect(panel.x - 6, panel.y - 10, 5, panel.h + 40);
-  ctx.fillRect(panel.x + panel.w + 1, panel.y - 10, 5, panel.h + 40);
-  ctx.fillStyle = colors.wood;
-  ctx.fillRect(panel.x - 6, panel.y - 6, panel.w + 12, panel.h + 12);
-  paint(square, panel.x, panel.y, panel.w);
-  // The awning, striped, with snow on top.
-  const top = panel.y - 10;
-  for (let n = 0; n < 6; n++) {
+  band(ctx, face, 0.05, 0.95, STALL.art - 3, STALL.art + art + 3);
+  ctx.fill();
+  paintOnFace(paint, square, face, 0.08, 0.92, STALL.art);
+  const signLow = STALL.art + art + 5;
+  faceSign(ctx, face, signLow, STALL.wall - 2, square.name, `@${square.id}`);
+  // The counter, standing out in front of the drawing.
+  const counter: Box =
+    face.out.x > 0
+      ? { x: plot.x + plot.w, y: plot.y, w: 0.3, h: plot.h }
+      : { x: plot.x, y: plot.y + plot.h, w: plot.w, h: 0.3 };
+  block(ctx, counter, STALL.counter, colors.gingerbread, colors.wood, colors.cocoa);
+  // The awning, striped, sloping out over the counter, with a scalloped edge and snow on top.
+  const stripes = 8;
+  for (let n = 0; n < stripes; n++) {
     ctx.fillStyle = n % 2 ? colors.snow : colors.berry;
-    const w = (panel.w + 20) / 6;
-    ctx.beginPath();
-    ctx.moveTo(panel.x - 10 + n * w, top);
-    ctx.lineTo(panel.x - 10 + (n + 1) * w, top);
-    ctx.lineTo(panel.x - 10 + (n + 1) * w, top - 12);
-    ctx.lineTo(panel.x - 10 + n * w, top - 12);
+    quad(ctx, [
+      onFace(face, n / stripes, STALL.wall + 22, -0.5),
+      onFace(face, (n + 1) / stripes, STALL.wall + 22, -0.5),
+      onFace(face, (n + 1) / stripes, STALL.wall - 4, 0.45),
+      onFace(face, n / stripes, STALL.wall - 4, 0.45),
+    ]);
     ctx.fill();
+    const scallop = onFace(face, (n + 0.5) / stripes, STALL.wall - 4, 0.45);
     ctx.beginPath();
-    ctx.arc(panel.x - 10 + (n + 0.5) * w, top, w / 2, 0, Math.PI);
+    ctx.ellipse(scallop.x, scallop.y, width / stripes / 2, 4, 0, 0, Math.PI);
     ctx.fill();
   }
   ctx.fillStyle = colors.snow;
-  ctx.fillRect(panel.x - 12, top - 15, panel.w + 24, 4);
-  block(
-    ctx,
-    { x: plot.x, y: plot.y + plot.h - 1, w: plot.w, h: 1 },
-    16,
-    colors.gingerbread,
-    colors.wood,
-    colors.cocoa,
-  );
-  return span(panel, sign(ctx, x, y + 2, square.name, `@${square.id}`));
+  band(ctx, face, -0.02, 1.02, STALL.wall + 20, STALL.wall + 25, -0.5);
+  ctx.fill();
+  return standing(plot, STALL.wall + 30);
 }
 
-/** One of the North Pole's attractions: a raised stage, bunting, and its square on a big panel. */
+const ROOFS = [
+  [colors.berry, colors.snow],
+  [colors.pine, colors.cream],
+  [colors.violet, colors.cream],
+  [colors.gingerbread, colors.snow],
+];
+
+/** A pyramid roof in candy stripes over a box, from `height` up to its peak `rise` higher. */
+function stripedRoof(
+  ctx: CanvasRenderingContext2D,
+  box: Box,
+  height: number,
+  rise: number,
+  pair: readonly string[],
+  time: number,
+) {
+  const c = corners(box);
+  const { x, y } = middle(box);
+  const peak = { x, y: y - height - rise };
+  const lift = (p: Tile) => ({ x: p.x, y: p.y - height });
+  const stripes = 6;
+  for (const [n, [from, to]] of [
+    [c.left, c.bottom],
+    [c.bottom, c.right],
+  ].entries()) {
+    for (let k = 0; k < stripes; k++) {
+      const p = (t: number) =>
+        lift({ x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t });
+      ctx.fillStyle = pair[k % 2];
+      quad(ctx, [peak, p(k / stripes), p((k + 1) / stripes)]);
+      ctx.fill();
+    }
+    if (n) {
+      ctx.fillStyle = colors.night;
+      ctx.globalAlpha = 0.18;
+      quad(ctx, [peak, lift(from), lift(to)]);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+  // Lights along the eaves, and a pennant on top.
+  for (const [from, to] of [
+    [c.left, c.bottom],
+    [c.bottom, c.right],
+  ])
+    for (let k = 0; k <= 8; k++) {
+      const at = lift({
+        x: from.x + ((to.x - from.x) * k) / 8,
+        y: from.y + ((to.y - from.y) * k) / 8,
+      });
+      bulb(ctx, at.x, at.y + 2, colors.lantern, twinkle(time, at.x + at.y));
+    }
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(peak.x - 1, peak.y - 18, 2, 18);
+  ctx.fillStyle = colors.gold;
+  quad(ctx, [
+    { x: peak.x + 1, y: peak.y - 18 },
+    { x: peak.x + 14, y: peak.y - 14 + Math.sin(time / 400) * 2 },
+    { x: peak.x + 1, y: peak.y - 10 },
+  ]);
+  ctx.fill();
+}
+
+/** How bright a string light is at `time`: most of them glow, and now and then one dips. */
+export function twinkle(time: number, seed: number) {
+  return 0.65 + 0.35 * Math.sin(time / 420 + seed * 1.7) * Math.sin(time / 1300 + seed * 0.3);
+}
+
+/** One warm light bulb with its glow. */
+function bulb(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  color: string,
+  strength: number,
+) {
+  ctx.globalAlpha = 0.25 * strength;
+  ctx.fillStyle = colors.glow;
+  ctx.beginPath();
+  ctx.arc(x, y, 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = strength;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+/** One of the North Pole's attractions: a pavilion on a stage, its square on the front and a striped roof. */
 function drawAttraction(
   ctx: CanvasRenderingContext2D,
   plot: Plot,
@@ -617,37 +870,30 @@ function drawAttraction(
   time: number,
 ): Box {
   const { x, y } = middle(plot);
-  const panel = panelBox(plot);
-  shadow(ctx, x, y + 8, 76);
-  block(ctx, plot, 12, colors.snowShade, colors.surface, colors.night);
+  shadow(ctx, x, y + 8, 80);
+  block(ctx, plot, PAVILION.stage, colors.snowShade, colors.surface, colors.night);
+  const inner = { x: plot.x + 0.2, y: plot.y + 0.2, w: plot.w - 0.4, h: plot.h - 0.4 };
+  const face = faceOf({ ...inner, door: plot.door });
+  const width = Math.abs(face.b.x - face.a.x);
+  block(ctx, inner, PAVILION.wall, colors.cream, colors.surface, colors.night);
+  // Gold posts at the corners of the front.
   ctx.fillStyle = colors.gold;
-  ctx.fillRect(panel.x - 8, panel.y - 8, 6, panel.h + 70);
-  ctx.fillRect(panel.x + panel.w + 2, panel.y - 8, 6, panel.h + 70);
-  ctx.fillStyle = colors.surface;
-  ctx.fillRect(panel.x - 6, panel.y - 6, panel.w + 12, panel.h + 12);
-  paint(square, panel.x, panel.y, panel.w);
-  // Bunting along the top, and lights twinkling along it.
-  for (let n = 0; n < 8; n++) {
-    const bx = panel.x - 6 + ((panel.w + 12) * (n + 0.5)) / 8;
-    ctx.fillStyle = [colors.berry, colors.gold, colors.pine, colors.violet][n % 4];
-    ctx.beginPath();
-    ctx.moveTo(bx - 7, panel.y - 12);
-    ctx.lineTo(bx + 7, panel.y - 12);
-    ctx.lineTo(bx, panel.y - 2);
-    ctx.fill();
-    ctx.globalAlpha = Math.sin(time / 250 + n * 2) > 0 ? 1 : 0.4;
-    ctx.fillStyle = colors.glow;
-    ctx.beginPath();
-    ctx.arc(bx, panel.y - 14, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
+  for (const along of [0, 1]) {
+    const foot = onFace(face, along, 0);
+    ctx.fillRect(foot.x - 3, foot.y - PAVILION.wall, 6, PAVILION.wall);
   }
+  const art = width * 0.84;
   ctx.fillStyle = colors.gold;
-  ctx.fillRect(panel.x - 10, panel.y - 18, panel.w + 20, 4);
-  return span(panel, sign(ctx, x, y + 6, square.name, 'North Pole'));
+  band(ctx, face, 0.05, 0.95, PAVILION.art - 4, PAVILION.art + art + 4);
+  ctx.fill();
+  paintOnFace(paint, square, face, 0.08, 0.92, PAVILION.art);
+  faceSign(ctx, face, PAVILION.art + art + 8, PAVILION.wall - 4, square.name, 'North Pole');
+  const eaves = { x: inner.x - 0.25, y: inner.y - 0.25, w: inner.w + 0.5, h: inner.h + 0.5 };
+  stripedRoof(ctx, eaves, PAVILION.wall, PAVILION.roof, ROOFS[plot.number % ROOFS.length], time);
+  return standing(plot, PAVILION.wall + PAVILION.roof + 20);
 }
 
-/** An open plot: a staked-out square of fresh snow, and a "For claim" sign. */
+/** An open plot: a staked-out square of fresh snow, and a "For claim" sign on a little post. */
 function drawOpenPlot(ctx: CanvasRenderingContext2D, plot: Plot, time: number): Box {
   const c = corners(plot);
   ctx.save();
@@ -671,7 +917,7 @@ function drawOpenPlot(ctx: CanvasRenderingContext2D, plot: Plot, time: number): 
   ctx.fillRect(x - 40, y - 66 + sway, 80, 26);
   ctx.fillStyle = colors.snow;
   ctx.fillRect(x - 41, y - 68 + sway, 82, 3);
-  ctx.fillStyle = colors.night;
+  ctx.fillStyle = colors.ink;
   ctx.font = canvasFont('small', 'bold');
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -704,8 +950,9 @@ export function drawPlotGlow(ctx: CanvasRenderingContext2D, plot: Plot, strength
   diamond(ctx, c, 0);
   ctx.stroke();
   ctx.restore();
-  const panel = panelBox(plot);
-  glow(ctx, panel.x + panel.w / 2, panel.y + panel.h / 2, panel.w, strength);
+  const { x, y } = middle(plot);
+  const tall = plot.kind === 'attraction' ? PAVILION.wall : plot.kind === 'booth' ? STALL.wall : 40;
+  glow(ctx, x, y - tall / 2, tall, strength);
 }
 
 /** How a person looks: their coat and hat. */
@@ -854,4 +1101,566 @@ export function drawAurora(
     ctx.fill();
   }
   ctx.restore();
+}
+
+/** The big ferris wheel: a turning wheel of lit gondolas on an A-frame, rising over the town. */
+function drawWheel(ctx: CanvasRenderingContext2D, thing: Thing, time: number) {
+  const { x, y } = middle(thing);
+  shadow(ctx, x, y + 6, 70);
+  block(ctx, thing, 8, colors.snowShade, colors.surface, colors.night);
+  const radius = 108;
+  const hub = { x, y: y - 8 - radius - 34 };
+  const depth = { x: 14, y: -7 };
+  const turn = time / 9000;
+  const spokes = 12;
+  const rim = (offset: Tile, color: string, width: number) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.arc(hub.x + offset.x, hub.y + offset.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    for (let n = 0; n < spokes; n++) {
+      const a = turn + (n / spokes) * Math.PI * 2;
+      ctx.moveTo(hub.x + offset.x, hub.y + offset.y);
+      ctx.lineTo(hub.x + offset.x + Math.cos(a) * radius, hub.y + offset.y + Math.sin(a) * radius);
+    }
+    ctx.lineWidth = width / 2;
+    ctx.stroke();
+  };
+  // The far legs and rim, then the axle across, then the near ones.
+  const legs = (offset: Tile, color: string) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(hub.x + offset.x - 52, y + offset.y);
+    ctx.lineTo(hub.x + offset.x, hub.y + offset.y);
+    ctx.lineTo(hub.x + offset.x + 52, y + offset.y);
+    ctx.stroke();
+  };
+  legs(depth, colors.night);
+  rim(depth, colors.mountain, 4);
+  ctx.strokeStyle = colors.gold;
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(hub.x, hub.y);
+  ctx.lineTo(hub.x + depth.x, hub.y + depth.y);
+  ctx.stroke();
+  rim({ x: 0, y: 0 }, colors.snow, 5);
+  legs({ x: 0, y: 0 }, colors.surface);
+  ctx.lineWidth = 1;
+  // The gondolas hang level as the wheel turns, and lights twinkle round the rim.
+  const cars = [colors.berry, colors.gold, colors.pine, colors.violet];
+  for (let n = 0; n < spokes; n++) {
+    const a = turn + (n / spokes) * Math.PI * 2;
+    const gx = hub.x + depth.x / 2 + Math.cos(a) * radius;
+    const gy = hub.y + depth.y / 2 + Math.sin(a) * radius;
+    ctx.fillStyle = colors.cocoa;
+    ctx.fillRect(gx - 1, gy, 2, 8);
+    ctx.fillStyle = cars[n % cars.length];
+    ctx.beginPath();
+    ctx.moveTo(gx - 11, gy + 8);
+    ctx.lineTo(gx + 11, gy + 8);
+    ctx.lineTo(gx + 8, gy + 22);
+    ctx.lineTo(gx - 8, gy + 22);
+    ctx.fill();
+    ctx.fillStyle = colors.snow;
+    ctx.fillRect(gx - 12, gy + 6, 24, 3);
+    bulb(
+      ctx,
+      hub.x + Math.cos(a + 0.26) * radius,
+      hub.y + Math.sin(a + 0.26) * radius,
+      colors.lantern,
+      twinkle(time, n),
+    );
+  }
+  ctx.fillStyle = colors.gold;
+  ctx.beginPath();
+  ctx.arc(hub.x, hub.y, 9, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/** A domed tent in candy-cane stripes, its doorway dark and a pennant on top. */
+function drawTent(ctx: CanvasRenderingContext2D, thing: Thing, time: number) {
+  const { x, y } = middle(thing);
+  const rx = 52;
+  const ry = 26;
+  const wall = 26;
+  const dome = 58;
+  shadow(ctx, x, y + 6, 58);
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI);
+  ctx.lineTo(x - rx, y - wall);
+  ctx.ellipse(x, y - wall, rx, dome, 0, Math.PI, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+  ctx.fillStyle = colors.snow;
+  ctx.fillRect(x - rx, y - wall - dome, 2 * rx, wall + dome + ry);
+  ctx.fillStyle = thing.seed > 0.5 ? colors.berry : colors.violet;
+  for (let n = -6; n < 6; n++) {
+    ctx.beginPath();
+    ctx.moveTo(x + n * 18, y + ry);
+    ctx.lineTo(x + n * 18 + 9, y + ry);
+    ctx.lineTo(x + n * 18 + 9 + 60, y - wall - dome);
+    ctx.lineTo(x + n * 18 + 60, y - wall - dome);
+    ctx.fill();
+  }
+  // The dome's shaded side, and its lit one.
+  ctx.fillStyle = colors.night;
+  ctx.globalAlpha = 0.2;
+  ctx.fillRect(x + rx * 0.25, y - wall - dome, rx, wall + dome + ry);
+  ctx.fillStyle = colors.glow;
+  ctx.globalAlpha = 0.15;
+  ctx.fillRect(x - rx, y - wall - dome, rx * 0.5, wall + dome + ry);
+  ctx.globalAlpha = 1;
+  ctx.restore();
+  // The doorway, with warm light inside.
+  ctx.fillStyle = colors.ink;
+  ctx.beginPath();
+  ctx.moveTo(x - 12, y + ry);
+  ctx.lineTo(x - 12, y + ry - 18);
+  ctx.quadraticCurveTo(x, y + ry - 40, x + 12, y + ry - 18);
+  ctx.lineTo(x + 12, y + ry);
+  ctx.fill();
+  glow(ctx, x, y + ry - 10, 22, 0.8);
+  ctx.fillStyle = colors.gold;
+  ctx.fillRect(x - rx, y - wall - 2, 2 * rx, 3);
+  const top = y - wall - dome;
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(x - 1, top - 18, 2, 18);
+  ctx.fillStyle = colors.gold;
+  quad(ctx, [
+    { x: x + 1, y: top - 18 },
+    { x: x + 15, y: top - 14 + Math.sin(time / 380 + thing.seed * 9) * 2 },
+    { x: x + 1, y: top - 10 },
+  ]);
+  ctx.fill();
+}
+
+/** A park bench, snow on its seat. */
+function drawBench(ctx: CanvasRenderingContext2D, thing: Thing) {
+  const { x, y } = toScreen(thing);
+  shadow(ctx, x, y + 2, 16);
+  const seat = { x: thing.x + 0.15, y: thing.y + 0.35, w: 0.7, h: 0.3 };
+  ctx.fillStyle = colors.night;
+  ctx.fillRect(x - 12, y - 8, 2, 8);
+  ctx.fillRect(x + 10, y - 8, 2, 8);
+  block(ctx, { ...seat, y: seat.y - 0.12, h: 0.08 }, 12, colors.snow, colors.wood, colors.cocoa, 8);
+  block(ctx, seat, 3, colors.snow, colors.wood, colors.cocoa, 8);
+}
+
+/** A cocoa cart on wheels, under a striped canopy, its lantern lit. */
+function drawCart(ctx: CanvasRenderingContext2D, thing: Thing, time: number) {
+  const { x, y } = toScreen(thing);
+  shadow(ctx, x, y + 2, 22);
+  const body = { x: thing.x + 0.1, y: thing.y + 0.25, w: 0.8, h: 0.5 };
+  block(ctx, body, 20, colors.gingerbread, colors.berry, colors.cocoa, 6);
+  ctx.fillStyle = colors.night;
+  for (const dx of [-12, 10]) {
+    ctx.beginPath();
+    ctx.arc(x + dx, y + 2, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = colors.cocoa;
+  ctx.fillRect(x - 16, y - 46, 2, 22);
+  ctx.fillRect(x + 14, y - 46, 2, 22);
+  for (let n = 0; n < 4; n++) {
+    ctx.fillStyle = n % 2 ? colors.snow : colors.pine;
+    ctx.fillRect(x - 20 + n * 10, y - 52, 10, 8);
+  }
+  ctx.fillStyle = colors.snow;
+  ctx.fillRect(x - 21, y - 54, 42, 3);
+  glow(ctx, x + 12, y - 38, 20, 0.7 + 0.3 * Math.sin(time / 700 + thing.seed * 10));
+  ctx.fillStyle = colors.lantern;
+  ctx.fillRect(x + 9, y - 42, 6, 7);
+}
+
+/** Pillars striped like candy canes, `height` tall on a small footprint. */
+function candyPillar(ctx: CanvasRenderingContext2D, box: Box, height: number) {
+  block(ctx, box, height, colors.snow, colors.snow, colors.snowShade);
+  for (let h = 6; h < height; h += 16)
+    block(ctx, box, 6, colors.berry, colors.berry, colors.cocoa, h);
+}
+
+/** The entrance arch over the main path at the front of the island, "North Pole Carnival" across it. */
+function drawArch(ctx: CanvasRenderingContext2D, thing: Thing, time: number) {
+  const tall = 112;
+  const beam = 34;
+  const near = { x: thing.x + 0.3, y: thing.y + thing.h - 0.4, w: 0.4, h: 0.4 };
+  const far = { x: thing.x + 0.3, y: thing.y, w: 0.4, h: 0.4 };
+  candyPillar(ctx, far, tall);
+  candyPillar(ctx, near, tall);
+  const top = { x: thing.x + 0.3, y: thing.y, w: 0.4, h: thing.h - 0.4 + 0.4 };
+  block(ctx, top, beam, colors.snow, colors.cocoa, colors.berry, tall);
+  const c = corners(top);
+  const face: Face = { a: c.bottom, b: c.right, out: { x: TILE_W / 2, y: TILE_H / 2 } };
+  ctx.fillStyle = colors.cream;
+  band(ctx, face, 0.06, 0.94, tall + 5, tall + beam - 5);
+  ctx.fill();
+  const width = Math.abs(face.b.x - face.a.x);
+  faceText(
+    ctx,
+    face,
+    'North Pole Carnival',
+    0.5,
+    tall + beam / 2,
+    width * 0.82,
+    canvasFont('body', 'bold'),
+    colors.berry,
+  );
+  for (let n = 0; n <= 10; n++) {
+    const at = onFace(face, n / 10, tall + beam + 2);
+    bulb(ctx, at.x, at.y, n % 2 ? colors.lantern : colors.berry, twinkle(time, n));
+  }
+  ctx.fillStyle = colors.gold;
+  const star = onFace(face, 0.5, tall + beam + 16);
+  ctx.beginPath();
+  for (let n = 0; n < 10; n++) {
+    const r = n % 2 ? 4 : 10;
+    const a = (n / 10) * Math.PI * 2 - Math.PI / 2;
+    ctx.lineTo(star.x + Math.cos(a) * r, star.y + Math.sin(a) * r);
+  }
+  ctx.fill();
+}
+
+/** The big banner by the town square, strung between two poles. */
+function drawBanner(ctx: CanvasRenderingContext2D, thing: Thing, time: number) {
+  const c = corners(thing);
+  const face: Face = { a: c.left, b: c.bottom, out: { x: -TILE_W / 2, y: TILE_H / 2 } };
+  const tall = 104;
+  ctx.fillStyle = colors.cocoa;
+  for (const along of [0.04, 0.96]) {
+    const foot = onFace(face, along, 0, -0.5);
+    ctx.fillRect(foot.x - 2, foot.y - tall - 8, 4, tall + 8);
+    ctx.fillStyle = colors.gold;
+    ctx.beginPath();
+    ctx.arc(foot.x, foot.y - tall - 10, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = colors.cocoa;
+  }
+  const ripple = Math.sin(time / 800) * 2;
+  ctx.fillStyle = colors.berry;
+  band(ctx, face, 0.06, 0.94, tall - 44 + ripple, tall, -0.5);
+  ctx.fill();
+  ctx.fillStyle = colors.gold;
+  band(ctx, face, 0.06, 0.94, tall - 4, tall, -0.5);
+  ctx.fill();
+  const width = Math.abs(face.b.x - face.a.x);
+  faceText(
+    ctx,
+    face,
+    "Season's Greetings",
+    0.5,
+    tall - 22,
+    width * 0.8,
+    canvasFont('body', 'bold'),
+    colors.cream,
+    -0.5,
+  );
+}
+
+/** Bunting strung between two poles over the main path, its flags fluttering. */
+function drawBunting(ctx: CanvasRenderingContext2D, thing: Thing, time: number) {
+  const a = toScreen({ x: thing.x, y: thing.y });
+  const b = toScreen({ x: thing.x, y: thing.y + thing.h - 1 });
+  const tall = 78;
+  ctx.fillStyle = colors.cocoa;
+  for (const p of [a, b]) ctx.fillRect(p.x - 2, p.y - tall, 4, tall);
+  const flags = [colors.berry, colors.gold, colors.pine, colors.snow, colors.violet];
+  const at = (t: number) => ({
+    x: a.x + (b.x - a.x) * t,
+    y: a.y + (b.y - a.y) * t - tall + Math.sin(t * Math.PI) * 18,
+  });
+  ctx.strokeStyle = colors.ink;
+  ctx.beginPath();
+  for (let n = 0; n <= 12; n++) {
+    const p = at(n / 12);
+    if (n) ctx.lineTo(p.x, p.y);
+    else ctx.moveTo(p.x, p.y);
+  }
+  ctx.stroke();
+  for (let n = 0; n < 11; n++) {
+    const p = at((n + 0.5) / 11);
+    const q = at((n + 1.2) / 11);
+    const flutter = Math.sin(time / 300 + n + thing.seed * 9) * 2;
+    ctx.fillStyle = flags[n % flags.length];
+    quad(ctx, [p, { x: (p.x + q.x) / 2 + flutter, y: (p.y + q.y) / 2 + 13 }, q]);
+    ctx.fill();
+  }
+}
+
+/** The dusk sky, drawn once to its own layer: deep blue overhead, warm at the horizon. In screen pixels. */
+export function drawSky(ctx: CanvasRenderingContext2D, width: number, height: number) {
+  const sky = ctx.createLinearGradient(0, 0, 0, height);
+  sky.addColorStop(0, colors.night);
+  sky.addColorStop(0.35, colors.dusk);
+  sky.addColorStop(0.62, colors.duskLow);
+  sky.addColorStop(0.78, colors.horizon);
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, width, height);
+}
+
+/** The mountains and hills on the horizon, drawn once to their own layer. In screen pixels. */
+export function drawMountains(ctx: CanvasRenderingContext2D, width: number, height: number) {
+  const ridge = (
+    base: number,
+    peak: number,
+    step: number,
+    seed: number,
+    color: string,
+    caps: boolean,
+  ) => {
+    const points: Tile[] = [];
+    for (let x = -step, n = 0; x <= width + step; x += step, n++)
+      points.push({ x, y: base - peak * (0.35 + 0.65 * hash(n, seed)) });
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, height);
+    for (const p of points) ctx.lineTo(p.x, p.y);
+    ctx.lineTo(width, height);
+    ctx.fill();
+    if (!caps) return;
+    ctx.fillStyle = colors.snow;
+    ctx.globalAlpha = 0.85;
+    for (let n = 1; n < points.length - 1; n++) {
+      const p = points[n];
+      if (p.y > points[n - 1].y || p.y > points[n + 1].y) continue;
+      const left = points[n - 1];
+      const right = points[n + 1];
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + (left.x - p.x) * 0.3, p.y + (left.y - p.y) * 0.3);
+      ctx.lineTo(p.x - step * 0.05, p.y + (left.y - p.y) * 0.18);
+      ctx.lineTo(p.x + (right.x - p.x) * 0.3, p.y + (right.y - p.y) * 0.3);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  };
+  ridge(height * 0.62, height * 0.3, Math.max(80, width / 9), 31, colors.mountainFar, true);
+  ridge(height * 0.7, height * 0.22, Math.max(60, width / 13), 32, colors.mountain, true);
+  // Rolling snowy hills, nearer.
+  ctx.fillStyle = colors.hill;
+  ctx.beginPath();
+  ctx.moveTo(0, height);
+  for (let x = 0; x <= width + 20; x += 20)
+    ctx.lineTo(x, height * 0.78 + Math.sin(x / 140) * 16 + Math.sin(x / 57 + 1) * 6);
+  ctx.lineTo(width, height);
+  ctx.fill();
+  ctx.fillStyle = colors.snowShade;
+  ctx.beginPath();
+  ctx.moveTo(0, height);
+  for (let x = 0; x <= width + 20; x += 20)
+    ctx.lineTo(x, height * 0.86 + Math.sin(x / 190 + 2) * 14);
+  ctx.lineTo(width, height);
+  ctx.fill();
+}
+
+/** Clouds drifting slowly across the sky, in screen pixels. */
+export function drawClouds(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  time: number,
+) {
+  ctx.fillStyle = colors.cloud;
+  for (let n = 0; n < 6; n++) {
+    const speed = 0.004 + 0.004 * hash(n, 40);
+    const span = width + 320;
+    const x = ((hash(n, 41) * span + time * speed) % span) - 160;
+    const y = height * (0.12 + 0.3 * hash(n, 42));
+    const size = 30 + 30 * hash(n, 43);
+    ctx.globalAlpha = 0.28 + 0.2 * hash(n, 44);
+    ctx.beginPath();
+    ctx.ellipse(x, y, size * 2.2, size * 0.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(x - size * 0.6, y - size * 0.3, size * 0.9, size * 0.55, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + size * 0.5, y - size * 0.4, size, size * 0.65, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+/** The island's outline: its four ground corners on screen. */
+export interface Island {
+  top: Tile;
+  right: Tile;
+  bottom: Tile;
+  left: Tile;
+}
+
+/**
+ * The island, drawn once to its own layer: the snow slab's thickness under its
+ * front edges, its shadow, the ground, the dusk over it and the fence round
+ * its back. `slab` is how thick it is.
+ */
+export function drawIsland(
+  ctx: CanvasRenderingContext2D,
+  world: World,
+  island: Island,
+  slab: number,
+) {
+  const { top, right, bottom, left } = island;
+  // Its shadow on the hills below, then its two front faces.
+  ctx.fillStyle = colors.night;
+  ctx.globalAlpha = 0.25;
+  ctx.beginPath();
+  ctx.ellipse(bottom.x, bottom.y + slab + 20, (right.x - left.x) * 0.42, slab, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  const face = (a: Tile, b: Tile, color: string) => {
+    ctx.fillStyle = color;
+    quad(ctx, [a, b, { x: b.x, y: b.y + slab }, { x: a.x, y: a.y + slab }]);
+    ctx.fill();
+    // Layers in the snow, and icicles hanging from its foot.
+    ctx.strokeStyle = colors.snowShade;
+    ctx.globalAlpha = 0.6;
+    for (const depth of [0.35, 0.65]) {
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y + slab * depth);
+      ctx.lineTo(b.x, b.y + slab * depth);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = colors.ice;
+    const steps = Math.ceil(Math.abs(b.x - a.x) / 18);
+    for (let n = 0; n < steps; n++) {
+      const t = (n + 0.5) / steps;
+      const p = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t + slab };
+      const long = 6 + 12 * hash(n, p.x, 50);
+      quad(ctx, [
+        { x: p.x - 4, y: p.y },
+        { x: p.x + 4, y: p.y },
+        { x: p.x, y: p.y + long },
+      ]);
+      ctx.fill();
+    }
+  };
+  face(left, bottom, colors.slab);
+  face(bottom, right, colors.slabShade);
+  ctx.fillStyle = colors.snow;
+  quad(ctx, [
+    left,
+    bottom,
+    right,
+    { x: right.x, y: right.y + 6 },
+    { x: bottom.x, y: bottom.y + 6 },
+    { x: left.x, y: left.y + 6 },
+  ]);
+  ctx.fill();
+  drawGround(ctx, world, {
+    minX: -world.extent,
+    maxX: world.extent,
+    minY: -world.extent,
+    maxY: world.extent,
+  });
+  // Dusk settles over the snow, so the lights stand out on it.
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-atop';
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = colors.dusk;
+  ctx.fillRect(left.x - 10, top.y - 10, right.x - left.x + 20, bottom.y - top.y + slab + 40);
+  ctx.restore();
+  drawEdgeFence(ctx, top, right);
+  drawEdgeFence(ctx, left, top);
+}
+
+/** The fence along the island's front edges, drawn once to a layer over everything else. */
+export function drawFrontFence(ctx: CanvasRenderingContext2D, island: Island) {
+  drawEdgeFence(ctx, island.left, island.bottom);
+  drawEdgeFence(ctx, island.bottom, island.right);
+}
+
+/** How high the fence's top rail is, where the string lights hang. */
+const FENCE = 20;
+
+/** A fence along one edge of the island, from `a` to `b`. */
+function drawEdgeFence(ctx: CanvasRenderingContext2D, a: Tile, b: Tile) {
+  ctx.strokeStyle = colors.wood;
+  ctx.lineWidth = 3;
+  for (const h of [FENCE - 4, 8]) {
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y - h);
+    ctx.lineTo(b.x, b.y - h);
+    ctx.stroke();
+  }
+  ctx.lineWidth = 1;
+  for (const p of alongEdge(a, b, 24)) {
+    ctx.fillStyle = colors.cocoa;
+    ctx.fillRect(p.x - 2, p.y - FENCE, 4, FENCE);
+    ctx.fillStyle = colors.snow;
+    ctx.fillRect(p.x - 2.5, p.y - FENCE - 2, 5, 3);
+  }
+}
+
+const LIGHTS = [colors.lantern, colors.berry, colors.gold, colors.mint];
+
+/** String lights along the fence, glowing and gently twinkling: on its back edges or its front ones. */
+export function drawStringLights(
+  ctx: CanvasRenderingContext2D,
+  island: Island,
+  front: boolean,
+  time: number,
+) {
+  const edges = front
+    ? [
+        [island.left, island.bottom],
+        [island.bottom, island.right],
+      ]
+    : [
+        [island.left, island.top],
+        [island.top, island.right],
+      ];
+  let n = 0;
+  for (const [a, b] of edges)
+    for (const p of alongEdge(a, b, 22)) {
+      const sag = 3 * Math.sin((n % 2) * Math.PI);
+      bulb(ctx, p.x, p.y - FENCE + 4 + sag, LIGHTS[n % LIGHTS.length], twinkle(time, n));
+      n++;
+    }
+}
+
+/** Warm pools of light on the snow round the lamps, the stalls and the attractions. */
+export function drawLightPools(ctx: CanvasRenderingContext2D, world: World, time: number) {
+  const pool = (x: number, y: number, rx: number, strength: number) => {
+    ctx.fillStyle = colors.lantern;
+    for (const r of [1, 0.66, 0.36]) {
+      ctx.globalAlpha = 0.09 * strength;
+      ctx.beginPath();
+      ctx.ellipse(x, y, rx * r, rx * r * 0.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+  for (const thing of world.things) {
+    if (thing.kind === 'lamp' || thing.kind === 'cart') {
+      const { x, y } = toScreen(thing);
+      pool(x, y, 58, 0.85 + 0.15 * Math.sin(time / 900 + thing.seed * 20));
+    } else if (thing.kind === 'cabin' || thing.kind === 'tent') {
+      const { x, y } = middle(thing);
+      pool(x, y + 26, 70, 0.8);
+    }
+  }
+  for (const plot of world.plots) {
+    if (plot.kind === 'open') continue;
+    const face = faceOf(plot);
+    const at = onFace(face, 0.5, 0, 0.6);
+    pool(at.x, at.y, plot.kind === 'attraction' ? 110 : 76, 1);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/** The stream's ripples, drawn live over the island's layer. */
+export function drawRipples(ctx: CanvasRenderingContext2D, world: World, time: number) {
+  ctx.strokeStyle = colors.snow;
+  ctx.globalAlpha = 0.7;
+  for (const [at, ground] of world.ground) {
+    if (ground !== 'water') continue;
+    const [x, y] = at.split(',').map(Number);
+    const { x: sx, y: sy } = toScreen({ x, y });
+    const ripple = ((time / 40 + y * 13) % 24) - 12;
+    ctx.beginPath();
+    ctx.moveTo(sx - 10 + ripple / 2, sy + ripple / 4);
+    ctx.lineTo(sx + ripple / 2, sy + ripple / 4 + 2);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
 }

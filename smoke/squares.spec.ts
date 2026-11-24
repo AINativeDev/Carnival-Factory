@@ -2,7 +2,7 @@ import { mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { CLAIM_URL } from '../northpole/links';
-import { middle } from '../northpole/render';
+import { worldToScreen } from '../northpole/camera';
 import { buildWorld, toScreen, type PinnedPlots } from '../northpole/world';
 
 /**
@@ -17,6 +17,8 @@ const root = join(import.meta.dirname, '..');
 const SHOTS = join(root, 'screenshots');
 /** Milliseconds a square may spend drawing one frame. */
 const FRAME_BUDGET_MS = 8;
+/** Milliseconds the map may spend drawing one frame, on average, while the player walks. */
+const MAP_FRAME_BUDGET_MS = 12;
 const PLAY_MS = 3000;
 
 // Squares a maintainer switched off show "Closed for repairs" and never open a
@@ -198,7 +200,8 @@ test('the player walks the world with the keyboard, and it stays quiet', async (
   const problems = watch(page);
   await page.goto('#/');
   const canvas = page.locator('.map-canvas');
-  await expect(canvas).toHaveAttribute('data-player', '2,-2');
+  const { start } = buildWorld(attractions, booths, pinned);
+  await expect(canvas).toHaveAttribute('data-player', `${start.x},${start.y}`);
   await canvas.focus();
   for (const key of ['ArrowRight', 'd', 'ArrowDown', 's']) {
     const before = await canvas.getAttribute('data-player');
@@ -231,20 +234,43 @@ test('clicking an open plot opens the form to claim a booth', async ({ page, con
   const canvas = page.locator('.map-canvas');
   await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever');
   await page.waitForTimeout(500);
-  // The camera centres on the player, a little above them, so the open plot
-  // next door is where the world puts it relative to them.
+  // The map says where its camera is, so the open plot's sign is found from that.
   const world = buildWorld(attractions, booths, pinned);
-  const booth = world.plots.find((plot) => plot.id === 'jedi4ever')!;
   const open = world.plots.find((plot) => plot.kind === 'open')!;
-  const player = toScreen(booth.door);
-  const sign = middle(open);
+  const [x, y, zoom] = (await canvas.getAttribute('data-camera'))!.split(',').map(Number);
+  const sign = toScreen({ x: open.x + (open.w - 1) / 2, y: open.y + (open.h - 1) / 2 });
   const box = (await canvas.boundingBox())!;
+  const at = worldToScreen({ x: sign.x, y: sign.y - 52 }, box.width, box.height, { x, y }, zoom);
   const form = context.waitForEvent('page');
-  await canvas.click({
-    position: {
-      x: box.width / 2 + sign.x - player.x,
-      y: box.height / 2 + sign.y - 50 - (player.y - 40),
-    },
-  });
+  await canvas.click({ position: at });
   expect((await form).url()).toBe(CLAIM_URL);
+});
+
+test('the map shows the island, its HUD, and draws within budget while the player walks', async ({
+  page,
+}) => {
+  const problems = watch(page);
+  await page.goto('#/');
+  await expect(page.locator('.hud-tessl')).toHaveText('Built with Tessl');
+  await expect(page.locator('.hud-controls kbd').first()).toBeVisible();
+  const canvas = page.locator('.map-canvas');
+  await canvas.focus();
+  // Walk back and forth for a few seconds, so the camera comes in and the map times its frames.
+  for (const key of ['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight']) {
+    await page.keyboard.down(key);
+    await page.waitForTimeout(900);
+    await page.keyboard.up(key);
+  }
+  const average = Number(await canvas.getAttribute('data-frame-ms'));
+  expect(average, 'the map took too long to draw its frames').toBeLessThanOrEqual(
+    MAP_FRAME_BUDGET_MS,
+  );
+  expect(problems).toEqual([]);
+});
+
+test("the Booths panel walks the player to a booth's door", async ({ page }) => {
+  await page.goto('#/');
+  const canvas = page.locator('.map-canvas');
+  await page.locator('.hud-list button[data-kind="booth"][data-id="jedi4ever"]').click();
+  await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever', { timeout: 20_000 });
 });

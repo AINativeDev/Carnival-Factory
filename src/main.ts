@@ -1,7 +1,8 @@
 import './style.css';
 import { attractionRegistry } from '../northpole/attractions';
 import { CHANGE_URL, CLAIM_URL } from '../northpole/links';
-import { startMap, startPreview, type SquareKind } from '../northpole/map';
+import { PHONE_WIDTH } from '../northpole/camera';
+import { startMap, startPreview, type MapControls, type SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { applyTheme } from '../northpole/theme';
@@ -60,6 +61,22 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
       <div class="map-frame">
         <canvas class="map-canvas" tabindex="0" aria-label="The North Pole. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a booth or an attraction to visit it, or at an open plot to claim it."></canvas>
         <button class="map-prompt" type="button" hidden></button>
+        <p class="hud hud-tessl">Built with Tessl</p>
+        <details class="hud hud-booths">
+          <summary aria-label="Booths"><span class="hud-icon" aria-hidden="true">🎪</span><span class="hud-title">Booths</span></summary>
+          <p class="hud-hint">Click one to walk there.</p>
+          <ul class="hud-list"></ul>
+        </details>
+        <details class="hud hud-controls">
+          <summary aria-label="Controls"><span class="hud-icon" aria-hidden="true">⌨️</span><span class="hud-title">Controls</span></summary>
+          <ul>
+            <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> to walk</li>
+            <li>Click where you want to go</li>
+            <li><kbd>E</kbd> to visit a booth or an attraction</li>
+            <li><kbd>E</kbd> at a "For claim" sign to claim that plot</li>
+          </ul>
+        </details>
+        <button class="hud hud-overview" type="button">Show the whole island</button>
       </div>
       <nav class="map-guide" aria-label="Attractions">
         <h2>Attractions</h2>
@@ -82,9 +99,10 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
   const registry = focus?.kind === 'attraction' ? attractionRegistry : boothRegistry;
   if (focus && !registry.get(focus.id)) renderUnknown(app.querySelector('.map-note')!, focus);
 
-  stop = startMap(
+  const canvas = app.querySelector('canvas')!;
+  const map = startMap(
     app.querySelector('.map-frame')!,
-    app.querySelector('canvas')!,
+    canvas,
     app.querySelector('.map-prompt')!,
     {
       attractions: attractionRegistry.all(),
@@ -93,6 +111,48 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
       focus,
     },
   );
+  stop = map.stop;
+  renderHud(map, canvas);
+}
+
+/**
+ * The HUD over the map: the Booths panel, whose entries walk the player to a
+ * square, and the button that shows the whole island on a phone. The panels
+ * start open on a wide screen and folded to their icons on a phone.
+ */
+function renderHud(map: MapControls, canvas: HTMLCanvasElement) {
+  const wide = window.matchMedia(`(min-width: ${PHONE_WIDTH}px)`).matches;
+  for (const panel of app.querySelectorAll<HTMLDetailsElement>('.hud-booths, .hud-controls'))
+    panel.open = wide;
+  const list = app.querySelector('.hud-list')!;
+  const entries: [SquareKind, NorthPoleSquare, string][] = [
+    ...attractionRegistry
+      .all()
+      .map((s): [SquareKind, NorthPoleSquare, string] => ['attraction', s, 'North Pole']),
+    ...boothRegistry
+      .all()
+      .map((s): [SquareKind, NorthPoleSquare, string] => ['booth', s, `@${s.id}`]),
+  ];
+  for (const [kind, square, by] of entries) {
+    const item = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.kind = kind;
+    button.dataset.id = square.id;
+    button.innerHTML = `<span class="name"></span> <span class="owner"></span>`;
+    button.querySelector('.owner')!.textContent = by;
+    whenNamed(square, () => (button.querySelector('.name')!.textContent = square.name));
+    button.addEventListener('click', () => {
+      map.walkTo(kind, square.id);
+      canvas.focus();
+    });
+    item.append(button);
+    list.append(item);
+  }
+  const overview = app.querySelector<HTMLButtonElement>('.hud-overview')!;
+  overview.addEventListener('click', () => {
+    overview.textContent = map.toggleOverview() ? 'Follow me' : 'Show the whole island';
+  });
 }
 
 /** The map's note for a deep link to a square that isn't there. The id is only ever set as text. */

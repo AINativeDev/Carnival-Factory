@@ -27,7 +27,21 @@ export interface Box extends Tile {
 export type Ground = 'snow' | 'path' | 'plaza' | 'ice' | 'water' | 'bridge';
 
 export type ThingKind =
-  'tree' | 'drift' | 'cabin' | 'lamp' | 'fence' | 'stable' | 'sleigh' | 'town-tree';
+  | 'tree'
+  | 'drift'
+  | 'cabin'
+  | 'lamp'
+  | 'fence'
+  | 'stable'
+  | 'sleigh'
+  | 'town-tree'
+  | 'wheel'
+  | 'tent'
+  | 'bench'
+  | 'cart'
+  | 'arch'
+  | 'banner'
+  | 'bunting';
 
 /** Something the map draws standing on the ground, over the tiles of `box`. */
 export interface Thing extends Box {
@@ -72,7 +86,7 @@ export interface World {
   strolls: Stroll[];
   /** The world is the tiles from -extent to extent each way. */
   extent: number;
-  /** Where a visitor starts: in the town square, beside its tree. */
+  /** Where a visitor starts: just inside the entrance arch, at the front of the island. */
   start: Tile;
 }
 
@@ -101,8 +115,8 @@ export const PLOTS_PER_LANE = 6;
 const LANE_LENGTH = (PLOTS_PER_LANE / 2) * 4;
 /** Attractions in one ring round the town square. */
 const ATTRACTIONS_PER_RING = 8;
-/** How much forest grows round the edge of the town. */
-const FOREST = 8;
+/** How much forest grows round the edge of the town, inside the island's fence. */
+const FOREST = 5;
 
 /**
  * A number from 0 to 1 that depends only on its arguments and the world's
@@ -292,8 +306,24 @@ export function buildWorld(
     place('lamp', { x, y, w: 1, h: 1 });
   }
 
+  // The island's edge: the forest round the town, and the fence round that.
+  const extent = Math.max(avenueEnd, sights + 14) + FOREST;
+
+  // The main path runs on from the east avenue to the entrance arch at the
+  // front of the island, under bunting strung between poles.
+  lay({ x: avenueEnd + 1, y: -1, w: extent - avenueEnd, h: 3 }, 'path');
+  keep({ x: avenueEnd + 1, y: -2, w: extent - avenueEnd, h: 5 });
+  place('arch', { x: extent - 1, y: -2, w: 1, h: 5 }, false, 0);
+  for (let x = PLAZA + 2; x < extent - 3; x += 8)
+    place('bunting', { x, y: -2, w: 1, h: 5 }, false, hash(x, 8));
+  // The big banner by the town square, where the main path comes in.
+  place('banner', { x: PLAZA + 1, y: -PLAZA - 1, w: 3, h: 1 }, false, 0);
+
   for (let quarter = 0; quarter < 4; quarter++) {
     const at = (box: Box) => turnBox(box, quarter);
+    // A bench and a cocoa cart along each avenue.
+    place('bench', at({ x: PLAZA + 5, y: -2, w: 1, h: 1 }));
+    place('cart', at({ x: PLAZA + 7, y: 2, w: 1, h: 1 }));
     // The avenue, with lamps along its north side.
     lay(at({ x: PLAZA + 1, y: -1, w: avenueEnd - PLAZA, h: 3 }), 'path');
     keep(at({ x: PLAZA + 1, y: -2, w: avenueEnd - PLAZA, h: 5 }));
@@ -361,8 +391,12 @@ export function buildWorld(
     keep(turnBox({ x, y: sights + y + 3, w: 3, h: 1 }, quarter));
   }
 
+  // The ferris wheel, rising over the back of the town, and the striped tents.
+  place('wheel', turnBox({ x: 5, y: sights + 5, w: 3, h: 3 }, 3));
+  for (const quarter of [1, 3]) place('tent', turnBox({ x: 10, y: sights, w: 2, h: 2 }, quarter));
+  place('tent', turnBox({ x: 10, y: sights + 6, w: 2, h: 2 }, 2));
+
   // The pine forest: scattered through the town, and thick round its edge.
-  const extent = Math.max(avenueEnd, sights + 14) + FOREST;
   const town = extent - FOREST + 2;
   for (let x = -extent; x <= extent; x++)
     for (let y = -extent; y <= extent; y++) {
@@ -393,7 +427,8 @@ export function buildWorld(
     }
   }
 
-  return { ground, blocked, things, plots, pond, paddock, strolls, extent, start: { x: 2, y: -2 } };
+  const start = { x: extent - 2, y: 0 };
+  return { ground, blocked, things, plots, pond, paddock, strolls, extent, start };
 }
 
 /** Whether you can stand on the tile at (x, y). */
