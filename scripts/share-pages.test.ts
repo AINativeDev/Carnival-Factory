@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   decodeLiteral,
   escapeHtml,
+  factorySharePage,
   readSquareInfo,
   sharePage,
   siteUrl,
@@ -40,6 +41,16 @@ describe('share pages', () => {
     expect(bare).toContain('<title>X at the North Pole Carnival</title>');
     expect(bare).not.toContain('by the North Pole');
     expect(bare).toContain('Visit X at the North Pole Carnival');
+  });
+
+  it("gives the factory's numbers a share page of their own", () => {
+    const factory = factorySharePage('map.png');
+    expect(factory).toContain('<title>The North Pole Carnival factory</title>');
+    expect(factory).toContain(
+      '<meta property="og:title" content="The North Pole Carnival factory" />',
+    );
+    expect(factory).toContain('<meta http-equiv="refresh" content="0; url=../#/factory" />');
+    expect(factory).not.toMatch(/<script/i);
   });
 
   it("reads a square's name and description from its source", () => {

@@ -37,8 +37,8 @@ square.html                 the page each square's sandboxed frame loads
 src/
   main.ts                   the router: #/ is the map, #/booth/<login> and
                             #/attraction/<id> the map with the player inside that
-                            square, and #/?booth=<login> or #/?attraction=<id> the map
-                            showing that square
+                            square, #/?booth=<login> or #/?attraction=<id> the map
+                            showing that square, and #/factory the factory's numbers
   route.ts                  reading the hash (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
   booths-hud.ts             the Booths panel: search, Featured, Near you, Recently added,
@@ -46,6 +46,8 @@ src/
   booth-panel.ts            the panel's searching, sorting and sections (plain functions)
   history.ts                the "How was this built?" panel: each square's requests and
                             pull requests, bundled from square-history.json at build time
+  factory.ts                the factory's numbers page, #/factory: its counts and figures
+                            (plain functions), over the map like a visit's panel
   style.css
 northpole/                  the map itself
   square.ts                 the NorthPoleSquare shape, the registries and the kill switch
@@ -103,11 +105,15 @@ scripts/
   ownership.ts              the booth ownership rule (plain functions)
   check-booth-ownership.ts  the CI check that enforces it
   square-size.ts            the size budget for every square
-  share-pages.ts            the link-preview page the build writes for every square
+  share-pages.ts            the link-preview page the build writes for every square,
+                            and for the factory's numbers
   square-history.ts         every square's history from its issues and pull requests
                             (plain functions), for the credits (#32) to reuse
-  write-square-history.ts   reads them from the GitHub API and writes square-history.json
-                            before the deploy's build (previews have none)
+  factory-stats.ts          the factory's numbers from the same issues and pull requests:
+                            builds, requests, findings, time to the map (plain functions)
+  write-square-history.ts   reads them from the GitHub API and writes square-history.json,
+                            with the factory's numbers, before the deploy's build
+                            (previews have none)
   booth-dates.ts            when each booth's folder first appeared, from git history,
                             for Recently added (the build reads it)
   avatars.ts                the build-time avatars' rules (plain functions)
