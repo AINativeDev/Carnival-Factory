@@ -77,7 +77,9 @@ do {
   });
   if (!response.ok) throw new Error(`The GraphQL API answered HTTP ${response.status}`);
   const page = (await response.json()) as Page;
-  if (!page.data)
+  // Errors beside data mean some fields came back null, so the count would be
+  // too low: treat them as a failed read too.
+  if (!page.data || page.errors?.length)
     throw new Error(`The GraphQL API answered with errors: ${JSON.stringify(page.errors)}`);
   const { nodes, pageInfo } = page.data.repository.issues;
   for (const issue of nodes) {
