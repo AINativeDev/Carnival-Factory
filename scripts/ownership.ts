@@ -97,3 +97,22 @@ export function escapeCommand(text: string): string {
     .replace(/:/g, '%3A')
     .replace(/,/g, '%2C');
 }
+
+/** An issue event from the GitHub API, as much of it as approval needs. */
+export interface IssueEvent {
+  event: string;
+  label?: { name: string };
+  actor?: { id: number } | null;
+}
+
+/**
+ * Whether a maintainer approved an issue for the factory: the latest time the
+ * `tessl` label was added, it was a maintainer who added it, by numeric id.
+ * Such an issue may change anything, like a maintainer's own issue, even when
+ * a participant wrote it. Anyone else adding the label approves nothing.
+ */
+export function approvedByMaintainer(events: readonly IssueEvent[]): boolean {
+  const added = events.filter((e) => e.event === 'labeled' && e.label?.name === 'tessl');
+  const last = added.at(-1);
+  return !!last?.actor && isMaintainer(last.actor);
+}
