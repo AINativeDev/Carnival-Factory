@@ -874,3 +874,15 @@ test('the banner links to the repository, where every booth starts', async ({ pa
     'https://github.com/AINativeDev/Northpole-Carnival-Factory',
   );
 });
+
+test("a square's history lists each request as a block, not in columns", async ({ page }) => {
+  await page.goto('#/booth/jedi4ever');
+  const list = page.locator('.history-list');
+  await list.evaluate((element) => {
+    const item = document.createElement('li');
+    item.className = 'history-entry';
+    item.innerHTML = '<p class="history-request">#1 A request</p><p class="history-meta">@ana</p>';
+    element.append(item);
+  });
+  await expect(list.locator('.history-entry').last()).toHaveCSS('display', 'block');
+});

@@ -982,7 +982,8 @@ kbd {
   list-style: none;
 }
 
-.history-entry {
+/* .hud .history-entry, so it outranks the map's .hud li, which lays items in a row. */
+.hud .history-entry {
   display: block;
   margin: 0 0 12px;
   padding-left: 10px;
