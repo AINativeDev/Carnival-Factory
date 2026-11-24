@@ -3,6 +3,7 @@ import { CLAIM_URL, REPO_URL } from './links';
 import pinned from './plots.json';
 import { landedBooths, STAGE_TEXT, type PendingBooth } from './plots';
 import {
+  dragCentre,
   duskAt,
   frameCentre,
   framing,
@@ -424,6 +425,13 @@ export function startMap(
   let walking = 0;
   let movedAt = -Infinity;
   let overview = false;
+  /**
+   * Where a finger dragged the camera, which it stays at until the player
+   * walks or goes to a square, and the finger dragging it now: where it was
+   * last, once it has moved too far to be a tap.
+   */
+  let panned: Tile | undefined;
+  let dragging: { id: number; from: Tile; moved: boolean } | undefined;
   let near: Plot | undefined;
   let scale = 1;
   let last: number | undefined;
@@ -720,17 +728,22 @@ export function startMap(
       delete canvas.dataset.stage;
     }
     const wanted = want();
+    // A walk, or the overview, takes the camera back from where a finger left it.
+    if (moving || overview) panned = undefined;
     if (!camera || still) {
       zoom = wanted.zoom;
       // On a phone the camera opens on the town square, then finds the player.
-      camera =
-        isPhone(width) && !still
+      camera = panned
+        ? frameCentre(bounds, width, height, zoom, panned)
+        : isPhone(width) && !still
           ? centreFor({ ...wanted, target: toScreen({ x: 0, y: 0 }) }, zoom)
           : centreFor(wanted, zoom);
     } else {
       const ease = Math.min(1, dt * 4);
       zoom += (wanted.zoom - zoom) * ease;
-      const goal = centreFor(wanted, zoom);
+      const goal = panned
+        ? frameCentre(bounds, width, height, zoom, panned)
+        : centreFor(wanted, zoom);
       camera = {
         x: camera.x + (goal.x - camera.x) * ease,
         y: camera.y + (goal.y - camera.y) * ease,
@@ -1090,8 +1103,34 @@ export function startMap(
     walkToward(goals);
   };
 
+  /** On a touch screen a finger drags the map round, and a tap still walks or opens. */
+  const onPointerDown = (event: PointerEvent) => {
+    if (event.pointerType !== 'touch' || visiting || dragging) return;
+    const box = canvas.getBoundingClientRect();
+    dragging = {
+      id: event.pointerId,
+      from: { x: event.clientX - box.left, y: event.clientY - box.top },
+      moved: false,
+    };
+    // The drag goes on when the finger slides off the map.
+    canvas.setPointerCapture(event.pointerId);
+  };
+  const onPointerEnd = (event: PointerEvent) => {
+    if (dragging?.id === event.pointerId) dragging = undefined;
+  };
+
   const onPointerMove = (event: PointerEvent) => {
-    if (event.pointerType === 'touch') return;
+    if (event.pointerType === 'touch') {
+      if (dragging?.id !== event.pointerId || visiting || !camera) return;
+      const box = canvas.getBoundingClientRect();
+      const to = { x: event.clientX - box.left, y: event.clientY - box.top };
+      if (!dragging.moved && isTap(dragging.from, to)) return;
+      dragging.moved = true;
+      // The camera follows the finger at once, without easing.
+      camera = panned = dragCentre(bounds, box.width, box.height, zoom, camera, dragging.from, to);
+      dragging.from = to;
+      return;
+    }
     hovered = visiting ? undefined : plotUnder(pointAt(event));
     canvas.style.cursor = hovered ? 'pointer' : 'default';
   };
@@ -1137,7 +1176,10 @@ export function startMap(
   window.addEventListener('keyup', onKeyUp);
   window.addEventListener('blur', onBlur);
   canvas.addEventListener('click', onClick);
+  canvas.addEventListener('pointerdown', onPointerDown);
   canvas.addEventListener('pointermove', onPointerMove);
+  canvas.addEventListener('pointerup', onPointerEnd);
+  canvas.addEventListener('pointercancel', onPointerEnd);
   canvas.addEventListener('pointerleave', onPointerLeave);
   prompt.addEventListener('click', onPrompt);
   frameId = requestAnimationFrame(render);
@@ -1150,7 +1192,10 @@ export function startMap(
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
       canvas.removeEventListener('click', onClick);
+      canvas.removeEventListener('pointerdown', onPointerDown);
       canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerup', onPointerEnd);
+      canvas.removeEventListener('pointercancel', onPointerEnd);
       canvas.removeEventListener('pointerleave', onPointerLeave);
       tag.remove();
       delete frame.dataset.visiting;
@@ -1174,6 +1219,7 @@ export function startMap(
       player = { ...plot.door };
       path = [];
       overview = false;
+      panned = undefined;
       // The camera comes in on the square, and eases back out a little later, as after a walk.
       walking = 1;
       movedAt = performance.now();
@@ -1258,6 +1304,7 @@ export function startMap(
       claiming = undefined;
       held.clear();
       overview = false;
+      panned = undefined;
       if (!visiting) fading = performance.now();
       visiting = plot;
       select(undefined);
