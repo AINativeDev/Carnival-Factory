@@ -38,7 +38,11 @@ starter repo for the "Build your own software factory with context" workshop.
    with a **Preview** link: the whole map, with your booth on it, at
    `…/previews/pr-<number>/#/booth/<your-login>`. Once it merges, it's on the
    live map at the same `#/booth/<your-login>` link.
-5. **Change it.** Open **Change your booth** for anything after that. Every
+5. **Share it.** Your booth's page has **See it on the map**, which opens the
+   map scrolled to your booth and lights it up for a few seconds, and **Copy
+   link**, which copies that link to send to anyone:
+   `…/#/?booth=<your-login>`. An attraction's is `…/#/?attraction=<id>`.
+6. **Change it.** Open **Change your booth** for anything after that. Every
    change goes through the same loop.
 
 ## Try it on your own
@@ -159,6 +163,8 @@ native dependencies, so `npm ci` is the whole setup. Node 22.13 or later.
 
 - `index.html` and `src/main.ts`: the page and the router: `#/` is the map,
   `#/booth/<login>` shows one booth and `#/attraction/<id>` one attraction.
+  `#/?booth=<login>` and `#/?attraction=<id>` open the map on that square.
+  `src/route.ts` reads the hash.
 - `northpole/`: the map: the `NorthPoleSquare` shape and registries, the
   town's layout, drawing and the theme.
 - `booths/<login>/`: one folder per participant. `booths/jedi4ever/` is the

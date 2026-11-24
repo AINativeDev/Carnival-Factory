@@ -1,11 +1,12 @@
 import './style.css';
 import { attractionRegistry } from '../northpole/attractions';
 import { CHANGE_URL, CLAIM_URL } from '../northpole/links';
-import { startMap, startPreview } from '../northpole/map';
+import { startMap, startPreview, type SquareKind } from '../northpole/map';
 import type { SandboxedSquare } from '../northpole/sandbox';
 import type { NorthPoleSquare } from '../northpole/square';
 import { applyTheme } from '../northpole/theme';
 import { boothRegistry } from '../northpole/booths';
+import { deepLink, parseHash } from './route';
 
 applyTheme();
 
@@ -44,7 +45,7 @@ function renderGuide(
   }
 }
 
-function renderMap() {
+function renderMap(focus?: { kind: SquareKind; id: string }) {
   document.body.dataset.view = 'map';
   app.innerHTML = `
     <section class="map">
@@ -55,6 +56,7 @@ function renderMap() {
         spots at the end of the lanes are waiting for a booth:
         <a href="${CLAIM_URL}" target="_blank" rel="noopener">claim your own</a>.
       </p>
+      <p class="map-note" role="status" hidden></p>
       <div class="map-frame">
         <div class="map-town">
           <canvas class="map-canvas" aria-label="The North Pole map. Click an attraction or a booth to preview it."></canvas>
@@ -78,6 +80,9 @@ function renderMap() {
   );
   renderGuide(app.querySelector('.booths')!, boothRegistry.all(), 'booth', (id) => `@${id}`);
 
+  const registry = focus?.kind === 'attraction' ? attractionRegistry : boothRegistry;
+  if (focus && !registry.get(focus.id)) renderUnknown(app.querySelector('.map-note')!, focus);
+
   stop = startMap(
     app.querySelector('.map-frame')!,
     app.querySelector('.map-town')!,
@@ -86,8 +91,59 @@ function renderMap() {
       attractions: attractionRegistry.all(),
       booths: boothRegistry.all(),
       onOpen: (kind, id) => (location.hash = `#/${kind}/${id}`),
+      focus,
     },
   );
+}
+
+/** The map's note for a deep link to a square that isn't there. The id is only ever set as text. */
+function renderUnknown(note: HTMLElement, focus: { kind: SquareKind; id: string }) {
+  if (focus.kind === 'attraction') {
+    note.textContent = `The North Pole has no attraction called "${focus.id}".`;
+  } else {
+    note.textContent = `There's no booth for @${focus.id} yet. `;
+    const claim = document.createElement('a');
+    claim.href = CLAIM_URL;
+    claim.target = '_blank';
+    claim.rel = 'noopener';
+    claim.textContent = 'Claim it!';
+    note.append(claim);
+  }
+  note.hidden = false;
+}
+
+const SHARE = `
+        <p class="share">
+          <a class="share-map">See it on the map</a>
+          <button class="share-copy" type="button">Copy link</button>
+          <input class="share-url" type="text" readonly hidden aria-label="Link to it on the map" />
+        </p>`;
+
+/**
+ * Wires up a square page's share links: one to the map showing the square,
+ * and a button that copies that link's full URL. Where the clipboard isn't
+ * available, it shows the URL selected, to copy by hand.
+ */
+function renderShare(kind: SquareKind, id: string) {
+  const link = deepLink(kind, id);
+  const url = new URL(link, location.href).href;
+  app.querySelector<HTMLAnchorElement>('.share-map')!.href = link;
+  const button = app.querySelector<HTMLButtonElement>('.share-copy')!;
+  const field = app.querySelector<HTMLInputElement>('.share-url')!;
+  let reset = 0;
+  button.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      button.textContent = 'Copied!';
+      window.clearTimeout(reset);
+      reset = window.setTimeout(() => (button.textContent = 'Copy link'), 2000);
+    } catch {
+      field.value = url;
+      field.hidden = false;
+      field.focus();
+      field.select();
+    }
+  });
 }
 
 function renderBooth(booth: NorthPoleSquare) {
@@ -98,7 +154,7 @@ function renderBooth(booth: NorthPoleSquare) {
         <a href="#/">← Back to the map</a>
         <h1></h1>
         <p class="owner">Owned by <a target="_blank" rel="noopener"></a></p>
-        <p class="description"></p>
+        <p class="description"></p>${SHARE}
       </div>
       <canvas class="booth-canvas"></canvas>
       <p class="booth-help">
@@ -112,6 +168,7 @@ function renderBooth(booth: NorthPoleSquare) {
   const owner = app.querySelector<HTMLAnchorElement>('.owner a')!;
   owner.textContent = `@${booth.id}`;
   owner.href = `https://github.com/${booth.id}`;
+  renderShare('booth', booth.id);
   stop = startPreview(app.querySelector('canvas')!, booth);
 }
 
@@ -123,7 +180,7 @@ function renderAttraction(attraction: NorthPoleSquare) {
         <a href="#/">← Back to the map</a>
         <h1></h1>
         <p class="owner">An attraction of the North Pole</p>
-        <p class="description"></p>
+        <p class="description"></p>${SHARE}
       </div>
       <canvas class="booth-canvas"></canvas>
       <p class="booth-help">
@@ -135,6 +192,7 @@ function renderAttraction(attraction: NorthPoleSquare) {
     app.querySelector('h1')!.textContent = attraction.name;
     app.querySelector('.description')!.textContent = attraction.description;
   });
+  renderShare('attraction', attraction.id);
   stop = startPreview(app.querySelector('canvas')!, attraction);
 }
 
@@ -156,13 +214,11 @@ function route() {
   stop?.();
   stop = undefined;
 
+  const route = parseHash(location.hash);
   // Booths used to be called plots: keep links shared before the rename working.
-  const legacy = location.hash.match(/^#\/plot\/([\w-]+)$/);
-  if (legacy) return location.replace(`#/booth/${legacy[1]}`);
-
-  const match = location.hash.match(/^#\/(booth|attraction)\/([\w-]+)$/);
-  if (!match) return renderMap();
-  const [, kind, id] = match;
+  if (route.view === 'legacy') return location.replace(`#/booth/${route.id}`);
+  if (route.view === 'map') return renderMap(route.focus);
+  const { kind, id } = route;
 
   if (kind === 'attraction') {
     const attraction = attractionRegistry.get(id);

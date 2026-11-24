@@ -44,6 +44,7 @@ a {
 }
 
 .map-help,
+.map-note,
 .booth-help {
   color: var(--color-muted);
   text-align: center;
@@ -101,4 +102,38 @@ a {
   width: min(480px, 100%);
   margin-top: 16px;
   border-radius: var(--radius);
+}
+
+.map-note {
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px 20px;
+  margin: 12px 0 0;
+}
+
+/* Copy link is a button, but sits beside See it on the map as a link. */
+.share-copy {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-gold);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.share-url {
+  width: min(480px, 100%);
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  font: inherit;
 }

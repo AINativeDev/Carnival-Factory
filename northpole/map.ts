@@ -4,6 +4,7 @@ import {
   placeScenery,
   SIGN_WIDTH,
   SQUARE_SIZE,
+  scrollToward,
   slotAt,
   type MapLayout,
   type Point,
@@ -371,6 +372,51 @@ function drawSign(ctx: CanvasRenderingContext2D, name: string, by: string, x: nu
   ctx.textBaseline = 'alphabetic';
 }
 
+/** How long a square the map opens on stays highlighted, in milliseconds. */
+const HIGHLIGHT_TIME = 6000;
+/** How long the highlight takes to fade at the end. */
+const HIGHLIGHT_FADE = 1500;
+
+/**
+ * A ring of twinkling lights round the square at the origin, over a soft glow,
+ * `age` milliseconds after the map opened on it. It fades out at the end.
+ */
+function drawHighlight(ctx: CanvasRenderingContext2D, age: number, time: number) {
+  if (age < 0 || age > HIGHLIGHT_TIME) return;
+  const strength = Math.min(1, (HIGHLIGHT_TIME - age) / HIGHLIGHT_FADE, age / 300);
+  const half = SQUARE_SIZE / 2;
+  const reach = half + 14;
+  ctx.save();
+  ctx.globalAlpha = 0.35 * strength * (0.75 + 0.25 * Math.sin(time / 300));
+  ctx.strokeStyle = colors.glow;
+  ctx.lineJoin = 'round';
+  for (const width of [24, 14]) {
+    ctx.lineWidth = width;
+    ctx.strokeRect(-reach + 4, -reach + 4, 2 * reach - 8, 2 * reach - 8);
+  }
+  // Bulbs evenly round the square's edge, each twinkling in its own time.
+  const perSide = 8;
+  for (let n = 0; n < perSide * 4; n++) {
+    const along = ((n % perSide) / perSide) * 2 * reach - reach;
+    const side = Math.floor(n / perSide);
+    const [x, y] =
+      side === 0
+        ? [along, -reach]
+        : side === 1
+          ? [reach, along]
+          : side === 2
+            ? [-along, reach]
+            : [-reach, -along];
+    const twinkle = 0.5 + 0.5 * Math.sin(time / 180 + n * 2.3);
+    ctx.globalAlpha = strength * (0.4 + 0.6 * twinkle);
+    ctx.fillStyle = n % 3 === 0 ? colors.berry : n % 3 === 1 ? colors.gold : colors.aurora;
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5 + 1.5 * twinkle, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 export type SquareKind = 'attraction' | 'booth';
 
 export interface MapOptions {
@@ -380,6 +426,8 @@ export interface MapOptions {
   booths: readonly NorthPoleSquare[];
   /** Opens a square: `id` is a booth's owner or an attraction's id. */
   onOpen(kind: SquareKind, id: string): void;
+  /** A square to open the map on, scrolled into view and highlighted for a few seconds. */
+  focus?: { kind: SquareKind; id: string };
 }
 
 /** How far a mouse may move while pressed and still count as a click, not a drag. */
@@ -390,7 +438,8 @@ const DRAG = 6;
  * `frame` scrolls over `town`, which is as big as the whole town, and `canvas`
  * sticks to the frame's corner and draws only the part of the town on show,
  * so the town can be far larger than the screen. It starts centred on the town
- * square, and scrolls, swipes or drags to anywhere else.
+ * square, or on `options.focus` when that names a square on the map, and
+ * scrolls, swipes or drags to anywhere else.
  */
 export function startMap(
   frame: HTMLElement,
@@ -412,6 +461,13 @@ export function startMap(
   const { bounds } = layout;
   let frameId = 0;
   let scale = 1;
+  const focused = options.focus
+    ? layout.slots.find((slot) => {
+        const square = slot.kind === options.focus!.kind ? squareAt(slot) : undefined;
+        return square?.id === options.focus!.id;
+      })
+    : undefined;
+  let focusedAt: number | undefined;
 
   town.style.width = `${bounds.width}px`;
   town.style.height = `${bounds.height}px`;
@@ -459,6 +515,15 @@ export function startMap(
         drawOpenSpot(ctx, corner, corner);
         drawSign(ctx, 'Open booth', 'Claim it', corner, corner);
       }
+      ctx.restore();
+    }
+
+    if (focused) {
+      focusedAt ??= time;
+      ctx.save();
+      ctx.translate(focused.x, focused.y);
+      ctx.rotate(focused.angle);
+      drawHighlight(ctx, time - focusedAt, time);
       ctx.restore();
     }
 
@@ -516,9 +581,15 @@ export function startMap(
   };
 
   resize();
-  // Start on the town square, in the middle of the frame.
-  frame.scrollLeft = layout.plaza.x - bounds.x - frame.clientWidth / 2;
-  frame.scrollTop = layout.plaza.y - bounds.y - frame.clientHeight / 2;
+  // Start on the focused square, or else the town square, in the middle of the frame.
+  const start = scrollToward(
+    bounds,
+    focused ?? layout.plaza,
+    frame.clientWidth,
+    frame.clientHeight,
+  );
+  frame.scrollLeft = start.left;
+  frame.scrollTop = start.top;
   window.addEventListener('resize', resize);
   canvas.addEventListener('pointerdown', onDown);
   window.addEventListener('pointermove', onMove);
