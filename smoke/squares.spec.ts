@@ -1,4 +1,4 @@
-import { mkdirSync, readdirSync, statSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
@@ -16,12 +16,23 @@ const SHOTS = join(root, 'screenshots');
 const FRAME_BUDGET_MS = 8;
 const PLAY_MS = 3000;
 
+// Squares a maintainer switched off show "Closed for repairs" and never open a
+// frame, so there's nothing of theirs to play.
+const disabled = JSON.parse(readFileSync(join(root, 'northpole/disabled.json'), 'utf8')) as {
+  booths: string[];
+  attractions: string[];
+};
 const squares = (['booth', 'attraction'] as const).flatMap((kind) => {
   const dir = join(root, `${kind}s`);
+  const off = new Set(disabled[`${kind}s`].map((id) => id.toLowerCase()));
   return readdirSync(dir)
-    .filter((name) => statSync(join(dir, name)).isDirectory())
+    .filter((name) => statSync(join(dir, name)).isDirectory() && !off.has(name))
     .map((id) => ({ kind, id }));
 });
+
+/** A square's frame: booths and attractions may share an id, so match both. */
+const frameOf = (page: Page, kind: string, id: string) =>
+  page.locator(`iframe[data-kind="${kind}"][data-id="${id}"]`);
 
 /** Collects what the page and every frame in it did wrong. */
 function watch(page: Page) {
@@ -45,12 +56,13 @@ for (const { kind, id } of squares) {
   test(`${kind} ${id} opens, draws within budget and stays quiet`, async ({ page }) => {
     const problems = watch(page);
     await page.goto(`#/${kind}/${id}`);
-    const frame = page.locator(`iframe[data-id="${id}"]`);
+    const frame = frameOf(page, kind, id);
     await expect(frame).toHaveAttribute('data-state', 'ready', { timeout: 5000 });
     await page.waitForTimeout(PLAY_MS);
     await expect(frame).toHaveAttribute('data-state', 'ready');
-    const drawMs = Number(await frame.getAttribute('data-draw-ms'));
-    expect(drawMs, 'last frame took too long to draw').toBeLessThanOrEqual(FRAME_BUDGET_MS);
+    // The slowest frame after warming up, not just the last one.
+    const slowest = Number(await frame.getAttribute('data-slowest-draw-ms'));
+    expect(slowest, 'a frame took too long to draw').toBeLessThanOrEqual(FRAME_BUDGET_MS);
     await page.locator('canvas').screenshot({ path: join(SHOTS, `${kind}-${id}.png`) });
     expect(problems).toEqual([]);
   });
@@ -59,8 +71,8 @@ for (const { kind, id } of squares) {
 test('the map opens every square and stays quiet', async ({ page }) => {
   const problems = watch(page);
   await page.goto('#/');
-  for (const { id } of squares) {
-    await expect(page.locator(`iframe[data-id="${id}"]`)).toHaveAttribute('data-state', 'ready', {
+  for (const { kind, id } of squares) {
+    await expect(frameOf(page, kind, id)).toHaveAttribute('data-state', 'ready', {
       timeout: 5000,
     });
   }
@@ -71,7 +83,7 @@ test('the map opens every square and stays quiet', async ({ page }) => {
 
 test("a square's sandbox keeps it from the network, storage and the page", async ({ page }) => {
   await page.goto('#/booth/jedi4ever');
-  await expect(page.locator('iframe[data-id="jedi4ever"]')).toHaveAttribute('data-state', 'ready');
+  await expect(frameOf(page, 'booth', 'jedi4ever')).toHaveAttribute('data-state', 'ready');
   const frame = page.frames().find((f) => f.url().includes('square.html#booth/jedi4ever'))!;
   const walls = await frame.evaluate(async () => {
     const blocked = async (attempt: () => unknown) => {

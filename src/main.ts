@@ -14,11 +14,18 @@ let stop: (() => void) | undefined;
 
 /**
  * Calls `show` now, and again once a sandboxed square's frame has said its name
- * and description: until then the page only knows its id.
+ * and description: until then the page only knows its id. The later call only
+ * happens while the page that asked is still the one showing, so a square that
+ * opens after you've moved on never writes over another page.
  */
 function whenNamed(square: NorthPoleSquare, show: () => void) {
   show();
-  if ('onReady' in square) (square as SandboxedSquare).onReady(show);
+  const view = app.firstElementChild;
+  if ('onReady' in square) {
+    (square as SandboxedSquare).onReady(() => {
+      if (view?.isConnected) show();
+    });
+  }
 }
 
 function renderGuide(

@@ -108,6 +108,13 @@ describe('readFrameAddress', () => {
     });
   });
 
+  it("checks each id by its own kind's rules", () => {
+    const long = 'a-very-long-attraction-name-that-is-well-over-forty-characters';
+    expect(readFrameAddress(`#attraction/${long}`)).toEqual({ kind: 'attraction', id: long });
+    expect(readFrameAddress(`#booth/${long}`)).toBeUndefined();
+    expect(readFrameAddress('#attraction/a--b')).toBeUndefined();
+  });
+
   it('refuses anything else', () => {
     for (const hash of [
       '',

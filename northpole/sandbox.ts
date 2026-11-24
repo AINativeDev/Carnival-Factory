@@ -13,7 +13,10 @@ import { canvasFont, theme } from './theme';
 import { readFrameMessage, type SquareKind } from './frame-protocol';
 import type { NorthPoleSquare } from './square';
 
-export const READY_TIMEOUT = 5000;
+/** How long a square may take to open, its download included. */
+export const READY_TIMEOUT = 10_000;
+/** Frames left out of the slowest-frame record while a square warms up. */
+const WARM_UP_FRAMES = 5;
 /** Errors in a row after which a square counts as broken. */
 export const MAX_ERRORS = 3;
 /** How long a frame may take to answer before it counts as an error. */
@@ -69,6 +72,8 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
   let waitingFor: number | undefined;
   let waitingSince = 0;
   let errors = 0;
+  let frames = 0;
+  let slowest = 0;
 
   const fail = (why: string) => {
     waitingFor = undefined;
@@ -90,7 +95,14 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
         if (state !== 'loading') return;
         info = { name: message.name, description: message.description };
         setState('ready');
-        for (const listener of listeners.splice(0)) listener(info);
+        for (const listener of listeners.splice(0)) {
+          // One page's listener failing mustn't keep the others from hearing.
+          try {
+            listener(info);
+          } catch (error) {
+            console.error(error);
+          }
+        }
         break;
       case 'frame':
         latest?.close();
@@ -98,6 +110,9 @@ export function sandboxedSquare(kind: SquareKind, id: string): SandboxedSquare {
         waitingFor = undefined;
         errors = 0;
         iframe.dataset.drawMs = String(Math.round(message.drawMs * 10) / 10);
+        // The slowest frame after warming up, for the smoke test's budget.
+        if (++frames > WARM_UP_FRAMES) slowest = Math.max(slowest, message.drawMs);
+        iframe.dataset.slowestDrawMs = String(Math.round(slowest * 10) / 10);
         break;
       case 'error':
         if (state === 'loading') setState('broken');

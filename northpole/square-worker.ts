@@ -70,3 +70,6 @@ addEventListener('message', (event: MessageEvent) => {
   const bitmap = canvas.transferToImageBitmap();
   send({ type: 'frame', bitmap, drawMs }, [bitmap]);
 });
+
+// The worker's script has arrived and run: the frame starts timing from here.
+send({ type: 'started' });

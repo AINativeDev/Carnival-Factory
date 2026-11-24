@@ -4,6 +4,8 @@
  * trust, so nothing it sends is used before these checks pass.
  */
 
+import { isAttractionId, isBoothOwner } from './square';
+
 export type SquareKind = 'booth' | 'attraction';
 
 /** The map asks the frame to draw one frame. */
@@ -72,11 +74,14 @@ export function readDrawRequest(data: unknown): DrawRequest | undefined {
   return { type, size, time };
 }
 
-const ID_PATTERN = /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/;
-
-/** Which square a frame runs, from its address: `square.html#booth/<login>`. */
+/**
+ * Which square a frame runs, from its address: `square.html#booth/<login>` or
+ * `square.html#attraction/<id>`, each id checked by its own kind's rules.
+ */
 export function readFrameAddress(hash: string): { kind: SquareKind; id: string } | undefined {
   const match = hash.match(/^#(booth|attraction)\/([a-z0-9-]+)$/);
-  if (!match || !ID_PATTERN.test(match[2])) return undefined;
-  return { kind: match[1] as SquareKind, id: match[2] };
+  if (!match) return undefined;
+  const [, kind, id] = match;
+  const valid = kind === 'booth' ? isBoothOwner(id) : isAttractionId(id);
+  return valid ? { kind: kind as SquareKind, id } : undefined;
 }

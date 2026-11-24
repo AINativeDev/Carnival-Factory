@@ -13,11 +13,11 @@ export default defineConfig({
       },
     },
   },
-  // A sandboxed frame has an opaque origin ("null"), so its module scripts are
-  // cross-origin requests: the dev and preview servers must allow them, as
-  // GitHub Pages does.
-  server: { cors: true },
-  preview: { cors: true },
+  // A sandboxed frame has an opaque origin ("null"), so its scripts are
+  // cross-origin requests: the dev and preview servers allow that one origin,
+  // and no other website, to read what they serve.
+  server: { cors: { origin: 'null' } },
+  preview: { cors: { origin: 'null' } },
   test: {
     environment: 'node',
     include: ['{src,northpole,booths,attractions,scripts}/**/*.test.ts'],
