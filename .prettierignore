@@ -11,3 +11,6 @@ package-lock.json
 .vscode
 .github/skills
 tessl.json
+screenshots/
+test-results/
+playwright-report/

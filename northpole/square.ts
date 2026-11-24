@@ -95,11 +95,19 @@ export function fromFolders(
 }
 
 /**
+ * The ids of the squares in a folder of folders, from the keys of
+ * `import.meta.glob('../booths/*\/booth.ts')`: each file's folder name, sorted.
+ */
+export function idsFromFolders(paths: readonly string[]): string[] {
+  return paths.map((path) => path.split('/').at(-2)!).sort();
+}
+
+/**
  * A stand-in for a booth or attraction a maintainer switched off in
  * `disabled.json`: the same square, name and id, but its own `draw` never runs. The booth's module is
  * still loaded, so to stop code that runs on import, remove its folder.
  */
-export function closeForRepairs(booth: NorthPoleSquare): NorthPoleSquare {
+export function closeForRepairs(booth: Pick<NorthPoleSquare, 'id' | 'name'>): NorthPoleSquare {
   return {
     id: booth.id,
     name: booth.name,

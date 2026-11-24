@@ -96,6 +96,9 @@ export default tseslint.config(
     ignores: [
       'dist',
       'coverage',
+      'screenshots',
+      'test-results',
+      'playwright-report',
       'node_modules',
       '.tessl',
       '.agents',

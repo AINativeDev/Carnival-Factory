@@ -6,3 +6,8 @@ coverage/
 
 # Local preview config
 .claude/launch.json
+
+# Smoke test output
+screenshots/
+test-results/
+playwright-report/

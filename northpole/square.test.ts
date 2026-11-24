@@ -4,6 +4,7 @@ import {
   createAttractionRegistry,
   createBoothRegistry,
   fromFolders,
+  idsFromFolders,
   isAttractionId,
   isBoothOwner,
   type NorthPoleSquare,
@@ -137,5 +138,13 @@ describe('the registries', () => {
     expect(() => {
       (elf as { draw: NorthPoleSquare['draw'] }).draw = () => {};
     }).toThrow();
+  });
+});
+
+describe('idsFromFolders', () => {
+  it("gives each square's folder name, sorted", () => {
+    expect(
+      idsFromFolders(['../booths/zed/booth.ts', '../booths/elf/booth.ts', './a-b/attraction.ts']),
+    ).toEqual(['a-b', 'elf', 'zed']);
   });
 });

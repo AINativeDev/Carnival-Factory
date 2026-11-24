@@ -13,8 +13,12 @@ Both draw through the same contract, a `NorthPoleSquare`.
 ## Stack
 
 - TypeScript, Vite and plain HTML canvas. No UI framework.
-- Vitest for logic. No browser tests.
-- No native dependencies, and nothing that needs `sudo`. `npm ci` is the whole setup.
+- Vitest for logic, in Node.
+- A Playwright smoke test (`npm run smoke`) plays every booth and attraction in a
+  real browser. CI runs it on every pull request; locally it needs a browser
+  once (`npx playwright install chromium`, or `PLAYWRIGHT_CHANNEL=chrome`).
+- No native dependencies, and nothing that needs `sudo`. `npm ci` is the whole
+  setup for `npm run check`.
 
 ## Commands
 
@@ -25,6 +29,7 @@ runs `npm run check` and `npm run build`.
 
 ```txt
 index.html                  the page
+square.html                 the page each square's sandboxed frame loads
 src/
   main.ts                   the router: #/ is the map, #/booth/<login> one booth,
                             #/attraction/<id> one attraction
@@ -36,6 +41,10 @@ northpole/                  the map itself
   layout.ts                 the town: its paths, where each square sits, and its
                             scenery (plain functions)
   map.ts                    drawing the map and a single square's preview
+  sandbox.ts                the map's side of the sandbox: one frame per square
+  frame.ts                  runs in a square's frame (square.html) and supervises it
+  square-worker.ts          runs the square's own code on a thread of its own
+  frame-protocol.ts         the messages between them, and the checks on them
   theme.ts                  colours, fonts and sizes
   disabled.json             the maintainers' kill switch: closed booths and attractions
   links.ts                  links to the repository's issue forms
@@ -117,6 +126,14 @@ and `id` set to the attraction's id. Its sign says "North Pole" instead of a
 `@login`, and it opens at `#/attraction/<id>`. It lives outside `booths/`, so
 the **Booth ownership** check lets only maintainers change it. Only an issue
 written by a maintainer may add or change one.
+
+**Every square runs sandboxed.** The page never runs a booth's or an
+attraction's code. Each one runs in its own `<iframe sandbox="allow-scripts">`
+with a strict content security policy (no network, no storage, no access to the
+page), inside a worker the frame stops if it hangs, and sends the map a bitmap
+each frame. So `draw` gets an `OffscreenCanvasRenderingContext2D`-like context
+with no `ctx.canvas` DOM element, and a square that throws, hangs or never
+loads shows "Under construction" without touching anything else.
 
 **The kill switch**, `northpole/disabled.json`, has a list of booth logins and
 a separate list of attraction ids. A square in either shows "Closed for

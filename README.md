@@ -87,9 +87,12 @@ yours to change.
 - **Only maintainers merge.** For now that's
   [@jedi4ever](https://github.com/jedi4ever). The maintainers may change any
   file, such as the map itself.
-- **A booth can't break the map.** Each square draws on a canvas of its own,
-  and one that throws shows "Under construction" instead of taking the map
-  down. A size budget keeps each square to 50 KB of code gzipped and 200 KB of
+- **A booth can't break the map.** Every booth and attraction runs sandboxed:
+  in an iframe of its own with no network, storage or access to the page, on a
+  worker thread that's stopped if it hangs. The map only ever sees the picture
+  it draws. One that throws, hangs or never loads shows "Under construction",
+  and everything else keeps running. A smoke test plays every square in a real
+  browser on each pull request. A size budget keeps each square to 50 KB of code gzipped and 200 KB of
   other files.
 - **A booth only draws.** ESLint's house rules in `eslint.config.js` stop a
   booth from importing anything but the map and its own files, and from using
@@ -147,6 +150,7 @@ it closes. Tessl Code Review's lenses are set in `.tessl-code-review.yml`. To pu
 | `npm run format` | Format the repo with Prettier, skipping `.prettierignore` |
 | `npm run check`  | Lint, check formatting, type-check and test everything    |
 | `npm run build`  | Build the site into `dist/`                               |
+| `npm run smoke`  | Play every booth and attraction in a real browser         |
 
 ## How it's built
 
