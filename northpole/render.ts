@@ -1124,7 +1124,7 @@ export function drawReindeer(
   const step = Math.sin(time / 200) * 2;
   ctx.fillStyle = colors.cocoa;
   for (const lx of [-10, -5, 6, 11]) ctx.fillRect(lx, -14, 3, 14 + (lx > 0 ? step : -step) / 2);
-  ctx.fillStyle = colors.wood;
+  ctx.fillStyle = colors.pine;
   ctx.beginPath();
   ctx.ellipse(0, -18, 15, 8, 0, 0, Math.PI * 2);
   ctx.fill();
