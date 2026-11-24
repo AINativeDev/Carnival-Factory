@@ -7,7 +7,9 @@ light. You look down the slope from just behind an original little penguin lying
 on its belly on a red sled.
 
 - **Steering**: the penguin follows the pointer's place left and right across
-  the drawing. On touch, each tap on the left or right half steers that way.
+  the drawing. On touch, each tap on the left or right half steers that way,
+  and taps add up: a tap's steering holds for a few seconds after the finger
+  lifts.
 - **The slope** rushes towards you in soft bands of light and shade, between
   snow-capped pines, with a low warm sun and far mountains. It starts gently
   and speeds up slowly through a run.
@@ -21,7 +23,8 @@ on its belly on a red sled.
 
 The rules are plain functions in `booth.ts`: the seeded course (`thingAt`,
 `thingsBetween`, `pathAt`), speed (`distanceFor`, `speedFor`), steering
-(`laneOf`, `toward`), collisions and scoring (`advance`), and the view
+(`laneOf`, `toward`), collisions and scoring (`advance`, with `laneAt` for
+where the penguin is as it passes each thing), and the view
 (`scaleAt`, `project`, `inView`). `booth.test.ts` tests each of them.
 
 Preview it at `#/booth/hamzaoza`.

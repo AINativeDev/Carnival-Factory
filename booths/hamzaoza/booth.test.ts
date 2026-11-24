@@ -8,7 +8,9 @@ import {
   type Game,
   HIT,
   inView,
+  laneAt,
   laneOf,
+  MAX_STEP,
   newGame,
   newRun,
   pathAt,
@@ -17,6 +19,8 @@ import {
   REST,
   scaleAt,
   speedFor,
+  TAP_HOLD,
+  TAP_STEP,
   thingAt,
   thingsBetween,
   TOP,
@@ -109,6 +113,32 @@ describe('steering', () => {
     g = advance(g, g.last + FRAME, tap(SIZE * 0.8), SIZE);
     expect(g.run.target).toBeGreaterThan(0);
   });
+
+  it("keeps a tap's steering when the finger lifts, so separate taps add up", () => {
+    let g = advance(newGame(0), FRAME, tap(SIZE * 0.2), SIZE);
+    // The finger lifts, as a quick touch does, and comes back for a second tap.
+    g = play(g, 200);
+    expect(g.run.target).toBeCloseTo(-TAP_STEP);
+    g = advance(g, g.last + FRAME, tap(SIZE * 0.3), SIZE);
+    expect(g.run.target).toBeCloseTo(Math.max(-EDGE, -2 * TAP_STEP));
+    g = play(g, 1_000);
+    expect(g.run.lane).toBeCloseTo(g.run.target);
+    // Back with no tap and no movement, it keeps tapping.
+    g = advance(g, g.last + FRAME, hover(SIZE * 0.6), SIZE);
+    expect(g.tapping).toBe(true);
+    expect(g.run.target).toBeCloseTo(-EDGE);
+  });
+
+  it('steers itself again a while after the last tap', () => {
+    let g = advance(newGame(0), FRAME, tap(SIZE * 0.2), SIZE);
+    g = advance(g, g.last + FRAME, undefined, SIZE);
+    expect(g.tapping).toBe(true);
+    // Long after the finger lifted, with the run still going.
+    g = { ...g, seen: g.last - TAP_HOLD - 1 };
+    g = advance(g, g.last + FRAME, undefined, SIZE);
+    expect(g.tapping).toBe(false);
+    expect(g.run.target).toBeCloseTo(pathAt(g.run.seed, g.run.distance), 1);
+  });
 });
 
 describe('a run', () => {
@@ -152,6 +182,37 @@ describe('a run', () => {
     h = advance(h, at(rock.distance) + 1, hover(SIZE / 2), SIZE);
     expect(Math.abs(h.run.lane - rock.lane)).toBeLessThan(HIT);
     expect(h.run.crashedAt).not.toBeNull();
+  });
+
+  it('checks each thing against where the penguin is as it passes it', () => {
+    // Steering from 0 to 1 over a frame: halfway along it is halfway across.
+    expect(laneAt(0, 1, 1, 10, 20, 15)).toBeCloseTo(0.5);
+    expect(laneAt(0, 1, 1, 10, 20, 10)).toBeCloseTo(0);
+    expect(laneAt(0, 1, 0.4, 10, 20, 20)).toBeCloseTo(0.4);
+
+    // A rock met at the start of a frame still hits, though the penguin ends the frame clear of it.
+    const seed = 1;
+    const rock = thingsBetween(seed, 0, 400).find((t) => t.kind !== 'flake')!;
+    let s = 0;
+    while (distanceFor(s) < rock.distance) s += 0.001;
+    const from = 10_000;
+    const run = {
+      ...newRun(seed, from - (s - 0.002) * 1000, 0, true),
+      distance: distanceFor(s - 0.002),
+      lane: rock.lane,
+      target: rock.lane > 0 ? -EDGE : EDGE,
+    };
+    let g: Game = { ...newGame(0), last: from, run, tapping: true, lastX: SIZE / 2 };
+    g = advance(g, from + 200, hover(SIZE / 2), SIZE);
+    expect(Math.abs(g.run.lane - rock.lane)).toBeGreaterThan(HIT);
+    expect(g.run.crashedAt).not.toBeNull();
+  });
+
+  it('pauses the run over a long gap between frames, rather than skipping ahead', () => {
+    let g = play(newGame(0), 1_000);
+    const distance = g.run.distance;
+    g = advance(g, g.last + 10_000, undefined, SIZE);
+    expect(g.run.distance - distance).toBeLessThanOrEqual(TOP * MAX_STEP);
   });
 
   it('keeps the best of the visit, and a tap after the tumble starts a new run', () => {

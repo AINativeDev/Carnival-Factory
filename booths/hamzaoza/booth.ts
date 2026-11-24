@@ -35,6 +35,10 @@ export const DEMO = 40;
 export const REST = 1_500;
 /** A crashed player's tap starts a new run once the tumble has had this long, in ms. */
 export const TUMBLE = 400;
+/** A tap's steering holds this long, in ms, after the finger lifts, before the penguin steers itself. */
+export const TAP_HOLD = 3_000;
+/** The longest step one frame takes, in seconds: a longer gap pauses the run instead. */
+export const MAX_STEP = 0.25;
 
 export type Kind = 'flake' | 'rock' | 'drift';
 
@@ -73,6 +77,8 @@ export interface Game {
   /** Steering by taps on either half, rather than by following the pointer. */
   tapping: boolean;
   lastX: number | null;
+  /** The `time` the pointer was last over the drawing. */
+  seen: number;
 }
 
 /** Wraps `value` into [0, `span`), negative values included. */
@@ -157,12 +163,37 @@ export function toward(from: number, to: number, step: number): number {
   return from + Math.sign(to - from) * step;
 }
 
+/**
+ * Where across the track the penguin is as it passes `at` metres, on a frame
+ * that carries it from `from` to `to` metres while it steers from `lane` towards
+ * `target` by at most `step`.
+ */
+export function laneAt(
+  lane: number,
+  target: number,
+  step: number,
+  from: number,
+  to: number,
+  at: number,
+): number {
+  const part = to > from ? clamp((at - from) / (to - from), 0, 1) : 1;
+  return toward(lane, target, step * part);
+}
+
 export function newRun(seed: number, start: number, lane = 0, played = false): Run {
   return { seed, start, distance: 0, lane, target: lane, score: 0, crashedAt: null, played };
 }
 
 export function newGame(time: number): Game {
-  return { run: newRun(1, time), best: 0, runs: 1, last: time, tapping: false, lastX: null };
+  return {
+    run: newRun(1, time),
+    best: 0,
+    runs: 1,
+    last: time,
+    tapping: false,
+    lastX: null,
+    seen: time,
+  };
 }
 
 function restart(game: Game, time: number, played: boolean): Game {
@@ -183,23 +214,30 @@ export function advance(
   size: number,
 ): Game {
   if (time < game.last) return newGame(time);
-  const dt = Math.min(0.25, (time - game.last) / 1000);
-  const { run } = game;
+  const gap = (time - game.last) / 1000;
+  const dt = Math.min(MAX_STEP, gap);
+  // A longer gap, such as a hidden tab, pauses the run rather than skipping ahead.
+  const run =
+    gap > MAX_STEP ? { ...game.run, start: game.run.start + (gap - MAX_STEP) * 1000 } : game.run;
   let { tapping, lastX } = game;
+  const seen = pointer ? time : game.seen;
 
   if (run.crashedAt !== null) {
     const since = time - run.crashedAt;
     if (pointer && pointer.presses > 0 && since > TUMBLE) return restart(game, time, true);
     if (!pointer && since > REST) return restart(game, time, false);
-    return { ...game, last: time, lastX: pointer ? pointer.x : null };
+    return { ...game, run, last: time, lastX: pointer ? pointer.x : null, seen };
   }
 
   let target = run.target;
   let played = run.played;
   if (!pointer) {
-    tapping = false;
+    // A tap's steering holds after the finger lifts, so taps can add up.
     lastX = null;
-    target = pathAt(run.seed, run.distance);
+    if (!tapping || time - game.seen > TAP_HOLD) {
+      tapping = false;
+      target = pathAt(run.seed, run.distance);
+    }
   } else if (pointer.presses > 0) {
     tapping = true;
     lastX = pointer.x;
@@ -209,6 +247,9 @@ export function advance(
       EDGE,
     );
     played = true;
+  } else if (tapping && lastX === null) {
+    // A finger back on the drawing keeps tapping until it moves.
+    lastX = pointer.x;
   } else if (!tapping || lastX === null || Math.abs(pointer.x - lastX) > size * 0.02) {
     tapping = false;
     lastX = pointer.x;
@@ -224,10 +265,12 @@ export function advance(
   let score = run.score;
   let crashedAt: number | null = null;
   for (const t of thingsBetween(run.seed, run.distance, distance)) {
-    const gap = Math.abs(t.lane - lane);
+    const across = Math.abs(
+      t.lane - laneAt(run.lane, target, STEER * dt, run.distance, distance, t.distance),
+    );
     if (t.kind === 'flake') {
-      if (gap < CATCH) score += POINTS;
-    } else if (gap < HIT) {
+      if (across < CATCH) score += POINTS;
+    } else if (across < HIT) {
       crashedAt = time;
       break;
     }
@@ -241,6 +284,7 @@ export function advance(
     last: time,
     tapping,
     lastX,
+    seen,
   };
 }
 
