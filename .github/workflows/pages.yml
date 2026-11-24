@@ -47,13 +47,17 @@ jobs:
     # A merged pull request also pushes to main, and that run retires its
     # preview too, so the close event only publishes for one closed unmerged.
     # One run instead of two puts a merged booth on the map sooner. Issue
-    # events only matter for booth requests: they move a construction site.
+    # events only matter for booth requests, which move a construction site,
+    # and advent challenges, whose acceptance decorates a booth: taking
+    # advent-done off one takes its decoration away too.
     if: >-
       (github.event_name == 'pull_request_target' &&
        ((github.event.action == 'closed' && !github.event.pull_request.merged) ||
         github.event.label.name == 'needs-human')) ||
       (github.event_name == 'issues' &&
-       contains(github.event.issue.labels.*.name, 'booth-request')) ||
+       (contains(github.event.issue.labels.*.name, 'booth-request') ||
+        contains(github.event.issue.labels.*.name, 'advent-done') ||
+        github.event.label.name == 'advent-done')) ||
       github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success' &&
@@ -92,8 +96,8 @@ jobs:
     permissions:
       contents: write
       actions: read
-      # The squares' histories, and the accepted Elf Engineer badge requests
-      # for the badge holders.
+      # The squares' histories, the accepted Elf Engineer badge requests for
+      # the badge holders, and the accepted advent challenges.
       issues: read
       pull-requests: read
       # The checks on the booth requests' pull requests, for their stage.
@@ -180,6 +184,21 @@ jobs:
             echo '[]' > "$RUNNER_TEMP/badge-holders.json"
           }
 
+      # How many advent challenges each participant has had accepted, from the
+      # accepted Advent challenge issues, for the build to bake into the page
+      # and decorate their booths: the page itself never asks the network.
+      - name: Count the accepted advent challenges
+        working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        # A failed or slow read publishes the map undecorated rather than
+        # holding up the deploy.
+        run: |
+          timeout 2m node scripts/write-advent.ts "$RUNNER_TEMP/advent.json" || {
+            echo "::warning title=No advent decorations::Couldn't read the advent challenges, so this build decorates no booths."
+            echo '{}' > "$RUNNER_TEMP/advent.json"
+          }
+
       # The People's Choice standings, from the 👍 in its discussion, for the
       # build to bake into the page. It also adds a comment for every new booth
       # and home factory. Without the discussion, the map shows no standings.
@@ -202,7 +221,8 @@ jobs:
         run: |
           npm ci
           BADGE_HOLDERS_FILE="$RUNNER_TEMP/badge-holders.json" \
-            PEOPLES_CHOICE_FILE="$RUNNER_TEMP/peoples-choice.json" npm run build
+            PEOPLES_CHOICE_FILE="$RUNNER_TEMP/peoples-choice.json" \
+            ADVENT_FILE="$RUNNER_TEMP/advent.json" npm run build
           # Pages lets caches keep a page for up to 10 minutes, so a visitor can
           # still be on the last build, asking for its files. Built files have
           # a hash in their name, so old and new never clash: keep the old ones

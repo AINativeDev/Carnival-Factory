@@ -1,5 +1,6 @@
 import type { FactoryStats } from '../scripts/factory-stats';
 import { HOW_IT_WORKS_URL, OWN_REPO_URL } from '../northpole/links';
+import { SIGNUP_OFFER, showSignupOffer } from './offer';
 import type { VisitHud } from './visit-hud';
 
 /**
@@ -168,7 +169,8 @@ export function openFactoryHud(frame: HTMLElement, options: FactoryHudOptions): 
     <p class="factory-intro">Every booth here began as an issue. A software factory built it, checked it and put it on the map.</p>
     <ul class="factory-figures"></ul>
     <p class="factory-note"></p>
-    <p class="factory-how"><a href="${HOW_IT_WORKS_URL}" target="_blank" rel="noopener">How it works</a> <span aria-hidden="true">·</span> <a href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run this on your own repo</a></p>`;
+    <p class="factory-how"><a href="${HOW_IT_WORKS_URL}" target="_blank" rel="noopener">How it works</a> <span aria-hidden="true">·</span> <a href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run this on your own repo</a> <span aria-hidden="true">·</span> <a href="#/advent">The advent calendar</a></p>
+    ${SIGNUP_OFFER}`;
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
 
   for (const figure of factoryFigures(options.squares, options.stats)) {
@@ -190,6 +192,7 @@ export function openFactoryHud(frame: HTMLElement, options: FactoryHudOptions): 
     $('.factory-figures').append(item);
   }
   $('.factory-note').textContent = factoryNote(options.stats);
+  showSignupOffer(card);
 
   $('.visit-close').addEventListener('click', () => options.onClose());
   // The page has every key: the map behind it never walks, enters a square or opens its search.
