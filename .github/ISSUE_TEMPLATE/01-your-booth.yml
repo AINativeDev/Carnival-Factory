@@ -28,6 +28,12 @@ body:
         has examples to borrow from. The more you say about the scene, its
         style and what moves, the closer the factory gets on the first try.
         Everything below the first box is optional.
+
+        **The default look** is the [diorama style](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/style.md),
+        the same as the rest of the North Pole: a little isometric scene at
+        dusk, lit warm, so your booth sits naturally on its stall. Pick another
+        style below if you'd like one. To restyle a booth you already have,
+        ask for it here too.
   - type: textarea
     id: what
     attributes:
@@ -43,8 +49,9 @@ body:
     id: style
     attributes:
       label: Style
-      description: How it's drawn. All of them use the North Pole's own colours.
+      description: How it's drawn. All of them use the North Pole's own colours and its dusk light.
       options:
+        - Diorama at dusk, the North Pole's own look
         - Cosy storybook, soft shapes and warm light
         - Bold and flat, like a poster
         - Papercut, layered shapes with little shadows
@@ -52,6 +59,7 @@ body:
         - Tiny details, like a model railway
         - Night scene, glowing lights on dark
         - Surprise me
+      default: 0
   - type: input
     id: mood
     attributes:

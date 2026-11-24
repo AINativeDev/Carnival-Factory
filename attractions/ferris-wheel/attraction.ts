@@ -1,4 +1,5 @@
 import type { NorthPoleSquare } from '../../northpole/square';
+import { box, glow, iso, scene, shadow, stringLights } from '../../northpole/diorama';
 import { theme } from '../../northpole/theme';
 
 const { colors } = theme;
@@ -32,88 +33,123 @@ const attraction: NorthPoleSquare = {
   name: 'Ferris Wheel',
   description: 'Bauble gondolas turning slowly against the northern lights.',
   draw(ctx, size, time) {
-    const u = size / 100;
-
-    ctx.fillStyle = colors.night;
-    ctx.fillRect(0, 0, size, size);
-
-    // The northern lights: two ribbons that ripple across the sky.
-    ctx.lineWidth = 6 * u;
-    ctx.lineCap = 'round';
-    for (const [color, base, speed] of [
-      [colors.aurora, 14, 1500],
-      [colors.violet, 24, 2100],
-    ] as const) {
-      ctx.globalAlpha = 0.45;
-      ctx.strokeStyle = color;
-      ctx.beginPath();
-      for (let x = 0; x <= 100; x += 4) {
-        const y = base + Math.sin(x / 14 + time / speed) * 5;
-        if (x === 0) ctx.moveTo(x * u, y * u);
-        else ctx.lineTo(x * u, y * u);
+    scene(ctx, size, time, () => {
+      // The northern lights: two faint ribbons that ripple across the dusk.
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      for (const [color, base, speed] of [
+        [colors.aurora, 10, 1500],
+        [colors.violet, 17, 2100],
+      ] as const) {
+        ctx.globalAlpha = 0.3;
+        ctx.strokeStyle = color;
+        ctx.beginPath();
+        for (let x = 0; x <= 100; x += 4) {
+          const y = base + Math.sin(x / 14 + time / speed) * 3;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
       }
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
+      ctx.globalAlpha = 1;
+      ctx.lineCap = 'butt';
 
-    ctx.fillStyle = colors.snow;
-    ctx.fillRect(0, 84 * u, size, 16 * u);
+      const cx = 48;
+      const cy = 40;
+      const radius = 26;
+      const depth = { x: 5, y: -2.5 };
+      const foot = 74;
 
-    const cx = 50 * u;
-    const cy = 50 * u;
-    const radius = 30 * u;
+      // The base the wheel stands on.
+      shadow(ctx, 52, foot + 3, 60);
+      box(ctx, -12, -9, 24, 18, 3, colors.slab, colors.surface, colors.night);
 
-    // The A-frame legs.
-    ctx.strokeStyle = colors.wood;
-    ctx.lineWidth = 3 * u;
-    ctx.beginPath();
-    ctx.moveTo(30 * u, 88 * u);
-    ctx.lineTo(cx, cy);
-    ctx.lineTo(70 * u, 88 * u);
-    ctx.stroke();
-
-    // The rim and its spokes, turning with the gondolas.
-    const gondolas = gondolaPositions(8, time, cx, cy, radius);
-    ctx.strokeStyle = colors.snowShade;
-    ctx.lineWidth = 1.2 * u;
-    for (const { x, y } of gondolas) {
+      const gondolas = gondolaPositions(8, time, cx, cy, radius);
+      const legs = (dx: number, dy: number, color: string) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(cx + dx - 18, foot + dy);
+        ctx.lineTo(cx + dx, cy + dy);
+        ctx.lineTo(cx + dx + 18, foot + dy);
+        ctx.stroke();
+      };
+      const wheel = (dx: number, dy: number, rim: string, spokes: string) => {
+        ctx.strokeStyle = spokes;
+        ctx.lineWidth = 0.7;
+        ctx.beginPath();
+        for (const { x, y } of gondolas) {
+          ctx.moveTo(cx + dx, cy + dy);
+          ctx.lineTo(x + dx, y + dy);
+        }
+        ctx.stroke();
+        ctx.strokeStyle = rim;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.arc(cx + dx, cy + dy, radius, 0, Math.PI * 2);
+        ctx.stroke();
+      };
+      // The far legs and rim in the shade, the axle across, then the near ones.
+      legs(depth.x, depth.y, colors.night);
+      wheel(depth.x, depth.y, colors.mountain, colors.mountain);
+      ctx.strokeStyle = colors.gold;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.lineTo(x, y);
+      ctx.lineTo(cx + depth.x, cy + depth.y);
       ctx.stroke();
-    }
-    ctx.strokeStyle = colors.gold;
-    ctx.lineWidth = 2 * u;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.stroke();
+      wheel(0, 0, colors.gold, colors.snowShade);
+      legs(0, 0, colors.wood);
 
-    // Each gondola hangs straight down from the rim, like a bauble on a branch.
-    gondolas.forEach(({ x, y }, i) => {
-      ctx.strokeStyle = colors.snowShade;
-      ctx.lineWidth = 0.8 * u;
+      // Lights round the rim, between the gondolas.
+      stringLights(
+        ctx,
+        gondolaPositions(8, time + TURN / 16, cx, cy, radius),
+        [colors.lantern],
+        time,
+      );
+
+      // Each gondola hangs straight down from the rim, like a bauble on a branch.
+      gondolas.forEach(({ x, y }, i) => {
+        const g = { x: x + depth.x / 2, y: y + depth.y / 2 };
+        ctx.strokeStyle = colors.snowShade;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(g.x, g.y);
+        ctx.lineTo(g.x, g.y + 2.5);
+        ctx.stroke();
+        ctx.fillStyle = colors.gold;
+        ctx.fillRect(g.x - 1.2, g.y + 2, 2.4, 1.6);
+        ctx.fillStyle = BAUBLES[i % BAUBLES.length];
+        ctx.beginPath();
+        ctx.arc(g.x, g.y + 6.6, 3.6, 0, Math.PI * 2);
+        ctx.fill();
+        // Shaded on the right, and a highlight where the light falls on the upper left.
+        ctx.fillStyle = colors.shadow;
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.arc(g.x, g.y + 6.6, 3.6, -Math.PI / 3, (2 * Math.PI) / 3);
+        ctx.fill();
+        ctx.fillStyle = colors.snowLit;
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.arc(g.x - 1.2, g.y + 5.4, 0.9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.fillStyle = colors.berry;
       ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + 3 * u);
-      ctx.stroke();
-      ctx.fillStyle = colors.gold;
-      ctx.fillRect(x - 1.5 * u, y + 2.5 * u, 3 * u, 2 * u);
-      ctx.fillStyle = BAUBLES[i % BAUBLES.length];
-      ctx.beginPath();
-      ctx.arc(x, y + 8 * u, 4.5 * u, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 2.4, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = colors.snow;
-      ctx.globalAlpha = 0.6;
-      ctx.beginPath();
-      ctx.arc(x - 1.5 * u, y + 6.5 * u, 1.2 * u, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
+      // A warm lamp at the foot of the wheel.
+      const lamp = iso(-14, 10);
+      glow(ctx, lamp.x, lamp.y - 10, 14, 0.85);
+      ctx.fillStyle = colors.ink;
+      ctx.fillRect(lamp.x - 0.5, lamp.y - 12, 1, 12);
+      ctx.fillStyle = colors.lantern;
+      ctx.fillRect(lamp.x - 1.4, lamp.y - 15, 2.8, 3);
     });
-
-    ctx.fillStyle = colors.berry;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 3 * u, 0, Math.PI * 2);
-    ctx.fill();
   },
 };
 

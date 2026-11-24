@@ -1,4 +1,5 @@
 import type { NorthPoleSquare } from '../../northpole/square';
+import { box, drum, glow, iso, scene, shadow } from '../../northpole/diorama';
 import { theme } from '../../northpole/theme';
 
 const { colors } = theme;
@@ -16,19 +17,31 @@ export function steam(mug: number, time: number): { rise: number; curl: number }
   return { rise, curl: Math.sin(rise * Math.PI * 2 + mug) };
 }
 
-function mug(ctx: CanvasRenderingContext2D, x: number, y: number, u: number, color: string) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x - 4 * u, y - 8 * u, 8 * u, 8 * u);
+function mug(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1.2 * u;
+  ctx.lineWidth = 0.7;
   ctx.beginPath();
-  ctx.arc(x + 4 * u, y - 4 * u, 2.2 * u, -Math.PI / 2, Math.PI / 2);
+  ctx.arc(x + 2.4, y - 2.4, 1.4, -Math.PI / 2, Math.PI / 2);
   ctx.stroke();
-  ctx.fillStyle = colors.cocoa;
-  ctx.fillRect(x - 3.4 * u, y - 7.6 * u, 6.8 * u, 1.4 * u);
+  drum(ctx, x, y, 2.4, 4.6, [color], 1, 0, colors.cocoa);
   // A marshmallow bobbing on top.
-  ctx.fillStyle = colors.snow;
-  ctx.fillRect(x - 1 * u, y - 9 * u, 2.4 * u, 2 * u);
+  ctx.fillStyle = colors.snowLit;
+  ctx.fillRect(x - 0.8, y - 5.6, 1.8, 1.3);
+}
+
+/** A strip along the stall's front, from gx0 to gx1 at gy, from z0 up to z1. */
+function front(
+  ctx: CanvasRenderingContext2D,
+  gx0: number,
+  gx1: number,
+  gy: number,
+  z0: number,
+  z1: number,
+) {
+  const points = [iso(gx0, gy, z0), iso(gx1, gy, z0), iso(gx1, gy, z1), iso(gx0, gy, z1)];
+  ctx.beginPath();
+  points.forEach((p, n) => (n ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+  ctx.closePath();
 }
 
 /** A hot cocoa stand, with steam curling from the mugs on the counter. */
@@ -37,65 +50,87 @@ const attraction: NorthPoleSquare = {
   name: 'Hot Cocoa Stand',
   description: 'Mugs of cocoa with marshmallows, steaming on the counter.',
   draw(ctx, size, time) {
-    const u = size / 100;
-
-    ctx.fillStyle = colors.snow;
-    ctx.fillRect(0, 0, size, size);
-
-    // The hut: a wooden stand with a scalloped awning.
-    ctx.fillStyle = colors.wood;
-    ctx.fillRect(16 * u, 30 * u, 68 * u, 56 * u);
-    ctx.fillStyle = colors.cocoa;
-    ctx.fillRect(22 * u, 36 * u, 56 * u, 26 * u);
-    for (let i = 0; i < 5; i++) {
-      ctx.fillStyle = i % 2 ? colors.glow : colors.berry;
-      ctx.fillRect((12 + i * 15.2) * u, 20 * u, 15.2 * u, 10 * u);
-      ctx.beginPath();
-      ctx.arc((19.6 + i * 15.2) * u, 30 * u, 7.6 * u, 0, Math.PI);
-      ctx.fill();
-    }
-
-    // The sign on the roof.
-    ctx.fillStyle = colors.gold;
-    ctx.fillRect(32 * u, 8 * u, 36 * u, 10 * u);
-    ctx.fillStyle = colors.cocoa;
-    for (let i = 0; i < 3; i++) {
-      ctx.beginPath();
-      ctx.arc((40 + i * 10) * u, 13 * u, 2.5 * u, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // The counter, with snow on it.
-    ctx.fillStyle = colors.snowShade;
-    ctx.fillRect(14 * u, 62 * u, 72 * u, 5 * u);
-
-    // A lantern inside, glowing warm.
-    ctx.globalAlpha = 0.6 + 0.4 * Math.sin(time / 700);
-    ctx.fillStyle = colors.glow;
-    ctx.beginPath();
-    ctx.arc(50 * u, 44 * u, 4 * u, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    const mugs = [
-      [28, colors.berry],
-      [44, colors.pine],
-      [60, colors.snow],
-      [74, colors.gold],
-    ] as const;
-    mugs.forEach(([x, color], i) => {
-      mug(ctx, x * u, 62 * u, u, color);
-      // Three wisps of steam per mug, at different stages of rising.
-      for (let wisp = 0; wisp < 3; wisp++) {
-        const { rise, curl } = steam(i * 3 + wisp, time);
-        ctx.globalAlpha = 0.7 * (1 - rise);
-        ctx.fillStyle = colors.snowShade;
+    scene(ctx, size, time, () => {
+      const wall = 30;
+      // The hut: a wooden stand, its open front facing the lower left.
+      const c = iso(0, 0);
+      shadow(ctx, c.x + 2, c.y + 4, 64);
+      box(ctx, -15, -9, 30, 17, wall, colors.snow, colors.wood, colors.cocoa);
+      // Planks along the front.
+      ctx.strokeStyle = colors.cocoa;
+      ctx.lineWidth = 0.35;
+      for (let z = 4; z < wall; z += 4) {
+        const a = iso(-15, 8, z);
+        const b = iso(15, 8, z);
         ctx.beginPath();
-        ctx.arc((x + curl * 3) * u, (52 - rise * 22) * u, (1.5 + rise * 2) * u, 0, Math.PI * 2);
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+      // The serving hatch, dark inside, with a lantern glowing warm.
+      ctx.fillStyle = colors.ink;
+      front(ctx, -12, 12, 8, 12, 25);
+      ctx.fill();
+      const lamp = iso(0, 8, 21);
+      glow(ctx, lamp.x, lamp.y, 10, 0.75 + 0.25 * Math.sin(time / 1400));
+      ctx.fillStyle = colors.lantern;
+      ctx.beginPath();
+      ctx.arc(lamp.x, lamp.y, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // The counter, with snow on it, standing out in front of the hatch.
+      box(ctx, -15, 8, 30, 4, 12, colors.snowShade, colors.gingerbread, colors.wood);
+
+      // The scalloped awning, sloping out over the counter.
+      const stripes = 8;
+      for (let i = 0; i < stripes; i++) {
+        const gx0 = -16 + (32 * i) / stripes;
+        const gx1 = gx0 + 32 / stripes;
+        ctx.fillStyle = i % 2 ? colors.lantern : colors.berry;
+        const points = [
+          iso(gx0, 8, wall),
+          iso(gx1, 8, wall),
+          iso(gx1, 13, wall - 3),
+          iso(gx0, 13, wall - 3),
+        ];
+        ctx.beginPath();
+        points.forEach((p, n) => (n ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+        ctx.fill();
+        const mid = iso((gx0 + gx1) / 2, 13, wall - 3);
+        ctx.beginPath();
+        ctx.ellipse(mid.x, mid.y, 2, 1.6, Math.atan2(1, 2), 0, Math.PI);
         ctx.fill();
       }
+      ctx.fillStyle = colors.snow;
+      front(ctx, -16, 16, 8, wall, wall + 1.5);
+      ctx.fill();
+
+      // The sign on the roof, three cocoa drops on gold.
+      box(ctx, -9, -1, 18, 1.2, 8, colors.gold, colors.gold, colors.wood, wall);
+      ctx.fillStyle = colors.cocoa;
+      for (let i = 0; i < 3; i++) {
+        const p = iso(-5 + i * 5, 0.2, wall + 4);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const mugs = [colors.berry, colors.pine, colors.cream, colors.gold];
+      mugs.forEach((color, i) => {
+        const at = iso(-10 + i * 6.5, 10, 12);
+        mug(ctx, at.x, at.y, color);
+        // Three wisps of steam per mug, at different stages of rising.
+        for (let wisp = 0; wisp < 3; wisp++) {
+          const { rise, curl } = steam(i * 3 + wisp, time);
+          ctx.globalAlpha = 0.6 * (1 - rise);
+          ctx.fillStyle = colors.snowLit;
+          ctx.beginPath();
+          ctx.arc(at.x + curl * 2, at.y - 7 - rise * 16, 0.9 + rise * 1.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+      ctx.globalAlpha = 1;
     });
-    ctx.globalAlpha = 1;
   },
 };
 

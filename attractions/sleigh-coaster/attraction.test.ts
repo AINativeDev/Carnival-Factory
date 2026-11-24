@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RIDE, sleighAt, trackY } from './attraction';
+import { RIDE, ridePoint, sleighAt, sleighPose, trackY } from './attraction';
 
 describe('trackY', () => {
   it('is highest at the top of the hill, in the middle', () => {
@@ -35,5 +35,45 @@ describe('sleighAt', () => {
   it('climbs the hill and tips down the other side', () => {
     expect(sleighAt(RIDE * 0.4).angle).toBeLessThan(0);
     expect(sleighAt(RIDE * 0.6).angle).toBeGreaterThan(0);
+  });
+});
+
+describe('ridePoint', () => {
+  it('runs the track left to right across the slab, and up over the hill', () => {
+    expect(ridePoint(0, 0).x).toBeLessThan(ridePoint(100, 0).x);
+    expect(ridePoint(50, 0).y).toBeLessThan(ridePoint(0, 0).y);
+    expect(ridePoint(50, 0).y).toBeLessThan(ridePoint(100, 0).y);
+  });
+
+  it('never drops below the ground', () => {
+    expect(ridePoint(50, 0, 1000)).toEqual(ridePoint(50, 0, 60));
+    expect(ridePoint(50, 0, 1000).y).toBeGreaterThan(ridePoint(50, 0, 10).y);
+  });
+
+  it('stays inside the square', () => {
+    for (let x = 0; x <= 100; x++) {
+      for (const across of [-6, 6]) {
+        const p = ridePoint(x, across);
+        expect(p.x).toBeGreaterThan(0);
+        expect(p.x).toBeLessThan(100);
+        expect(p.y).toBeGreaterThan(0);
+        expect(p.y).toBeLessThan(100);
+      }
+    }
+  });
+});
+
+describe('sleighPose', () => {
+  it('sits on the near rail where the sleigh is', () => {
+    const time = RIDE / 3;
+    const pose = sleighPose(time, 3);
+    const p = ridePoint(sleighAt(time).x, 3);
+    expect(pose.x).toBeCloseTo(p.x);
+    expect(pose.y).toBeCloseTo(p.y);
+  });
+
+  it('tilts up the hill and down the other side, as the track does', () => {
+    expect(sleighPose(RIDE * 0.4, 3).angle).toBeLessThan(0);
+    expect(sleighPose(RIDE * 0.6, 3).angle).toBeGreaterThan(0);
   });
 });
