@@ -103,13 +103,13 @@ export const BANNED_PROPERTIES = new Set([
 ]);
 
 /**
- * The only files outside its own folder a square may import: the map's theme
- * and square shape, by the right number of `../` for where the importing file
+ * The only files outside its own folder a square may import: the map's theme,
+ * square shape and diorama helpers, by the right number of `../` for where the importing file
  * sits (two from the square's folder, one more per nested folder).
  */
 function isMapImport(folder: string, from: string, specifier: string): boolean {
   const depth = from.slice(folder.length).split('/').length - 1;
-  return new RegExp(`^(\\.\\./){${depth + 2}}northpole/(theme|square)$`).test(specifier);
+  return new RegExp(`^(\\.\\./){${depth + 2}}northpole/(theme|square|diorama)$`).test(specifier);
 }
 const NOT_A_GLOBAL = new Set([...BANNED_GLOBALS, ...BANNED_PROPERTIES]);
 
@@ -289,7 +289,7 @@ export function checkSquareCode(folder: string, files: readonly SourceFile[]): C
             report(
               node,
               'import',
-              `Imports "${target}": only ../../northpole/theme, ../../northpole/square and its own folder.`,
+              `Imports "${target}": only ../../northpole/theme, ../../northpole/square, ../../northpole/diorama and its own folder.`,
             );
         }
       }

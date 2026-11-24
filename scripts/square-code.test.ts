@@ -106,6 +106,12 @@ describe('checkSquareCode', () => {
       ),
     ).toEqual([]);
     expect(
+      rules(
+        main,
+        lib(`import { scene } from '../../../northpole/diorama';\nexport const a = scene;`),
+      ),
+    ).toEqual([]);
+    expect(
       rules(main, lib(`import { theme } from '../../northpole/theme';\nexport const a = theme;`)),
     ).toContain('import');
     expect(
