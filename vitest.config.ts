@@ -24,7 +24,7 @@ export default mergeConfig(
           autoUpdate: (threshold: number) => Math.floor(threshold),
           lines: 46,
           statements: 47,
-          functions: 59,
+          functions: 60,
           branches: 54,
         },
       },
