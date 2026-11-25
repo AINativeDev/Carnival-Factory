@@ -14,7 +14,8 @@ import {
  * smoke/levels.spec.ts. The camera comes in on the player while they walk and
  * rests there for a while after (`SETTLE` in src/northpole/map.ts), so the
  * next door can be off the canvas when the walk starts: the walk goes in
- * steps, each to the furthest tile on its way that is on the canvas.
+ * steps, each to the furthest tile on its way that is on the canvas and
+ * clear of every structure.
  */
 
 /** How far inside the canvas's edges a step's click lands, clear of the HUD. */
@@ -63,6 +64,19 @@ const APPROACHES: { dx: number; dy: number; keys: [string, string] }[] = [
 ];
 
 /**
+ * Whether a click at `position` would open a square or take a sleigh rather
+ * than walk: the map opens whatever structure is under a click before it walks
+ * (`onClick` in src/northpole/map.ts), and a structure stands taller than its
+ * own tiles, so ground just behind it can be under it on screen. The map shows
+ * the pointer cursor over exactly those, so hovering there first tells.
+ */
+async function opensSomething(page: Page, position: { x: number; y: number }) {
+  const canvas = page.locator('.map-canvas');
+  await canvas.hover({ position, timeout: 10_000 });
+  return (await canvas.evaluate((element) => element.style.cursor)) === 'pointer';
+}
+
+/**
  * One step towards `beside`: a click on the furthest tile of the way there
  * that is on the canvas where the camera stands now, then a wait for the
  * player to stop. A camera that moved before the click only makes the step
@@ -80,12 +94,16 @@ async function stepToward(page: Page, world: World, from: Tile, beside: Tile, wh
     worldToScreen(toScreen(tile), width, height, camera, camera.zoom);
   const onCanvas = ({ x, y }: Tile) =>
     x >= EDGE && y >= EDGE && x < width - EDGE && y < height - EDGE;
-  const next = [...(way ?? [])]
-    .reverse()
-    .find((tile) => canStand(world, tile) && onCanvas(screenOf(tile)));
+  let next: Tile | undefined;
+  for (const tile of [...(way ?? [])].reverse()) {
+    if (!canStand(world, tile) || !onCanvas(screenOf(tile))) continue;
+    if (await opensSomething(page, screenOf(tile))) continue;
+    next = tile;
+    break;
+  }
   expect(
     next,
-    `a tile on the way from ${from.x}, ${from.y} to ${what} is on the canvas, with the camera at ${camera.x}, ${camera.y}`,
+    `a tile on the way from ${from.x}, ${from.y} to ${what} is on the canvas and clear of every structure, with the camera at ${camera.x}, ${camera.y}`,
   ).toBeDefined();
   if (!next) return;
   await canvas.click({ position: screenOf(next), timeout: 10_000 });
