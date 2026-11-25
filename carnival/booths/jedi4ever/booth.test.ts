@@ -22,6 +22,9 @@ class DrawingLog {
   set lineCap(value: string) {
     this.note('lineCap', [value]);
   }
+  set lineJoin(value: string) {
+    this.note('lineJoin', [value]);
+  }
   set font(value: string) {
     this.note('font', [value]);
   }
@@ -48,6 +51,9 @@ class DrawingLog {
   };
   beginPath = (...args: unknown[]) => {
     this.note('beginPath', args);
+  };
+  closePath = (...args: unknown[]) => {
+    this.note('closePath', args);
   };
   moveTo = (...args: unknown[]) => {
     this.note('moveTo', args);
@@ -106,5 +112,23 @@ describe("Santa's Toy Factory", () => {
     expect(drawn(100, 50_000, { x: 60, y: 76, down: true, presses: 1 })).not.toEqual(still);
     const away = drawn(100, 60_000);
     expect(drawn(100, 60_000, { x: 19, y: 87, down: false, presses: 0 })).not.toEqual(away);
+  });
+
+  it('spins the logo while a press on it is held, and slows once let go', () => {
+    // The logo is the one thing turned about the plaque's middle.
+    const turn = (calls: string[]) =>
+      Number(calls[calls.indexOf('translate(89.5,42)') + 1]?.slice(7, -1));
+    const press = { x: 89, y: 42, down: true, presses: 1 };
+    const held = { x: 89, y: 42, down: true, presses: 0 };
+    drawn(100, 70_000);
+    drawn(100, 70_016, press);
+    for (let time = 70_032; time < 71_000; time += 16) drawn(100, time, held);
+    const spinning = turn(drawn(100, 71_016, held));
+    expect(turn(drawn(100, 71_032, held))).toBeGreaterThan(spinning);
+    drawn(100, 71_048);
+    const slowing = turn(drawn(100, 71_064)) - turn(drawn(100, 71_048));
+    expect(slowing).toBeLessThan(turn(drawn(100, 71_032, held)) - spinning);
+    for (let time = 71_080; time < 76_000; time += 16) drawn(100, time);
+    expect(turn(drawn(100, 76_016))).toBe(turn(drawn(100, 76_032)));
   });
 });
