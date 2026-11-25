@@ -1,3 +1,5 @@
+import type { GitHub } from './merge-gate-github.ts';
+
 /**
  * A scripted GitHub for the merge gate's tests. It answers the REST calls the
  * gate makes from a table of routes and records every request, so a test can
@@ -19,9 +21,8 @@ export class HttpFailure {
 
 /**
  * Routes are keyed `METHOD path`, with the path as the gate writes it and
- * without `per_page` and `page`. A route's value is the answer, or a function
- * of the request that returns it. A GET with no route answers 404; a write
- * with no route succeeds with no content.
+ * without `per_page` and `page`. A route's value is the answer. A GET with no
+ * route answers 404; a write with no route succeeds with no content.
  */
 export type Routes = Record<string, unknown>;
 
@@ -51,19 +52,15 @@ export function scriptedGitHub(routes: Routes) {
     const key = `${method} ${base}${rest ? `?${decodeURIComponent(rest)}` : ''}`;
     const route = routes[key];
     if (route === undefined) return { status: method === 'GET' ? 404 : 204, data: undefined };
-    const data: unknown =
-      typeof route === 'function'
-        ? (route as (r: GitHubRequest) => unknown)({ method, path, body })
-        : route;
-    if (data instanceof HttpFailure) return { status: data.status, data: undefined };
-    return { status: 200, data: pageOf(data, page) };
+    if (route instanceof HttpFailure) return { status: route.status, data: undefined };
+    return { status: 200, data: pageOf(route, page) };
   }
 
   /** A stand-in for `fetch` that serves `<api>/repos/<repository>/<path>` from the routes. */
   function fetchFrom(api: string, repository: string) {
     const prefix = `${api}/repos/${repository}/`;
     return (url: string, init: { method: string; body?: string }) => {
-      const path = url.startsWith(prefix) ? url.slice(prefix.length) : url;
+      const path = url.slice(prefix.length);
       const { status, data } = answer(
         init.method,
         path,
@@ -77,8 +74,18 @@ export function scriptedGitHub(routes: Routes) {
     };
   }
 
+  /** The client the gate's modules take, answering as GitHub does: data, or a thrown failure. */
+  const client: GitHub = {
+    call<T>(method: string, path: string, body?: unknown) {
+      const { status, data } = answer(method, path, body);
+      if (status >= 400)
+        return Promise.reject(new Error(`${method} ${path} answered HTTP ${String(status)}`));
+      return Promise.resolve(data as T);
+    },
+  };
+
   /** Every request that wrote something: anything but a GET. */
   const writes = () => requests.filter((request) => request.method !== 'GET');
 
-  return { requests, writes, fetchFrom };
+  return { requests, writes, fetchFrom, client };
 }

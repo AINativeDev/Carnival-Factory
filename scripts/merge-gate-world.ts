@@ -111,16 +111,19 @@ export function mergeableBooth(): Routes {
  * Runs the gate script once against `routes`, as the workflow does, and
  * returns what it asked GitHub, what it printed and the exit code it set.
  */
-export async function runGate(routes: Routes, { dryRun = false, token = 'token' } = {}) {
+export async function runGate(
+  routes: Routes,
+  { dryRun = false, token = 'token', apiUrlSet = true } = {},
+) {
   const github = scriptedGitHub(routes);
   const logs: string[] = [];
   const errors: string[] = [];
   vi.useFakeTimers({ toFake: ['Date'], now: NOW });
   vi.stubEnv('GITHUB_TOKEN', token);
   vi.stubEnv('GITHUB_REPOSITORY', REPOSITORY);
-  vi.stubEnv('GITHUB_API_URL', API);
+  vi.stubEnv('GITHUB_API_URL', apiUrlSet ? API : undefined);
   vi.stubEnv('DRY_RUN', dryRun ? '1' : '');
-  vi.stubGlobal('fetch', github.fetchFrom(API, REPOSITORY));
+  vi.stubGlobal('fetch', github.fetchFrom(apiUrlSet ? API : 'https://api.github.com', REPOSITORY));
   vi.spyOn(console, 'log').mockImplementation((line: string) => logs.push(line));
   vi.spyOn(console, 'error').mockImplementation((line: string) => errors.push(line));
   vi.resetModules();

@@ -55,7 +55,8 @@ A level is a whole patch of the North Pole of a participant's own,
 - A participant may change their own level folder, and nobody else's
   (enforced by: scripts/check-booth-ownership.ts, scripts/ownership.test.ts).
 - A level's pull request waits for a maintainer (enforced by:
-  scripts/auto-merge-booths.ts, which only takes booth requests).
+  scripts/merge-gate-requests.ts, which only takes booth requests, and
+  scripts/auto-merge-booths-pulls.test.ts).
 
 ## Where it lives
 
