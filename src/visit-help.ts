@@ -27,6 +27,15 @@ function factoryLine(): string {
     : '';
 }
 
+/**
+ * A booth's owner already has their booth, so what unlocks next is a level of
+ * their own (ADR 0048): the panel asks for that instead of "Get a booth".
+ */
+export function offerLevelNext(card: ParentNode) {
+  the(card, '.visit-want', HTMLElement).hidden = true;
+  the(card, '.visit-next', HTMLElement).hidden = false;
+}
+
 /** Puts the next steps for this kind of square, or for a level itself, into its panel's help box. */
 export function fillVisitHelp(
   help: Element,

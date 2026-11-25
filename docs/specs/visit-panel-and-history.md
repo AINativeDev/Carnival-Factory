@@ -44,7 +44,10 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
 - Under the story, one quiet row: **Share**, **Vote for this booth** and
   **Remix this booth**, then one ask: "Want one too? Get a booth". Someone
   who arrived by a shared link to a booth gets **Get the spot next door** in
-  its place, until they leave or take it.
+  its place, until they leave or take it. The booth's owner (picked with
+  "This is me" or "Share it as yours") gets "Next: get a level of your own"
+  (the level form) in its place instead, since a level unlocks once you have
+  a booth ([ADR 0048](../adr/0048-a-level-unlocks-after-a-booth.md)).
 - Everything else folds under **More**: the message Share copies and **See it
   on the map**, an Elf Engineer's own factory, the factory's numbers, running a
   factory on your own repo, the owner's links and keep me posted.

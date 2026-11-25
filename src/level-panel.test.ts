@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { openLevelPanel } from './level-panel';
-import { LEVEL_REQUEST_URL } from './northpole/links';
+import { BOOTH_REQUEST_URL, LEVEL_REQUEST_URL } from './northpole/links';
 
 /** The one element a selector must find, or a failed test saying which. */
 function the(root: ParentNode, selector: string): HTMLElement {
@@ -50,13 +50,20 @@ describe("a level's panel", () => {
     );
   });
 
-  it('shares the level, asks for a level of your own, and has no remix, vote, leaving or map link', () => {
+  it('shares the level, asks for a booth first and then a level, and has no remix, vote, leaving or map link', () => {
     const { card } = open();
     const share = the(card, '.visit-share-text') as HTMLTextAreaElement;
     expect(share.value).toContain('@bo built Ice <b>Maze</b>, a level,');
     expect(share.value).toMatch(/#\/level\/bo$/);
-    expect(the(card, '.visit-build').getAttribute('href')).toBe(LEVEL_REQUEST_URL);
-    expect(the(card, '.visit-build').textContent).toBe('Get a level');
+    // A level unlocks once you have a booth (ADR 0048).
+    expect(the(card, '.visit-want').textContent).toMatch(
+      /^Want one too\? Get a booth first, then a level/,
+    );
+    expect(the(card, '.visit-build').getAttribute('href')).toBe(BOOTH_REQUEST_URL);
+    expect(the(card, '.visit-build').textContent).toBe('Get a booth');
+    expect(the(card, '.visit-level').getAttribute('href')).toBe(LEVEL_REQUEST_URL);
+    expect(the(card, '.visit-level').textContent).toBe('a level');
+    expect(the(card, '.visit-next').hidden).toBe(true);
     for (const hidden of ['.visit-remix-link', '.visit-vote', '.visit-leave', '.visit-map'])
       expect(the(card, hidden).hidden).toBe(true);
     expect(the(card, '.visit-claim').hidden).toBe(true);

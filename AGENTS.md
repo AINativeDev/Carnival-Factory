@@ -588,7 +588,13 @@ repairs" on its platform, and the reason goes in the console once.
 `level-request`, for a new level and for changing one alike, assessed by
 `plugins/north-pole/skills/assess-booth-request` with the booth rules: the
 author's own folder only, family-friendly, and buildable as level data plus
-sandboxed squares. The latest request wins: accepting one closes the author's
+sandboxed squares. A level unlocks once you have a booth: a `level-request`
+from an author with no `carnival/booths/<author>/` on `main` and no accepted
+booth request being built (open, labelled `booth-request` and `tessl`) gets a
+kind reply with the **Your booth** form and `needs-info`, never `declined`,
+and stays open until their booth lands
+([ADR 0048](docs/adr/0048-a-level-unlocks-after-a-booth.md)). The latest
+request wins: accepting one closes the author's
 older open `level-request` issues as superseded. Accepted level requests are
 built by the `implement-level` action, and a level's pull request waits for a
 maintainer rather than merging on its own. [Level ideas](docs/level-ideas.md)

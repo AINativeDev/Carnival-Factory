@@ -51,9 +51,9 @@ something people play with, not just watch.
 6. **Change it** whenever you like: open **Your booth** again. Your latest
    request is the one that counts.
 
-**Want a whole place of your own?** Open **Your level** for a level: a patch of
-the North Pole laid out how you like, with up to 8 squares, that visitors reach
-by sleigh. [Level ideas](docs/level-ideas.md) and
+**Want a whole place of your own?** Once you have a booth, open **Your level**
+for a level: a patch of the North Pole laid out how you like, with up to 8
+squares, that visitors reach by sleigh. Levels unlock after a booth. [Level ideas](docs/level-ideas.md) and
 [booth ideas](docs/booth-ideas.md) help you write the request.
 [How your request is built](docs/how-it-works.md) explains every step.
 

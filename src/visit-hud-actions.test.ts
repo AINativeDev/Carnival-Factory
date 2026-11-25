@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { LEVEL_REQUEST_URL } from './northpole/links';
 import { openVisitHud, type VisitHudOptions } from './visit-hud';
 import { switchFlags } from './test-support/feature-flags';
 
@@ -87,6 +88,20 @@ describe("the feature flags in a booth's panel", () => {
 });
 
 describe("a booth's panel's own buttons", () => {
+  it("offers a booth's owner a level of their own next, instead of a booth", () => {
+    const owner = open('ana', { mine: true }).card;
+    expect(part(owner, '.visit-want').hidden).toBe(true);
+    expect(part(owner, '.visit-next').hidden).toBe(false);
+    expect(part(owner, '.visit-next').textContent).toBe('Next: get a level of your own');
+    expect(part(owner, '.visit-next a').getAttribute('href')).toBe(LEVEL_REQUEST_URL);
+    // Saying it's theirs from the panel itself offers the level too.
+    const visitor = open('bob').card;
+    expect(part(visitor, '.visit-next').hidden).toBe(true);
+    part(visitor, '.visit-mine').click();
+    expect(part(visitor, '.visit-want').hidden).toBe(true);
+    expect(part(visitor, '.visit-next').hidden).toBe(false);
+  });
+
   it('claims the plot next door for someone who came by a shared link', () => {
     const { card, onClaim } = open('bob', { invite: true });
     expect(part(card, '.visit-build').hidden).toBe(true);

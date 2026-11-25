@@ -27,7 +27,9 @@ page keeps to these plain words, one word for one thing, with no idioms.
   stage, such as "Being built" or "Checks running". The code and the specs
   call it a construction site (`kind: 'site'`, `pending.json`).
 - **Level**: a participant's own patch of the North Pole, `carnival/levels/<login>/`,
-  with up to 8 squares of its own, reached by sleigh.
+  with up to 8 squares of its own, reached by sleigh. A level unlocks once
+  you have a booth. Visitors read "Get a booth first, then a level", and a
+  booth's owner reads "Next: get a level of your own".
 - **Sleigh station**: the platforms by the entrance, one per participant's
   level, where the sleigh leaves for each level. Inside a level, the sleigh
   home goes back. The North Pole's own levels are reached from their landmark.
