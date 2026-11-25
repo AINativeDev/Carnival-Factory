@@ -1,7 +1,7 @@
 /**
  * The honours a booth's stall wears on its name board: an Elf Engineer's pin,
  * its pom-pom coloured by tier, and a People's Choice trophy for the top three.
- * Split from render.ts, which draws the stall and says where they go.
+ * `stall.ts` draws the stall and says where they go.
  */
 import type { BadgeTier } from './badges';
 import { theme } from './theme';

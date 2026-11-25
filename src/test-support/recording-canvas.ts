@@ -76,3 +76,22 @@ export function fingerprint(calls: CanvasCall[]): string {
   const hash = createHash('sha256').update(JSON.stringify(calls)).digest('hex').slice(0, 16);
   return `${hash} (${String(calls.length)} calls)`;
 }
+
+/** What a map drawing paints a square with: the square and where on the world it goes. */
+type Paint = (square: { id: string }, mapping: unknown) => void;
+
+/**
+ * The fingerprint of a whole map drawing: its canvas calls, every square it
+ * painted onto a face and where, and what it returned, such as where a click
+ * opens it. So moving a drawing between files is proven to change none of them.
+ */
+export function pinDrawing(draw: (ctx: CanvasRenderingContext2D, paint: Paint) => unknown): string {
+  const painted: unknown[] = [];
+  let returned: unknown;
+  const calls = drawingOf((ctx) => {
+    returned = draw(ctx, (square, mapping) => {
+      painted.push([square.id, mapping]);
+    });
+  });
+  return fingerprint([...calls, ['painted', painted], ['returned', returned]]);
+}

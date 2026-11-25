@@ -49,7 +49,7 @@ so the deploy counts the votes and the build bakes them in.
 `src/northpole/peoples-choice.ts`, `src/northpole/peoples-choice-standings.ts`,
 `src/peoples-choice-hud.ts`, `scripts/peoples-choice.ts`,
 `scripts/ballot.ts` (the ballot issue on GitHub), `scripts/write-peoples-choice.ts`,
-`src/northpole/render.ts` (trophies).
+`src/northpole/stall.ts` and `src/northpole/stall-honours.ts` (trophies).
 
 ## Tested by
 

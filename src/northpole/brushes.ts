@@ -1,8 +1,9 @@
 /**
  * The map's shared brushes for things standing on the snow: their footprint's
- * corners, lit blocks, cool shadows, warm glows and bulbs. The scenery in
- * `render.ts` and the level props in `rides.ts` and `performers.ts` paint with
- * the same ones, so a carousel stands in the same light as a cabin.
+ * corners, lit blocks, cool shadows, warm glows and bulbs. The map's scenery
+ * (`houses.ts`, `midway.ts` and the rest) and the level props in `rides.ts`
+ * and `performers.ts` paint with the same ones, so a carousel stands in the
+ * same light as a cabin.
  */
 import { theme } from './theme';
 import { toScreen, type Box, type Tile } from './world';

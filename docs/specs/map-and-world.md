@@ -70,11 +70,19 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 
 `src/main.ts`, `src/route.ts`, `src/updates.ts`, `src/northpole/world.ts`,
 `src/northpole/plots.ts`, `src/northpole/plots.json`, `src/northpole/camera.ts`,
-`src/northpole/map.ts`, `src/northpole/render.ts`, `src/northpole/visit.ts`.
+`src/northpole/map.ts`, `src/northpole/visit.ts`, and the drawing:
+`src/northpole/render.ts`, which hands each thing and plot to the small file
+that draws it (`ground.ts`, `island.ts`, `sky.ts`, `pines.ts`, `houses.ts`,
+`street-things.ts`, `midway.ts`, `entrance.ts`, `people.ts`, `faces.ts`,
+`name-board.ts`, `stall.ts` with the `stall-*.ts` files, `pavilion.ts`,
+`tower.ts`, `open-plot.ts`, `site.ts`, `platform.ts` and `plot-marks.ts`).
 
 ## Tested by
 
 `src/route.test.ts`, `src/updates.test.ts`, `src/northpole/world.test.ts`,
 `src/northpole/plots.test.ts`, `src/northpole/camera.test.ts`,
-`src/northpole/map.test.ts`, `src/northpole/visit.test.ts`, and
+`src/northpole/map.test.ts`, `src/northpole/visit.test.ts`,
+`src/northpole/render-pins-plots.test.ts` and
+`src/northpole/render-pins-scene.test.ts` (every drawing, pinned by its
+fingerprint), and
 `smoke/squares.spec.ts` (walking, deep links, open plots, fitting the window).

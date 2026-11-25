@@ -332,14 +332,6 @@
       "count": 3
     }
   },
-  "src/northpole/render.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 21
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    }
-  },
   "src/northpole/square-worker.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 2

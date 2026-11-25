@@ -9,17 +9,9 @@
  * to their stalls.
  */
 import { block, bulb, corners, glow, middle, shadow, twinkle } from './brushes';
-import {
-  band,
-  faceOf,
-  faceSign,
-  onFace,
-  PAVILION,
-  paintOnFace,
-  standing,
-  type Face,
-  type PaintSquare,
-} from './render';
+import { band, faceOf, onFace, paintOnFace, type Face, type PaintSquare } from './faces';
+import { faceSign } from './name-board';
+import { PAVILION, standing } from './stall-plan';
 import type { NorthPoleSquare } from './square';
 import { canvasFont, theme } from './theme';
 import type { Box, Plot } from './world';
