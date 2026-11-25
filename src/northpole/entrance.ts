@@ -1,8 +1,9 @@
 /**
  * The way into the carnival: the candy-cane arch over the main path with
- * "North Pole Carnival" across it, the "Season's Greetings" banner by the town
+ * the site's name (src/edition.ts) across it, the "Season's Greetings" banner by the town
  * square, and the bunting strung over the path.
  */
+import { SITE_NAME } from '../edition';
 import { block, bulb, corners, quad, twinkle } from './brushes';
 import { band, faceText, onFace, type Face } from './faces';
 import { inTurn } from './rounds';
@@ -18,7 +19,7 @@ function candyPillar(ctx: CanvasRenderingContext2D, box: Box, height: number) {
     block(ctx, box, 6, colors.berry, colors.berry, colors.cocoa, h);
 }
 
-/** The entrance arch over the main path at the front of the island, "North Pole Carnival" across it. */
+/** The entrance arch over the main path at the front of the island, the site's name across it. */
 export function drawArch(ctx: CanvasRenderingContext2D, thing: Thing, time: number) {
   const tall = 112;
   const beam = 34;
@@ -37,7 +38,7 @@ export function drawArch(ctx: CanvasRenderingContext2D, thing: Thing, time: numb
   faceText(
     ctx,
     face,
-    'North Pole Carnival',
+    SITE_NAME,
     0.5,
     tall + beam / 2,
     width * 0.82,

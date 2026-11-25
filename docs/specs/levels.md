@@ -2,8 +2,10 @@
 
 A level is a whole patch of the North Pole of a participant's own,
 `carnival/levels/<login>/`, reached by sleigh from the sleigh station. The
-North Pole has levels of its own too, such as The Factory,
-`carnival/levels/the-factory/` ([ADR 0035](../adr/0035-north-pole-levels.md)).
+North Pole has levels of its own too: The Factory,
+`carnival/levels/the-factory/`, The Academy, `carnival/levels/the-academy/`,
+and The Recording Studio, `carnival/levels/the-studio/`
+([ADR 0035](../adr/0035-north-pole-levels.md)).
 
 ## Behaviour
 
@@ -23,7 +25,7 @@ North Pole has levels of its own too, such as The Factory,
   and the way home stays clear. It shows the level's name (the map has no
   sign for it), "A level by @<login>" and its description, then **How it was
   built** from the level's own requests, then Share (the level's link,
-  `#/level/<login>`), "Want one of your own? Ask for a level of your own" (the
+  `#/level/<login>`), "Want one too? Get a level" (the
   level form) and **More**. A level has no Remix, no People's Choice vote and
   no Leave: the player walks on with the keys while it shows. Inside one of
   the level's squares, that square's panel takes its place, and it comes back
@@ -48,13 +50,25 @@ North Pole has levels of its own too, such as The Factory,
   falling, 12 seconds a turn) and `balloon` (2 by 2, tethered, bobbing).
   Factory dressing: `conveyor` (1 by 3, parcels sliding along), `cog` (1 by
   1, turning), `candy-pipe` (2 by 1, a striped arch puffing steam) and
-  `lantern` (1 by 1, floating; the only one people walk under). Each blocks
-  its tiles, but the lantern, and each moves only from the time and its
-  `variant`, which also picks its colours and offsets its loop, so two of a
-  kind move out of step. Nothing flashes: lights shimmer and glows swell over
-  seconds. They're drawn in `src/northpole/show.ts` and the files it calls
-  (`performers.ts`, `troupe.ts`, `rides.ts`, `carousel.ts`, `workshop.ts`),
-  with `brushes.ts` and `elf.ts`. The starter level places a few of each.
+  `lantern` (1 by 1, floating). Each blocks its tiles, but the lantern and
+  the coaster's track, which people walk under, and each moves only from the
+  time and its `variant`, which also picks its colours and offsets its loop,
+  so two of a kind move out of step. Nothing flashes: lights shimmer and glows
+  swell over seconds. They're drawn in `src/northpole/show.ts` and the files
+  it calls (`performers.ts`, `troupe.ts`, `rides.ts`, `carousel.ts`,
+  `workshop.ts`, `coaster.ts`), with `brushes.ts` and `elf.ts`. The starter
+  level places a few of each.
+- The roller coaster ([ADR 0039](../adr/0039-coaster-ridden-in-list-order.md)):
+  `coaster` (1 by 1, a tile of candy-striped track on a post, high enough to
+  walk under) and `coaster-loop` (1 by 1, a loop-the-loop on an A-frame,
+  blocking its tile). A level's coaster is ridden in the order its pieces are
+  listed: each piece joins the one before it side by side, and the track
+  turns wherever the next piece does. A golden admission ticket, punched at
+  each end with a tear-off stub and a `#`, rides it from the first piece to
+  the last, 0.4 seconds a tile and 1.8 seconds round a loop, upside down at
+  the top, then boards at the start again. Each piece draws the ticket while
+  it's riding that piece, so it passes behind and in front of things at its
+  depth (`src/northpole/coaster-ride.ts`, `src/northpole/coaster.ts`).
 - A level's pull request waits for a maintainer: the auto-merge gate only
   takes booth requests.
 - A North Pole level (`NORTH_POLE_LEVELS` in
@@ -65,9 +79,23 @@ North Pole has levels of its own too, such as The Factory,
 - The Factory, `#/level/the-factory`, walks the build loop: from the arrival
   point up one lane past the letter box, the assessment desk and the
   workshop, across, and down the other past the inspection bench, the gate
-  and the map, to the sleigh home. Each stall's panel tells its step in two
+  and the map, to the sleigh home. A roller coaster runs beside the path, up
+  the first lane, over it across the top and down the second, with a loop
+  just past each stall's door, and the golden ticket, the visitor's request,
+  rides it from the first loop to the last in about 26 seconds. Each stall's panel tells its step in two
   or three sentences, with a link to the real thing and to `#/factory`, from
   fixed text in `src/factory-tour.ts`.
+- The Academy, `#/level/the-academy`, is a campus with one lesson stall per
+  section of the Tessl Academy, in its order: Quickstart, Skill Foundations,
+  Tuning Your Agent, Code Review Loops and Reference. The Recording Studio,
+  `#/level/the-studio`, is a studio lot with the Podcast Booth, the Video
+  Set, the Control Room, the Green Room and the Broadcast Tower.
+- A North Pole level may link out: its links, from `NORTH_POLE_LINKS` in
+  `src/northpole/north-pole-links.ts`, show as buttons under the description
+  on the level's panel, its landmark's room and each of its squares' panels,
+  and open in a new tab. The Academy has "Start the Academy"; The Recording
+  Studio has "Listen to the podcast" and "Watch on YouTube"
+  ([ADR 0038](../adr/0038-north-pole-links.md)).
 
 ## Rules
 
@@ -87,7 +115,9 @@ North Pole has levels of its own too, such as The Factory,
   `bridge`) and catalogue props (`LEVEL_PROPS`), inside the level, prop
   variants 0 to 1, at most one pond; at most 8 squares, kebab-case ids, no
   duplicates, every placed square with a folder and every folder placed; at
-  least one exit; nothing on water or ice or on top of anything else; and,
+  least one exit; nothing on water or ice or on top of anything else; each
+  coaster piece joining the one listed before it, and each loop on a straight
+  run of track; and,
   by pathfinding, every square and exit reachable from the arrival tile
   (enforced by: src/northpole/level.test.ts, which also runs it on every real
   level, and smoke/levels.spec.ts).
@@ -110,6 +140,12 @@ North Pole has levels of its own too, such as The Factory,
 - A North Pole level's panel and its stalls' panels credit nobody, and its
   landmark's room takes the sleigh inside (enforced by: src/level-panel.test.ts,
   src/history.test.ts, src/visit-help.test.ts and smoke/the-factory.spec.ts).
+- Only a North Pole level links out, only to https addresses, from
+  maintainer code and never from level data; each link is built with DOM
+  calls and opens in a new tab with `rel="noopener"` (enforced by:
+  src/northpole/north-pole-links.test.ts, src/level-links.test.ts,
+  src/visit-hud-links.test.ts, src/level-panel.test.ts and
+  smoke/north-pole-places.spec.ts).
 - A level's panel is the visit panel, with its name and description set only
   as text, steps aside inside a square and never covers the way home
   (enforced by: src/level-panel.test.ts, and the panel test at desktop and
@@ -122,8 +158,10 @@ North Pole has levels of its own too, such as The Factory,
 
 `carnival/levels/`, `src/northpole/level.ts`, `src/northpole/level-check.ts`,
 `src/northpole/level-check-places.ts`, `src/northpole/level-props.ts`,
-`src/northpole/show.ts` (and the files it draws with), `src/northpole/levels.ts`,
-`src/northpole/north-pole-levels.ts`, `src/factory-tour.ts`, `src/level-hud.ts`,
+`src/northpole/show.ts` (and the files it draws with), `src/northpole/coaster-ride.ts`,
+`src/northpole/levels.ts`,
+`src/northpole/north-pole-levels.ts`, `src/northpole/north-pole-links.ts`,
+`src/level-links.ts`, `src/factory-tour.ts`, `src/level-hud.ts`,
 `src/level-panel.ts`,
 `src/northpole/world-plots.ts` (`platformPlot`), `src/level-page.ts` (`renderLevel`),
 `eslint.config.js`.
@@ -132,11 +170,19 @@ North Pole has levels of its own too, such as The Factory,
 
 `src/northpole/level.test.ts` (runs `validateLevel` on every real level),
 `src/northpole/level-props.test.ts` (the show's footprints and placement),
+`src/northpole/coaster-ride.test.ts` (the ride's timing, the ticket's way and
+the coaster's rules), `src/northpole/coaster.test.ts` (the coaster and its
+ticket pinned, and laid and checked in a level),
 `src/northpole/show.test.ts` (each one pinned, moving, varied and in the theme),
 `scripts/square-lint.test.ts` (level data held to plain data),
 `smoke/levels.spec.ts` (walks every open level to each square and home),
 `smoke/the-factory.spec.ts` (from the landmark into The Factory and past each
-stall, at desktop and phone width, and from the landmark's room), `src/northpole/north-pole-levels.test.ts`,
+stall, at desktop and phone width, and from the landmark's room),
+`smoke/north-pole-places.spec.ts` (the same for The Academy and The Recording
+Studio, with their links out), `src/northpole/north-pole-levels.test.ts`,
+`src/northpole/north-pole-links.test.ts`, `src/level-links.test.ts`,
+`src/visit-hud-links.test.ts`, `src/northpole/north-pole-places-pins.test.ts`
+(their squares' drawings pinned),
 `src/factory-tour.test.ts`, `src/level-hud.test.ts`, `src/level-panel.test.ts`,
 `src/northpole/levels.test.ts`,
 each level square's `square.test.ts`.

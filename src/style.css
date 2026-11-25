@@ -43,6 +43,20 @@ a {
   text-decoration: none;
 }
 
+/* This edition's tag beside the site's name (src/edition.ts): smaller, and left out on a narrow phone. */
+.brand-edition {
+  margin-left: 4px;
+  color: var(--color-snow);
+  font-size: 13px;
+  font-weight: normal;
+}
+
+@media (max-width: 479px) {
+  .brand-edition {
+    display: none;
+  }
+}
+
 /* The way to the repository: every booth starts there, as an issue. */
 .repo-link {
   position: absolute;
@@ -375,7 +389,7 @@ body[data-view='map'] .map {
 }
 
 /*
- * The call to action over a square: visit it, or claim a plot. The map places
+ * The call to action over a square: visit it, or build a booth at a free spot. The map places
  * it with translate over the picked square or the one you stand at, and
  * fades it in; its arrow points down at the square, and it bobs gently.
  */
@@ -636,6 +650,30 @@ body[data-view='map'] .map:has(> .hud-level) {
   font-style: italic;
 }
 
+/* A North Pole level's links out, such as the Academy or the podcast: the panel's clearest buttons (ADR 0038). */
+.level-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.visit .level-link,
+.hud-level .level-link {
+  display: inline-block;
+  padding: 7px 18px;
+  border-radius: 999px;
+  background: var(--color-gold);
+  color: var(--color-ink);
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.level-link::after {
+  content: ' ↗';
+}
+
 .hud-group {
   margin: 8px 0 0;
   color: var(--color-slabShade);
@@ -796,7 +834,7 @@ kbd {
   text-align: center;
 }
 
-/* Claim a plot, and the whole island, at the bottom right. */
+/* Get a booth, and the whole island, at the bottom right. */
 .hud-actions {
   position: absolute;
   right: 12px;
@@ -1222,7 +1260,7 @@ kbd {
   font-size: 14px;
 }
 
-/* The one ask: a booth of your own, or the plot next door for someone who came by a shared link. */
+/* The one ask: a booth of your own, or the spot next door for someone who came by a shared link. */
 .visit-want {
   margin: 12px 0 4px;
   font-size: 14px;

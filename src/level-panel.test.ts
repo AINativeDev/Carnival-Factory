@@ -56,7 +56,7 @@ describe("a level's panel", () => {
     expect(share.value).toContain('@bo built Ice <b>Maze</b>, a level,');
     expect(share.value).toMatch(/#\/level\/bo$/);
     expect(the(card, '.visit-build').getAttribute('href')).toBe(LEVEL_REQUEST_URL);
-    expect(the(card, '.visit-build').textContent).toBe('Ask for a level of your own');
+    expect(the(card, '.visit-build').textContent).toBe('Get a level');
     for (const hidden of ['.visit-remix-link', '.visit-vote', '.visit-leave', '.visit-map'])
       expect(the(card, hidden).hidden).toBe(true);
     expect(the(card, '.visit-claim').hidden).toBe(true);
@@ -68,6 +68,17 @@ describe("a level's panel", () => {
     expect(the(card, '.level-owner').textContent).toBe('A level by the North Pole');
     expect(card.querySelectorAll('.story-step')).toHaveLength(0);
     expect(the(card, '.history-empty').hidden).toBe(false);
+  });
+
+  it("shows a North Pole level's links out under its description, and none for a participant's", () => {
+    const academy = open('the-academy').card;
+    const start = the(academy, '.level-links a.level-link') as HTMLAnchorElement;
+    expect(start.textContent).toBe('Start the Academy');
+    expect(start.href).toBe('https://tessl.io/academy');
+    expect(start.target).toBe('_blank');
+    expect(start.rel).toBe('noopener');
+    expect(the(academy, '.visit-description').nextElementSibling).toBe(start.parentElement);
+    expect(open('bo').card.querySelectorAll('.level-link')).toHaveLength(0);
   });
 
   it('leaves the focus on the map, and Esc to the squares', () => {

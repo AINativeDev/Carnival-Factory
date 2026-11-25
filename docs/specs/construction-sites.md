@@ -2,6 +2,7 @@
 
 While an accepted booth request is being built, the map shows a construction
 site on the plot held for it, so the booth lands where its site stood.
+Visitors read it as a booth **being built** ([glossary](../glossary.md)).
 
 ## Behaviour
 
@@ -10,7 +11,7 @@ site on the plot held for it, so the booth lands where its site stood.
   such as a preview or a local build, writes `[]`.
 - Each entry is `{ login, issue, plot, stage }`. The stages, in words on the
   sign and tag:
-  - `building` ("Building"): no pull request yet.
+  - `building` ("Being built"): no pull request yet.
   - `checks` ("Checks running"): its pull request's checks are running, or one
     failed, since the factory fixes it and runs them again.
   - `almost` ("Almost there"): every check passed, only reviews are left.
@@ -18,7 +19,8 @@ site on the plot held for it, so the booth lands where its site stood.
     or its pull request.
 - A request whose login already has a booth is an update, shown on that
   booth, not as a site.
-- The site's tag says "Being built for @<login>: <stage>". E or a click opens
+- The site's tag is titled "Being built" and says "Booth for @<login>:
+  <stage>", and so does the call to action at its door. E or a click opens
   the request's issue.
 - The page reads `pending.json` with a fresh query on load and every 2
   minutes. A booth that replaces a site the browser saw sparkles once. The

@@ -3,6 +3,7 @@
  * title, the three beats over their scenes and the two ways on. src/intro.ts
  * opens it, draws its scenes and closes it.
  */
+import { SITE_TITLE } from './edition';
 import { BOOTH_REQUEST_URL } from './northpole/links';
 import { INTRO_BEATS } from './intro-scene';
 
@@ -37,14 +38,14 @@ export function buildDialog() {
   dialog.setAttribute('aria-modal', 'true');
   dialog.setAttribute('aria-labelledby', 'intro-title');
   const skip = make('button', 'intro-skip', 'Skip');
-  const title = make('h2', 'intro-title', 'Welcome to the North Pole Carnival');
+  const title = make('h2', 'intro-title', `Welcome to ${SITE_TITLE}`);
   title.id = 'intro-title';
   const lead = make('p', 'intro-lead', 'Every stall here was asked for by someone. Here is how.');
   const beats = INTRO_BEATS.map(beat);
   const list = make('ol', 'intro-beats');
   list.append(...beats.map(({ item }) => item));
   const explore = make('button', 'intro-explore', 'Explore the North Pole');
-  const build = make('a', 'intro-build', 'Build your own booth');
+  const build = make('a', 'intro-build', 'Get a booth');
   Object.assign(build, { href: BOOTH_REQUEST_URL, target: '_blank', rel: 'noopener' });
   const actions = make('div', 'intro-actions');
   actions.append(explore, build);

@@ -1,7 +1,7 @@
 /**
  * The North Pole's own map page: the walkable map with every booth and
  * attraction, the sleigh station's platforms, the HUD over it (the Booths
- * panel, Claim a plot, the whole island) and People's Choice below it. The
+ * panel, Get a booth, the whole island) and People's Choice below it. The
  * router (src/router.ts) opens it; src/level-page.ts opens a level's instead.
  */
 import { startBoothsPanel } from './booths-hud';
@@ -118,8 +118,8 @@ export function renderMap(page: Page, focus?: { kind: SquareKind; id: string }) 
 }
 
 /**
- * The HUD over the map: the Booths panel (src/booths-hud.ts), Claim a plot,
- * which walks the player to the nearest open plot, and the button that shows
+ * The HUD over the map: the Booths panel (src/booths-hud.ts), Get a booth,
+ * which walks the player to the nearest free spot, and the button that shows
  * the whole island. The panels start open on a wide map and folded on a
  * phone's, judged by the map frame's width, as the camera judges it.
  */

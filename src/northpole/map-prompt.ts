@@ -1,6 +1,6 @@
 /**
- * The call to action over a door, "Visit <name>" with its key, or "Claim this
- * plot", and the player's whereabouts the smoke test reads off the canvas. It
+ * The call to action over a door, "Visit <name>" with its key, or "Build your
+ * booth here" at a free spot, and the player's whereabouts the smoke test reads off the canvas. It
  * is a page element over the canvas, not drawn on it, so it's kept apart from
  * the drawing.
  */
@@ -13,9 +13,8 @@ import type { Plot, Tile } from './world';
 
 /** What the call to action says for a plot. Its words follow the square's name, which arrives once its frame has opened. */
 export function promptWords(m: MapRun, plot: Plot) {
-  if (plot.kind === 'open') return 'Claim this plot';
-  if (plot.kind === 'site')
-    return `Being built for @${String(plot.id)}: ${siteLabel(m, plot).stage}`;
+  if (plot.kind === 'open') return 'Build your booth here';
+  if (plot.kind === 'site') return `Booth for @${String(plot.id)}: ${siteLabel(m, plot).stage}`;
   if (plot.kind === 'exit') return 'Take the sleigh back to the North Pole';
   if (plot.kind === 'platform') {
     const label = platformLabel(m, plot);

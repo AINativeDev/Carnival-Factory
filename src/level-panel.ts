@@ -45,7 +45,7 @@ export function openLevelPanel(frame: HTMLElement, level: LevelSummary): VisitHu
   });
   card.querySelectorAll<HTMLAnchorElement>('.visit-build').forEach((build) => {
     build.href = LEVEL_REQUEST_URL;
-    build.textContent = 'Ask for a level of your own';
+    build.textContent = 'Get a level';
   });
 
   // Beside the map's frame, not over it, so the camera frames the level in the space that's left.

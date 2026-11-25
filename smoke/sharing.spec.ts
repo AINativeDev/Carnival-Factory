@@ -21,7 +21,7 @@ test("Share copies a friendly line with the booth's share page, which unfurls an
   await expect(page.getByRole('button', { name: 'Copied' })).toBeVisible();
   const copied = await page.evaluate(() => navigator.clipboard.readText());
   expect(copied).toMatch(
-    /^@jedi4ever built .+ at the North Pole Carnival\. Come visit, and build your own: http:\/\/localhost:4173\/share\/booth-jedi4ever\.html$/,
+    /^@jedi4ever built .+ at Carnival Factory\. Come visit, and get a booth too: http:\/\/localhost:4173\/share\/booth-jedi4ever\.html$/,
   );
   await page.locator('.visit-more summary').click(); // the owner's links, under More
   await page.getByRole('button', { name: 'share it as yours' }).click();
@@ -76,7 +76,7 @@ test('a booth links to its season card, which downloads as a PNG and copies its 
     'http://localhost:4173/#/?booth=jedi4ever',
   );
   await expect(page.getByLabel('Share text')).toHaveValue(
-    /^My season at the North Pole Carnival as @jedi4ever: .+ Come visit: http:\/\/localhost:4173\/#\/\?booth=jedi4ever$/,
+    /^My season at Carnival Factory as @jedi4ever: .+ Come visit: http:\/\/localhost:4173\/#\/\?booth=jedi4ever$/,
   );
   await expect(
     page.getByRole('link', { name: 'Set up Tessl on your own repository' }),

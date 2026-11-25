@@ -1,6 +1,6 @@
 # North Pole gifts
 
-Small factory loops to take home from the North Pole Carnival, each wrapped as a
+Small factory loops to take home from Carnival Factory, each wrapped as a
 holiday gift. Every one is useful on any repository, and each installs on its
 own, straight from this repository on GitHub, not the registry.
 

@@ -5,11 +5,21 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 
 ## Behaviour
 
+- The banner names the site, "Carnival Factory", with this edition's tag,
+  "Christmas edition", beside it (left out on a screen under 480 pixels), and
+  the page's title is "Carnival Factory – Christmas edition". Both come from
+  `src/edition.ts`, which the build writes into `index.html`, so a future
+  edition changes one constant (enforced by: src/edition.test.ts). The North
+  Pole is the place inside this edition, not the site's name. The words
+  visitors read follow the [glossary](../glossary.md).
+
 - The world has a town square in the middle, an avenue off each side and lanes
   off the avenues. Attractions stand on 3 by 3 plots in rings round the town
   square, booths on 2 by 2 plots along the lanes.
-- There are always 3 open plots ("For claim") on top of the booths and the
-  construction sites. A click, E or Enter at an open plot opens the booth form.
+- There are always 3 open plots on top of the booths and the construction
+  sites, which visitors see as free spots: each has a "Free spot" sign, its
+  tag says "Free spot", and the call to action at it says "Build your booth
+  here". A click, E or Enter at one opens the booth form.
 - The player walks with WASD or the arrow keys, or by clicking a tile, and
   pathfinding finds the way. Walkers step diagonally only where no corner is cut.
 - E, Enter or a click at a square goes inside it. From afar, the player is put
@@ -21,7 +31,7 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   view, and says what's on next: AI DevCon, next in London, 7–8 June 2027 at The
   Brewery. A click on it opens the tickets page in a new tab, and the pointer
   turns to a hand over it (`src/northpole/billboard.ts`).
-- "Claim a plot" walks the player to the nearest open plot. "Show the whole
+- "Get a booth" walks the player to the nearest free spot. "Show the whole
   island" toggles the overview.
 - Camera: a viewport under 720 CSS pixels wide is a phone. On a laptop the
   camera fits the carnival and comes in by up to 0.35 while the player walks,
@@ -39,7 +49,7 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   a placeholder page; `#/plot/<id>`, a link from before booths were called
   plots, is replaced by `#/booth/<id>`. Anything else is the plain map.
 - A deep link to a booth or attraction that isn't there says so in a note on
-  the map, with a "Claim it!" link for a booth.
+  the map, with a "Get a booth" link for a booth.
 - Leaving a square goes back in history when the visit began from the map,
   otherwise it replaces the address with the map's.
 - An open page checks `version.json` every 5 minutes and when it comes back
@@ -62,7 +72,7 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   (enforced by: src/northpole/plots.test.ts).
 - Only maintainers change `plots.json` (enforced by:
   scripts/check-booth-ownership.ts).
-- There are always open plots, and every plot is reachable from the town
+- There are always open plots (free spots), and every plot is reachable from the town
   square (enforced by: src/northpole/world.test.ts).
 - Route names are lower-cased and must match `[\w-]+`; anything malformed is
   the plain map (enforced by: src/route.test.ts). A name from the address is

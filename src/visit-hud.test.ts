@@ -122,9 +122,10 @@ describe("a square's panel", () => {
     expect((the(card, '.visit-more') as HTMLDetailsElement).open).toBe(true);
   });
 
-  it('asks one thing: a booth of your own, or the plot next door after a shared link', () => {
+  it('asks one thing: a booth of your own, or the spot next door after a shared link', () => {
     const visitor = open({ kind: 'booth', square: square('ana', "Ana's booth") }).card;
-    expect(visitor.querySelector('.visit-want')?.textContent).toContain('Want one of your own?');
+    const want = visitor.querySelector('.visit-want')?.textContent;
+    expect(want).toBe('Want one too? Get a boothGet the spot next door');
     expect(the(visitor, '.visit-build').hidden).toBe(false);
     expect(the(visitor, '.visit-claim').hidden).toBe(true);
     let claimed = false;

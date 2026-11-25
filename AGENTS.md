@@ -1,7 +1,9 @@
-# North Pole Carnival: agent guide
+# Carnival Factory – Christmas edition: agent guide
 
-A shared North Pole map laid out as a carnival midway. It has two kinds of
-square, and every square is one folder:
+Carnival Factory is a shared map laid out as a carnival midway. This edition,
+the Christmas edition, is set at the North Pole; the site's name and edition
+live in `src/edition.ts` alone. It has two kinds of square, and every square
+is one folder:
 
 - A **booth** belongs to one participant: `carnival/booths/<their GitHub login>/`. Its
   owner may only change that booth.
@@ -73,6 +75,10 @@ request.
 
 `docs/specs/` says what each part of the system does; `docs/adr/` says why it
 is that way. Read the spec for the area before you change it.
+[`docs/glossary.md`](docs/glossary.md) defines the words, and the plain ones
+visitors read on the page: a booth, a **free spot** (an open plot, in the
+code), **being built** (a construction site), never "claim" or "plot" in
+visitor text ([ADR 0037](docs/adr/0037-carnival-factory-and-plain-words.md)).
 
 - A change to the map's code, its checks, the factory or the workflows updates
   the matching spec in the same pull request, so the spec stays true.
@@ -133,6 +139,7 @@ src/
                             its markup, map-notes.ts its notes for a missing square)
   level-page.ts             a participant's level page
   route.ts                  reading the hash (plain functions)
+  edition.ts                the site's name and this edition's, in one place
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
   visit-help.ts             the next steps at the foot of a square's panel, by whose square it is
   craft-badges.ts           a square's craft badges on its panel, baked in by the build
@@ -199,7 +206,7 @@ src/
     owners.ts               who owns what: each owner's colour, their avatar's address,
                             and how a picked square's highlight and call to action fade
                             (plain functions)
-    visit.ts                visiting a square and hovering one: the plot next door,
+    visit.ts                visiting a square and hovering one: the free spot next door,
                             the share line and its link, hover tags (plain functions)
     sandbox.ts              the map's side of the sandbox: one frame per square
     frame.ts                runs in a square's frame (square.html) and supervises it
@@ -219,6 +226,7 @@ src/
     peoples-choice-standings.ts the standings the build baked into the page
     links.ts                links to the repository's issue forms
 docs/
+  glossary.md               the words: booth, plot and free spot, being built, and more
   style.md                  the diorama style every square follows by default
   booth-ideas.md            ideas and tips for a booth request
   elf-engineer.md           the Elf Engineer badge, and how to get it
@@ -460,8 +468,8 @@ free plot.
 
 **Construction sites.** While an accepted booth request is being built, the map
 shows a construction site on the plot held for it, with `@login` and its
-stage. Nothing about it is committed: every deploy reads the open requests
-labelled `booth-request` and `tessl` from the API (`scripts/write-pending.ts`)
+stage; visitors see it as a booth "Being built". Nothing about it is
+committed: every deploy reads the open requests labelled `booth-request` and `tessl` from the API (`scripts/write-pending.ts`)
 and writes `pending.json` beside the page, holding the next free plots in order
 of issue number. **When you build a new booth** (no `carnival/booths/<login>/` yet),
 read the live site's `pending.json` (the site is `gh api

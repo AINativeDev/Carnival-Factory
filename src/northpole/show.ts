@@ -5,6 +5,7 @@
  * `time` and its variant, so two jugglers don't throw in step.
  */
 import { drawCarousel } from './carousel';
+import { drawCoaster, drawCoasterLoop } from './coaster';
 import { drawFireBreather, drawJuggler, drawStiltWalker } from './performers';
 import { drawBalloon, drawFerrisWheel } from './rides';
 import { drawAcrobats, drawBand, drawStrongman } from './troupe';
@@ -28,6 +29,8 @@ const SHOW = {
   cog: drawCog,
   'candy-pipe': drawCandyPipe,
   lantern: drawLantern,
+  coaster: drawCoaster,
+  'coaster-loop': drawCoasterLoop,
 } as const satisfies Record<string, Draw>;
 
 /** A performer, a ride or a piece of factory dressing: the things a level's show is made of. */

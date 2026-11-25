@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vitest/config';
+import { fillEdition } from './src/edition.ts';
 import { BADGE_REQUEST_URL } from './src/northpole/links.ts';
 import { readBoothAddedDates } from './scripts/booth-dates.ts';
 import { adventCounts, badgeHolders, peoplesChoice, squareCraft } from './scripts/build-data.ts';
@@ -38,6 +39,11 @@ const SEASON = (() => {
   return existsSync(file) ? readSeason(JSON.parse(readFileSync(file, 'utf8'))) : EMPTY_SEASON;
 })();
 
+const editionNames: Plugin = {
+  name: 'edition-names', // the site's name and edition (src/edition.ts) in the title and banner
+  transformIndexHtml: { order: 'pre', handler: fillEdition },
+};
+
 /** Writes version.json beside the page, so an open page can tell a newer build is out. */
 const versionFile: Plugin = {
   name: 'version-file',
@@ -66,10 +72,9 @@ const pendingFile: Plugin = {
 };
 
 /**
- * Writes share/<kind>-<id>.html for every booth and attraction, the pages Share
- * links to so they unfurl with a title, a description and the map's picture
- * (scripts/share-pages.ts), and that picture beside them, and share/factory.html
- * for the factory's numbers.
+ * Writes share/<kind>-<id>.html for every booth and attraction, which unfurl with a title,
+ * a description and the map's picture (scripts/share-pages.ts), that picture, and
+ * share/factory.html for the factory's numbers.
  */
 const sharePages: Plugin = {
   name: 'share-pages',
@@ -148,7 +153,7 @@ function squareNames(): Record<string, string> {
 }
 
 export default defineConfig(({ command }) => ({
-  plugins: [versionFile, pendingFile, sharePages, badgePages],
+  plugins: [editionNames, versionFile, pendingFile, sharePages, badgePages],
   define: {
     __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev'),
     __BADGE_HOLDERS__: JSON.stringify(BADGE_HOLDERS),

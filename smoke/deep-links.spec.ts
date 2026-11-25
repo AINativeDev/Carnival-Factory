@@ -30,7 +30,7 @@ for (const viewport of [
 test('a deep link to a booth nobody has built says so, as text', async ({ page }) => {
   await page.goto('#/?booth=nobody-here-yet');
   await expect(page.locator('.map-note')).toHaveText(
-    "There's no booth for @nobody-here-yet yet. Claim it!",
+    "There's no booth for @nobody-here-yet yet. Get a booth",
   );
   await expect(page.locator('.map-note a')).toHaveAttribute('href', /01-your-booth/);
   await page.goto('#/?booth=%3Cb%3Ehi%3C%2Fb%3E');

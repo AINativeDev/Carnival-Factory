@@ -39,17 +39,18 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
 - An Elf Engineer's booth links to their own factory. A booth with a People's
   Choice comment links to it with "Vote for this booth".
 - Under the story, one quiet row: **Share**, **Vote for this booth** and
-  **Remix this booth**, then one ask: "Want one of your own? Build your own
-  booth". Someone who arrived by a shared link to a booth gets **Claim the plot
-  next door** in its place, until they leave or claim.
+  **Remix this booth**, then one ask: "Want one too? Get a booth". Someone
+  who arrived by a shared link to a booth gets **Get the spot next door** in
+  its place, until they leave or take it.
 - Everything else folds under **More**: the message Share copies and **See it
   on the map**, an Elf Engineer's own factory, the factory's numbers, running a
   factory on your own repo, the owner's links and keep me posted.
 - A preview build has no history baked in, so the deploy puts the live site's
   `square-history.json` beside each preview, and the panel reads it from its
   own site and tells the story from it.
-- **Share** copies a line such as "@<login> built <name> at the North Pole
-  Carnival. Come visit, and build your own: <link>". The link is the square's
+- **Share** copies a line such as "@<login> built <name> at Carnival Factory.
+  Come visit, and get a booth too: <link>", with the site's name from
+  `src/edition.ts`. The link is the square's
   share page, `share/<kind>-<id>.html`, on the live site even from a preview.
   The text can be edited. Without a clipboard, it is shown selected. A level
   has no share page: its line says "<name>, a level," and links to

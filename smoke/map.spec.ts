@@ -57,7 +57,7 @@ test('the screen-reader guide shows itself when a link in it has keyboard focus'
   expect(present(await guide.boundingBox(), 'guide box').width).toBeLessThanOrEqual(1);
   await page.locator('.map > .visually-hidden a').first().focus();
   expect(present(await guide.boundingBox(), 'guide box').width).toBeGreaterThan(100);
-  await expect(page.getByRole('link', { name: 'claim your own' })).toBeInViewport();
+  await expect(guide.getByRole('link', { name: 'get a booth' })).toBeInViewport();
 });
 
 for (const viewport of [

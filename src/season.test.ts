@@ -58,13 +58,13 @@ describe('seasonShareText', () => {
     expect(
       seasonShareText('sjmaple', 'Sled Shed', { requests: 2, shipped: 2, findingsFixed: 1 }, link),
     ).toBe(
-      `My season at the North Pole Carnival as @sjmaple: I shipped 2 requests to Sled Shed. Come visit: ${link}`,
+      `My season at Carnival Factory as @sjmaple: I shipped 2 requests to Sled Shed. Come visit: ${link}`,
     );
   });
 
   it('still has something to say for a booth with no season counted', () => {
     expect(seasonShareText('sjmaple', 'Sled Shed', undefined, link)).toBe(
-      `My season at the North Pole Carnival as @sjmaple: I built Sled Shed. Come visit: ${link}`,
+      `My season at Carnival Factory as @sjmaple: I built Sled Shed. Come visit: ${link}`,
     );
   });
 });

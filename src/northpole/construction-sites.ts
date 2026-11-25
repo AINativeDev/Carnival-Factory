@@ -12,7 +12,7 @@ export type Stage = 'building' | 'checks' | 'almost' | 'maintainer';
 
 /** What each stage says on the sign and the tag. */
 export const STAGE_TEXT: Record<Stage, string> = {
-  building: 'Building',
+  building: 'Being built',
   checks: 'Checks running',
   almost: 'Almost there',
   maintainer: 'Waiting for a maintainer',

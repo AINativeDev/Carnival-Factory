@@ -3,6 +3,7 @@
  * `badges/index.html` (vite.config.ts). It is static HTML for people to copy a
  * README snippet from, apart from the badge's rules in scripts/elf-engineer.ts.
  */
+import { SITE_NAME, SITE_TITLE } from '../src/edition.ts';
 import { BADGE_TIERS, badgeImage, badgeSnippet, type BadgeTier } from '../src/northpole/badges.ts';
 import { escapeHtml } from './share-pages.ts';
 
@@ -30,7 +31,7 @@ export function badgePage(site: string, requestUrl: string): string {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>The Elf Engineer badge | North Pole Carnival</title>
+    <title>The Elf Engineer badge | ${SITE_TITLE}</title>
     <style>
       body { font: 16px/1.5 system-ui, sans-serif; max-width: 44rem; margin: 2rem auto; padding: 0 1rem; }
       pre { white-space: pre-wrap; word-break: break-all; padding: 0.75rem; background: #eef5fb; border-radius: 6px; }
@@ -44,7 +45,7 @@ export function badgePage(site: string, requestUrl: string): string {
     merged on your repository: ask again with the same form to move up.</p>
     <p>The badges are plain image files, with no counters and nothing tracked.</p>
 ${rows}
-    <p><a href="${escapeHtml(site || '../')}">Visit the North Pole Carnival</a></p>
+    <p><a href="${escapeHtml(site || '../')}">Visit ${SITE_NAME}</a></p>
   </body>
 </html>
 `;

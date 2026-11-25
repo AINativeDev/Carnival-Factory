@@ -27,6 +27,10 @@ describe, so a little detail goes a long way. Borrow freely from anything here.
 - **Factory dressing:** a `conveyor` belt with parcels sliding along it (1 by
   3), a giant turning `cog`, a `candy-pipe` arch that puffs steam (2 by 1),
   and a floating paper `lantern` that people walk under.
+- **A roller coaster:** `coaster` track on posts that people walk under, and
+  `coaster-loop` loop-the-loops, one tile each. Lay the pieces side by side in
+  the order the ride goes, put loops on straight runs, and a golden ticket
+  rides it from the first piece to the last.
 - **Squares of its own,** up to 8: little animated scenes on stalls, each drawn
   like a booth, that visitors walk into.
 - **Where visitors arrive,** and a sleigh back to the North Pole.

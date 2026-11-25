@@ -43,28 +43,28 @@ describe('the share line', () => {
   const square = { kind: 'booth' as const, id: 'elf', name: "Santa's Toy Factory" };
   it("names the booth's builder, and ends with the link", () => {
     expect(shareText(square, 'https://x/share/booth-elf.html')).toBe(
-      "@elf built Santa's Toy Factory at the North Pole Carnival. Come visit, and build your own: https://x/share/booth-elf.html",
+      "@elf built Santa's Toy Factory at Carnival Factory. Come visit, and get a booth too: https://x/share/booth-elf.html",
     );
   });
 
   it('speaks for the owner when they share it as theirs', () => {
     expect(shareText(square, 'L', true)).toBe(
-      "I built Santa's Toy Factory at the North Pole Carnival. Come visit, and build your own: L",
+      "I built Santa's Toy Factory at Carnival Factory. Come visit, and get a booth too: L",
     );
   });
 
   it('invites to build a booth beside an attraction', () => {
     expect(shareText({ kind: 'attraction', id: 'ferris-wheel', name: 'Ferris Wheel' }, 'L')).toBe(
-      'Ferris Wheel is at the North Pole Carnival. Come visit, and build a booth of your own: L',
+      'Ferris Wheel is at Carnival Factory. Come visit, and get a booth too: L',
     );
   });
 
   it("names a participant's level's builder, and a North Pole level as the North Pole's", () => {
     expect(shareText({ kind: 'level', id: 'bo', name: 'Ice Maze' }, 'L')).toBe(
-      '@bo built Ice Maze, a level, at the North Pole Carnival. Come visit, and build your own: L',
+      '@bo built Ice Maze, a level, at Carnival Factory. Come visit, and get a booth too: L',
     );
     expect(shareText({ kind: 'level', id: 'the-factory', name: 'The Factory' }, 'L')).toBe(
-      'The Factory, a level, is at the North Pole Carnival. Come visit, and build a booth of your own: L',
+      'The Factory, a level, is at Carnival Factory. Come visit, and get a booth too: L',
     );
   });
 
@@ -108,16 +108,23 @@ describe('hovering', () => {
       tagText({ kind: 'attraction', id: 'ferris-wheel' }, { name: 'Ferris', description: 'Round' })
         .owner,
     ).toBe('');
-    expect(tagText({ kind: 'open' }, undefined).hint).toBe('E or click to claim this plot');
+    expect(tagText({ kind: 'open' }, undefined)).toEqual({
+      name: 'Free spot',
+      owner: '',
+      line: 'Ask for a booth, and an agent builds it here.',
+      hint: 'E or click to build your booth here',
+    });
   });
 
-  it('says who a construction site is for and its stage, and nothing from the request', () => {
+  it('says who a booth being built is for and its stage, and nothing from the request', () => {
     expect(tagText({ kind: 'site', id: 'amy' }, undefined, 'Checks running')).toEqual({
-      name: 'A booth under construction',
+      name: 'Being built',
       owner: '',
-      line: 'Being built for @amy: Checks running',
+      line: 'Booth for @amy: Checks running',
       hint: 'E or click to see the request',
     });
+    // A site always has its owner's login; without one the tag still reads, with no name.
+    expect(tagText({ kind: 'site' }, undefined, 'Planned').line).toBe('Booth for @: Planned');
   });
 
   it('puts the tag above the structure, inside the viewport', () => {
