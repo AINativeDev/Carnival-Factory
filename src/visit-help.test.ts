@@ -1,16 +1,17 @@
+// @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { BOOTH_REQUEST_URL, CHANGE_URL, CLAIM_URL, LEVEL_REQUEST_URL } from './northpole/links';
 import { fillVisitHelp } from './visit-help';
 
-/** A help box that keeps its HTML and hands out one season link. */
+/** A panel's help box, and the season link it holds once it's filled. */
 function helpBox() {
-  const season = { href: '' };
-  const box = {
-    innerHTML: '',
-    querySelector: (selector: string) =>
-      selector === '.visit-season' && box.innerHTML.includes('visit-season') ? season : null,
+  const box = document.createElement('div');
+  const season = {
+    get href() {
+      return box.querySelector('.visit-season')?.getAttribute('href');
+    },
   };
-  return { box, season, element: box as unknown as Element };
+  return { box, season, element: box };
 }
 
 describe('fillVisitHelp', () => {

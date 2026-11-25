@@ -7,13 +7,8 @@
  * reads from the GitHub API. Without season.json the build has an empty season,
  * and every card still shows its booth.
  */
+import { graphql, type AskGraphQL } from './github-api.ts';
 import { countSeason, type RequestRecord } from './season.ts';
-
-const token = process.env.GITHUB_TOKEN;
-const repository = process.env.GITHUB_REPOSITORY;
-if (!token || !repository) throw new Error('Set GITHUB_TOKEN and GITHUB_REPOSITORY');
-const [owner, name] = repository.split('/');
-const api = process.env.GITHUB_GRAPHQL_URL ?? 'https://api.github.com/graphql';
 
 const QUERY = `query($owner: String!, $name: String!, $after: String) {
   repository(owner: $owner, name: $name) {
@@ -67,42 +62,57 @@ interface Page {
   errors?: unknown[];
 }
 
-const requests: RequestRecord[] = [];
-let after: string | null = null;
-do {
-  const response = await fetch(api, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: QUERY, variables: { owner, name, after } }),
-  });
-  if (!response.ok) throw new Error(`The GraphQL API answered HTTP ${response.status}`);
-  const page = (await response.json()) as Page;
-  // Errors beside data mean some fields came back null, so the count would be
-  // too low: treat them as a failed read too.
-  if (!page.data || page.errors?.length)
-    throw new Error(`The GraphQL API answered with errors: ${JSON.stringify(page.errors)}`);
-  const { nodes, pageInfo } = page.data.repository.issues;
-  for (const issue of nodes) {
-    // A partial count would publish too-low numbers, so fail and let the
-    // workflow fall back to the empty season instead.
-    if (issue.closedByPullRequestsReferences.pageInfo.hasNextPage)
-      throw new Error(`Issue #${issue.number} has more closing pull requests than one page`);
-    for (const pull of issue.closedByPullRequestsReferences.nodes)
-      if (pull.reviewThreads.pageInfo.hasNextPage)
-        throw new Error(`Pull request #${pull.number} has more review threads than one page`);
-    requests.push({
-      author: issue.author?.login ?? null,
-      pulls: issue.closedByPullRequestsReferences.nodes.map((pull) => ({
-        number: pull.number,
-        merged: pull.merged,
-        threads: pull.reviewThreads.nodes.map((thread) => ({
-          resolved: thread.isResolved,
-          author: thread.comments.nodes[0]?.author?.login ?? null,
-        })),
-      })),
-    });
-  }
-  after = pageInfo.hasNextPage ? pageInfo.endCursor : null;
-} while (after);
+/** Every booth request in `owner`/`name`, with its pull requests and their review threads. */
+export async function seasonRequests(
+  ask: AskGraphQL,
+  owner: string,
+  name: string,
+): Promise<RequestRecord[]> {
+  const requests: RequestRecord[] = [];
+  let after: string | null = null;
+  do {
+    const page = (await ask(QUERY, { owner, name, after })) as Page;
+    // Errors beside data mean some fields came back null, so the count would be
+    // too low: treat them as a failed read too.
+    if (!page.data || page.errors?.length)
+      throw new Error(`The GraphQL API answered with errors: ${JSON.stringify(page.errors)}`);
+    const { nodes, pageInfo } = page.data.repository.issues;
+    for (const issue of nodes) requests.push(requestRecord(issue));
+    after = pageInfo.hasNextPage ? pageInfo.endCursor : null;
+  } while (after);
+  return requests;
+}
 
-process.stdout.write(`${JSON.stringify(countSeason(requests, new Date().toISOString()))}\n`);
+type Issue = NonNullable<Page['data']>['repository']['issues']['nodes'][number];
+
+/** One request as the season counts it. A partial one would publish too-low numbers, so it throws, and the workflow falls back to the empty season. */
+function requestRecord(issue: Issue): RequestRecord {
+  if (issue.closedByPullRequestsReferences.pageInfo.hasNextPage)
+    throw new Error(`Issue #${issue.number} has more closing pull requests than one page`);
+  for (const pull of issue.closedByPullRequestsReferences.nodes)
+    if (pull.reviewThreads.pageInfo.hasNextPage)
+      throw new Error(`Pull request #${pull.number} has more review threads than one page`);
+  return {
+    author: issue.author?.login ?? null,
+    pulls: issue.closedByPullRequestsReferences.nodes.map((pull) => ({
+      number: pull.number,
+      merged: pull.merged,
+      threads: pull.reviewThreads.nodes.map((thread) => ({
+        resolved: thread.isResolved,
+        author: thread.comments.nodes[0]?.author?.login ?? null,
+      })),
+    })),
+  };
+}
+
+/* v8 ignore start -- the deploy's entry point: reading the environment, then printing */
+if (process.argv[1]?.endsWith('season-data.ts')) {
+  const repository = process.env.GITHUB_REPOSITORY;
+  if (!process.env.GITHUB_TOKEN || !repository) {
+    throw new Error('Set GITHUB_TOKEN and GITHUB_REPOSITORY');
+  }
+  const [owner = '', name = ''] = repository.split('/');
+  const requests = await seasonRequests(graphql, owner, name);
+  process.stdout.write(`${JSON.stringify(countSeason(requests, new Date().toISOString()))}\n`);
+}
+/* v8 ignore stop */

@@ -9,9 +9,12 @@
  * network.
  */
 
-/** This build's id, set by Vite when it builds. `dev` while developing. */
+/**
+ * This build's id, set by Vite when it builds, and `dev` while developing or
+ * testing: vite.config.ts defines it in every mode, so it is always there.
+ */
 declare const __BUILD_ID__: string;
-export const BUILD_ID = typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev';
+export const BUILD_ID: string = __BUILD_ID__;
 
 /** How often an open page checks for a new build. */
 const CHECK_EVERY_MS = 5 * 60 * 1000;
@@ -71,14 +74,17 @@ function offerReload(latest: string) {
   document.body.append(note);
 }
 
-/** Checks now, again every few minutes, and whenever the page comes back into view. */
-export function keepUpToDate() {
-  if (BUILD_ID === 'dev') return;
+/**
+ * Checks now, again every few minutes, and whenever the page comes back into
+ * view. `build` is this page's build, never checked while developing.
+ */
+export function keepUpToDate(build = BUILD_ID) {
+  if (build === 'dev') return;
   const openedAt = performance.now();
   const triedFor = new URL(location.href).searchParams.get('v');
   const check = async () => {
     const latest = await latestBuild();
-    const action = decideUpdate(BUILD_ID, latest, performance.now() - openedAt, triedFor);
+    const action = decideUpdate(build, latest, performance.now() - openedAt, triedFor);
     if (latest && action === 'reload') moveTo(latest);
     if (latest && action === 'offer') offerReload(latest);
   };

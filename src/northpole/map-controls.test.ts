@@ -44,6 +44,14 @@ describe('the controls the page has over a map', () => {
     expect(controls.selected).toEqual({ kind: 'attraction', id: 'cocoa' });
   });
 
+  it('goes from inside one square straight inside another', () => {
+    const { controls, step } = start(levelOptions);
+    step(0);
+    controls.visit('attraction', 'skates');
+    expect(controls.visit('attraction', 'cocoa')).toBe(true);
+    expect(controls.visiting).toEqual({ kind: 'attraction', id: 'cocoa' });
+  });
+
   it('goes inside from its own door, and back out facing out', () => {
     const { controls, step, frame, canvas } = start(levelOptions);
     controls.jumpTo('attraction', 'skates');

@@ -3,13 +3,14 @@ import { findPath } from './pathfinding';
 import {
   canStand,
   moveBy,
+  nearestStand,
   plotAtDoor,
   screenDirection,
   strollAt,
   walkable,
   walkAlong,
 } from './walking';
-import { toScreen } from './world';
+import { key, toScreen } from './world';
 import { buildWorld } from './world-build';
 import { ATTRACTIONS, booths, plotWhere } from '../test-support/sample-squares';
 
@@ -94,5 +95,11 @@ describe('walking', () => {
         const at = strollAt(stroll, time);
         expect(walkable(world, Math.round(at.x), Math.round(at.y))).toBe(true);
       }
+  });
+
+  it('sends a walker with nowhere at all to stand back to the start', () => {
+    const tiles = [-1, 0, 1].flatMap((x) => [-1, 0, 1].map((y) => key(x, y)));
+    const walledIn = { ...world, extent: 1, blocked: new Set(tiles) };
+    expect(nearestStand(walledIn, { x: 0, y: 0 })).toEqual(world.start);
   });
 });

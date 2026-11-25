@@ -34,6 +34,10 @@ describe('measureSquare', () => {
     const size = measureSquare(folder({ 'booth.ts': '', 'img/snow.png': randomBytes(3000) }));
     expect(size.assets).toBe(3000);
   });
+
+  it('counts no code for a square with none', () => {
+    expect(measureSquare(folder({ 'snow.png': randomBytes(10) })).code).toBe(0);
+  });
 });
 
 describe('overBudget', () => {

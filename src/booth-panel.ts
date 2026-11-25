@@ -27,8 +27,8 @@ export function fold(text: string): string {
 
 /** Whether a square matches a search, by its name or its owner's login, ignoring case and accents. */
 export function matches(entry: PanelEntry, query: string): boolean {
+  // An empty search is in every name, so it matches every square.
   const wanted = fold(query);
-  if (!wanted) return true;
   return fold(entry.name).includes(wanted) || fold(entry.id).includes(wanted);
 }
 

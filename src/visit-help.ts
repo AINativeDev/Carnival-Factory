@@ -5,6 +5,7 @@
  * from a level, and a stall of The Factory tells its step of the tour. Only fixed text and the repository's own links go in as HTML;
  * the season link's login is set as a property.
  */
+import { the } from './dom';
 import { fillTourStop } from './factory-tour';
 import { BADGE_REQUEST_URL, CHANGE_URL, CLAIM_URL, LEVEL_REQUEST_URL } from './northpole/links';
 import type { SquareKind } from './northpole/map-options';
@@ -32,8 +33,7 @@ export function fillVisitHelp(
     help.innerHTML = `<p><span class="visit-ask">Is this yours?</span> <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask for a change</a> <span aria-hidden="true">·</span> <button class="visit-mine" type="button">Share it as yours</button></p>
       <p><span class="visit-ask">Built your own factory?</span> <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Get the Elf Engineer badge</a> <span aria-hidden="true">·</span> <a href="#/advent">Open the advent calendar</a></p>
       <p><a class="visit-season">Your season</a></p>`;
-    const season = help.querySelector<HTMLAnchorElement>('.visit-season');
-    if (season) season.href = seasonLink(id);
+    the(help, '.visit-season', HTMLAnchorElement).href = seasonLink(id);
   } else if (landmarkLevel(kind, id)) {
     help.innerHTML = `<p>This landmark is the way into a level of the North Pole's own. <a href="${levelLink(id)}">Take the sleigh inside</a> <span aria-hidden="true">·</span> ${GET_A_BOOTH}.</p>`;
   } else {

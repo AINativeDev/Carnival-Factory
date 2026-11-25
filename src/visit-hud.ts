@@ -25,6 +25,7 @@ import { fillVisitHelp } from './visit-help';
 import { squareOwner } from './northpole/north-pole-levels';
 import { linksHome } from './northpole/north-pole-links';
 import { showLevelLinks } from './level-links';
+import { focusBack } from './focus-back';
 
 export interface VisitHudOptions {
   /** A square's kind, or `level` for the panel beside a level's own map (level-panel.ts). */
@@ -182,13 +183,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       document.removeEventListener('keydown', onKeyDown);
       const hadFocus = card.contains(document.activeElement);
       card.remove();
-      if (hadFocus) {
-        const back =
-          before && before !== document.body && before.isConnected
-            ? before
-            : frame.querySelector<HTMLElement>('canvas');
-        back?.focus({ preventScroll: true });
-      }
+      if (hadFocus) focusBack(before, frame);
     },
   };
 }

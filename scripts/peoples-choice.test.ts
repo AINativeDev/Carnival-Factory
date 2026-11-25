@@ -106,16 +106,22 @@ describe('missingEntries', () => {
 describe('standings', () => {
   it('ranks the booths and the home factories by the votes that count', () => {
     const result = standings(
-      input([
-        comment('booth', 'jedi4ever', [vote(1), vote(20)]),
-        comment('booth', 'sjmaple', [vote(20), vote(21), vote(22)]),
-        comment('booth', 'hamzaoza', [vote(3), vote(3)]),
-        comment('factory', 'pstember', [vote(4), vote(20)]),
-      ]),
+      input(
+        [
+          comment('booth', 'jedi4ever', [vote(1), vote(20)]),
+          comment('booth', 'sjmaple', [vote(20), vote(21), vote(22)]),
+          comment('booth', 'hamzaoza', [vote(3), vote(3)]),
+          comment('booth', 'ana', [vote(20)]),
+          comment('factory', 'pstember', [vote(4), vote(20)]),
+        ],
+        { booths: ['jedi4ever', 'sjmaple', 'hamzaoza', 'ana'] },
+      ),
     );
     expect(result.ballot).toBe(BALLOT);
+    // A tie goes in order of login.
     expect(result.booths.map((entry) => [entry.login, entry.votes])).toEqual([
       ['sjmaple', 3],
+      ['ana', 1],
       ['jedi4ever', 1],
       ['hamzaoza', 0],
     ]);

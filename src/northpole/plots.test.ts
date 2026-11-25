@@ -117,6 +117,17 @@ describe('reservePlots', () => {
     expect([...a].sort()).toEqual([...b].sort());
     expect(new Set(a.values()).size).toBe(20);
   });
+
+  it('holds one plot for someone with two open requests, by their first', () => {
+    const reserved = reservePlots(
+      [
+        { login: 'amy', issue: 30 },
+        { login: 'amy', issue: 12 },
+      ],
+      [0],
+    );
+    expect(Object.fromEntries(reserved)).toEqual({ amy: 1 });
+  });
 });
 
 describe('placePending', () => {
@@ -146,6 +157,11 @@ describe('placePending', () => {
   it('moves a site past the plot limit to the next free plot', () => {
     const { sites } = placePending([entry('bob', 5, 9999)], new Map([['amy', 0]]));
     expect(sites.get('bob')).toBe(1);
+  });
+
+  it('puts one site up for someone with two requests, on the plot their first held', () => {
+    const { sites } = placePending([entry('bob', 9, 4), entry('bob', 5, 7)], new Map([['amy', 0]]));
+    expect([...sites]).toEqual([['bob', 7]]);
   });
 });
 

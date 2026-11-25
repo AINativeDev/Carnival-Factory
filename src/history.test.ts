@@ -80,6 +80,9 @@ describe('pullSummary and pullState', () => {
       'no review findings, 1 commit',
     );
     expect(pullState(merged)).toBe('Merged 24 Nov 2026');
+    const { mergedAt, ...undated } = merged;
+    expect(mergedAt).toBeDefined();
+    expect(pullState(undated)).toBe('Merged');
     expect(pullState({ ...merged, state: 'open', mergedAt: undefined })).toBe('Open');
     expect(pullState({ ...merged, state: 'closed', mergedAt: undefined })).toBe(
       'Closed without merging',

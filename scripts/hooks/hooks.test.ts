@@ -113,4 +113,10 @@ describe('turnFeedback for squares', () => {
           : ok;
     expect(turnFeedback(false, run)).toMatch(/Craft of the squares you changed:[\s\S]*300 lines/);
   });
+
+  it('lets the agent stop when the squares it changed meet the craft conventions', () => {
+    const run = (command: string): Ran =>
+      command === 'git' ? { status: 0, stdout: ' M carnival/booths/ana/booth.ts', stderr: '' } : ok;
+    expect(turnFeedback(false, run)).toBeUndefined();
+  });
 });

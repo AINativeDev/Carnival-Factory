@@ -40,9 +40,10 @@ runs `npm run check` and `npm run build`. `npm run check` is:
 - `npm run format:check`: Prettier;
 - `npm run typecheck`: TypeScript, and the strict flags against their baseline
   (`node scripts/strict-types.ts`);
-- `npm test`: the unit tests with coverage, held to the floor in
-  `vitest.config.ts`. Don't raise the floor in a pull request: maintainers raise
-  it on `main` with `npm run coverage:ratchet`.
+- `npm test`: the unit tests with coverage. Every file in `src/`, `scripts/`
+  and `lint/` needs 99% of its lines, branches, functions and statements
+  covered, file by file, with no exceptions
+  ([ADR 0044](docs/adr/0044-coverage-per-file.md)).
 
 On a pull request, CI also runs `npm run test:changed` (99% of the lines it adds
 to `src/`, `scripts/` and `lint/`, and of the branches on them, must run under
