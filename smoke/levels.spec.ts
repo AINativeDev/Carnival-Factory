@@ -50,11 +50,13 @@ for (const login of logins) {
   test(`level ${login} walks from its arrival to every square and back home, quietly`, async ({
     page,
   }) => {
-    test.setTimeout(120_000);
     const problems = watch(page);
     const { default: level } = (await import(`../carnival/levels/${login}/level.ts`)) as {
       default: NorthPoleLevel;
     };
+    // Each stop is a walk, a visit of a second and a half and the way out: about 12 seconds on a
+    // laptop. A gallery of 14 items outlasts a flat two minutes, so the budget grows with the stops.
+    test.setTimeout(60_000 + 20_000 * ((level.squares?.length ?? 0) + 1));
     // The same squares the page finds: every squares/<id>/square.ts, if any.
     const folder = join(root, 'carnival', 'levels', login, 'squares');
     const ids = existsSync(folder)
