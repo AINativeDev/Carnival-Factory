@@ -138,7 +138,7 @@ test("a level's panel tells how it was built beside its map, clear of the way ho
     await expect(panel.getByRole('heading', { name: 'How it was built' })).toBeVisible();
     await expect(panel.locator('.story-step').first()).toContainText(`@${login}`);
     await expect(panel.locator('.visit-copy')).toBeVisible();
-    await expect(panel.locator('.visit-build')).toHaveText('Ask for a level of your own');
+    await expect(panel.locator('.visit-build')).toHaveText('Get a level');
     await expect(panel.locator('.visit-remix-link')).toBeHidden();
     const home = await page.locator('.hud-home').boundingBox();
     const box = await panel.boundingBox();

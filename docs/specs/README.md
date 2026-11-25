@@ -1,6 +1,6 @@
 # Specs
 
-These specs record what the North Pole Carnival does today: its behaviour, its
+These specs record what Carnival Factory – Christmas edition does today: its behaviour, its
 rules and the invariants a change must keep. They are for maintainers and
 agents checking a change, not a guide for participants. For those, see
 [How your request is built](../how-it-works.md), [booth ideas](../booth-ideas.md),
@@ -17,6 +17,9 @@ test, a smoke test, a workflow, a `tessl.json` trigger, a review lens, an
 assessment skill or the CSP in `square.html`. A rule nothing enforces yet says
 "(not enforced yet)", so the gaps are easy to find.
 
+The words they use, and the plainer ones visitors read on the page, are in
+the [glossary](../glossary.md).
+
 ## Index
 
 - [Map and world](map-and-world.md): the isometric world, plots, walking, the camera and the routes.
@@ -27,7 +30,7 @@ assessment skill or the CSP in `square.html`. A rule nothing enforces yet says
 - [Levels](levels.md): a participant's own world, as plain data, reached by sleigh.
 - [Booth and level requests](booth-requests.md): the issue forms, the assessment and the factory's actions.
 - [Auto-merge gate](auto-merge-gate.md): when a booth's pull request merges on its own.
-- [Construction sites](construction-sites.md): `pending.json` and the stages of a request.
+- [Construction sites](construction-sites.md): booths being built, `pending.json` and the stages of a request.
 - [Visit panel and history](visit-panel-and-history.md): the HUD inside a square, Share, credits and "How was this built?".
 - [Booths panel](booths-panel.md): search, sections and "This is me".
 - [Factory numbers](factory-numbers.md): the `#/factory` page.

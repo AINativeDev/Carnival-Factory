@@ -5,6 +5,7 @@
  * and the tests use them the same way. Points are in world pixels unless they
  * say otherwise.
  */
+import { SITE_NAME } from '../edition';
 import { squareOwner } from './north-pole-levels';
 import { findPathToFirst } from './pathfinding';
 import { tileOf } from './walking';
@@ -63,10 +64,9 @@ export function shareText(
 ): string {
   const what = square.kind === 'level' ? `${square.name}, a level,` : square.name;
   const owner = squareOwner(square.kind, square.id);
-  if (!owner)
-    return `${what} is at the North Pole Carnival. Come visit, and build a booth of your own: ${link}`;
+  if (!owner) return `${what} is at ${SITE_NAME}. Come visit, and get a booth too: ${link}`;
   const who = mine ? 'I' : `@${owner}`;
-  return `${who} built ${what} at the North Pole Carnival. Come visit, and build your own: ${link}`;
+  return `${who} built ${what} at ${SITE_NAME}. Come visit, and get a booth too: ${link}`;
 }
 
 /** Where a square's link-preview page is, from the site's root. */
@@ -113,17 +113,17 @@ export function tagText(
 ): { name: string; owner: string; line: string; hint: string } {
   if (plot.kind === 'site')
     return {
-      name: 'A booth under construction',
+      name: 'Being built',
       owner: '',
-      line: `Being built for @${plot.id ?? ''}: ${stage}`,
+      line: `Booth for @${plot.id ?? ''}: ${stage}`,
       hint: 'E or click to see the request',
     };
   if (plot.kind === 'open')
     return {
-      name: 'An open plot',
-      owner: 'For claim',
-      line: 'Describe a booth in an issue, and an agent builds it here.',
-      hint: 'E or click to claim this plot',
+      name: 'Free spot',
+      owner: '',
+      line: 'Ask for a booth, and an agent builds it here.',
+      hint: 'E or click to build your booth here',
     };
   return {
     name: square?.name ?? plot.id ?? '',

@@ -56,7 +56,7 @@ describe("a level's panel", () => {
     expect(share.value).toContain('@bo built Ice <b>Maze</b>, a level,');
     expect(share.value).toMatch(/#\/level\/bo$/);
     expect(the(card, '.visit-build').getAttribute('href')).toBe(LEVEL_REQUEST_URL);
-    expect(the(card, '.visit-build').textContent).toBe('Ask for a level of your own');
+    expect(the(card, '.visit-build').textContent).toBe('Get a level');
     for (const hidden of ['.visit-remix-link', '.visit-vote', '.visit-leave', '.visit-map'])
       expect(the(card, hidden).hidden).toBe(true);
     expect(the(card, '.visit-claim').hidden).toBe(true);

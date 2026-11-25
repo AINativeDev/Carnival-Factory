@@ -1,3 +1,4 @@
+import { SITE_NAME } from './edition';
 import { HOW_IT_WORKS_URL, OWN_REPO_URL } from './northpole/links';
 import { factoryFigures, factoryNote, type SquareCounts } from './factory-figures';
 import type { FactoryStats } from '../scripts/factory-stats';
@@ -32,7 +33,7 @@ export function openFactoryHud(frame: HTMLElement, options: FactoryHudOptions): 
   card.setAttribute('aria-labelledby', 'factory-title');
   card.innerHTML = `
     <p class="visit-leave"><span>Esc to go back to the map</span> <button class="visit-close" type="button">Leave</button></p>
-    <h2 id="factory-title" class="visit-title" tabindex="-1">The North Pole Carnival factory</h2>
+    <h2 id="factory-title" class="visit-title" tabindex="-1">The factory behind ${SITE_NAME}</h2>
     <p class="factory-intro">Every booth here began as an issue. A software factory built it, checked it and put it on the map.</p>
     <ul class="factory-figures"></ul>
     <p class="factory-note"></p>

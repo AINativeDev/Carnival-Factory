@@ -26,7 +26,7 @@ function renderNoSeason(app: HTMLElement, login: string) {
         <a href="#/">← Back to the map</a>
         <h1>No season yet</h1>
         <p class="description"></p>
-        <p class="booth-help"><a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim your booth</a> to start one.</p>
+        <p class="booth-help"><a href="${CLAIM_URL}" target="_blank" rel="noopener">Get a booth</a> to start one.</p>
       </div>
     </section>`;
   the(app, '.description', HTMLElement).textContent = `@${login} doesn't have a booth yet.`;

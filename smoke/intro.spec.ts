@@ -10,7 +10,7 @@ import { BOOTH_REQUEST_URL } from '../src/northpole/links';
 test.use({ storageState: { cookies: [], origins: [] } });
 
 const dialog = (page: Page) =>
-  page.getByRole('dialog', { name: 'Welcome to the North Pole Carnival' });
+  page.getByRole('dialog', { name: 'Welcome to Carnival Factory – Christmas edition' });
 
 const seen = (page: Page) => page.evaluate((key) => localStorage.getItem(key), INTRO_SEEN_KEY);
 
@@ -53,7 +53,7 @@ test('a click outside the intro closes it, marks it seen and gives focus back', 
   expect(await seen(page)).toBe('1');
 });
 
-test('"Build your own booth" opens the booth form in a new tab and closes the intro', async ({
+test('"Get a booth" opens the booth form in a new tab and closes the intro', async ({
   page,
   context,
 }) => {
@@ -63,7 +63,7 @@ test('"Build your own booth" opens the booth form in a new tab and closes the in
   await expect(dialog(page)).toBeVisible();
   const [form] = await Promise.all([
     page.waitForEvent('popup'),
-    page.getByRole('link', { name: 'Build your own booth' }).click(),
+    dialog(page).getByRole('link', { name: 'Get a booth' }).click(),
   ]);
   await form.waitForLoadState();
   expect(form.url()).toBe(BOOTH_REQUEST_URL);

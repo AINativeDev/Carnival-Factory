@@ -23,7 +23,7 @@ North Pole has levels of its own too, such as The Factory,
   and the way home stays clear. It shows the level's name (the map has no
   sign for it), "A level by @<login>" and its description, then **How it was
   built** from the level's own requests, then Share (the level's link,
-  `#/level/<login>`), "Want one of your own? Ask for a level of your own" (the
+  `#/level/<login>`), "Want one too? Get a level" (the
   level form) and **More**. A level has no Remix, no People's Choice vote and
   no Leave: the player walks on with the keys while it shows. Inside one of
   the level's squares, that square's panel takes its place, and it comes back

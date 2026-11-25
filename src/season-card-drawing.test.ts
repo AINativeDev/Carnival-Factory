@@ -16,7 +16,7 @@ describe('drawCard', () => {
     const calls = drawingOf((ctx) => {
       drawCard(ctx, 'ana', "Ana's cocoa", booth, lines);
     });
-    expect(fingerprint(calls)).toBe('8c351ba7eec883e7 (200 calls)');
+    expect(fingerprint(calls)).toBe('1798e24e873aa3c5 (200 calls)');
     expect(calls).toContainEqual(['fillText', '@ana', 319, 88, 261]);
   });
 
@@ -24,7 +24,7 @@ describe('drawCard', () => {
     const calls = drawingOf((ctx) => {
       drawCard(ctx, 'ana', "Ana's cocoa", booth, []);
     });
-    expect(fingerprint(calls)).toBe('2b0986a7923101ba (215 calls)');
+    expect(fingerprint(calls)).toBe('5e1872f10d9664fe (215 calls)');
   });
 });
 

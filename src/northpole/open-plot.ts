@@ -1,7 +1,8 @@
 /**
- * An open plot waiting for a booth: fresh snow roped off between stakes, a soft
- * beam of light rising from it, and a big "For claim" sign that bounces while
- * the player stands at it, inviting them to ask for a booth of their own.
+ * An open plot waiting for a booth, which visitors see as a free spot: fresh
+ * snow roped off between stakes, a soft beam of light rising from it, and a
+ * big "Free spot" sign that bounces while the player stands at it, inviting
+ * them to ask for a booth of their own (docs/glossary.md).
  */
 import { corners, diamond, middle } from './brushes';
 import { sidesOf } from './rounds';
@@ -10,12 +11,12 @@ import type { Box, Plot, Tile } from './world';
 
 const { colors } = theme;
 
-/** The "For claim" sign on an open plot: how tall its post is, and its board's size, in world pixels. */
-export const CLAIM_SIGN = { post: 96, w: 128, h: 40 };
+/** The "Free spot" sign on an open plot: how tall its post is, and its board's size, in world pixels. */
+export const FREE_SPOT_SIGN = { post: 96, w: 128, h: 40 };
 
 /**
  * An open plot: a square of fresh snow roped off between stakes, a soft beam
- * of light rising from it, and a big "For claim" sign on a tall post. The sign
+ * of light rising from it, and a big "Free spot" sign on a tall post. The sign
  * bounces while the player stands at the plot. Everything moves with `time`,
  * so it all stands still when the map passes 0.
  */
@@ -84,7 +85,7 @@ function claimRope(ctx: CanvasRenderingContext2D, c: ReturnType<typeof corners>)
 
 /** The sign on its tall post at (`x`, `y`), raised by `lift`; returns where a click opens the plot. */
 function claimSign(ctx: CanvasRenderingContext2D, { x, y }: Tile, lift: number): Box {
-  const { post, w, h } = CLAIM_SIGN;
+  const { post, w, h } = FREE_SPOT_SIGN;
   ctx.fillStyle = colors.cocoa;
   ctx.fillRect(x - 3, y - post, 6, post);
   const top = y - post - h / 2 - lift;
@@ -98,7 +99,7 @@ function claimSign(ctx: CanvasRenderingContext2D, { x, y }: Tile, lift: number):
   ctx.font = canvasFont('body', 'bold');
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('For claim', x, top + h / 2, w - 12);
+  ctx.fillText('Free spot', x, top + h / 2, w - 12);
   ctx.textBaseline = 'alphabetic';
   const reach = post + h / 2 + 16;
   return { x: x - w / 2 - 8, y: y - reach, w: w + 16, h: reach + 24 };

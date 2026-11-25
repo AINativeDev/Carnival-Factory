@@ -1,3 +1,4 @@
+import { SITE_NAME } from './edition';
 import { REPO_URL } from './northpole/links';
 
 /**
@@ -12,7 +13,7 @@ export function renderKeepPosted(app: HTMLElement) {
         <a href="#/">← Back to the map</a>
         <h1>Keep me posted</h1>
         <p class="description">
-          The list for news about the next North Pole event opens soon. Nothing is
+          The list for news about the next edition of ${SITE_NAME} opens soon. Nothing is
           collected on this page. In the meantime, watch the repository on GitHub
           for updates.
         </p>

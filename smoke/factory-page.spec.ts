@@ -22,7 +22,7 @@ for (const viewport of [
     await page.getByRole('link', { name: 'Built with Tessl' }).click();
     await expect(page).toHaveURL(/#\/factory$/);
     const panel = page.locator('.factory');
-    await expect(panel.getByRole('heading')).toHaveText('The North Pole Carnival factory');
+    await expect(panel.getByRole('heading')).toHaveText('The factory behind Carnival Factory');
     await expect(panel.getByRole('heading')).toBeFocused();
     await expect(panel.locator('.factory-figure').first()).toContainText(`${booths.length} booth`);
     await expect(panel.getByRole('link', { name: 'Run this on your own repo' })).toBeVisible();
@@ -54,7 +54,7 @@ for (const viewport of [
     await expect(panel).toHaveCount(0);
 
     const share = await (await request.get('share/factory.html')).text();
-    expect(share).toContain('<title>The North Pole Carnival factory</title>');
+    expect(share).toContain('<title>The factory behind Carnival Factory</title>');
     expect(share).toContain('url=../#/factory');
     expect(share).not.toMatch(/<script/i);
     expect(problems).toEqual([]);

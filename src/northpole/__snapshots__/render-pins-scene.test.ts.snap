@@ -2,8 +2,8 @@
 
 exports[`the scene, pinned before the renderer split > draws every thing the same 1`] = `
 {
-  "arch 0.2": "c6aa4b8cabd1ff42 (1064 calls)",
-  "arch 0.8": "c6aa4b8cabd1ff42 (1064 calls)",
+  "arch 0.2": "e73600d976751677 (1056 calls)",
+  "arch 0.8": "e73600d976751677 (1056 calls)",
   "banner 0.2": "e20f735723cbadc3 (100 calls)",
   "banner 0.8": "e20f735723cbadc3 (100 calls)",
   "bench 0.2": "2fbf7057b0ffcc1c (108 calls)",
