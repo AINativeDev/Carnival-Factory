@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { drawingOf, fingerprint } from '../test-support/recording-canvas';
-import { drawRoom, drawRoomPerson, roomArea, roomLayout } from './interior';
+import { roomArea, roomLayout } from './interior';
+import { drawRoom, drawRoomPerson } from './interior-room';
 import { theme } from './theme';
 
 /**

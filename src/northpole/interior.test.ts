@@ -4,7 +4,6 @@ import {
   DOOR,
   ENTRANCE,
   fadeAt,
-  portraitBox,
   roomArea,
   roomLayout,
   roomToScreen,
@@ -70,9 +69,9 @@ describe('walking inside', () => {
 
   it('sends a click on the floor there, and one on the doorway out', () => {
     const floor = roomToScreen(laptop, { x: 0.3, y: 0.5 });
-    const to = clickInRoom(laptop, floor)!;
-    expect(to.out).toBe(false);
-    expect(to.to.x).toBeCloseTo(0.3);
+    const to = clickInRoom(laptop, floor);
+    expect(to?.out).toBe(false);
+    expect(to?.to.x).toBeCloseTo(0.3);
     const door = roomToScreen(laptop, { x: 0.5, y: 1 });
     expect(clickInRoom(laptop, { x: door.x, y: door.y + 4 })?.out).toBe(true);
     expect(clickInRoom(laptop, { x: laptop.centre, y: laptop.stage.y })).toBeUndefined();
@@ -86,19 +85,5 @@ describe('the fade in and out', () => {
     expect(fadeAt(250, 500)).toBe(1);
     expect(fadeAt(125, 500)).toBeCloseTo(0.5);
     expect(fadeAt(500, 500)).toBe(0);
-  });
-});
-
-describe("the owner's portrait on the wall", () => {
-  it('hangs left of the stage, on the back wall, when there is room', () => {
-    const room = roomLayout(roomArea(1200, 800));
-    const box = portraitBox(room)!;
-    expect(box.x + box.w).toBeLessThan(room.stage.x);
-    expect(box.x).toBeGreaterThan(room.centre - room.backHalf);
-    expect(box.y).toBeGreaterThanOrEqual(room.stage.y);
-  });
-
-  it('is left out of a room too small for it', () => {
-    expect(portraitBox(roomLayout({ x: 0, y: 0, w: 120, h: 100 }))).toBeUndefined();
   });
 });

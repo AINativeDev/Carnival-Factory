@@ -61,8 +61,6 @@ import type { NorthPoleSquare, SquarePointer } from './square';
 import { canvasFont, theme } from './theme';
 import {
   clickInRoom,
-  drawRoom,
-  drawRoomPerson,
   ENTRANCE,
   fadeAt,
   FADE,
@@ -71,6 +69,7 @@ import {
   roomLayout,
   stepInRoom,
 } from './interior';
+import { drawRoom, drawRoomPerson } from './interior-room';
 import { dressRoom } from './room-dressing';
 import { nearestOpenPlot, nearYou, placeTag, platformTag, tagText, targetAt } from './visit';
 import {

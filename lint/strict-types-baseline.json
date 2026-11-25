@@ -40,7 +40,6 @@
   "src/main.ts": 5,
   "src/northpole/attractions.test.ts": 1,
   "src/northpole/camera.test.ts": 4,
-  "src/northpole/diorama.ts": 24,
   "src/northpole/frame-protocol.ts": 6,
   "src/northpole/level.test.ts": 1,
   "src/northpole/map.ts": 14,
