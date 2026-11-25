@@ -6,6 +6,7 @@
  */
 import type { MapRun } from './map-state';
 import { drawReindeer } from './people';
+import { addRider } from './ride-draw';
 import { type Look } from './people';
 import { drawPerson } from './people';
 import { theme } from './theme';
@@ -63,6 +64,11 @@ export function addCrowd(m: MapRun, add: AddToScene, time: number, motion: numbe
 
 /** The player, with a marker over their head so they can find themselves, bigger when the camera is far. */
 export function addPlayer(m: MapRun, add: AddToScene, time: number, still: boolean) {
+  // In a ride level the player sits in the coaster's car.
+  if (m.ride) {
+    addRider(m.ctx, m.ride, add, still ? 0 : time, m.zoom);
+    return;
+  }
   const { ctx, player } = m;
   add(player.x + player.y, () => {
     drawPerson(ctx, player, PLAYER, m.facing, m.moving, time);

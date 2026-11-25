@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { levelWorld, type NorthPoleLevel } from './level';
 import { validateLevel } from './level-check';
-import { LEVEL_PROPS } from './level-props';
+import { hangsOnWall, LEVEL_PROPS } from './level-props';
 import { walkable } from './walking';
 import { key } from './world';
 
@@ -38,6 +38,9 @@ describe('the show in the catalogue', () => {
           'lantern',
           'coaster',
           'coaster-loop',
+          'coaster-lift',
+          'coaster-drop',
+          'coaster-station',
         ] as const
       ).map((kind) => {
         const { w, h, blocks } = LEVEL_PROPS[kind];
@@ -60,11 +63,15 @@ describe('the show in the catalogue', () => {
       lantern: '1x1 open',
       coaster: '1x1 open',
       'coaster-loop': '1x1',
+      'coaster-lift': '1x1 open',
+      'coaster-drop': '1x1 open',
+      'coaster-station': '1x1 open',
     });
   });
 
-  it('places every one of them in a level that keeps the rules', () => {
+  it('places every one that stands on the ground in a level that keeps the rules', () => {
     for (const kind of Object.keys(LEVEL_PROPS) as (keyof typeof LEVEL_PROPS)[]) {
+      if (hangsOnWall(kind)) continue;
       expect(validateLevel(open([{ kind, x: 6, y: 6, variant: 0.5 }]), 'someone')).toEqual([]);
     }
   });
@@ -102,6 +109,11 @@ describe('the show in the catalogue', () => {
         'someone',
       ),
     ).toEqual(['prop 1, a carousel, stands on prop 0, a juggler, at 7, 7']);
+  });
+
+  it('lets coaster track cross the water on its posts', () => {
+    expect(validateLevel(open([{ kind: 'coaster', x: 14, y: 5 }]), 'someone')).toEqual([]);
+    expect(validateLevel(open([{ kind: 'coaster-loop', x: 14, y: 6 }]), 'someone')).toEqual([]);
   });
 
   it("won't let a ride shut a square away from visitors", () => {

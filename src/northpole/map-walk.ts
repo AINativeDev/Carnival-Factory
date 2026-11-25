@@ -5,6 +5,7 @@
  * drawing, since it's the one part of a frame that moves the player.
  */
 import { ROOM_SPEED, stepInRoom } from './interior';
+import { rideAlong } from './ride-map';
 import type { MapRun } from './map-state';
 import { toScreen, type Tile } from './world';
 import { screenDirection } from './walking';
@@ -33,6 +34,8 @@ export const KEYS: Partial<Record<string, [number, number]>> = {
 
 /** Moves the player on for `dt` seconds, with the keys held or along their path. */
 export function walk(m: MapRun, dt: number) {
+  // In a ride level the car carries the player instead, until they go inside a square.
+  if (m.ride && rideAlong(m, m.ride, dt)) return;
   let right = 0;
   let down = 0;
   for (const [x, y] of m.held.values()) {

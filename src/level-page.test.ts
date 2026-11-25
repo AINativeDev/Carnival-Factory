@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { jumpInLevel, renderLevel } from './level-page';
 import { visit } from './page';
-import { lastHud, lastMap, newPage, resetFakes } from './test-support/page-fakes';
+import { lastHud, lastMap, levelsModule, newPage, resetFakes } from './test-support/page-fakes';
 
 vi.mock('./northpole/map', async () => (await import('./test-support/page-fakes')).mapModule);
 vi.mock('./northpole/booths', async () => (await import('./test-support/page-fakes')).boothsModule);
@@ -28,6 +28,22 @@ afterEach(() => {
 const note = (page: ReturnType<typeof newPage>) => page.app.querySelector<HTMLElement>('.map-note');
 
 describe('renderLevel', () => {
+  it("rides a ride level's coaster, with the ride's keys in its Controls", () => {
+    const level = levelsModule.levelOf('ana')?.level;
+    if (!level) throw new Error('no level for ana');
+    level.ride = true;
+    try {
+      const page = newPage();
+      renderLevel(page, 'ana');
+      expect(lastMap().options.level).toMatchObject({ id: 'ana', ride: true });
+      const controls = page.app.querySelector('.hud-controls p')?.textContent;
+      expect(controls).toContain('to ride on to the next station');
+      expect(controls).not.toContain('Walk with');
+    } finally {
+      delete level.ride;
+    }
+  });
+
   it("walks the level's own world, with its squares and the sleigh home", () => {
     const page = newPage();
     renderLevel(page, 'ana');

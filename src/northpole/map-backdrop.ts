@@ -18,8 +18,25 @@ import { theme } from './theme';
 
 const { colors } = theme;
 
-/** The sky, the northern lights, the clouds and the mountains, and the dusk deepening over them. */
+/** The sky, the northern lights, the clouds and the mountains, and the dusk deepening over them; or, indoors, the dark round the room. */
 export function drawBackdrop(m: MapRun, width: number, height: number, motion: number) {
+  const { ctx, scale } = m;
+  if (m.world.indoor) {
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.fillStyle = colors.night;
+    ctx.fillRect(0, 0, width, height);
+  } else drawSky(m, width, height, motion);
+  // A level's sky takes on its theme's colour.
+  if (m.options.level) {
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = m.options.level.tint;
+    ctx.fillRect(0, 0, width, height);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/** The sky, the northern lights, the clouds and the mountains, and the dusk deepening over them. */
+function drawSky(m: MapRun, width: number, height: number, motion: number) {
   const { ctx, scale } = m;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.drawImage(m.layers.sky.canvas, 0, 0);
@@ -32,13 +49,6 @@ export function drawBackdrop(m: MapRun, width: number, height: number, motion: n
   ctx.globalAlpha = 0.3 * duskAt(motion);
   ctx.fillStyle = colors.night;
   ctx.fillRect(0, 0, width, height);
-  // A level's sky takes on its theme's colour.
-  if (m.options.level) {
-    ctx.globalAlpha = 0.18;
-    ctx.fillStyle = m.options.level.tint;
-    ctx.fillRect(0, 0, width, height);
-  }
-  ctx.globalAlpha = 1;
 }
 
 /** The island's ground in world pixels: its snow and water, the lamps' pools, the footprints and the back lights. */
@@ -50,17 +60,17 @@ export function drawGround(m: MapRun, motion: number) {
   drawFootprints(m);
   drawTrail(m);
   ctx.globalAlpha = 1;
-  drawStringLights(ctx, m.island, false, motion);
+  if (!m.world.indoor) drawStringLights(ctx, m.island, false, motion);
 }
 
 /** The island's front fence and its lights, over what stands behind them. */
 export function drawFront(m: MapRun, motion: number) {
   const { ctx, groundBox } = m;
   ctx.drawImage(m.layers.front.canvas, groundBox.x, groundBox.y, groundBox.w, groundBox.h);
-  drawStringLights(ctx, m.island, true, motion);
+  if (!m.world.indoor) drawStringLights(ctx, m.island, true, motion);
 }
 
-/** Snow falling over the whole screen, unless nothing should move. */
+/** Snow falling over the whole screen, unless nothing should move or it's indoors. */
 export function drawWeather(
   m: MapRun,
   width: number,
@@ -69,7 +79,7 @@ export function drawWeather(
   still: boolean,
 ) {
   m.ctx.setTransform(m.scale, 0, 0, m.scale, 0, 0);
-  if (!still) drawSnowfall(m.ctx, width, height, time);
+  if (!still && !m.world.indoor) drawSnowfall(m.ctx, width, height, time);
 }
 
 /** The fade's black over the view. */

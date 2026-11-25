@@ -7,6 +7,7 @@
  */
 import { drawBillboard } from './billboard';
 import { middle } from './brushes';
+import { drawDisplay } from './display';
 import { drawArch, drawBanner, drawBunting } from './entrance';
 import { drawCabin, drawStable } from './houses';
 import { drawTent, drawWheel } from './midway';
@@ -79,6 +80,7 @@ export function drawPlot(
   // An attraction stands as the landmark it asked for: only attractions keep one (frame-protocol.ts, stallFor).
   const landmark = attraction ? square.stall?.landmark : undefined;
   if (landmark) return LANDMARK_DRAWERS[landmark](ctx, plot, square, paint, time);
+  if (attraction && square.stall?.display) return drawDisplay(ctx, plot, square, paint);
   // An attraction with no stall is a pavilion. A level's square stands on an
   // attraction's plot too, but it's a stall like a booth's, signed by nobody.
   const levelSquare = 'kind' in square && square.kind === 'level';

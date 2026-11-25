@@ -86,23 +86,26 @@ const isThemeColor = (value: unknown): value is ThemeColor =>
  * Checks a square's stall option: a `shape` from `STALL_SHAPES`, a `roof`
  * that names a `theme` colour, a `trim` that is missing or names one too, a
  * `landmark` that is missing or one of `LANDMARKS`, and `letters` that are
- * missing or one to six capitals. Anything else gives undefined, and the map
- * draws the stall the square's id picks. Only those fields are kept.
+ * missing or one to six capitals, and a `display` that is missing or a
+ * boolean, kept only when it's true. Anything else gives undefined, and the
+ * map draws the stall the square's id picks. Only those fields are kept.
  */
 export function readStall(value: unknown): StallStyle | undefined {
   if (typeof value !== 'object' || value === null) return undefined;
-  const { shape, roof, trim, landmark, letters } = value as Record<string, unknown>;
+  const { shape, roof, trim, landmark, letters, display } = value as Record<string, unknown>;
   if (!isOneOf(STALL_SHAPES, shape) || !isThemeColor(roof)) return undefined;
   if (trim !== undefined && !isThemeColor(trim)) return undefined;
   if (landmark !== undefined && !isOneOf(LANDMARKS, landmark)) return undefined;
   if (letters !== undefined && (typeof letters !== 'string' || !LANDMARK_LETTERS.test(letters)))
     return undefined;
+  if (display !== undefined && typeof display !== 'boolean') return undefined;
   return {
     shape,
     roof,
     ...(trim === undefined ? {} : { trim }),
     ...(landmark === undefined ? {} : { landmark }),
     ...(letters === undefined ? {} : { letters }),
+    ...(display === true ? { display } : {}),
   };
 }
 
@@ -113,7 +116,8 @@ const isOneOf = <T extends string>(list: readonly T[], value: unknown): value is
 /**
  * The stall a square of `kind` may stand in: an attraction keeps all of it, a
  * booth or a level's square loses any landmark and its letters, since only
- * the North Pole's own attractions stand as landmarks (ADR 0042).
+ * the North Pole's own attractions stand as landmarks (ADR 0042). A level's
+ * square keeps its `display` (ADR 0040); a booth never stands as one.
  */
 export function stallFor(kind: SquareKind, stall: StallStyle | undefined): StallStyle | undefined {
   if (!stall || kind === 'attraction') return stall;
@@ -121,6 +125,7 @@ export function stallFor(kind: SquareKind, stall: StallStyle | undefined): Stall
     shape: stall.shape,
     roof: stall.roof,
     ...(stall.trim === undefined ? {} : { trim: stall.trim }),
+    ...(kind === 'level' && stall.display ? { display: true } : {}),
   };
 }
 

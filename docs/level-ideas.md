@@ -8,7 +8,7 @@ describe, so a little detail goes a long way. Borrow freely from anything here.
 ## What a level is made of
 
 - **Ground:** snow everywhere, with paths, ice, water and wooden bridges where
-  you want them.
+  you want them, or a wooden floor and carpet indoors.
 - **Props** from the North Pole's own catalogue: pines, snowdrifts, log cabins,
   lamps, fences, the reindeer stable, sleighs, a big decorated tree, striped
   tents, benches, cocoa carts, banners, bunting, and one frozen pond that
@@ -30,12 +30,30 @@ describe, so a little detail goes a long way. Borrow freely from anything here.
 - **A roller coaster:** `coaster` track on posts that people walk under, and
   `coaster-loop` loop-the-loops, one tile each. Lay the pieces side by side in
   the order the ride goes, put loops on straight runs, and a golden ticket
-  rides it from the first piece to the last.
+  rides it from the first piece to the last. A `coaster-lift` is a lift hill
+  with a chain that pulls the car up slowly, a `coaster-drop` is quick, and a
+  `coaster-station` is a platform under a canopy. Give a piece a higher
+  variant to lift its rail, up to four times as high, so the track climbs,
+  crests and dips. Track may cross water.
+- **A ride, instead of a walk:** say the whole level should be ridden, and
+  visitors ride the coaster in the golden ticket car instead of walking. The
+  track runs round from a station where they arrive, by the sleigh home, with
+  a station at every square's door; the car stops at each one, and they ride
+  on with Space, the right arrow or a tap. The Factory is one.
+- **Indoors, if you like:** a level can be a room instead of an island, with
+  a wooden floor, carpet where you want it, and two back walls. Furnish it
+  with a `plant`, a bookshelf (`shelf`), a `rug`, a `sofa`, pupils' desks or
+  a teacher's `desk`, a `globe`, a `spotlight` and `cable`s on the floor, and
+  hang a `wall-window`, a `blackboard`, a `projector-screen`,
+  `acoustic-panel`s, an `on-air-light` or a pair of doors (`wall-door`) on
+  the walls. The Academy and The Recording Studio are rooms like this.
 - **Squares of its own,** up to 8: little animated scenes on stalls, each drawn
   like a booth, that visitors walk into. Each stall can be any of the booth
   shapes in [Booth ideas](booth-ideas.md#your-stall), such as an igloo, a
   windmill, a lighthouse or a pagoda, so the level doesn't look like one stall
   over and over.
+  In a room, a square can stand on a small display instead, an item for
+  visitors to find, with its drawing on a framed card.
 - **Where visitors arrive,** and a sleigh back to the North Pole.
 - **A theme** from the North Pole's palette: dusk, aurora night, candy cane,
   frozen lake or gingerbread.
@@ -83,6 +101,8 @@ A few things that help:
   bakery, a candy-cane mill and an icing workshop.
 - **Aurora camp:** tents round a clearing under the northern lights, pines,
   and squares for a stargazing telescope, a campfire and a lantern maker.
+- **Toy workshop indoors:** a room with workbenches as squares, shelves of
+  toys, a rug by the fire, and windows with the snow falling outside.
 - **Toy harbour:** water with bridges, a dock of sleighs, and squares for a
   boat builder and a lighthouse keeper.
 

@@ -53,6 +53,11 @@ export interface StallStyle {
   landmark?: Landmark;
   /** For a `tower` landmark only: up to six capitals down its front. */
   letters?: string;
+  /**
+   * For an attraction or a level's square only: stand as an item to discover,
+   * a framed card on a low plinth with a cloth in the `roof` colour (ADR 0040).
+   */
+  display?: boolean;
 }
 
 /**

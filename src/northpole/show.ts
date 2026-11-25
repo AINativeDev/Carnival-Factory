@@ -1,11 +1,24 @@
 /**
- * The performers, rides and factory dressing a level may place from its
- * catalogue: the lively part of a level, drawn by the map like any other thing on the snow
- * (`drawThing` in `render.ts` hands them here). Each one moves only from
- * `time` and its variant, so two jugglers don't throw in step.
+ * The performers, rides, factory dressing and indoor furniture a level may
+ * place from its catalogue: the part of a level the map's own scenery doesn't
+ * have, drawn by the map like any other thing on the ground (`drawThing` in
+ * `render.ts` hands them here). Each one moves only from `time` and its
+ * variant, so two jugglers don't throw in step.
  */
 import { drawCarousel } from './carousel';
+import { drawDesk, drawGlobe } from './classroom';
+import { drawPlant, drawRug, drawShelf, drawSofa } from './furniture';
+import { drawCable, drawSpotlight } from './studio-gear';
+import {
+  drawAcousticPanel,
+  drawBlackboard,
+  drawOnAirLight,
+  drawProjectorScreen,
+  drawWallDoor,
+  drawWallWindow,
+} from './wall-things';
 import { drawCoaster, drawCoasterLoop } from './coaster';
+import { drawCoasterDrop, drawCoasterLift, drawCoasterStation } from './coaster-fittings';
 import { drawFireBreather, drawJuggler, drawStiltWalker } from './performers';
 import { drawBalloon, drawFerrisWheel } from './rides';
 import { drawAcrobats, drawBand, drawStrongman } from './troupe';
@@ -31,10 +44,31 @@ const SHOW = {
   lantern: drawLantern,
   coaster: drawCoaster,
   'coaster-loop': drawCoasterLoop,
+  'coaster-lift': drawCoasterLift,
+  'coaster-drop': drawCoasterDrop,
+  'coaster-station': drawCoasterStation,
+  // An indoor level's furniture, and what hangs on its walls (ADR 0040).
+  plant: drawPlant,
+  shelf: drawShelf,
+  rug: drawRug,
+  sofa: drawSofa,
+  desk: drawDesk,
+  globe: drawGlobe,
+  spotlight: drawSpotlight,
+  cable: drawCable,
+  'acoustic-panel': drawAcousticPanel,
+  'wall-window': drawWallWindow,
+  blackboard: drawBlackboard,
+  'projector-screen': drawProjectorScreen,
+  'on-air-light': drawOnAirLight,
+  'wall-door': drawWallDoor,
 } as const satisfies Record<string, Draw>;
 
-/** A performer, a ride or a piece of factory dressing: the things a level's show is made of. */
+/** A performer, a ride, a piece of factory dressing or furniture: the things a level adds to the map's scenery. */
 export type ShowKind = keyof typeof SHOW;
+
+/** What lies flat on the ground, under everything standing, so it's drawn first and people walk over it. */
+export const FLAT: ReadonlySet<string> = new Set(['drift', 'rug', 'cable']);
 
 /** Draws a performer or a ride standing on the snow. */
 export function drawShow(

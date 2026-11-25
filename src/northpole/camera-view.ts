@@ -1,14 +1,19 @@
 /**
  * The camera as a viewport sees it: turning a point in the viewport into the
  * world and back, and where fingers move the camera as they drag or pinch the
- * map. It's apart from `camera.ts`, which decides how the island is framed,
+ * map, or the wheel and the zoom buttons zoom it. It's apart from `camera.ts`, which decides how the island is framed,
  * because this follows the visitor's own hands, a frame at a time.
  */
 import { frameCentre } from './camera';
 import type { Box, Tile } from './world';
 
-/** How near two fingers can pinch the camera in. */
+/** How near two fingers, the zoom buttons, the keys or the wheel can bring the camera in. */
 export const MAX_PINCH_ZOOM = 1.5;
+/** How much nearer, or farther, one press of a zoom button or key takes the camera. */
+export const ZOOM_STEP = 1.25;
+/** How fast the wheel zooms, per pixel it turns, and how fast a pinch on a trackpad does, which turns it less. */
+const WHEEL_RATE = 0.002;
+const TRACKPAD_PINCH_RATE = 0.01;
 
 /** The world point under a point in a viewport, for a camera at `centre` and `zoom`. */
 export function screenToWorld(
@@ -89,4 +94,28 @@ export function pinchCentre(
     x: held.x - (to.x - width / 2) / next,
     y: held.y - (to.y - height / 2) / next,
   });
+}
+
+/**
+ * The zoom one step of a zoom button, a key or the wheel takes the camera to,
+ * from `zoom` by `factor`: never farther than `min`, the whole island, nor
+ * nearer than `MAX_PINCH_ZOOM`. A camera a walk took past a limit stays where
+ * it is rather than jump the other way.
+ */
+export function zoomBy(zoom: number, factor: number, min: number): number {
+  const nearest = Math.max(min, MAX_PINCH_ZOOM);
+  if (factor > 1 ? zoom >= nearest : zoom <= min) return zoom;
+  return pinchZoom(zoom, 1, factor, min);
+}
+
+/**
+ * How much nearer one turn of the wheel takes the camera: up is nearer, down
+ * farther. `mode` is the WheelEvent's deltaMode (pixels, lines or pages of
+ * `page` pixels); a trackpad pinch comes as the wheel with `pinch` (ctrlKey)
+ * set, in smaller turns. One turn never more than doubles or halves it.
+ */
+export function wheelZoom(delta: number, mode: number, pinch: boolean, page: number): number {
+  const pixels = delta * (mode === 1 ? 16 : mode === 2 ? page : 1);
+  const factor = Math.exp(-pixels * (pinch ? TRACKPAD_PINCH_RATE : WHEEL_RATE));
+  return Math.min(2, Math.max(0.5, factor));
 }

@@ -72,6 +72,12 @@ describe('stallFor: only an attraction stands as a landmark', () => {
     expect(stallFor('attraction', asked)).toEqual(asked);
   });
 
+  it("keeps a level square's display, never a booth's (ADR 0040)", () => {
+    const item = { shape: 'kiosk', roof: 'mint', display: true } as const;
+    expect(stallFor('level', item)).toEqual(item);
+    expect(stallFor('booth', item)).toEqual({ shape: 'kiosk', roof: 'mint' });
+  });
+
   it("drops a booth's or a level square's landmark, keeping its stall", () => {
     for (const kind of ['booth', 'level'] as const)
       expect(stallFor(kind, asked)).toEqual({ shape: 'tent', roof: 'berry' });
@@ -81,5 +87,24 @@ describe('stallFor: only an attraction stands as a landmark', () => {
       roof: 'berry',
       trim: 'gold',
     });
+  });
+});
+
+describe('readStall: a display (ADR 0040)', () => {
+  it('keeps it only when it is true', () => {
+    expect(readStall({ shape: 'kiosk', roof: 'mint', display: true })).toEqual({
+      shape: 'kiosk',
+      roof: 'mint',
+      display: true,
+    });
+    expect(readStall({ shape: 'kiosk', roof: 'mint', display: false })).toEqual({
+      shape: 'kiosk',
+      roof: 'mint',
+    });
+  });
+
+  it('drops the whole option for anything but a boolean', () => {
+    for (const display of ['yes', 1, null, {}])
+      expect(readStall({ shape: 'kiosk', roof: 'mint', display })).toBeUndefined();
   });
 });

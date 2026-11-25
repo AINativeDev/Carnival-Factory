@@ -13,7 +13,10 @@ import { islandBox, layoutOf, layWorld } from './map-plan';
 import { trackPointer } from './map-pointer';
 import { remembered, type MapRun } from './map-state';
 import { makeTag } from './map-tag';
+import { makeZoomButtons } from './map-zoom-buttons';
 import { landedBooths } from './plots';
+import { startRide } from './ride';
+import { boardAt, makeRideButton } from './ride-map';
 
 /** A new running map for these options: the world laid out, the player placed, nothing drawn yet. */
 export function openRun(
@@ -26,6 +29,7 @@ export function openRun(
   const world = layWorld(options, list);
   const boothIds = new Set(options.booths.map((square) => square.id));
   const island = islandCorners(world);
+  const ride = options.level?.ride ? startRide(world.things) : undefined;
   const m: MapRun = {
     options,
     frame,
@@ -69,7 +73,7 @@ export function openRun(
     dragging: undefined,
     fingers: new Map(),
     pinching: undefined,
-    closer: 1,
+    chosen: undefined,
     near: undefined,
     scale: 1,
     last: undefined,
@@ -84,6 +88,7 @@ export function openRun(
     hovered: undefined,
     tagged: undefined,
     tag: makeTag(frame),
+    zoomButtons: makeZoomButtons(frame),
     frameId: 0,
     frames: 0,
     slowest: 0,
@@ -91,11 +96,15 @@ export function openRun(
     targets: [],
     held: new Map(),
     pointer: trackPointer(canvas),
+    ride,
+    rideButton: ride && makeRideButton(frame),
     layers: { sky: layer(1, 1), mountains: layer(1, 1), ground: layer(1, 1), front: layer(1, 1) },
-    groundBox: islandBox(island),
+    groundBox: islandBox(island, world.indoor),
   };
   // The player starts at the square the page opened on, else where they last stood in this world.
   m.selected = options.focus ? plotOf(m, options.focus.kind, options.focus.id) : undefined;
   m.player = m.selected ? { ...m.selected.door } : (remembered.get(m.place) ?? { ...world.start });
+  // In a ride level they're in the car instead, at that door's station, or at the first.
+  boardAt(m, m.player);
   return m;
 }

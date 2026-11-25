@@ -11,6 +11,7 @@ import { drawFrontFence } from './island';
 import { setSpriteResolution } from './pines';
 import { drawSky } from './sky';
 import { drawIsland } from './island';
+import { drawRoom } from './room';
 
 /** The widest or tallest the island's cached layers get, in device pixels. */
 const LAYER_MAX = 4096;
@@ -48,11 +49,14 @@ export function resize(m: MapRun) {
     draw(made.ctx);
     return made;
   };
+  // An indoor level is a room: walls at the back, and nothing along its front edges (ADR 0040).
+  const indoor = m.world.indoor === true;
   m.layers.ground = island((ctx) => {
-    drawIsland(ctx, m.world, m.island, SLAB);
+    if (indoor) drawRoom(ctx, m.world, m.island);
+    else drawIsland(ctx, m.world, m.island, SLAB);
   });
   m.layers.front = island((ctx) => {
-    drawFrontFence(ctx, m.island);
+    if (!indoor) drawFrontFence(ctx, m.island);
   });
   setSpriteResolution(nearest * m.scale);
 }

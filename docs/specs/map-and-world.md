@@ -35,10 +35,22 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   turns to a hand over it (`src/northpole/billboard.ts`).
 - "Get a booth" walks the player to the nearest free spot. "Show the whole
   island" toggles the overview.
+- Zoom, on every device and on levels too: a "+" and "−" pair of buttons
+  ("Zoom in", "Zoom out") to the left of "Show the whole island", above "Get
+  a booth" on a phone, and in the bottom-right corner on a level; the `+` or
+  `=` and `-` keys, unless typing in a field or with Ctrl, Cmd or Alt; and the
+  wheel over the map, or a trackpad's pinch (the wheel with Ctrl), round the
+  pointer, which keeps the page from scrolling under the map. Each button
+  turns off at its limit. The zoom the visitor chooses, by any of these or by
+  pinching, stays while the player walks, and the overview going on or off
+  lets go of it. Inside a square nothing zooms, and the wheel scrolls the page.
+  The Controls hint says "+ / − to zoom".
 - Camera: a viewport under 720 CSS pixels wide is a phone. On a laptop the
   camera fits the carnival and comes in by up to 0.35 while the player walks,
-  never nearer than 1.25. On a phone it follows the player at 0.75. A pinch
-  goes no farther out than the whole island and no nearer than 1.5. The camera
+  never nearer than 1.25. On a phone it follows the player at 0.75. A pinch,
+  the zoom buttons, the keys and the wheel go no farther out than the whole
+  island and no nearer than 1.5; a walk that has taken the camera nearer than
+  1.5 never makes zooming in take it farther. The camera
   never shows past the island's bounds. A walk, or the overview, takes the
   camera back from where a finger left it.
 - The Booths and Controls panels start open on a wide map and folded on a phone.
@@ -82,6 +94,9 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   smoke/deep-links.spec.ts and smoke/levels.spec.ts).
 - An open page never reloads twice for the same build (enforced by:
   src/updates.test.ts).
+- The visitor's zoom stays between the whole island and 1.5, whatever zooms
+  it (enforced by: src/northpole/camera-view.test.ts,
+  src/northpole/map-zoom.test.ts, smoke/zoom.spec.ts).
 
 ## Where it lives
 
@@ -92,10 +107,12 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 `src/northpole/world-town.ts`, `src/northpole/world-sights.ts`,
 `src/northpole/groundwork.ts`, `src/northpole/walking.ts`,
 `src/northpole/pathfinding.ts`, `src/northpole/plots.ts`,
-`src/northpole/plots.json`, `src/northpole/camera.ts`, `src/northpole/camera-view.ts`,
+`src/northpole/plots.json`, `src/northpole/camera.ts`, `src/northpole/camera-view.ts`
+(the zoom's maths: `zoomBy`, `wheelZoom`),
 `src/northpole/map.ts` (starting the map and wiring it to the page) with its
 parts in `src/northpole/map-*.ts`, which share one `MapRun`
-(`map-state.ts`), `src/northpole/draw-square.ts`, `src/northpole/visit.ts`,
+(`map-state.ts`; the zoom buttons, wheel and keys are `map-zoom.ts` and
+`map-zoom-buttons.ts`), `src/northpole/draw-square.ts`, `src/northpole/visit.ts`,
 and the drawing:
 `src/northpole/render.ts`, which hands each thing and plot to the small file
 that draws it (`ground.ts`, `island.ts`, `sky.ts`, `pines.ts`, `houses.ts`,
@@ -120,4 +137,6 @@ map running in happy-dom through `src/test-support/map-harness.ts`, with
 `src/northpole/render-pins-plots.test.ts` and
 `src/northpole/render-pins-scene.test.ts` (every drawing, pinned by its
 fingerprint), `smoke/map.spec.ts` (walking, fitting the window),
+`smoke/zoom.spec.ts` (the zoom buttons, the wheel and the keys, at 1500 by 900
+and 390 by 844, and on a level),
 `smoke/deep-links.spec.ts` and `smoke/claiming.spec.ts` (open plots).

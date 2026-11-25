@@ -11,12 +11,12 @@
  * with `x` down to the right on screen and `y` down to the left, as on the map.
  */
 import { rideCoaster } from './coaster-ride';
-import { LEVEL_PROPS, type LevelPropKind } from './level-props';
+import { LEVEL_PROPS, propPlace, type LevelPropKind } from './level-props';
 import { theme } from './theme';
 import { type Box, type Ground, key, type Plot, type Thing, type Tile, type World } from './world';
 
-/** The ground a level may lay. Snow is everywhere else. */
-export const LEVEL_GROUNDS = ['snow', 'ice', 'path', 'water', 'bridge'] as const;
+/** The ground a level may lay. Snow is everywhere else, or wooden floor indoors. */
+export const LEVEL_GROUNDS = ['snow', 'ice', 'path', 'water', 'bridge', 'floor', 'carpet'] as const;
 export type LevelGround = (typeof LEVEL_GROUNDS)[number];
 
 /**
@@ -71,6 +71,11 @@ export interface NorthPoleLevel {
   /** One sentence, shown at the station. */
   description: string;
   theme: LevelTheme;
+  /**
+   * A room instead of an island: a wooden floor, walls along its two back
+   * edges for props to hang on, and no sky, fence or snowfall (ADR 0040).
+   */
+  indoor?: boolean;
   /** How many tiles it is each way: an odd number from 9 to 41 (`LEVEL_SIZE` in `level-check.ts`). */
   size: number;
   /** Ground other than snow, laid in order. */
@@ -86,6 +91,11 @@ export interface NorthPoleLevel {
    */
   exits: { x: number; y: number }[];
   squares?: LevelSquarePlace[];
+  /**
+   * Whether visitors ride the level's coaster instead of walking it: they sit
+   * in its car, which stops at a `coaster-station` at every door (ADR 0041).
+   */
+  ride?: boolean;
 }
 
 /** A square's or an exit's plot inside a level, in the level's own tiles. */
@@ -114,13 +124,15 @@ function layProps(
   let pond: Box = { x: 0, y: 0, w: 0, h: 0 };
   for (const prop of level.props ?? []) {
     const look = LEVEL_PROPS[prop.kind];
-    const box = { ...at(prop), w: look.w, h: look.h };
+    const { box: tiles, wall } = propPlace(prop.kind, prop);
+    const box = { ...tiles, ...at(tiles) };
     if (look.thing === undefined) {
-      lay({ ...prop, w: look.w, h: look.h }, 'ice');
+      lay(tiles, 'ice');
       pond = box;
       continue;
     }
-    things.push({ kind: look.thing, ...box, seed: prop.variant ?? 0, blocks: look.blocks });
+    const thing: Thing = { kind: look.thing, ...box, seed: prop.variant ?? 0, blocks: look.blocks };
+    things.push(wall ? { ...thing, wall } : thing);
     if (look.blocks) for (const t of tilesOf(box)) blocked.add(key(t.x, t.y));
   }
   return { things: rideCoaster(things), pond };
@@ -146,6 +158,8 @@ export function levelWorld(level: NorthPoleLevel): World {
       else blocked.delete(key(x, y));
     }
   };
+  // A room's floor is wooden boards wherever its own ground doesn't say otherwise.
+  if (level.indoor) lay({ x: 0, y: 0, w: level.size, h: level.size }, 'floor');
   for (const { tile, area } of level.ground ?? []) lay(boxOf(area), tile);
   for (const area of level.blocked ?? [])
     for (const t of tilesOf(boxOf(area))) blocked.add(key(at(t).x, at(t).y));
@@ -170,5 +184,6 @@ export function levelWorld(level: NorthPoleLevel): World {
     strolls: [],
     extent: half,
     start: at(level.arrival),
+    ...(level.indoor ? { indoor: true } : {}),
   };
 }

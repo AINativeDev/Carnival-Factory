@@ -35,6 +35,8 @@ export function startMap(
     cancelAnimationFrame(m.frameId);
     unlisten();
     m.tag.element.remove();
+    m.rideButton?.remove();
+    m.zoomButtons.element.remove();
     delete frame.dataset.visiting;
     m.pointer.stop();
   });

@@ -1,12 +1,14 @@
 /**
  * The camera following the player round the carnival: coming in a little while
  * they walk, easing back out once they stop, staying where a finger dragged or
- * pinched it, and looking a little above them so more of what's ahead shows.
+ * pinched it or the visitor zoomed it, and looking a little above them so more of what's ahead shows.
  * The camera's framing itself is plain functions in camera.ts; this is the part
  * that moves it frame by frame.
  */
 import { fitZoom, frameCentre, framing, isPhone, type Framing } from './camera';
+import { MAX_PINCH_ZOOM } from './camera-view';
 import type { MapRun } from './map-state';
+import { showZoomLimits } from './map-zoom-buttons';
 import { toScreen, type Box, type Tile } from './world';
 
 /** How far above the player the camera looks, in world pixels, so more of what's ahead shows. */
@@ -17,6 +19,21 @@ const SETTLE = 2500;
 /** How the camera would frame the player now. */
 export const want = (m: MapRun): Framing =>
   framing(m.world, m.frame.clientWidth, m.frame.clientHeight, m.player, m.walking, m.overview);
+
+/**
+ * The zoom the camera is heading for, and its limits: the whole island and
+ * the nearest it comes. The visitor's own zoom, from fingers, the wheel, the
+ * keys or the buttons, wins over the framing's and stays while they walk.
+ */
+export function aimedZoom(m: MapRun, framed: Framing, width: number, height: number) {
+  const fit = fitZoom(m.bounds, width, height);
+  const nearest = Math.max(fit, MAX_PINCH_ZOOM);
+  const zoom =
+    m.chosen === undefined
+      ? Math.max(fit, framed.zoom)
+      : Math.min(nearest, Math.max(fit, m.chosen));
+  return { zoom, fit, nearest };
+}
 
 /** Where the camera's centre goes for a framing, at a zoom. */
 const centreFor = (m: MapRun, wanted: Framing, at: number) =>
@@ -44,11 +61,9 @@ export function follow(
   height: number,
 ): { camera: Tile; view: Box } {
   const framed = want(m);
-  // Two fingers may have pinched the camera nearer or farther, though never past the whole island.
-  const wanted = {
-    ...framed,
-    zoom: Math.max(fitZoom(m.bounds, width, height), framed.zoom * m.closer),
-  };
+  const aimed = aimedZoom(m, framed, width, height);
+  const wanted = { ...framed, zoom: aimed.zoom };
+  showZoomLimits(m.zoomButtons, aimed.zoom < aimed.nearest, aimed.zoom > aimed.fit);
   // A walk takes the camera back from where a finger left it, as the overview going on or off does.
   if (m.moving) m.panned = undefined;
   const camera = aim(m, wanted, dt, still, width, height);

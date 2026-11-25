@@ -13,11 +13,12 @@ import { enter, open, select } from './map-open';
 import type { MapRun } from './map-state';
 import { KEYS, walkToward } from './map-walk';
 import { inviteFor } from './owners';
+import { rideKey, rideOnward } from './ride-map';
 import { toScreen, toTile, type Tile } from './world';
 import { tileOf } from './walking';
 
 /** Whether a key press belongs to a text field. */
-const typing = (target: EventTarget | null) =>
+export const typing = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
 
@@ -46,8 +47,13 @@ export const billboardUnder = (m: MapRun, point: Tile) =>
 export function onKeyDown(m: MapRun, event: KeyboardEvent) {
   if (typing(event.target) || event.metaKey || event.ctrlKey || event.altKey) return;
   const name = event.key.toLowerCase();
-  const invited = inviteFor(m.selected, m.near);
   const step = KEYS[name];
+  // In a ride the walking keys don't walk, so nobody walks off the track (ADR 0041).
+  if (m.ride && !m.visiting && (rideKey(m, name, pressable(event.target)) || step)) {
+    event.preventDefault();
+    return;
+  }
+  const invited = inviteFor(m.selected, m.near);
   if (step) {
     m.held.set(name, step);
     event.preventDefault();
@@ -97,6 +103,11 @@ export function onClick(m: MapRun, event: MouseEvent) {
     return;
   }
   m.hovered = undefined;
+  // In a ride, a click on the ground rides on instead: nobody walks off the track.
+  if (m.ride) {
+    rideOnward(m);
+    return;
+  }
   // Walk to the tile clicked, or the nearest one beside it you can stand on.
   const tile = tileOf(toTile(point));
   const goals: Tile[] = [];

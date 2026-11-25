@@ -8,7 +8,6 @@ import { fitZoom } from './camera';
 import { dragCentre } from './camera-view';
 import { pinchZoom } from './camera-view';
 import { pinchCentre } from './camera-view';
-import { want } from './map-camera';
 import { billboardUnder, pointAt } from './map-input';
 import { plotUnder } from './map-labels';
 import type { MapRun } from './map-state';
@@ -88,8 +87,7 @@ function pinch(m: MapRun, camera: Tile, pinching: { apart: number; between: Tile
     pinching.between,
     next.between,
   );
-  m.zoom = nearer;
-  m.closer = nearer / want(m).zoom;
+  m.zoom = m.chosen = nearer;
   m.pinching = next;
 }
 

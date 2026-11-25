@@ -12,12 +12,12 @@ export function steamAt(time: number, n: number): number {
   return (((time / STEAM + n / 3) % 1) + 1) % 1;
 }
 
-/** The Green Room: a sofa and a low table with a cup of coffee steaming, where guests wait to go on. */
-const greenRoom: NorthPoleSquare = {
-  id: 'green-room',
-  name: 'Green Room',
-  description: 'Where guests warm up with a coffee before they go on air.',
-  stall: { shape: 'cabin', roof: 'pine', trim: 'gold' },
+/** The Guest sofa: a sofa and a low table with a cup of coffee steaming, where guests wait to go on. */
+const guestSofa: NorthPoleSquare = {
+  id: 'guest-sofa',
+  name: 'Guest sofa',
+  description: 'Where guests sit with a coffee and talk before they go on air.',
+  stall: { shape: 'kiosk', roof: 'pine', display: true },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
       const foot = iso(0, 0);
@@ -53,4 +53,4 @@ const greenRoom: NorthPoleSquare = {
   },
 };
 
-export default greenRoom;
+export default guestSofa;

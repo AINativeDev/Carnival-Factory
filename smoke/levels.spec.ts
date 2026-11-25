@@ -2,13 +2,16 @@ import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './coverage';
 import { levelWorld, type NorthPoleLevel } from '../src/northpole/level';
+import type { Plot } from '../src/northpole/world';
 import { validateLevel } from '../src/northpole/level-check';
 import { isNorthPoleLevel } from '../src/northpole/north-pole-levels';
 import { stillCamera, walkToDoor } from './level-walk';
+import { rideTo } from './level-ride';
 
 /**
- * Walks every level: from its arrival point to each of its squares, inside
- * each one while its sandboxed frame plays, and back out to the sleigh home,
+ * Walks every level, or rides a ride level's coaster: from its arrival point
+ * to each of its squares, inside each one while its sandboxed frame plays,
+ * and back out to the sleigh home,
  * which takes the player back to the North Pole. Fails on anything the page or
  * a frame shouldn't do. Saves a screenshot of each level for the pull request.
  */
@@ -59,6 +62,9 @@ for (const login of logins) {
       : [];
     expect(validateLevel(level, login, ids)).toEqual([]);
     const world = levelWorld(level);
+    // A ride level is ridden in its coaster's car, station to station, instead of walked (ADR 0041).
+    const reach = (plot: Plot) =>
+      level.ride ? rideTo(page, world, plot) : walkToDoor(page, world, plot);
     await page.goto(`#/level/${login}`);
     const canvas = page.locator('.map-canvas');
     await expect(page.locator('.hud-level')).toContainText(level.name);
@@ -68,7 +74,7 @@ for (const login of logins) {
     await canvas.focus({ timeout: 5000 });
 
     for (const plot of world.plots.filter((p) => p.kind === 'attraction')) {
-      await test.step(`walk to ${plot.id}`, () => walkToDoor(page, world, plot));
+      await test.step(`go to ${String(plot.id)}`, () => reach(plot));
       await test.step(`inside ${plot.id}`, async () => {
         await page.keyboard.press('e');
         await expect(page).toHaveURL(new RegExp(`#/level/${login}/${plot.id}$`));
@@ -88,7 +94,7 @@ for (const login of logins) {
     }
 
     const home = world.plots.find((p) => p.kind === 'exit')!;
-    await test.step('walk to the sleigh home', () => walkToDoor(page, world, home));
+    await test.step('go to the sleigh home', () => reach(home));
     await page.keyboard.press('e');
     await expect(page).toHaveURL(/#\/$/);
     // Back at the North Pole, by the sleigh station, or by its landmark for the North Pole's own.

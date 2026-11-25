@@ -24,4 +24,11 @@ describe('labelLevel', () => {
     labelLevel(view.map, level, '@jedi4ever');
     expect(view.label()).toContain('a level by @jedi4ever.');
   });
+
+  it('tells how to ride a ride level, instead of how to walk', () => {
+    const view = map();
+    labelLevel(view.map, { ...level, ride: true }, 'the North Pole');
+    expect(view.label()).toMatch(/a level by the North Pole\. Ride the coaster: press Space/);
+    expect(view.label()).not.toContain('Walk with');
+  });
 });

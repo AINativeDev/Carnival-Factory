@@ -523,9 +523,12 @@ squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
    - `size`, an odd number of tiles each way from 9 to 41. Tiles run from
      `(0, 0)` at the level's north corner to `(size - 1, size - 1)`, `x` down
      to the right on screen and `y` down to the left;
-   - `ground`, areas of `snow`, `ice`, `path`, `water` or `bridge`, laid in
-     order (ice and water can't be walked on, bridges can), and `blocked`,
-     areas nobody can walk on;
+   - `ground`, areas of `snow`, `ice`, `path`, `water`, `bridge`, `floor` or
+     `carpet`, laid in order (ice and water can't be walked on, bridges can),
+     and `blocked`, areas nobody can walk on;
+   - optionally `indoor: true`, for a room with two back walls instead of an
+     island under the sky, wooden floor by default, whose wall props hang on
+     row 0 or column 0 ([ADR 0040](docs/adr/0040-indoor-levels.md));
    - `props`, each a `kind` from the catalogue `LEVEL_PROPS`
      (`src/northpole/level-props.ts`: scenery, performers, rides and factory
      dressing) with its north

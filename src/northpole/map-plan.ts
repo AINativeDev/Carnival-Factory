@@ -7,6 +7,7 @@
 import { boothPlotFiles } from './booths';
 import { SLAB, type islandCorners } from './camera';
 import type { MapOptions } from './map-options';
+import { WALL } from './room';
 import type { MapRun } from './map-state';
 import pinned from './plots.json';
 import { type PendingBooth } from './construction-sites';
@@ -42,10 +43,13 @@ export function replan(m: MapRun, list: readonly PendingBooth[]) {
   return true;
 }
 
-/** The box the island's cached layers cover: the island, its slab and the fence's lights. */
-export const islandBox = (island: ReturnType<typeof islandCorners>): Box => ({
-  x: island.left.x - 8,
-  y: island.top.y - 40,
-  w: island.right.x - island.left.x + 16,
-  h: island.bottom.y + SLAB + 80 - (island.top.y - 40),
-});
+/** The box the island's cached layers cover: the island, its slab and the fence's lights, or an indoor level's back walls. */
+export const islandBox = (island: ReturnType<typeof islandCorners>, indoor = false): Box => {
+  const above = indoor ? WALL.high + 12 : 40;
+  return {
+    x: island.left.x - 8,
+    y: island.top.y - above,
+    w: island.right.x - island.left.x + 16,
+    h: island.bottom.y + SLAB + 80 - (island.top.y - above),
+  };
+};

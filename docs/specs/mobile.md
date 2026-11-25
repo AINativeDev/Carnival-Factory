@@ -15,7 +15,11 @@ squares and play with them, and the panels move out of the way.
 - Two fingers pinch the zoom: nearer as they spread, farther as they close,
   never farther out than the whole island and never nearer than 1.5. What was
   under the fingers stays under them. When a finger lifts, the pinch goes on
-  from the two fingers left, if there are two.
+  from the two fingers left, if there are two. The zoom a pinch leaves stays
+  while the player walks, until the overview goes on or off.
+- The "+" and "−" zoom buttons stand in a column above "Get a booth" at
+  phone width, and on a level's map in the bottom-right corner, above its
+  panel (see docs/specs/map-and-world.md for the zoom on every device).
 - Dragging and pinching only apply to touch pointers, and not while inside a
   square.
 - On a touch screen the first tap on a structure shows its tag, the second
@@ -44,8 +48,9 @@ squares and play with them, and the panels move out of the way.
   `{ x, y, down, presses }`, with `presses` capped at 20 a frame (enforced by:
   src/northpole/frame-protocol-draw.test.ts, the pointer tests in
   smoke/square-pointer.spec.ts).
-- Pinch zoom stays between the whole island and 1.5, and a drag never shows
-  past the island (enforced by: src/northpole/camera.test.ts).
+- Pinch zoom, and the zoom buttons, stay between the whole island and 1.5, and a drag never shows
+  past the island (enforced by: src/northpole/camera.test.ts,
+  src/northpole/camera-view.test.ts, smoke/zoom.spec.ts).
 - A press that moves more than 8 CSS pixels is not a click (enforced by:
   src/northpole/pointer.test.ts).
 - The map fits a 390 by 844 window with no scrolling, and `#/factory` fits
@@ -62,7 +67,8 @@ squares and play with them, and the panels move out of the way.
 `src/northpole/camera.ts` (`isPhone`, `PHONE_ZOOM`),
 `src/northpole/camera-view.ts` (`MAX_PINCH_ZOOM`, `dragCentre`, `pinchZoom`,
 `pinchCentre`), `src/northpole/map-touch.ts`
-(dragging and pinching), `src/northpole/map-pointer.ts` (tap and press
+(dragging and pinching), `src/northpole/map-zoom-buttons.ts` (the zoom
+buttons), `src/northpole/map-pointer.ts` (tap and press
 tracking), `src/northpole/pointer.ts` (`TAP_SLOP`),
 `src/style.css`, `src/map-page.ts` (`renderHud`), `src/visit-hud.ts`,
 `src/northpole/frame.ts`.
@@ -76,4 +82,5 @@ the smoke specs at 390 by 844: deep links open the map on the square
 (`smoke/deep-links.spec.ts`), `#/factory` fits with no horizontal scroll
 (`smoke/factory-page.spec.ts`), the map fits the window with no scrolling
 (`smoke/map.spec.ts`), and inside a booth its drawing gets the pointer and taps
-by touch (`smoke/square-pointer.spec.ts`).
+by touch (`smoke/square-pointer.spec.ts`), and the zoom buttons, wheel and
+keys zoom between the whole island and 1.5 (`smoke/zoom.spec.ts`).
