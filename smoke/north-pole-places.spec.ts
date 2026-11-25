@@ -8,9 +8,9 @@ import { stillCamera, walkToDoor } from './level-walk';
 /**
  * The Academy and the Recording Studio, end to end (docs/specs/levels.md,
  * ADR 0035, ADR 0038): each landmark on the home map takes the sleigh into its
- * level, whose panel shows its links out as buttons to a new tab, and the walk
- * reaches every stall, whose panel shows them too. At a laptop's width and a
- * phone's.
+ * level, whose panel shows its links out as buttons to a new tab, and every
+ * item's panel shows them too: on a laptop the walk reaches each item and the
+ * sleigh home, and on a phone each item opens by its own link (ADR 0040).
  */
 
 /** Where the walk runs: the same laptop and phone as smoke/the-factory.spec.ts, whose walk helper they share. */
@@ -87,9 +87,14 @@ for (const { level, name } of PLACES)
       for (const { id: stallId } of level.squares ?? []) {
         const stall = world.plots.find((plot) => plot.kind === 'attraction' && plot.id === stallId);
         if (!stall) throw new Error(`${name} has no stall ${stallId}`);
-        await test.step(`the ${stallId} stall`, async () => {
-          await walkToDoor(page, world, stall);
-          await page.keyboard.press('e');
+        await test.step(`the ${stallId} item`, async () => {
+          // A phone's close camera in a furnished room is a long walk of short
+          // steps: there each item opens by its own link, and the laptop walks.
+          if (viewport.name === 'phone') await page.goto(`#/level/${id}/${stallId}`);
+          else {
+            await walkToDoor(page, world, stall);
+            await page.keyboard.press('e');
+          }
           await expect(page).toHaveURL(new RegExp(`#/level/${id}/${stallId}$`));
           const panel = page.locator('.visit');
           await expect(panel.locator('.visit-description')).not.toBeEmpty();
@@ -104,8 +109,13 @@ for (const { level, name } of PLACES)
       await test.step('the sleigh home', async () => {
         const home = world.plots.find((plot) => plot.kind === 'exit');
         if (!home) throw new Error(`${name} has no sleigh home`);
-        await walkToDoor(page, world, home);
-        await page.keyboard.press('e');
+        // On a phone, the way home is the link in the corner; the laptop walks to the sleigh.
+        if (viewport.name === 'phone')
+          await page.getByRole('link', { name: 'Back to the North Pole' }).click();
+        else {
+          await walkToDoor(page, world, home);
+          await page.keyboard.press('e');
+        }
         await expect(page).toHaveURL(/#\/$/);
       });
       expect(problems).toEqual([]);

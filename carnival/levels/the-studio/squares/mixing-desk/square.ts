@@ -12,12 +12,12 @@ export function sliderAt(time: number, n: number): number {
   return (Math.sin(time / (900 + n * 170) + n * 1.3) + 1) / 2;
 }
 
-/** The Control Room: a mixing desk whose sliders move up and down, with a level meter and a window to the booth. */
-const controlRoom: NorthPoleSquare = {
-  id: 'control-room',
-  name: 'Control Room',
+/** The Mixing desk: its sliders move up and down, with a level meter and a window to the sound booth. */
+const mixingDesk: NorthPoleSquare = {
+  id: 'mixing-desk',
+  name: 'Mixing desk',
   description: 'Where each episode is mixed and edited, so every voice comes through clear.',
-  stall: { shape: 'shed', roof: 'mint', trim: 'ink' },
+  stall: { shape: 'kiosk', roof: 'mint', display: true },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
       const foot = iso(0, 0);
@@ -50,4 +50,4 @@ const controlRoom: NorthPoleSquare = {
   },
 };
 
-export default controlRoom;
+export default mixingDesk;

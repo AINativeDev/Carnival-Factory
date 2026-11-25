@@ -62,6 +62,11 @@ export interface StallStyle {
   trim?: ThemeColor;
   /** For an attraction only: rise as a tower with these capital letters, up to six, down its front. */
   tower?: string;
+  /**
+   * For an attraction or a level's square only: stand as an item to discover,
+   * a framed card on a low plinth with a cloth in the `roof` colour (ADR 0040).
+   */
+  display?: boolean;
 }
 
 /** A tower's letters: one to six capitals. */

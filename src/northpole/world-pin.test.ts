@@ -69,9 +69,9 @@ describe('the worlds the map lays out', () => {
     expect(fingerprints).toMatchInlineSnapshot(`
       [
         "../../carnival/levels/jedi4ever/level.ts: cd25e40f7f726894",
-        "../../carnival/levels/the-academy/level.ts: 3292afe2a5986abc",
+        "../../carnival/levels/the-academy/level.ts: 2aa4e0f718c16ee2",
         "../../carnival/levels/the-factory/level.ts: 226795afdee24c09",
-        "../../carnival/levels/the-studio/level.ts: 6d93796b7a2b87a6",
+        "../../carnival/levels/the-studio/level.ts: 7452a2b630565000",
       ]
     `);
   });

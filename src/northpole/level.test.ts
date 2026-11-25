@@ -51,7 +51,7 @@ describe('validateLevel', () => {
       ['hut'],
     );
     expect(problems).toEqual([
-      'ground 0 is "lava", not one of snow, ice, path, water, bridge',
+      'ground 0 is "lava", not one of snow, ice, path, water, bridge, floor, carpet',
       'prop 0 is "rocket", which isn\'t in the catalogue',
       'prop 1, a cabin, is not inside the level',
     ]);

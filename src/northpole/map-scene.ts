@@ -11,6 +11,7 @@ import type { MapRun } from './map-state';
 import { addPlots, type Aim } from './map-stands';
 import { arrowBounce, highlightAt } from './owners';
 import { drawThing } from './render';
+import { FLAT } from './show';
 import { drawSelectionBeam } from './plot-marks';
 import { middle } from './brushes';
 import type { Box, Tile } from './world';
@@ -42,7 +43,7 @@ export function drawScene(m: MapRun, view: Box, frame: SceneFrame) {
   const add: AddToScene = (depth, draw) => scene.push({ depth, draw });
   for (const thing of m.world.things) {
     if (!shown(thing)) continue;
-    if (thing.kind === 'drift') drawThing(ctx, thing, motion);
+    if (FLAT.has(thing.kind)) drawThing(ctx, thing, motion);
     else
       add(thing.x + thing.w + thing.y + thing.h - 2, () => {
         drawThing(ctx, thing, motion);

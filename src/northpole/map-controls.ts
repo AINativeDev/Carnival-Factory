@@ -175,7 +175,7 @@ function keepHold(m: MapRun) {
   if (goal) walkToward(m, [goal]);
   m.island = islandCorners(m.world);
   m.bounds = islandBounds(m.world);
-  m.groundBox = islandBox(m.island);
+  m.groundBox = islandBox(m.island, m.world.indoor);
   m.targets = [];
   resize(m);
 }

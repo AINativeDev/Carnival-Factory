@@ -34,7 +34,7 @@ const codeReviewLoops: NorthPoleSquare = {
   name: 'Code Review Loops',
   description:
     'Add an agent reviewer to your pull requests, teach it your team’s conventions, and let each round build on the last.',
-  stall: { shape: 'tent', roof: 'mint', trim: 'snow' },
+  stall: { shape: 'kiosk', roof: 'mint', display: true },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
       const foot = iso(0, 0);

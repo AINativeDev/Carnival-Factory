@@ -16,7 +16,7 @@ import {
   type LevelSquarePlace,
   type NorthPoleLevel,
 } from './level';
-import { LEVEL_PROPS } from './level-props';
+import { hangsOnWall, LEVEL_PROPS, propPlace } from './level-props';
 import { isAttractionId } from './square';
 import { key, type Box, type Tile } from './world';
 
@@ -118,7 +118,11 @@ export function checkProps(check: Check, level: NorthPoleLevel): void {
     if (prop.variant !== undefined && !(prop.variant >= 0 && prop.variant <= 1))
       check.problems.push(`prop ${n}'s variant must be a number from 0 to 1`);
     const look = LEVEL_PROPS[prop.kind];
-    const box = areaBox({ x: prop.x, y: prop.y, w: look.w, h: look.h });
+    if (hangsOnWall(prop.kind) && !(level.indoor === true && (prop.x === 0 || prop.y === 0))) {
+      check.problems.push(`prop ${n}, a ${prop.kind}, must hang on a back wall of an indoor level`);
+      continue;
+    }
+    const box = areaBox(propPlace(prop.kind, prop).box);
     if (!box || !within(check, box)) {
       check.problems.push(`prop ${n}, a ${prop.kind}, is not inside the level`);
       continue;

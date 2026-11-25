@@ -43,11 +43,13 @@ describe("the North Pole's Academy and Recording Studio", () => {
         "levels/the-academy/squares/reference/square.ts: fcf603cf3928dc6b (731 calls) / c85ca4a8c5ba2ea0 (731 calls)",
         "levels/the-academy/squares/skill-foundations/square.ts: cb836ff47622d5a9 (261 calls) / d4b50b0e4d565cc3 (309 calls)",
         "levels/the-academy/squares/tuning-your-agent/square.ts: 3a4f27c0ed9b4f1e (322 calls) / 3d25565926ea2c72 (322 calls)",
-        "levels/the-studio/squares/broadcast-tower/square.ts: f999a9cd705c2073 (266 calls) / 93a787e5b9842a79 (266 calls)",
-        "levels/the-studio/squares/control-room/square.ts: 07a3afee079ddd05 (573 calls) / e230e35157f936a2 (573 calls)",
-        "levels/the-studio/squares/green-room/square.ts: c916f36b33bb2602 (437 calls) / 999be8913b5af176 (437 calls)",
-        "levels/the-studio/squares/podcast-booth/square.ts: b35957e81a95f902 (357 calls) / 78bb5a85fea9bedb (357 calls)",
-        "levels/the-studio/squares/video-set/square.ts: 091fb1833ba90473 (506 calls) / 829a0effccec2ddf (488 calls)",
+        "levels/the-studio/squares/camera/square.ts: 091fb1833ba90473 (506 calls) / 829a0effccec2ddf (488 calls)",
+        "levels/the-studio/squares/episode-wall/square.ts: 9b8c465843195c76 (379 calls) / 1194c2dc28ac3037 (379 calls)",
+        "levels/the-studio/squares/guest-sofa/square.ts: c916f36b33bb2602 (437 calls) / 999be8913b5af176 (437 calls)",
+        "levels/the-studio/squares/headphones/square.ts: 58f5cec086cf419f (300 calls) / 8de5c04b2fea0400 (300 calls)",
+        "levels/the-studio/squares/microphone/square.ts: d7e5770064906f89 (357 calls) / 160903cc81eac1a8 (357 calls)",
+        "levels/the-studio/squares/mixing-desk/square.ts: 07a3afee079ddd05 (573 calls) / e230e35157f936a2 (573 calls)",
+        "levels/the-studio/squares/on-air/square.ts: 6839254dc13ac090 (288 calls) / 853dbc9bb9ee6128 (288 calls)",
       ]
     `);
   });

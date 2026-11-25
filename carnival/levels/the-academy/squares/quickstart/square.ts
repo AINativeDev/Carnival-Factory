@@ -25,7 +25,7 @@ const quickstart: NorthPoleSquare = {
   name: 'Quickstart',
   description:
     'Install Tessl in a fresh project and get your agent going with it in a few minutes.',
-  stall: { shape: 'kiosk', roof: 'berry', trim: 'snow' },
+  stall: { shape: 'kiosk', roof: 'berry', display: true },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
       const foot = iso(0, 0);

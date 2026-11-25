@@ -32,7 +32,7 @@ describe("a square's panel, for the North Pole's own levels (ADR 0038)", () => {
   });
 
   it("links out of a North Pole level's stalls", () => {
-    expect(linksOf('video-set', 'the-studio')).toEqual([
+    expect(linksOf('camera', 'the-studio')).toEqual([
       'https://tessl.io/podcast/',
       'https://www.youtube.com/@tessl-ai',
     ]);

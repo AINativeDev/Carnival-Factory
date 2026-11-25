@@ -39,6 +39,8 @@ function checkLabel(level: NorthPoleLevel, folder: string, problems: string[]): 
   text('description', level.description, MAX_DESCRIPTION);
   if (typeof level.theme !== 'string' || !Object.hasOwn(LEVEL_THEMES, level.theme))
     problems.push(`its theme must be one of ${Object.keys(LEVEL_THEMES).join(', ')}`);
+  if (level.indoor !== undefined && typeof level.indoor !== 'boolean')
+    problems.push('its indoor must be true or false');
 }
 
 /** Walks a level whose every part is where it may be, as a visitor would. */

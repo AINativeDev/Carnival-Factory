@@ -45,7 +45,7 @@ describe('checking where everything stands', () => {
         blocked: [{ x: 1.5, y: 0 }, null],
       }),
     ).toEqual([
-      'ground 0 is "undefined", not one of snow, ice, path, water, bridge',
+      'ground 0 is "undefined", not one of snow, ice, path, water, bridge, floor, carpet',
       'ground 1 is not inside the level',
       'ground 2 is not inside the level',
       'ground 3 is not inside the level',

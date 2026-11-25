@@ -57,3 +57,22 @@ describe('readStall: a tower', () => {
       expect(readStall({ shape: 'shed', roof: 'gold', tower })).toBeUndefined();
   });
 });
+
+describe('readStall: a display (ADR 0040)', () => {
+  it('keeps it only when it is true', () => {
+    expect(readStall({ shape: 'kiosk', roof: 'mint', display: true })).toEqual({
+      shape: 'kiosk',
+      roof: 'mint',
+      display: true,
+    });
+    expect(readStall({ shape: 'kiosk', roof: 'mint', display: false })).toEqual({
+      shape: 'kiosk',
+      roof: 'mint',
+    });
+  });
+
+  it('drops the whole option for anything but a boolean', () => {
+    for (const display of ['yes', 1, null, {}])
+      expect(readStall({ shape: 'kiosk', roof: 'mint', display })).toBeUndefined();
+  });
+});

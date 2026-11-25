@@ -92,7 +92,7 @@ export function openRun(
     held: new Map(),
     pointer: trackPointer(canvas),
     layers: { sky: layer(1, 1), mountains: layer(1, 1), ground: layer(1, 1), front: layer(1, 1) },
-    groundBox: islandBox(island),
+    groundBox: islandBox(island, world.indoor),
   };
   // The player starts at the square the page opened on, else where they last stood in this world.
   m.selected = options.focus ? plotOf(m, options.focus.kind, options.focus.id) : undefined;

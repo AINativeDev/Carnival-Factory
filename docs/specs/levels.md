@@ -58,6 +58,34 @@ and The Recording Studio, `carnival/levels/the-studio/`
   it calls (`performers.ts`, `troupe.ts`, `rides.ts`, `carousel.ts`,
   `workshop.ts`, `coaster.ts`), with `brushes.ts` and `elf.ts`. The starter
   level places a few of each.
+- An indoor level ([ADR 0040](../adr/0040-indoor-levels.md)), with
+  `indoor: true`, is a room instead of an island: a wooden `floor` wherever
+  its ground says nothing else, the floor's cut edge in place of the snow
+  slab, and two back walls along its upper left and upper right edges,
+  papered above and panelled below, with a skirting board, a cornice and warm
+  wall lamps, cut away so the visitor looks in over the front. It has no sky,
+  northern lights, fence, string lights or snowfall: the room stands in the
+  dark, tinted by its theme (`src/northpole/room.ts`,
+  `src/northpole/map-backdrop.ts`). Any level may lay `floor` (boards) and
+  `carpet` ground. The catalogue's furniture: `plant` (1 by 1), `shelf` (a
+  bookshelf, 2 by 1), `rug` (2 by 2, flat), `sofa` (2 by 1), `desk` (1 by 1, a
+  pupil's desk and chair, or the teacher's desk with an apple and books when
+  its variant is over 0.5), `globe` (1 by 1, turning slowly), `spotlight` (1
+  by 1, on a stand, with a pool of light) and `cable` (1 by 1, flat). The rug
+  and the cable are drawn under everything and people walk over them; the
+  rest block their tiles. What hangs on a back wall, `w` tiles along it:
+  `acoustic-panel` (1), `wall-window` (1, snow falling past it),
+  `blackboard` (3, chalk on it), `projector-screen` (2, a chart whose bars
+  grow), `on-air-light` (1, glowing red, swelling and fading over 2.4
+  seconds, never dark) and `wall-door` (2, double doors with a wreath). A wall
+  prop on row 0 runs along the upper right wall; on column 0, down the upper
+  left wall, its footprint turned. Each blocks its tiles (`furniture.ts`,
+  `classroom.ts`, `studio-gear.ts`, `wall-things.ts`).
+- A level's square or an attraction with `stall.display: true` stands as an
+  item to discover: a low plinth with a cloth in its `roof` colour, its name
+  on a gold plaque and its drawing on a framed card on top, facing its door,
+  under a warm light (`src/northpole/display.ts`). A booth's display is
+  ignored, and it keeps its stall.
 - The roller coaster ([ADR 0039](../adr/0039-coaster-ridden-in-list-order.md)):
   `coaster` (1 by 1, a tile of candy-striped track on a post, high enough to
   walk under) and `coaster-loop` (1 by 1, a loop-the-loop on an A-frame,
@@ -85,11 +113,15 @@ and The Recording Studio, `carnival/levels/the-studio/`
   rides it from the first loop to the last in about 26 seconds. Each stall's panel tells its step in two
   or three sentences, with a link to the real thing and to `#/factory`, from
   fixed text in `src/factory-tour.ts`.
-- The Academy, `#/level/the-academy`, is a campus with one lesson stall per
-  section of the Tessl Academy, in its order: Quickstart, Skill Foundations,
-  Tuning Your Agent, Code Review Loops and Reference. The Recording Studio,
-  `#/level/the-studio`, is a studio lot with the Podcast Booth, the Video
-  Set, the Control Room, the Green Room and the Broadcast Tower.
+- The Academy, `#/level/the-academy`, is a classroom indoors with a lesson
+  on a display for each section of the Tessl Academy, in its order:
+  Quickstart by the teacher's desk, Skill Foundations before the blackboard,
+  Tuning Your Agent at the projector screen, Code Review Loops among the
+  pupils' desks and Reference by the bookshelves. The Recording Studio,
+  `#/level/the-studio`, is a studio room indoors with its gear on displays:
+  the Microphone and the Headphones in the sound booth's corner, the Mixing
+  desk, the Camera on the video set, the ON AIR light by the doors, the Guest
+  sofa and the Episode wall.
 - A North Pole level may link out: its links, from `NORTH_POLE_LINKS` in
   `src/northpole/north-pole-links.ts`, show as buttons under the description
   on the level's panel, its landmark's room and each of its squares' panels,
@@ -110,10 +142,11 @@ and The Recording Studio, `carnival/levels/the-studio/`
   src/northpole/frame-protocol-address.test.ts, the CSP in square.html).
 - `validateLevel` checks, before anything is drawn: the folder is a login and
   `id` matches it; name (up to 40 characters) and description (up to 160);
-  a known theme; `size` odd, 9 to 41; at most 200 ground areas, 200 blocked
+  a known theme; `indoor` missing or a boolean; `size` odd, 9 to 41; at most 200 ground areas, 200 blocked
   areas and 400 props; only known ground (`snow`, `ice`, `path`, `water`,
-  `bridge`) and catalogue props (`LEVEL_PROPS`), inside the level, prop
-  variants 0 to 1, at most one pond; at most 8 squares, kebab-case ids, no
+  `bridge`, `floor`, `carpet`) and catalogue props (`LEVEL_PROPS`), inside
+  the level, prop variants 0 to 1, at most one pond; props that hang on a
+  wall only in an indoor level, on row 0 or column 0; at most 8 squares, kebab-case ids, no
   duplicates, every placed square with a folder and every folder placed; at
   least one exit; nothing on water or ice or on top of anything else; each
   coaster piece joining the one listed before it, and each loop on a straight
@@ -121,6 +154,15 @@ and The Recording Studio, `carnival/levels/the-studio/`
   by pathfinding, every square and exit reachable from the arrival tile
   (enforced by: src/northpole/level.test.ts, which also runs it on every real
   level, and smoke/levels.spec.ts).
+- An indoor level draws its room, its floor and its walls, and never the sky,
+  fence, string lights or snowfall, while outdoor levels and the North Pole
+  draw exactly as before (enforced by: src/northpole/indoor-pins.test.ts,
+  src/northpole/map-pins-indoor.test.ts, and the unchanged pins in
+  src/northpole/map-pins-level.test.ts and src/northpole/render-pins-scene.test.ts).
+- Only an attraction or a level's square stands on a display; a booth that
+  asks for one keeps its stall, and `readStall` keeps `display` only when
+  it's `true` (enforced by: src/northpole/display.test.ts,
+  src/northpole/frame-protocol-stall.test.ts).
 - A level that fails shows "Closed for repairs" on its platform, none of its
   squares run, and the reasons go to the console once (not enforced yet).
 - The kill switch has a separate `levels` list; a switched-off level keeps
@@ -159,6 +201,7 @@ and The Recording Studio, `carnival/levels/the-studio/`
 `carnival/levels/`, `src/northpole/level.ts`, `src/northpole/level-check.ts`,
 `src/northpole/level-check-places.ts`, `src/northpole/level-props.ts`,
 `src/northpole/show.ts` (and the files it draws with), `src/northpole/coaster-ride.ts`,
+`src/northpole/room.ts`, `src/northpole/display.ts`,
 `src/northpole/levels.ts`,
 `src/northpole/north-pole-levels.ts`, `src/northpole/north-pole-links.ts`,
 `src/level-links.ts`, `src/factory-tour.ts`, `src/level-hud.ts`,

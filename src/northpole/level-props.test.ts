@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { levelWorld, type NorthPoleLevel } from './level';
 import { validateLevel } from './level-check';
-import { LEVEL_PROPS } from './level-props';
+import { hangsOnWall, LEVEL_PROPS } from './level-props';
 import { walkable } from './walking';
 import { key } from './world';
 
@@ -63,8 +63,9 @@ describe('the show in the catalogue', () => {
     });
   });
 
-  it('places every one of them in a level that keeps the rules', () => {
+  it('places every one that stands on the ground in a level that keeps the rules', () => {
     for (const kind of Object.keys(LEVEL_PROPS) as (keyof typeof LEVEL_PROPS)[]) {
+      if (hangsOnWall(kind)) continue;
       expect(validateLevel(open([{ kind, x: 6, y: 6, variant: 0.5 }]), 'someone')).toEqual([]);
     }
   });
