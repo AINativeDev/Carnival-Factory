@@ -19,7 +19,10 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   - Sleigh-Ride Coaster: `coaster`, a hill of track on supports with a sleigh running it;
   - Frozen Pond: `ice-rink`, an oval of ice with a low rail and skaters;
   - Gingerbread Fun House: `gingerbread-house`, icing, gumdrops and a wonky roof;
-  - Gift Shop: `shopfront`, a display window, an awning and presents outside;
+  - Gift Shop: `shopfront`, a display window, an awning strung with warm lights,
+    pennants on the roof, presents and a cart of parcels outside, and two elves
+    at the door, one carrying a present in and one waving
+    (`src/northpole/landmark-shopfront-life.ts`);
   - Hot Cocoa Stand: `cocoa-hut`, a round hut with a giant steaming mug on its roof;
   - Snowball Toss: `game-stall`, a counter, targets and a snowball pile;
   - The Academy: `schoolhouse`, with a bell tower and lit windows;
@@ -49,7 +52,11 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   station: the landmark is the way in. Their rooms
   show their level's links out as buttons ([ADR 0038](../adr/0038-north-pole-links.md)).
 - The Gift shop shows the gifts of `plugins/north-pole-gifts/`: small factory
-  loops anyone can install on their own repository.
+  loops anyone can install on their own repository. Inside, visitors wrap
+  them: taps on the card's four swatches pick the paper, then the ribbon, then
+  the bow, the finished parcel goes up on the window's shelves (twelve, then
+  they start again) and the card turns into that gift's tag, with its install
+  command, until the next tap.
 
 ## Rules
 
@@ -80,7 +87,8 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 
 `src/northpole/attractions.test.ts`, `scripts/gift-shelf.test.ts`, each
 attraction's own `attraction.test.ts`, `smoke/squares-play.spec.ts`,
-`smoke/flashing.spec.ts`, `smoke/the-factory.spec.ts`,
+`smoke/flashing.spec.ts`, `smoke/gift-shop.spec.ts` (wrapping a present with
+a mouse and a finger), `smoke/the-factory.spec.ts`,
 `smoke/north-pole-places.spec.ts`, `src/route.test.ts` (a landmark opens its
 level), `src/visit-help.test.ts`, `src/visit-hud-links.test.ts`,
 `src/northpole/north-pole-places-pins.test.ts`, `src/northpole/landmarks.test.ts`

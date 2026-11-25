@@ -1,35 +1,19 @@
 import { box, glow, iso, shadow } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
-import { GIFTS, SHOW } from './gifts';
+import { lookOf, parcel, type Place } from './parcel';
 import { type Ctx, front, outline, words } from './shopfront';
+import { settling, type Wrapping } from './wrapping';
 
 const { colors } = theme;
-
-/** Where each gift sits in the window, along the front and up: three on the top shelf, two below. */
-const PLACES = [
-  [-14, 12],
-  [-7, 12],
-  [0, 12],
-  [-10.5, 5],
-  [-3.5, 5],
-] as const;
 
 /** The shop's front wall faces the lower left, at this gy, and stands this tall. */
 const FRONT = 2;
 const WALL = 28;
 
-/** A wrapped box on the shelf at (gx, z) in the window, with a ribbon and a bow. */
-function gift(ctx: Ctx, gx: number, z: number, wrap: string) {
-  box(ctx, gx, FRONT - 2, 4, 2, 4, wrap, wrap, colors.shadow, z);
-  // The ribbon, round its front and over its top.
-  ctx.fillStyle = colors.snowLit;
-  front(ctx, gx + 1.6, gx + 2.4, FRONT, z, z + 4);
-  ctx.fill();
-  const bow = iso(gx + 2, FRONT - 1, z + 4.6);
-  ctx.beginPath();
-  ctx.ellipse(bow.x - 1, bow.y, 1.1, 0.7, 0, 0, Math.PI * 2);
-  ctx.ellipse(bow.x + 1, bow.y, 1.1, 0.7, 0, 0, Math.PI * 2);
-  ctx.fill();
+/** Where parcel `n` sits in the window: four to a shelf along the front, filling the lowest shelf first. */
+export function shelfPlace(n: number): Place {
+  const s = 3.2;
+  return { gx: -16 + (n % 4) * 5.5, gy: FRONT - s, z: 4 + Math.floor(n / 4) * 6, s };
 }
 
 /** The wooden hut, its shop window facing the lower left, with its planks. */
@@ -49,24 +33,29 @@ function hut(ctx: Ctx) {
   }
 }
 
-/** The window, dark inside, with two shelves of gifts; gift `shown` is lit and lifts a little. */
-function shopWindow(ctx: Ctx, time: number, shown: number) {
+/** The window, dark inside, its three shelves holding the parcels wrapped so far, the newest one lit. */
+function shopWindow(ctx: Ctx, time: number, wrapping: Wrapping) {
   ctx.fillStyle = colors.ink;
   front(ctx, -17, 7, FRONT, 3, 21);
   ctx.fill();
   ctx.fillStyle = colors.gingerbread;
-  for (const z of [4, 11]) {
+  for (const z of [3, 9, 15]) {
     front(ctx, -17, 7, FRONT, z, z + 1);
     ctx.fill();
   }
-
-  // A warm pool of light on the gift in the spotlight, breathing slowly.
-  const [sx, sz] = PLACES[shown] ?? PLACES[0];
-  const lit = iso(sx + 2, FRONT, sz + 2);
-  glow(ctx, lit.x, lit.y, 10, 1.6 + 0.3 * Math.sin((time / SHOW) * Math.PI * 2));
-  PLACES.forEach(([gx, z], i) => {
-    const lift = i === shown ? 0.8 + 0.5 * Math.sin(time / 600) : 0;
-    gift(ctx, gx, z + lift, (GIFTS[i] ?? GIFTS[0]).wrap);
+  const { shelf } = wrapping;
+  const newest = shelf.length - 1;
+  if (newest >= 0) {
+    // A warm pool of light on the newest parcel, breathing slowly.
+    const at = shelfPlace(newest);
+    const lit = iso(at.gx + 2, FRONT, at.z + 2);
+    glow(ctx, lit.x, lit.y, 9, 1.4 + 0.3 * Math.sin(time / 900));
+  }
+  const drop = settling(wrapping, time);
+  shelf.forEach((p, n) => {
+    const at = shelfPlace(n);
+    const z = n === newest ? at.z + 3 * drop : at.z;
+    parcel(ctx, { ...at, z }, lookOf(p));
   });
 }
 
@@ -102,10 +91,10 @@ function sign(ctx: Ctx) {
   ctx.restore();
 }
 
-/** The whole shop at `time`, back to front, with gift `shown` in the spotlight. */
-export function shop(ctx: Ctx, time: number, shown: number) {
+/** The whole shop at `time`, back to front, its window showing what's been wrapped. */
+export function shop(ctx: Ctx, time: number, wrapping: Wrapping) {
   hut(ctx);
-  shopWindow(ctx, time, shown);
+  shopWindow(ctx, time, wrapping);
   awning(ctx);
   sign(ctx);
 }
