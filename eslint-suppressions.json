@@ -114,11 +114,6 @@
       "count": 1
     }
   },
-  "scripts/square-code.ts": {
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 3
-    }
-  },
   "scripts/square-history.ts": {
     "@typescript-eslint/no-misused-spread": {
       "count": 1

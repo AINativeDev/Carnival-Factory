@@ -38,7 +38,8 @@ scripts/auto-merge-booths.ts, scripts/booth-gate.test.ts):
    folder, no symlinks, at most 40 files, 100 KB each, 300 KB in all.
    `plot.json` holds only a plot and maybe an issue number, and only a new
    booth's first pull request may add or change it (enforced by:
-   scripts/square-code.ts, scripts/square-code.test.ts).
+   scripts/square-code.ts and its rule families in scripts/square-code/,
+   scripts/square-code.test.ts, scripts/square-code/*.test.ts).
 4. **No hidden instructions** (hard): no text aimed at an AI, hidden
    characters or encoded blobs in the issue's title and body, the pull
    request's title, or the code (enforced by: scripts/injection-scan.ts,
@@ -72,12 +73,23 @@ scripts/auto-merge-booths.ts, scripts/booth-gate.test.ts):
 ## Where it lives
 
 `scripts/booth-gate.ts`, `scripts/auto-merge-booths.ts`,
-`scripts/square-code.ts`, `scripts/injection-scan.ts`,
+`scripts/square-code.ts`, which runs the code check's rule families in
+`scripts/square-code/`: `banned-names.ts` and `reach.ts` (banned globals,
+properties, strings and computed keys), `names.ts` (names that are not
+references), `imports.ts` (the import allow-list), `loading.ts` (nothing runs
+while a square loads), `syntax.ts` (`with`, `debugger`, tagged templates and
+canvases of its own), `text-checks.ts` (hidden characters and injection),
+`plot-file.ts` (`plot.json`), `square-program.ts` (the type-checked program)
+and `problems.ts` (what a problem is). Then `scripts/injection-scan.ts`,
 `.github/workflows/auto-merge-booths.yml`,
 `.github/workflows/auto-merge-digest.yml`,
 `plugins/north-pole/skills/assess-booth-risk/SKILL.md`.
 
 ## Tested by
 
-`scripts/booth-gate.test.ts`, `scripts/square-code.test.ts`,
+`scripts/booth-gate.test.ts`, `scripts/square-code.test.ts` (the check as a
+whole, and every real booth and attraction), one test file per rule family
+in `scripts/square-code/` (`banned-names.test.ts`, `imports.test.ts`,
+`loading.test.ts`, `syntax.test.ts`, `text-checks.test.ts`,
+`plot-file.test.ts`, sharing the made-up booth in `test-booth.ts`), and
 `scripts/injection-scan.test.ts`.

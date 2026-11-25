@@ -6,7 +6,7 @@
  */
 import { checkSquareCode } from '../square-code.ts';
 
-export const FOLDER = 'carnival/booths/grinch/';
+const FOLDER = 'carnival/booths/grinch/';
 
 /** The problems a booth has when its booth.ts is `code` and its other files are `extra`. */
 export const problems = (code: string, extra: Record<string, string> = {}) =>
