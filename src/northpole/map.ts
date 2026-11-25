@@ -1,9 +1,9 @@
 import { boothPlotFiles } from './booths';
 import { CLAIM_URL, REPO_URL } from './links';
 import pinned from './plots.json';
-import { landedBooths, STAGE_TEXT, type PendingBooth } from './plots';
+import { STAGE_TEXT, type PendingBooth } from './construction-sites';
+import { landedBooths } from './plots';
 import {
-  dragCentre,
   duskAt,
   fitZoom,
   frameCentre,
@@ -11,13 +11,10 @@ import {
   islandBounds,
   islandCorners,
   isPhone,
-  pinchCentre,
-  pinchZoom,
-  screenToWorld,
   SLAB,
-  worldToScreen,
   type Framing,
 } from './camera';
+import { dragCentre, pinchCentre, pinchZoom, screenToWorld, worldToScreen } from './camera-view';
 import {
   drawAurora,
   drawClouds,
@@ -73,23 +70,18 @@ import {
 } from './interior';
 import { dressRoom } from './room-dressing';
 import { nearestOpenPlot, nearYou, placeTag, platformTag, tagText, targetAt } from './visit';
+import { findPathToFirst } from './pathfinding';
 import {
-  buildWorld,
-  findPathToFirst,
   moveBy,
   nearestStand,
   plotAtDoor,
   screenDirection,
   strollAt,
   tileOf,
-  toScreen,
-  toTile,
   walkAlong,
-  type Box,
-  type Plot,
-  type Tile,
-  type World,
-} from './world';
+} from './walking';
+import { type Box, type Plot, type Tile, toScreen, toTile, type World } from './world';
+import { buildWorld } from './world-build';
 
 const { colors } = theme;
 

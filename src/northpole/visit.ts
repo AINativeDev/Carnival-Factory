@@ -5,7 +5,9 @@
  * and the tests use them the same way. Points are in world pixels unless they
  * say otherwise.
  */
-import { findPathToFirst, tileOf, type Box, type Plot, type Tile, type World } from './world';
+import { findPathToFirst } from './pathfinding';
+import { tileOf } from './walking';
+import { type Box, type Plot, type Tile, type World } from './world';
 
 /**
  * The open plots, nearest `from` first, and the path to the nearest one the

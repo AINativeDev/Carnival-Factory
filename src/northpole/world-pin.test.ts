@@ -7,7 +7,9 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import pinned from './plots.json';
 import { levelWorld } from './level';
-import { buildWorld, findPath, type World } from './world';
+import { findPath } from './pathfinding';
+import { type World } from './world';
+import { buildWorld } from './world-build';
 
 const ATTRACTIONS = ['big-top', 'cocoa-stand', 'ferris-wheel', 'frozen-pond', 'sleigh-coaster'];
 const booths = (count: number) => Array.from({ length: count }, (_, n) => `elf-${n}`);

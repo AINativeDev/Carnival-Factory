@@ -3,6 +3,8 @@
  * looks and how near. Plain functions, so the map frames the island and the
  * tests check it the same way. Everything is in world pixels, with the town
  * square's centre at (0, 0), except a viewport's size, which is in CSS pixels.
+ * Fingers moving the camera, and turning viewport points into the world and
+ * back, are in `camera-view.ts`.
  */
 import { toScreen, type Box, type Tile, type World } from './world';
 
@@ -22,8 +24,6 @@ const MAX_ZOOM = 1.25;
 export const WALK_ZOOM = 0.35;
 /** How near the camera is on a phone, following the player. */
 export const PHONE_ZOOM = 0.75;
-/** How near two fingers can pinch the camera in. */
-export const MAX_PINCH_ZOOM = 1.5;
 /** Viewports narrower than this, in CSS pixels, are framed as a phone's. */
 const PHONE_WIDTH = 720;
 
@@ -115,59 +115,6 @@ export function frameCentre(
   };
 }
 
-/**
- * Where the camera's centre goes when a finger drags the map from `from` to
- * `to`, in CSS pixels: the island moves with the finger, and the camera stops
- * where `frameCentre` would, so the drag never shows anything past `bounds`.
- */
-export function dragCentre(
-  bounds: Box,
-  width: number,
-  height: number,
-  zoom: number,
-  centre: Tile,
-  from: Tile,
-  to: Tile,
-): Tile {
-  return frameCentre(bounds, width, height, zoom, {
-    x: centre.x - (to.x - from.x) / zoom,
-    y: centre.y - (to.y - from.y) / zoom,
-  });
-}
-
-/**
- * The zoom two fingers pinch the camera to, from `zoom` as they move from
- * `from` to `to` apart: nearer as they spread, farther as they close, and never
- * farther than `min`, the whole island, or nearer than `MAX_PINCH_ZOOM`.
- */
-export function pinchZoom(zoom: number, from: number, to: number, min: number): number {
-  const next = from > 0 ? (zoom * to) / from : zoom;
-  return Math.min(Math.max(min, MAX_PINCH_ZOOM), Math.max(min, next));
-}
-
-/**
- * Where the camera's centre goes when two fingers pinch it from `zoom` to
- * `next` while the point between them moves from `from` to `to`, in CSS
- * pixels: what was under the fingers stays under them, and the camera stops
- * where `frameCentre` would.
- */
-export function pinchCentre(
-  bounds: Box,
-  width: number,
-  height: number,
-  zoom: number,
-  next: number,
-  centre: Tile,
-  from: Tile,
-  to: Tile,
-): Tile {
-  const held = screenToWorld(from, width, height, centre, zoom);
-  return frameCentre(bounds, width, height, next, {
-    x: held.x - (to.x - width / 2) / next,
-    y: held.y - (to.y - height / 2) / next,
-  });
-}
-
 /** How the camera frames the island: the zoom it settles on, and the point it looks at. */
 export interface Framing {
   zoom: number;
@@ -199,34 +146,6 @@ export function framing(
   return {
     zoom: still * (1 + WALK_ZOOM * t),
     target: { x: middle.x + (at.x - middle.x) * t, y: middle.y + (at.y - middle.y) * t },
-  };
-}
-
-/** The world point under a point in a viewport, for a camera at `centre` and `zoom`. */
-export function screenToWorld(
-  point: Tile,
-  width: number,
-  height: number,
-  centre: Tile,
-  zoom: number,
-): Tile {
-  return {
-    x: centre.x + (point.x - width / 2) / zoom,
-    y: centre.y + (point.y - height / 2) / zoom,
-  };
-}
-
-/** Where a world point shows in a viewport, for a camera at `centre` and `zoom`. */
-export function worldToScreen(
-  point: Tile,
-  width: number,
-  height: number,
-  centre: Tile,
-  zoom: number,
-): Tile {
-  return {
-    x: width / 2 + (point.x - centre.x) * zoom,
-    y: height / 2 + (point.y - centre.y) * zoom,
   };
 }
 

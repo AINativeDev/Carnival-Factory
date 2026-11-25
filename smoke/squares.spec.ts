@@ -2,9 +2,9 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node
 import { join } from 'node:path';
 import { expect, test, type Page } from './coverage';
 import { CLAIM_URL, REPO_URL } from '../src/northpole/links';
-import { worldToScreen } from '../src/northpole/camera';
+import { worldToScreen } from '../src/northpole/camera-view';
 import { CLAIM_SIGN, faceOf, middle, onFace } from '../src/northpole/render';
-import { buildWorld, toScreen, type PinnedPlots } from '../src/northpole/world';
+import { buildWorld, type PinnedPlots } from '../src/northpole/world-build';
 import { STALL_SHAPES, type StallShape, type StallStyle } from '../src/northpole/square';
 
 /** A stall option of each shape, as a booth would write it. */
@@ -546,7 +546,7 @@ test('clicking an open plot opens the form to claim a booth', async ({ page, con
   const world = buildWorld(attractions, booths, pinned, { levels: levelLogins });
   const open = world.plots.find((plot) => plot.kind === 'open')!;
   const [x, y, zoom] = (await canvas.getAttribute('data-camera'))!.split(',').map(Number);
-  const sign = toScreen({ x: open.x + (open.w - 1) / 2, y: open.y + (open.h - 1) / 2 });
+  const sign = middle(open);
   const box = (await canvas.boundingBox())!;
   const board = { x: sign.x, y: sign.y - CLAIM_SIGN.post - CLAIM_SIGN.h / 2 };
   const at = worldToScreen(board, box.width, box.height, { x, y }, zoom);

@@ -1,7 +1,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './coverage';
-import { levelWorld, validateLevel, type NorthPoleLevel } from '../src/northpole/level';
+import { levelWorld, type NorthPoleLevel } from '../src/northpole/level';
+import { validateLevel } from '../src/northpole/level-check';
 import { isNorthPoleLevel } from '../src/northpole/north-pole-levels';
 import { stillCamera, walkToDoor } from './level-walk';
 

@@ -59,15 +59,16 @@ squares and play with them, and the panels move out of the way.
 
 ## Where it lives
 
-`src/northpole/camera.ts` (`isPhone`, `PHONE_ZOOM`, `MAX_PINCH_ZOOM`,
-`dragCentre`, `pinchZoom`, `pinchCentre`), `src/northpole/map.ts` (touch,
+`src/northpole/camera.ts` (`isPhone`, `PHONE_ZOOM`),
+`src/northpole/camera-view.ts` (`MAX_PINCH_ZOOM`, `dragCentre`, `pinchZoom`,
+`pinchCentre`), `src/northpole/map.ts` (touch,
 tap and press tracking), `src/northpole/pointer.ts` (`TAP_SLOP`),
 `src/style.css`, `src/main.ts` (`renderHud`), `src/visit-hud.ts`,
 `src/northpole/frame.ts`.
 
 ## Tested by
 
-`src/northpole/camera.test.ts`, `src/northpole/pointer.test.ts`,
+`src/northpole/camera.test.ts`, `src/northpole/camera-view.test.ts`, `src/northpole/pointer.test.ts`,
 `smoke/safari.spec.ts` (the `webkit` project in `playwright.config.ts`, as an
 iPhone 13: the squares in view open and none is broken), and
 `smoke/squares.spec.ts` at 390 by 844: deep links open the map on the square,

@@ -67,7 +67,10 @@ for (const { kind, id } of played) {
     }, GRID);
     expect(raw.length, 'too few frames sampled').toBeGreaterThan(30);
     const cells: Sample[][] = Array.from({ length: GRID * GRID }, (_, c) =>
-      raw.map(({ t, cells: rgb }) => ({ t, brightness: luminance(...rgb[c]) })),
+      raw.map(({ t, cells: rgb }) => {
+        const [r = 0, g = 0, b = 0] = rgb.at(c) ?? [];
+        return { t, brightness: luminance(r, g, b) };
+      }),
     );
     expect(
       flashingArea(cells),

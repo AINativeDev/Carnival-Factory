@@ -104,10 +104,11 @@ North Pole has levels of its own too, such as The Factory,
 
 ## Where it lives
 
-`carnival/levels/`, `src/northpole/level.ts`, `src/northpole/level-props.ts`,
+`carnival/levels/`, `src/northpole/level.ts`, `src/northpole/level-check.ts`,
+`src/northpole/level-check-places.ts`, `src/northpole/level-props.ts`,
 `src/northpole/show.ts` (and the files it draws with), `src/northpole/levels.ts`,
 `src/northpole/north-pole-levels.ts`, `src/factory-tour.ts`, `src/level-hud.ts`,
-`src/northpole/world.ts` (`platformPlot`), `src/main.ts` (`renderLevel`),
+`src/northpole/world-plots.ts` (`platformPlot`), `src/main.ts` (`renderLevel`),
 `eslint.config.js`.
 
 ## Tested by

@@ -163,14 +163,18 @@ src/
                             snow slab, lit volumes, glows (plain functions)
     booths.ts               finds every booth folder and puts it on the map
     attractions.ts          finds every attraction folder and puts it on the midway
-    world.ts                the isometric world: its tiles, where each square's plot
-                            is, walking and pathfinding (plain functions)
+    world.ts                the isometric world: its tiles, ground, things and plots,
+                            and the projection (plain functions), with world-plots.ts
+                            (where each numbered plot is), world-build.ts, world-town.ts,
+                            world-sights.ts and groundwork.ts (laying it out), walking.ts
+                            and pathfinding.ts
     plots.json              the maintainers' pins: which plot each square keeps
     plots.ts                which plot each booth gets from the pins, its own plot.json
-                            and the booths being built, and reading pending.json
-                            (plain functions)
+                            and the booths being built (plain functions)
+    construction-sites.ts   the booths being built: their stages, and reading pending.json
     camera.ts               framing the island: its outline, the zoom and where the
-                            camera looks on a laptop and a phone (plain functions)
+                            camera looks on a laptop and a phone (plain functions), with
+                            camera-view.ts for viewport points and dragging and pinching
     render.ts               drawing the diorama: sky, island, fence and lights, cabins,
                             tents, the ferris wheel, stalls in each booth's chosen
                             shape, pavilions, people
@@ -464,7 +468,7 @@ A participant's **level** is a whole patch of the North Pole of their own,
 ownership** check lets them change `carnival/booths/<login>/` and `carnival/levels/<login>/`, and
 nothing else. Visitors reach it from the **sleigh station**, one platform per
 level along the main path by the entrance (`platformPlot` in
-`src/northpole/world.ts`): E, Enter or a click on a platform takes the sleigh there,
+`src/northpole/world-plots.ts`): E, Enter or a click on a platform takes the sleigh there,
 and `#/level/<login>` opens it directly. Inside, the map walks the level's own
 world, `#/level/<login>?square=<id>` puts the player in front of one of its
 squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
@@ -508,7 +512,7 @@ squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
 4. The whole folder, its squares included, within the size budget in
    `scripts/square-size.ts`.
 
-**Validation.** `validateLevel` in `src/northpole/level.ts` checks a level before
+**Validation.** `validateLevel` in `src/northpole/level-check.ts` checks a level before
 anything is drawn: the size limits, only known tiles and catalogue props,
 nothing on water or ice or on top of anything else, every square folder placed
 and every placed square with a folder, and, by pathfinding, every square and

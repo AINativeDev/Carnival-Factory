@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { levelWorld, validateLevel, type NorthPoleLevel } from './level';
+import { levelWorld, type NorthPoleLevel } from './level';
+import { validateLevel } from './level-check';
 import { squaresByLevel } from './levels';
-import { findPath, walkable } from './world';
+import { findPath } from './pathfinding';
+import { walkable } from './walking';
 
 /** A small level that passes: one square, one exit, open snow between. */
 const small = (): NorthPoleLevel => ({

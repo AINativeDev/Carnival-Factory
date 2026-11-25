@@ -217,11 +217,6 @@
       "count": 1
     }
   },
-  "src/northpole/camera.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    }
-  },
   "src/northpole/diorama.test.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
@@ -259,17 +254,6 @@
   "src/northpole/level.test.ts": {
     "@typescript-eslint/no-non-null-assertion": {
       "count": 1
-    }
-  },
-  "src/northpole/level.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 2
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unnecessary-type-conversion": {
-      "count": 2
     }
   },
   "src/northpole/levels.ts": {
@@ -362,16 +346,6 @@
     }
   },
   "src/northpole/visit.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 3
-    }
-  },
-  "src/northpole/world.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 10
-    }
-  },
-  "src/northpole/world.ts": {
     "@typescript-eslint/no-non-null-assertion": {
       "count": 3
     }
