@@ -15,7 +15,10 @@ export { CHASE, gumdropLit } from './house';
 
 const { colors } = theme;
 
-/** The treats stuck on the house so far: the fun house's one memory, for one visit. */
+/**
+ * The treats stuck on the house so far: the fun house's one memory. It lives
+ * as long as the square's frame, so it can outlast a visit, and nothing saves it.
+ */
 let house: Decorating = bare();
 
 /** The invitation over the house until the first treat goes on, breathing slowly. */

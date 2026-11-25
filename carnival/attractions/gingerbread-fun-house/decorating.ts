@@ -15,6 +15,13 @@ export const MOST = 24;
 /** How long a treat takes to pop on, in milliseconds. */
 export const POP = 320;
 
+/**
+ * How far a treat's middle keeps from the square's edges, on the house: its
+ * glow at the top of its pop (about 4.2) and the most the house's sway can
+ * carry it (about 5), so no part of it is ever cut off at the square's edge.
+ */
+export const EDGE = 10;
+
 /** Where the house leans from: the middle of its front wall's foot, in the scene's 0 to 100 units. */
 export const LEAN_FROM = { x: 40, y: 71 } as const;
 
@@ -73,7 +80,8 @@ export function decorate(
       time,
     );
     placed.push({
-      ...spot,
+      x: Math.min(100 - EDGE, Math.max(EDGE, spot.x)),
+      y: Math.min(100 - EDGE, Math.max(EDGE, spot.y)),
       treat: TREATS[count % TREATS.length] ?? 'gumdrop',
       tint: count,
       at: time,

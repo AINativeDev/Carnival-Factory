@@ -44,7 +44,7 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 - The ferris wheel is the Booths panel's Featured square.
 - Inside the Gingerbread Fun House, each tap or click on its drawing sticks a
   treat on the house where it lands (a gumdrop, an icing swirl and a candy in
-  turn, up to 24, for one visit), and an elf strolling past its two mirror
+  turn, up to 24, kept only while its frame runs), and an elf strolling past its two mirror
   windows shows in them stretched tall or squashed wide.
 - The Factory, The Academy and The Recording Studio are landmarks: opening
   one from the map, by a click, E or Enter, takes the sleigh into the North

@@ -3,6 +3,7 @@ import attraction, { CHASE, gumdropLit } from './attraction';
 import {
   bare,
   decorate,
+  EDGE,
   lean,
   LEAN_FROM,
   MOST,
@@ -59,6 +60,35 @@ describe('decorating the house', () => {
     expect(house.placed).toHaveLength(MOST);
     expect(house.count).toBe(MOST + 5);
     expect(house.placed[0]?.tint).toBe(5);
+  });
+
+  it('keeps every treat whole inside the square, however the house sways', () => {
+    // Its glow at the top of its pop, scaled like the drawing, reaches this far from its middle.
+    const reach = 3.5 * Math.max(...Array.from({ length: POP + 1 }, (_, t) => popScale(0, t)));
+    for (const [x, y] of [
+      [0, 0],
+      [100, 0],
+      [0, 100],
+      [100, 100],
+      [1, 50],
+    ] as const) {
+      const house = decorate(bare(), x, y, 0, 3);
+      for (const placed of house.placed) {
+        for (let time = 0; time < 10000; time += 250) {
+          // Where the swaying house carries the treat on the screen at `time`.
+          const turn = lean(time);
+          const dx = placed.x - LEAN_FROM.x;
+          const dy = placed.y - LEAN_FROM.y;
+          const sx = LEAN_FROM.x + dx * Math.cos(turn) - dy * Math.sin(turn);
+          const sy = LEAN_FROM.y + dx * Math.sin(turn) + dy * Math.cos(turn);
+          for (const at of [sx, sy]) {
+            expect(at - reach).toBeGreaterThanOrEqual(0);
+            expect(at + reach).toBeLessThanOrEqual(100);
+          }
+        }
+      }
+    }
+    expect(EDGE).toBeLessThan(15);
   });
 
   it('sticks a treat where it landed on the leaning house', () => {

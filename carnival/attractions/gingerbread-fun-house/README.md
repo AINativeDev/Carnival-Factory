@@ -13,8 +13,9 @@ slowly along its eaves.
 Step inside and decorate the house. Each tap or click sticks a treat where you
 point: a gumdrop, then an icing swirl, then a wrapped candy, in turn, each
 popping on in one of the gumdrop colours. The treats sway with the house. It
-holds 24 at once: after that, the oldest falls off for the newest. Nothing is
-kept after you leave.
+holds 24 at once: after that, the oldest falls off for the newest. The treats
+are never saved: they may still be there if you step out and straight back in,
+and they're gone once the page reloads or the map lets the house rest.
 
 Meanwhile an elf strolls along the snow in front of the house, there and back.
 As it passes the two round fun-house mirror windows, its reflection shows in
@@ -31,7 +32,7 @@ smoke curls from its chimney.
 
 ## The code
 
-- `attraction.ts`: the attraction, and the treats it remembers for one visit.
+- `attraction.ts`: the attraction, and the treats it remembers while it's open.
 - `house.ts`: the house itself, its mirror windows and its gumdrop lights.
 - `decorating.ts`: placing treats, and keeping them on the leaning house.
 - `mirrors.ts`: the elf's stroll, and how each mirror stretches it.
