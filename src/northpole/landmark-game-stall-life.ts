@@ -17,8 +17,8 @@ const { colors } = theme;
 /** Where the thrower stands: at the front, right of the counter, so the drawing on it stays clear. */
 export const THROWER = { along: 0.97, deep: 0.06 };
 
-/** The thrower's hand as it lets go, from where its feet are. */
-export const releaseFrom = (feet: Tile): Tile => ({ x: feet.x - 2, y: feet.y - 40 });
+/** How far above the thrower's hand the snowball it holds sits. */
+const HELD = 2;
 
 /**
  * How the thrower's throwing arm is, through one throw `t` from 0 (just let
@@ -28,6 +28,17 @@ export const releaseFrom = (feet: Tile): Tile => ({ x: feet.x - 2, y: feet.y - 4
 export function throwingArm(t: number): Tile {
   const back = t < 0.2 ? 1 - t / 0.2 : (t - 0.2) / 0.8;
   return { x: -8 + back * 14, y: -12 + back * 6 };
+}
+
+/**
+ * Where the snowball leaves from, given the thrower's feet: the ball held in
+ * its hand as the throw comes round, so it flies on from there without a
+ * jump. The hand hangs off the right shoulder, which `elf` puts 5 right of and
+ * 24 above the feet.
+ */
+export function releaseFrom(feet: Tile): Tile {
+  const arm = throwingArm(0);
+  return { x: feet.x + 5 + arm.x, y: feet.y - 24 + arm.y - HELD };
 }
 
 /** The lamp under the hood and the candy canes on the header, at the plot's `top`. */
@@ -97,7 +108,7 @@ export function stallLife(
   if (t > 0.25) {
     ctx.fillStyle = colors.snow;
     ctx.beginPath();
-    ctx.arc(hands.right.x, hands.right.y - 2, 3.5, 0, Math.PI * 2);
+    ctx.arc(hands.right.x, hands.right.y - HELD, 3.5, 0, Math.PI * 2);
     ctx.fill();
   }
 }

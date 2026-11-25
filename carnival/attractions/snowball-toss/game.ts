@@ -16,9 +16,9 @@ export const FLIGHT = 600;
 export const DOWN = 1_800;
 /** Where every snowball leaves the hand: the middle of the counter at the front. */
 export const HAND = { x: 50, y: 94 };
-/** Snowballs in the air at once, at most: more taps wait for one to land. */
-const IN_THE_AIR = 4;
-/** With nobody playing, the demo throws one every this many ms. */
+/** How far in from the square's edges a snowball may land, so all of it stays in view. */
+const EDGE = 2;
+/** With nobody playing, the demo throws one each time `time` passes a multiple of this, in ms. */
 const DEMO_EVERY = 2_400;
 /** After a person's last throw, the demo waits this long before it throws again. */
 const DEMO_WAITS = 6_000;
@@ -105,10 +105,18 @@ export function hitAt(game: Game, x: number, y: number, time: number): number {
   );
 }
 
-/** The game with the snowballs that came down by `time` landed: hits knock snowmen down and score. */
+/** The snowmen as they are at `time`: one knocked down `DOWN` ago or more has stood up again. */
+const standUp = (down: (number | null)[], time: number) =>
+  down.map((at) => (at !== null && time - at >= DOWN ? null : at));
+
+/**
+ * The game with the snowballs that came down by `time` landed: hits knock
+ * snowmen down and score. Each lands against the snowmen as they were at its
+ * own landing, in the order they were thrown, so a late frame never lets a
+ * snowball hit a snowman that was still down, nor leaves one down too long.
+ */
 function land(game: Game, time: number): Game {
-  const down = game.down.map((at) => (at !== null && time - at >= DOWN ? null : at));
-  let { score, best } = game;
+  let { down, score, best } = game;
   const throws: Throw[] = [];
   for (const ball of game.throws) {
     const lands = ball.at + FLIGHT;
@@ -116,6 +124,7 @@ function land(game: Game, time: number): Game {
       throws.push(ball);
       continue;
     }
+    down = standUp(down, lands);
     const n = hitAt({ ...game, down }, ball.x, ball.y, lands);
     if (n >= 0) {
       down[n] = lands;
@@ -123,7 +132,7 @@ function land(game: Game, time: number): Game {
     }
     best = Math.max(best, score);
   }
-  return { ...game, down, throws, score, best };
+  return { ...game, down: standUp(down, time), throws, score, best };
 }
 
 /** The demo's throw: at whichever snowman is standing, aimed where it will be when the snowball lands. */
@@ -153,24 +162,18 @@ export function advance(
     if (next.left === 0 && next.throws.every((ball) => !ball.played)) {
       next = { ...next, score: 0, left: ROUND };
     }
-    if (next.left === 0 || next.throws.length >= IN_THE_AIR) break;
+    if (next.left === 0) break;
     const ball = {
-      x: (pointer.x / size) * 100,
-      y: (pointer.y / size) * 100,
+      x: Math.min(100 - EDGE, Math.max(EDGE, (pointer.x / size) * 100)),
+      y: Math.min(100 - EDGE, Math.max(EDGE, (pointer.y / size) * 100)),
       at: time,
       played: true,
     };
     next = { ...next, throws: [...next.throws, ball], left: next.left - 1, playedAt: time };
   }
-  const lastDemo = Math.max(
-    next.playedAt + DEMO_WAITS - DEMO_EVERY,
-    ...game.throws.map((b) => b.at),
-  );
-  if (
-    time - next.playedAt > DEMO_WAITS &&
-    next.throws.length === 0 &&
-    time - lastDemo >= DEMO_EVERY
-  ) {
+  // The demo's beat comes from `time` alone, so it throws at the same moments however often it's drawn.
+  const beat = Math.floor(time / DEMO_EVERY) > Math.floor(game.last / DEMO_EVERY);
+  if (time - next.playedAt > DEMO_WAITS && next.throws.length === 0 && beat) {
     const ball = demoThrow(next, time);
     if (ball) next = { ...next, throws: [ball] };
   }

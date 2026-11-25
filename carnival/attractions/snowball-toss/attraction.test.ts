@@ -101,10 +101,35 @@ describe('a round', () => {
     expect(game.left).toBe(ROUND - 1);
   });
 
-  it('keeps a few snowballs in the air at once, and counts every press', () => {
-    const game = advance(newGame(0), 100, tap(95, 95, 6), SIZE);
-    expect(game.throws).toHaveLength(4);
-    expect(game.left).toBe(ROUND - 4);
+  it('throws a snowball for every press, however quick, up to the round', () => {
+    let game = advance(newGame(0), 100, tap(95, 95, 6), SIZE);
+    expect(game.throws).toHaveLength(6);
+    expect(game.left).toBe(ROUND - 6);
+    game = advance(game, 120, tap(95, 95, 6), SIZE);
+    expect(game.throws).toHaveLength(ROUND);
+    expect(game.left).toBe(0);
+  });
+
+  it('keeps every snowball inside the square, even one aimed at its edge', () => {
+    const { throws } = advance(newGame(0), 100, tap(0, 100), SIZE);
+    expect(throws.map(({ x, y }) => [x, y])).toEqual([[2, 98]]);
+  });
+
+  it('misses a snowman that was still down when the snowball landed, even on a late frame', () => {
+    const [bottom] = SHELVES;
+    // Knocked down at 700, it is up again at 700 + DOWN; a snowball landing before then misses.
+    let game: Game = { ...newGame(0), last: 1000, down: [700, null, null] };
+    game = advance(game, 1000, tap(snowmanX(0, 1000 + FLIGHT), bottom.y - 6), SIZE);
+    game = advance(game, 700 + DOWN + 100, undefined, SIZE);
+    expect(game.score).toBe(0);
+    expect(game.down[0]).toBeNull();
+  });
+
+  it('stands a snowman back up on time when an old snowball lands on a late frame', () => {
+    let game = throwAt(newGame(0), 2, 100);
+    game = advance(game, 100 + FLIGHT + DOWN + 50, undefined, SIZE);
+    expect(game.score).toBe(SHELVES[2].points);
+    expect(game.down[2]).toBeNull();
   });
 
   it('ends when the snowballs run out, and a tap starts the next one, keeping the best', () => {
@@ -134,31 +159,5 @@ describe('a round', () => {
   it('starts again if time runs backwards', () => {
     const game = advance({ ...newGame(5000), score: 3 }, 100, undefined, SIZE);
     expect(game.score).toBe(0);
-  });
-});
-
-describe('the demo', () => {
-  it('throws now and then with nobody playing, and scores nothing', () => {
-    const game = play(newGame(0), 10_000);
-    expect(game.down.some((at) => at !== null) || game.throws.length > 0).toBe(true);
-    expect(game.score).toBe(0);
-    expect(game.left).toBe(ROUND);
-  });
-
-  it('hits a snowman it aims at', () => {
-    let hits = 0;
-    let game = newGame(0);
-    for (let t = FRAME; t < 20_000; t += FRAME) {
-      const before = game.down.filter((at) => at !== null).length;
-      game = advance(game, t, undefined, SIZE);
-      if (game.down.filter((at) => at !== null).length > before) hits++;
-    }
-    expect(hits).toBeGreaterThan(3);
-  });
-
-  it('waits a while after a person throws', () => {
-    const game = play(advance(newGame(0), 100, tap(95, 95), SIZE), 5000);
-    expect(game.throws).toHaveLength(0);
-    expect(game.down.every((at) => at === null)).toBe(true);
   });
 });

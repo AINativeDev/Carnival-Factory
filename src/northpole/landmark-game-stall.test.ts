@@ -4,6 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { drawingOf, pinDrawing } from '../test-support/recording-canvas';
+import { elf, outfit } from './elf';
 import { drawGameStall, wobble } from './landmark-game-stall';
 import { releaseFrom, throwingArm } from './landmark-game-stall-life';
 import type { NorthPoleSquare } from './square';
@@ -35,8 +36,19 @@ describe('the game stall’s throw', () => {
     expect(throwingArm(1)).toEqual(throwingArm(0));
   });
 
-  it('lets go from above the thrower’s feet', () => {
-    expect(releaseFrom({ x: 10, y: 100 }).y).toBeLessThan(100 - 30);
+  it('lets go from the snowball it held, where its hand is as the throw comes round', () => {
+    const feet = { x: 10, y: 100 };
+    let hand = feet;
+    drawingOf((ctx) => {
+      hand = elf(ctx, feet.x, feet.y, {
+        ...outfit(0.3),
+        left: { x: 0, y: 0 },
+        right: throwingArm(0.999),
+      }).right;
+    });
+    const from = releaseFrom(feet);
+    expect(from.x).toBeCloseTo(hand.x, 0);
+    expect(from.y).toBeCloseTo(hand.y - 2, 0);
   });
 
   it('sets the middle target rocking when it lands, then still', () => {
