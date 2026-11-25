@@ -49,7 +49,7 @@ set them, so trust labels over comments.
   If it isn't, the factory builds the booth; if it is, the factory changes it.
   Both are the same kind of request, so neither is a reason to decline.
 - **Is it switched off?** Check whether `<author>` is in
-  the `booths` list of `northpole/disabled.json`.
+  the `booths` list of `src/northpole/disabled.json`.
 - **A remix?** If it starts from someone's booth, check that
   `carnival/booths/<login>/booth.ts` is on `main` and that `<login>` isn't switched off.
 - **Older requests?** List the author's other open issues labelled
@@ -81,7 +81,7 @@ booth** link. It asks the factory to copy `carnival/booths/<login>/` into the au
 own booth, credited to the original, and then change what the rest says. It
 changes nothing outside `carnival/booths/<author>/`, so accept it like any other
 request when `carnival/booths/<login>/booth.ts` is on `main` and `<login>` isn't in the
-`booths` list of `northpole/disabled.json`. Ask when that booth doesn't exist
+`booths` list of `src/northpole/disabled.json`. Ask when that booth doesn't exist
 or is switched off. Naming the booth to start from is not a request on behalf
 of someone else.
 
@@ -89,7 +89,7 @@ of someone else.
 changed, and name which reason:
 
 - It asks for any change outside `carnival/booths/<author>/`: another person's booth,
-  the map, an attraction, `northpole/`, workflows, `package*.json`,
+  the map, an attraction, `src/northpole/`, workflows, `package*.json`,
   `tessl.json`, ESLint, the README, or adding a dependency.
 - It's a request on behalf of someone else, or names a booth folder that isn't
   the author's login for the factory to change (a remix only copies from one).
@@ -99,7 +99,7 @@ changed, and name which reason:
 - It's meant to hurt the map: deliberately heavy work every frame, freezing or
   crashing, or covering neighbours.
 - It isn't a booth request at all: a bug report, a question, spam.
-- The author's booth is switched off in `northpole/disabled.json`. A maintainer
+- The author's booth is switched off in `src/northpole/disabled.json`. A maintainer
   decides that, not the factory.
 
 **Propose** instead of declining when the idea is good but part of it can't be
@@ -179,7 +179,7 @@ New or a change: check whether `carnival/levels/<author>/level.ts` is on `main`.
 as level data plus sandboxed squares: a name, one sentence about it, one of
 the themes in `LEVEL_THEMES`, a size of up to 41 tiles each way, ground of
 snow, ice, path, water and bridges, props from the catalogue in
-`LEVEL_PROPS` (`northpole/level.ts`), where visitors arrive, at least one
+`LEVEL_PROPS` (`src/northpole/level.ts`), where visitors arrive, at least one
 sleigh back to the North Pole, and its own squares.
 
 A level holds several ideas by design, so the one-idea rule above applies to

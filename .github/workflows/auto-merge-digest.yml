@@ -2,7 +2,7 @@ name: Auto-merge digest
 
 # Once a day, lists the booths that merged on their own in the last 24 hours in
 # one issue, so a person still sees every one. A maintainer who spots a problem
-# can switch the booth off in northpole/disabled.json.
+# can switch the booth off in src/northpole/disabled.json.
 on:
   schedule:
     - cron: '0 7 * * *'
@@ -43,7 +43,7 @@ jobs:
             echo "Nothing merged on its own since $since."
             exit 0
           fi
-          body="These booth changes merged on their own in the last 24 hours, after passing every check in the auto-merge gate. Have a look at each on the map${site:+ ($site)}. To switch one off, add its owner's login to the booths list in northpole/disabled.json.
+          body="These booth changes merged on their own in the last 24 hours, after passing every check in the auto-merge gate. Have a look at each on the map${site:+ ($site)}. To switch one off, add its owner's login to the booths list in src/northpole/disabled.json.
 
           $rows"
           gh issue create --title "Booths that merged on their own, $(date -u +%Y-%m-%d)" --body "$body"

@@ -9,7 +9,7 @@
  * gate runs them on a pull request's files, fetched as text.
  */
 import ts from 'typescript';
-import { readPlotFile } from '../northpole/plots.ts';
+import { readPlotFile } from '../src/northpole/plots.ts';
 import { hiddenCharacters, injectionMarkers } from './injection-scan.ts';
 
 /** Globals a square has no business with: the page, the worker, timers, the network, Node. */
@@ -112,7 +112,9 @@ export const BANNED_PROPERTIES = new Set([
 function isMapImport(folder: string, from: string, specifier: string): boolean {
   const up = folder.split('/').filter(Boolean).length;
   const depth = from.slice(folder.length).split('/').length - 1;
-  return new RegExp(`^(\\.\\./){${depth + up}}northpole/(theme|square|diorama)$`).test(specifier);
+  return new RegExp(`^(\\.\\./){${depth + up}}src/northpole/(theme|square|diorama)$`).test(
+    specifier,
+  );
 }
 const NOT_A_GLOBAL = new Set([...BANNED_GLOBALS, ...BANNED_PROPERTIES]);
 
@@ -353,7 +355,7 @@ export function checkSquareCode(folder: string, files: readonly SourceFile[]): C
             report(
               node,
               'import',
-              `Imports "${target}": only northpole/theme, northpole/square, northpole/diorama and its own folder.`,
+              `Imports "${target}": only src/northpole/theme, src/northpole/square, src/northpole/diorama and its own folder.`,
             );
         }
       }

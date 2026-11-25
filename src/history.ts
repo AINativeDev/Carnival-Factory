@@ -1,4 +1,4 @@
-import { profileUrl } from '../northpole/links';
+import { profileUrl } from './northpole/links';
 import type {
   Credits,
   Decision,

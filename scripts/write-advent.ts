@@ -10,7 +10,7 @@
  * Run by .github/workflows/pages.yml with GITHUB_TOKEN and GITHUB_REPOSITORY set.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
-import { cleanCalendar } from '../northpole/advent.ts';
+import { cleanCalendar } from '../src/northpole/advent.ts';
 import { adventCounts, type AdventRecord } from './advent.ts';
 import { getAll, repoPath } from './github-api.ts';
 

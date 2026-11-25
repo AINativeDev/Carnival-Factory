@@ -8,7 +8,7 @@
  * Run with GITHUB_TOKEN (or GH_TOKEN), GITHUB_REPOSITORY and ISSUE_NUMBER set.
  */
 import { readFileSync } from 'node:fs';
-import { cleanCalendar } from '../northpole/advent.ts';
+import { cleanCalendar } from '../src/northpole/advent.ts';
 import {
   ADVENT_FIELDS,
   adventDayOptions,

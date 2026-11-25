@@ -20,4 +20,4 @@ Its three squares, each on a stall of its own:
 - **Ice Fishing** (`squares/ice-fishing/`): a hole in the ice with a line and a
   float that bobs, and every 5 seconds a fish bites.
 
-`level.ts` is plain data, checked by `validateLevel` in `northpole/level.ts`.
+`level.ts` is plain data, checked by `validateLevel` in `src/northpole/level.ts`.

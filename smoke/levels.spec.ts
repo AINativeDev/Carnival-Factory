@@ -1,9 +1,16 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { worldToScreen } from '../northpole/camera';
-import { levelWorld, validateLevel, type NorthPoleLevel } from '../northpole/level';
-import { canStand, findPath, toScreen, type Plot, type Tile, type World } from '../northpole/world';
+import { worldToScreen } from '../src/northpole/camera';
+import { levelWorld, validateLevel, type NorthPoleLevel } from '../src/northpole/level';
+import {
+  canStand,
+  findPath,
+  toScreen,
+  type Plot,
+  type Tile,
+  type World,
+} from '../src/northpole/world';
 
 /**
  * Walks every level: from its arrival point to each of its squares, inside
@@ -14,7 +21,7 @@ import { canStand, findPath, toScreen, type Plot, type Tile, type World } from '
 
 const root = join(import.meta.dirname, '..');
 const SHOTS = join(root, 'screenshots');
-const disabled = JSON.parse(readFileSync(join(root, 'northpole/disabled.json'), 'utf8')) as {
+const disabled = JSON.parse(readFileSync(join(root, 'src/northpole/disabled.json'), 'utf8')) as {
   levels?: string[];
 };
 const off = new Set((disabled.levels ?? []).map((login) => login.toLowerCase()));

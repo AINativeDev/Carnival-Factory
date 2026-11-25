@@ -10,7 +10,7 @@
  * failing, is broken: its stand-in draws the "Under construction" placeholder.
  */
 import { canvasFont, theme } from './theme';
-import { BUILD_ID } from '../src/updates';
+import { BUILD_ID } from '../updates';
 import { readFrameMessage, type SquareKind } from './frame-protocol';
 import { rescale, withOwedPress } from './pointer';
 import { MAX_PRESSES, type NorthPoleSquare, type SquarePointer, type StallStyle } from './square';

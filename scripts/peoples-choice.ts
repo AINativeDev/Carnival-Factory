@@ -5,8 +5,12 @@
  * GitHub account, because a reaction is. An owner's own vote doesn't count,
  * nor does one given after voting closed, and the kill switch's booths drop out.
  */
-import type { BadgeHolder } from '../northpole/badges.ts';
-import type { ChoiceCategory, ChoiceEntry, PeoplesChoice } from '../northpole/peoples-choice.ts';
+import type { BadgeHolder } from '../src/northpole/badges.ts';
+import type {
+  ChoiceCategory,
+  ChoiceEntry,
+  PeoplesChoice,
+} from '../src/northpole/peoples-choice.ts';
 import { safeInline } from './safe-text.ts';
 
 /** A comment in the discussion, as the GraphQL API gives it. */

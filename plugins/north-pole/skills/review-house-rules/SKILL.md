@@ -40,7 +40,7 @@ it, so look for the indirect routes that reach the same things:
 
 The page reads `carnival/levels/<login>/level.ts` itself, so it must be one
 `NorthPoleLevel` object and nothing that runs. ESLint allows only `import
-type` from `../../../northpole/level`, `const level = { ... }` and `export
+type` from `../../../src/northpole/level`, `const level = { ... }` and `export
 default level`, with only objects, arrays, strings, numbers and booleans
 inside: no other statements (no `if`, loops or blocks), no names as values,
 and no calls, functions, getters, spreads or property reads. Look for what gets around that: values that aren't
@@ -61,7 +61,7 @@ every booth rule below.
 - `draw` is cheap enough to run every frame for every square: no big loops over
   pixels, no `getImageData` per frame, no allocation of large arrays per call.
 - Colours and fonts come from `theme` and `canvasFont` in
-  `northpole/theme.ts`. A hex colour, `rgb()` string or font string is Minor.
+  `src/northpole/theme.ts`. A hex colour, `rgb()` string or font string is Minor.
 
 ## Tidy and honest (Minor)
 

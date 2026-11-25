@@ -30,7 +30,7 @@ describe('evaluateGate', () => {
   it.each<[string, Partial<GateFacts>]>([
     [
       'a file outside the booth',
-      { changedFiles: ['carnival/booths/elf/booth.ts', 'northpole/map.ts'] },
+      { changedFiles: ['carnival/booths/elf/booth.ts', 'src/northpole/map.ts'] },
     ],
     ["another person's booth", { changedFiles: ['carnival/booths/grinch/booth.ts'] }],
     ['no changed files', { changedFiles: [] }],

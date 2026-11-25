@@ -12,7 +12,7 @@ describe('smokeScope', () => {
     expect(
       smokeScope(['carnival/booths/ana/booth.ts', 'carnival/booths/bo/booth.ts']),
     ).toBeUndefined();
-    expect(smokeScope(['carnival/booths/ana/booth.ts', 'northpole/render.ts'])).toBeUndefined();
+    expect(smokeScope(['carnival/booths/ana/booth.ts', 'src/northpole/render.ts'])).toBeUndefined();
     expect(smokeScope(['carnival/attractions/ferris-wheel/attraction.ts'])).toBeUndefined();
     expect(smokeScope(['carnival/booths/README.md'])).toBeUndefined();
     expect(smokeScope(['booths/ana/booth.ts'])).toBeUndefined();

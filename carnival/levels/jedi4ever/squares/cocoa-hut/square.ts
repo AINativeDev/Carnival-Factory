@@ -1,6 +1,6 @@
-import { box, glow, iso, scene } from '../../../../../northpole/diorama';
-import type { NorthPoleSquare } from '../../../../../northpole/square';
-import { theme } from '../../../../../northpole/theme';
+import { box, glow, iso, scene } from '../../../../../src/northpole/diorama';
+import type { NorthPoleSquare } from '../../../../../src/northpole/square';
+import { theme } from '../../../../../src/northpole/theme';
 
 const { colors } = theme;
 

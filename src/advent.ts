@@ -4,8 +4,8 @@ import {
   isDoorOpen,
   type AdventCalendar,
   type AdventChallenge,
-} from '../northpole/advent';
-import { ADVENT_REQUEST_URL, OWN_REPO_URL } from '../northpole/links';
+} from './northpole/advent';
+import { ADVENT_REQUEST_URL, OWN_REPO_URL } from './northpole/links';
 import { SIGNUP_OFFER, showSignupOffer } from './offer';
 import type { VisitHud } from './visit-hud';
 

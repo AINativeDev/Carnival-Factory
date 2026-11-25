@@ -15,5 +15,5 @@
     "noEmit": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["src", "northpole", "carnival", "scripts", "vite.config.ts", "eslint.config.js"]
+  "include": ["src", "carnival", "scripts", "vite.config.ts", "eslint.config.js"]
 }

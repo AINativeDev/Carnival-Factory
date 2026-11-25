@@ -10,7 +10,7 @@ import { closeForRepairs, createBoothRegistry, idsFromFolders } from './square';
  * own, and the map draws what it sends back. Not eager, so a booth's code is
  * only in its own chunk, which only its frame loads.
  */
-const folders = Object.keys(import.meta.glob('../carnival/booths/*/booth.ts'));
+const folders = Object.keys(import.meta.glob('../../carnival/booths/*/booth.ts'));
 // A maintainer's kill switch: logins whose booths show "Closed for repairs".
 const off = new Set((disabled.booths as string[]).map((login) => login.toLowerCase()));
 
@@ -26,7 +26,7 @@ export const boothRegistry = createBoothRegistry(
  */
 export const boothPlotFiles: Record<string, PlotFile> = Object.fromEntries(
   Object.entries(
-    import.meta.glob('../carnival/booths/*/plot.json', { eager: true, import: 'default' }),
+    import.meta.glob('../../carnival/booths/*/plot.json', { eager: true, import: 'default' }),
   )
     .map(([path, value]) => [path.split('/').at(-2)!, readPlotFile(value)] as const)
     .filter((entry): entry is readonly [string, PlotFile] => !!entry[1]),

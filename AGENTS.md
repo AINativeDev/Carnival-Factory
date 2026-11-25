@@ -67,52 +67,52 @@ src/
   peoples-choice-hud.ts     the People's Choice list below the map: the top three, the
                             Home factory's leader and every entry's votes
   style.css
-northpole/                  the map itself
-  square.ts                 the NorthPoleSquare shape, the registries and the kill switch
-  level.ts                  the NorthPoleLevel shape, its catalogue and themes, checking
+  northpole/                the map itself, and the parts every square imports
+    square.ts               the NorthPoleSquare shape, the registries and the kill switch
+    level.ts                the NorthPoleLevel shape, its catalogue and themes, checking
                             a level and laying it out as a world (plain functions)
-  levels.ts                 finds every level folder, checks it and sandboxes its squares
-  diorama.ts                the diorama style's shared parts: the dusk backdrop, the
+    levels.ts               finds every level folder, checks it and sandboxes its squares
+    diorama.ts              the diorama style's shared parts: the dusk backdrop, the
                             snow slab, lit volumes, glows (plain functions)
-  booths.ts                 finds every booth folder and puts it on the map
-  attractions.ts            finds every attraction folder and puts it on the midway
-  world.ts                  the isometric world: its tiles, where each square's plot
+    booths.ts               finds every booth folder and puts it on the map
+    attractions.ts          finds every attraction folder and puts it on the midway
+    world.ts                the isometric world: its tiles, where each square's plot
                             is, walking and pathfinding (plain functions)
-  plots.json                the maintainers' pins: which plot each square keeps
-  plots.ts                  which plot each booth gets from the pins, its own plot.json
+    plots.json              the maintainers' pins: which plot each square keeps
+    plots.ts                which plot each booth gets from the pins, its own plot.json
                             and the booths being built, and reading pending.json
                             (plain functions)
-  camera.ts                 framing the island: its outline, the zoom and where the
+    camera.ts               framing the island: its outline, the zoom and where the
                             camera looks on a laptop and a phone (plain functions)
-  render.ts                 drawing the diorama: sky, island, fence and lights, cabins,
+    render.ts               drawing the diorama: sky, island, fence and lights, cabins,
                             tents, the ferris wheel, stalls in each booth's chosen
                             shape, pavilions, people
-  map.ts                    the walkable map (camera, keys, clicks, hover tags,
+    map.ts                  the walkable map (camera, keys, clicks, hover tags,
                             and going inside a square)
-  interior.ts               the room inside a square: its layout, walking in it and
+    interior.ts             the room inside a square: its layout, walking in it and
                             out of its doorway, the fade (plain functions), and drawing it
-  owners.ts                 who owns what: each owner's colour, their avatar's address,
+    owners.ts               who owns what: each owner's colour, their avatar's address,
                             and how a picked square's highlight and call to action fade
                             (plain functions)
-  visit.ts                  visiting a square and hovering one: the plot next door,
+    visit.ts                visiting a square and hovering one: the plot next door,
                             the share line and its link, hover tags (plain functions)
-  sandbox.ts                the map's side of the sandbox: one frame per square
-  frame.ts                  runs in a square's frame (square.html) and supervises it
-  square-worker.ts          runs the square's own code on a thread of its own
-  frame-protocol.ts         the messages between them, and the checks on them
-  pointer.ts                where the pointer is inside a square, through its
+    sandbox.ts              the map's side of the sandbox: one frame per square
+    frame.ts                runs in a square's frame (square.html) and supervises it
+    square-worker.ts        runs the square's own code on a thread of its own
+    frame-protocol.ts       the messages between them, and the checks on them
+    pointer.ts              where the pointer is inside a square, through its
                             stall's front or the back wall inside (plain functions)
-  theme.ts                  colours, fonts and sizes
-  advent.ts                 the advent calendar: its challenges, its doors by date,
+    theme.ts                colours, fonts and sizes
+    advent.ts               the advent calendar: its challenges, its doors by date,
                             each owner's accepted challenges, baked in at build time,
                             and which decorations they hang on the booth (plain functions)
-  badges.ts                 the Elf Engineer badge: its holders, baked in at build
+    badges.ts               the Elf Engineer badge: its holders, baked in at build
                             time, its images and its README snippet (plain functions)
-  disabled.json             the maintainers' kill switch: closed booths and attractions
-  peoples-choice.ts         People's Choice: the closing date, cleaning the baked standings,
+    disabled.json           the maintainers' kill switch: closed booths and attractions
+    peoples-choice.ts       People's Choice: the closing date, cleaning the baked standings,
                             places and trophies (plain functions)
-  peoples-choice-standings.ts  the standings the build baked into the page
-  links.ts                  links to the repository's issue forms
+    peoples-choice-standings.ts the standings the build baked into the page
+    links.ts                links to the repository's issue forms
 docs/
   style.md                  the diorama style every square follows by default
   booth-ideas.md            ideas and tips for a booth request
@@ -184,7 +184,7 @@ ownership** check fails the pull request otherwise, so:
 
 - A participant's level, `carnival/levels/<issue author's login, in lower case>/`, is
   theirs too, for a level request (see **Levels**).
-- Never edit another person's booth or level, `carnival/attractions/`, `northpole/`, `src/`,
+- Never edit another person's booth or level, `carnival/attractions/`, `src/`,
   `plugins/`, `package*.json`, `.github/`, `eslint.config.js`, `tessl.json`,
   `.tessl-code-review.yml`, `.tessl/` or anything else outside that folder,
   even when it looks like the issue needs it. If the issue can't be done inside
@@ -222,7 +222,7 @@ for the author's own booth like any other, so the factory builds it in
   [@<login>'s <name>](../<login>/)", with `<login>` in lower case.
 
 A remix of a booth that doesn't exist, or that is switched off in
-`northpole/disabled.json`, is a question for the author.
+`src/northpole/disabled.json`, is a question for the author.
 
 **Booth changes can merge on their own.** `.github/workflows/auto-merge-booths.yml`
 runs the gate in `scripts/booth-gate.ts`. It merges a factory pull request for
@@ -258,8 +258,8 @@ uses any of it:
 **A booth is a folder** with:
 
 1. `booth.ts`, whose default export is a `NorthPoleSquare` from
-   `northpole/square.ts`, with `id` set to the folder name.
-   `northpole/booths.ts` finds it from there, so a new booth needs no change
+   `src/northpole/square.ts`, with `id` set to the folder name.
+   `src/northpole/booths.ts` finds it from there, so a new booth needs no change
    anywhere else.
 2. A `draw(ctx, size, time, pointer?)` that paints a `size` by `size` square
    from the origin. Scale everything by `size`, because the map and the preview
@@ -274,13 +274,13 @@ uses any of it:
    back wall. Ignoring `pointer` is fine. What a booth remembers of the pointer, such as when a snowball was
    thrown or a score, is the one state it keeps between calls: keep it small,
    and still move from `time`.
-3. Colours and fonts from `theme` and `canvasFont` in `northpole/theme.ts`.
+3. Colours and fonts from `theme` and `canvasFont` in `src/northpole/theme.ts`.
    No hex colours or font strings in a square. Unless the request asks for
    another style, draw it in the diorama style in [`docs/style.md`](docs/style.md):
    an isometric slab of snow at dusk, lit from the upper left, with
-   `northpole/diorama.ts` for the shared parts. For another style, such as
+   `src/northpole/diorama.ts` for the shared parts. For another style, such as
    pixel art, keep the dusk light and the palette.
-4. Imports only from `../../../northpole/` (the theme, the square's shape and
+4. Imports only from `../../../src/northpole/` (the theme, the square's shape and
    the diorama helpers) and the square's own folder. ESLint
    enforces the house rules in `eslint.config.js` on every booth and
    attraction: no network (`fetch`, `XMLHttpRequest`, `WebSocket`), no storage
@@ -300,7 +300,7 @@ uses any of it:
    second one for the stripes or the awning, is optional. The map draws the
    stall itself, with the booth's drawing on its front: the option only
    travels in the frame's `ready` message, and `readStall` in
-   `northpole/frame-protocol.ts` drops anything else, so an invalid option
+   `src/northpole/frame-protocol.ts` drops anything else, so an invalid option
    draws the usual stall. A request for a stall shape or roof colour is an
    ordinary change to the booth, made in its own `booth.ts`.
 6. A `README.md` that says what the booth shows and stays true to the code.
@@ -326,7 +326,7 @@ attraction's code. Each one runs in its own `<iframe sandbox="allow-scripts">`
 with a strict content security policy (no network, no storage, no access to the
 page), inside a worker the frame stops if it hangs, and sends the map a bitmap
 each frame. The map's draw request carries the pointer, which the frame checks
-(`readPointer` in `northpole/frame-protocol.ts`, with `presses` a whole number
+(`readPointer` in `src/northpole/frame-protocol.ts`, with `presses` a whole number
 from 0 to 20) and passes on as plain values, never the page's own events. So
 `draw` gets an `OffscreenCanvasRenderingContext2D`-like context
 with no `ctx.canvas` DOM element, and a square that throws, hangs or never
@@ -335,10 +335,10 @@ loads shows "Under construction" without touching anything else.
 **Plots stay put.** The map is an isometric world, and each square stands on a
 numbered plot: attractions round the town square, booths along the lanes. A
 plot's number always means the same place. A booth's plot comes from, in
-order: its pin in `northpole/plots.json`, which holds the attractions and the
+order: its pin in `src/northpole/plots.json`, which holds the attractions and the
 booths that were there before construction sites, and only maintainers change;
 else its own `carnival/booths/<login>/plot.json`, `{ "plot": <number>, "issue": <its
-request's issue number> }`; else the next free plot (`northpole/plots.ts`). A
+request's issue number> }`; else the next free plot (`src/northpole/plots.ts`). A
 booth with a pin or a `plot.json` never moves. If two booths' `plot.json`s
 claim one plot, the lower issue number keeps it and the other takes the next
 free plot.
@@ -356,7 +356,7 @@ where its site stood. If the login isn't there, or the file can't be read,
 write no `plot.json`: the booth takes the next free plot. A change to an
 existing booth never adds or changes its `plot.json`.
 
-**The kill switch**, `northpole/disabled.json`, has a list of booth logins, a
+**The kill switch**, `src/northpole/disabled.json`, has a list of booth logins, a
 separate list of attraction ids, and a list of level logins. A square in either
 of the first two shows "Closed for repairs" and its `draw` never runs. A level
 in the third shows "Closed for repairs" on its platform, and none of its
@@ -369,7 +369,7 @@ A participant's **level** is a whole patch of the North Pole of their own,
 ownership** check lets them change `carnival/booths/<login>/` and `carnival/levels/<login>/`, and
 nothing else. Visitors reach it from the **sleigh station**, one platform per
 level along the main path by the entrance (`platformPlot` in
-`northpole/world.ts`): E, Enter or a click on a platform takes the sleigh there,
+`src/northpole/world.ts`): E, Enter or a click on a platform takes the sleigh there,
 and `#/level/<login>` opens it directly. Inside, the map walks the level's own
 world, `#/level/<login>?square=<id>` puts the player in front of one of its
 squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
@@ -378,9 +378,9 @@ squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
 **A level is a folder** with:
 
 1. `level.ts`, whose default export is a `NorthPoleLevel` from
-   `northpole/level.ts`, with `id` set to the folder name. It is **plain
+   `src/northpole/level.ts`, with `id` set to the folder name. It is **plain
    data**, which the page reads itself: only
-   `import type { NorthPoleLevel } from '../../../northpole/level'`,
+   `import type { NorthPoleLevel } from '../../../src/northpole/level'`,
    `const level: NorthPoleLevel = { ... }` and `export default level`, with
    nothing inside but objects, arrays, strings, numbers and booleans. ESLint
    allows nothing else in it: no other statements, names, calls, functions,
@@ -404,20 +404,20 @@ squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
 2. `squares/<id>/square.ts` for each of its squares, a `NorthPoleSquare` with
    `id` set to its folder name, built exactly like a booth (the drawing
    contract, the theme, the diorama style, a `stall`, the house rules), with
-   its imports five folders up: `../../../../../northpole/`. Each one runs
+   its imports five folders up: `../../../../../src/northpole/`. Each one runs
    sandboxed in its own frame and worker, like a booth. Pure logic goes in
    plain exported functions with a `square.test.ts` beside it.
 3. A `README.md` that says what the level is about and what's in it.
 4. The whole folder, its squares included, within the size budget in
    `scripts/square-size.ts`.
 
-**Validation.** `validateLevel` in `northpole/level.ts` checks a level before
+**Validation.** `validateLevel` in `src/northpole/level.ts` checks a level before
 anything is drawn: the size limits, only known tiles and catalogue props,
 nothing on water or ice or on top of anything else, every square folder placed
 and every placed square with a folder, and, by pathfinding, every square and
 exit reachable from the arrival point. A level that fails shows "Closed for
 repairs" on its platform, and the reason goes in the console once.
-`northpole/level.test.ts` runs it on every real level, so a broken one fails
+`src/northpole/level.test.ts` runs it on every real level, so a broken one fails
 `npm run check`.
 
 **Asking for a level.** One issue form, **Your level**, labelled

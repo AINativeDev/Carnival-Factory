@@ -1,5 +1,5 @@
-import type { NorthPoleSquare, SquarePointer } from '../../../northpole/square';
-import { canvasFont, theme } from '../../../northpole/theme';
+import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
+import { canvasFont, theme } from '../../../src/northpole/theme';
 
 const { colors } = theme;
 

@@ -1,9 +1,9 @@
-import { signupOffer } from '../northpole/links';
+import { signupOffer } from './northpole/links';
 
 /**
  * The free credits offer for new Tessl sign-ups, beside a "Run this on your
  * own repo" link: one short line, its terms in small print, hidden while
- * `TESSL_SIGNUP_URL` or `TESSL_SIGNUP_OFFER` in northpole/links.ts is empty.
+ * `TESSL_SIGNUP_URL` or `TESSL_SIGNUP_OFFER` in src/northpole/links.ts is empty.
  */
 export const SIGNUP_OFFER = `<div class="history-offer" hidden>
         <p><span class="history-offer-tag">Offer</span> <a class="history-offer-link" target="_blank" rel="noopener"></a></p>

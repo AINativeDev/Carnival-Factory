@@ -18,9 +18,9 @@ describe('booth house rules', () => {
   it('pass a booth that only draws with the map', async () => {
     expect(
       await problems(`
-        import type { NorthPoleSquare } from '../../../northpole/square';
-        import { theme } from '../../../northpole/theme';
-        import { scene } from '../../../northpole/diorama';
+        import type { NorthPoleSquare } from '../../../src/northpole/square';
+        import { theme } from '../../../src/northpole/theme';
+        import { scene } from '../../../src/northpole/diorama';
         import { wobble } from './wobble';
         export const booth: NorthPoleSquare = {
           owner: 'grinch',
@@ -51,7 +51,7 @@ describe('booth house rules', () => {
     expect(
       await problems(
         `
-          import { theme } from '../../../../northpole/theme';
+          import { theme } from '../../../../src/northpole/theme';
           import { wobble } from '../wobble';
           import { star } from './star';
           export const colour = wobble(star(theme.colors.snow.length));
@@ -64,7 +64,7 @@ describe('booth house rules', () => {
   it.each([
     ['another booth', `import other from '../../jedi4ever/booth';`],
     ['a way out of its folder', `import x from '../../../main';`],
-    ['the map at the wrong depth', `import x from '../../../northpole/theme';`],
+    ['the map at the wrong depth', `import x from '../../../src/northpole/theme';`],
   ])('stop a nested helper importing %s', async (_, code) => {
     expect(await problems(code, 'carnival/booths/grinch/lib/draw.ts')).toContain(
       'no-restricted-imports',
@@ -128,13 +128,13 @@ describe('booth house rules', () => {
   });
 
   it.each([
-    ['the booth registry', `import { boothRegistry } from '../../../northpole/booths';`],
+    ['the booth registry', `import { boothRegistry } from '../../../src/northpole/booths';`],
     [
       'the attraction registry',
-      `import { attractionRegistry } from '../../../northpole/attractions';`,
+      `import { attractionRegistry } from '../../../src/northpole/attractions';`,
     ],
-    ['the kill switch', `import off from '../../../northpole/disabled.json';`],
-    ['the map', `import { startMap } from '../../../northpole/map';`],
+    ['the kill switch', `import off from '../../../src/northpole/disabled.json';`],
+    ['the map', `import { startMap } from '../../../src/northpole/map';`],
   ])('stop a booth from importing %s', async (_, code) => {
     expect(await problems(code)).toContain('no-restricted-imports');
   });
@@ -167,8 +167,8 @@ describe('booth house rules', () => {
     expect(
       await problems(
         `
-          import type { NorthPoleSquare } from '../../../northpole/square';
-          import { theme } from '../../../northpole/theme';
+          import type { NorthPoleSquare } from '../../../src/northpole/square';
+          import { theme } from '../../../src/northpole/theme';
           import { wobble } from './wobble';
           export const colour = wobble(theme.colors.snow.length) as unknown as NorthPoleSquare;
         `,
@@ -189,7 +189,7 @@ describe('booth house rules', () => {
   });
 
   it('leave the map itself alone', async () => {
-    expect(await problems(`localStorage.getItem('x');`, 'northpole/map.ts')).toEqual([]);
+    expect(await problems(`localStorage.getItem('x');`, 'src/northpole/map.ts')).toEqual([]);
   });
 });
 

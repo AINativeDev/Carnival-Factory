@@ -1,4 +1,4 @@
-import { factoryUrl } from '../northpole/badges';
+import { factoryUrl } from './northpole/badges';
 import {
   VOTING_CLOSES,
   leaders,
@@ -6,7 +6,7 @@ import {
   votingClosed,
   type ChoiceEntry,
   type PeoplesChoice,
-} from '../northpole/peoples-choice';
+} from './northpole/peoples-choice';
 import { day } from './history';
 
 /** The People's Choice list's markup, below the map. Every login goes in later, as text. */

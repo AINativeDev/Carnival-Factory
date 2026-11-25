@@ -58,7 +58,7 @@ const squareProperties = [
 // import vitest, but nothing else imports a test, so a test file can't carry
 // code past the size budget.
 function importRule(depth, test = false, up = 2) {
-  const map = `(\\.\\./){${depth + up}}northpole/(theme|square|diorama)$`;
+  const map = `(\\.\\./){${depth + up}}src/northpole/(theme|square|diorama)$`;
   const own = `(\\./${depth > 0 ? `|(\\.\\./){1,${depth}}` : ''})(?!.*\\.\\.)[\\w./-]+$`;
   return [
     'error',
@@ -67,7 +67,7 @@ function importRule(depth, test = false, up = 2) {
         {
           regex: `^(?!${map}|${own}${test ? '|vitest$' : ''})`,
           message:
-            'A square imports only northpole/theme, northpole/square, northpole/diorama and its own folder, so it adds no dependencies and reaches no other square.',
+            'A square imports only src/northpole/theme, src/northpole/square, src/northpole/diorama and its own folder, so it adds no dependencies and reaches no other square.',
         },
         ...(test
           ? []
@@ -182,7 +182,7 @@ export default tseslint.config(
         'error',
         {
           selector: 'ImportExpression',
-          message: `${ESCAPE} import(): import from ../../../northpole/ or your own folder.`,
+          message: `${ESCAPE} import(): import from ../../../src/northpole/ or your own folder.`,
         },
         {
           selector:
@@ -226,8 +226,8 @@ export default tseslint.config(
         {
           patterns: [
             {
-              regex: '^(?!\\.\\./\\.\\./\\.\\./northpole/level$)',
-              message: 'A level.ts imports only the level types from ../../../northpole/level.',
+              regex: '^(?!\\.\\./\\.\\./\\.\\./src/northpole/level$)',
+              message: 'A level.ts imports only the level types from ../../../src/northpole/level.',
             },
           ],
         },

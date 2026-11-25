@@ -52,7 +52,7 @@ describe('squaresTouched', () => {
         'carnival/booths/Ana/booth.ts',
         'carnival/booths/ana/README.md',
         'carnival/attractions/ferris-wheel/attraction.ts',
-        'northpole/map.ts',
+        'src/northpole/map.ts',
         'carnival/booths/README.md',
       ]),
     ).toEqual(['attraction/ferris-wheel', 'booth/ana']);
@@ -190,7 +190,7 @@ describe('shapeHistory', () => {
         issue(3, 'maintainer', [], '2026-11-20T10:00:00Z'),
       ],
       [
-        pull(10, 'tessl/issue-2', ['northpole/map.ts']),
+        pull(10, 'tessl/issue-2', ['src/northpole/map.ts']),
         pull(11, 'some-branch', ['carnival/booths/ana/booth.ts']),
         pull(12, 'tessl/issue-3', ['carnival/booths/ana/booth.ts'], { isCrossRepository: true }),
       ],

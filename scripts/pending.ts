@@ -13,7 +13,7 @@ import {
   reservePlots,
   type PendingBooth,
   type Stage,
-} from '../northpole/plots.ts';
+} from '../src/northpole/plots.ts';
 
 /** The label the gate puts on a request, or its pull request, that a person has to look at. */
 export const NEEDS_HUMAN = 'needs-human';

@@ -8,11 +8,11 @@ import type { NorthPoleSquare } from './square';
  * level is plain data, checked by `validateLevel` before anything is drawn;
  * its own squares run sandboxed like booths, so the page never runs them.
  */
-const files = import.meta.glob<unknown>('../carnival/levels/*/level.ts', {
+const files = import.meta.glob<unknown>('../../carnival/levels/*/level.ts', {
   eager: true,
   import: 'default',
 });
-const squareFiles = Object.keys(import.meta.glob('../carnival/levels/*/squares/*/square.ts'));
+const squareFiles = Object.keys(import.meta.glob('../../carnival/levels/*/squares/*/square.ts'));
 // A maintainer's kill switch, kept apart from the booths' and the attractions'.
 const off = new Set(((disabled.levels ?? []) as string[]).map((login) => login.toLowerCase()));
 

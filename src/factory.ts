@@ -1,5 +1,5 @@
 import type { FactoryStats } from '../scripts/factory-stats';
-import { HOW_IT_WORKS_URL, OWN_REPO_URL } from '../northpole/links';
+import { HOW_IT_WORKS_URL, OWN_REPO_URL } from './northpole/links';
 import { SIGNUP_OFFER, showSignupOffer } from './offer';
 import type { VisitHud } from './visit-hud';
 

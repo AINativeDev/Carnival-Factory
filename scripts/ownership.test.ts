@@ -101,12 +101,12 @@ describe('filesOutsideBooth', () => {
         'carnival/booths/comet/booth.ts',
         'carnival/booths/cupid/booth.ts',
         'carnival/booths/comet-two/booth.ts',
-        'northpole/map.ts',
+        'src/northpole/map.ts',
       ]),
     ).toEqual([
       'carnival/booths/cupid/booth.ts',
       'carnival/booths/comet-two/booth.ts',
-      'northpole/map.ts',
+      'src/northpole/map.ts',
     ]);
   });
 

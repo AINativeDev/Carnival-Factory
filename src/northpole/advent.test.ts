@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import calendar from '../carnival/challenges/advent.json';
+import calendar from '../../carnival/challenges/advent.json';
 import {
   ADVENT_DAYS,
   adventCountFor,

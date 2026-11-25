@@ -2,10 +2,10 @@ import { execSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vitest/config';
-import { cleanCounts } from './northpole/advent.ts';
-import { cleanHolders } from './northpole/badges.ts';
-import { BADGE_REQUEST_URL, REPO_URL } from './northpole/links.ts';
-import { cleanChoice } from './northpole/peoples-choice.ts';
+import { cleanCounts } from './src/northpole/advent.ts';
+import { cleanHolders } from './src/northpole/badges.ts';
+import { BADGE_REQUEST_URL, REPO_URL } from './src/northpole/links.ts';
+import { cleanChoice } from './src/northpole/peoples-choice.ts';
 import { readBoothAddedDates } from './scripts/booth-dates.ts';
 import { badgePage } from './scripts/elf-engineer.ts';
 import {
@@ -78,7 +78,9 @@ const sharePages: Plugin = {
   apply: 'build',
   generateBundle() {
     const root = import.meta.dirname;
-    const disabled = JSON.parse(readFileSync(join(root, 'northpole/disabled.json'), 'utf8')) as {
+    const disabled = JSON.parse(
+      readFileSync(join(root, 'src/northpole/disabled.json'), 'utf8'),
+    ) as {
       booths: string[];
       attractions: string[];
     };
@@ -142,7 +144,7 @@ const ADVENT_COUNTS = (() => {
 const PEOPLES_CHOICE = (() => {
   const file = process.env.PEOPLES_CHOICE_FILE;
   const disabled = JSON.parse(
-    readFileSync(join(import.meta.dirname, 'northpole/disabled.json'), 'utf8'),
+    readFileSync(join(import.meta.dirname, 'src/northpole/disabled.json'), 'utf8'),
   ) as { booths: string[] };
   return file && existsSync(file)
     ? cleanChoice(JSON.parse(readFileSync(file, 'utf8')), disabled.booths, REPO_URL)
@@ -221,6 +223,6 @@ export default defineConfig(({ command }) => ({
   preview: { cors: { origin: 'null' } },
   test: {
     environment: 'node',
-    include: ['{src,northpole,carnival,scripts}/**/*.test.ts'],
+    include: ['{src,carnival,scripts}/**/*.test.ts'],
   },
 }));

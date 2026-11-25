@@ -131,25 +131,25 @@ describe('levelWorld', () => {
 describe('squaresByLevel', () => {
   it('lists each level’s squares from their paths', () => {
     const paths = [
-      '../carnival/levels/b/squares/z/square.ts',
-      '../carnival/levels/b/squares/a/square.ts',
+      '../../carnival/levels/b/squares/z/square.ts',
+      '../../carnival/levels/b/squares/a/square.ts',
     ];
     expect(squaresByLevel(paths)).toEqual(new Map([['b', ['a', 'z']]]));
   });
 });
 
 // Every real level in carnival/levels/, as the page reads it: a broken one fails npm run check.
-const levels = import.meta.glob<unknown>('../carnival/levels/*/level.ts', {
+const levels = import.meta.glob<unknown>('../../carnival/levels/*/level.ts', {
   eager: true,
   import: 'default',
 });
 const squares = squaresByLevel(
-  Object.keys(import.meta.glob('../carnival/levels/*/squares/*/square.ts')),
+  Object.keys(import.meta.glob('../../carnival/levels/*/squares/*/square.ts')),
 );
 
 describe('every level', () => {
   it('has at least the starter level', () => {
-    expect(Object.keys(levels)).toContain('../carnival/levels/jedi4ever/level.ts');
+    expect(Object.keys(levels)).toContain('../../carnival/levels/jedi4ever/level.ts');
   });
 
   for (const [path, level] of Object.entries(levels)) {

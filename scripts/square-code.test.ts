@@ -13,8 +13,8 @@ const rules = (code: string, extra: Record<string, string> = {}) =>
     ...Object.entries(extra).map(([name, text]) => ({ path: `${FOLDER}${name}`, text })),
   ]).map((problem) => problem.rule);
 
-const fine = `import type { NorthPoleSquare } from '../../../northpole/square';
-import { theme } from '../../../northpole/theme';
+const fine = `import type { NorthPoleSquare } from '../../../src/northpole/square';
+import { theme } from '../../../src/northpole/theme';
 const stars = [1, 2, 3];
 function wave(time: number) { return Math.sin(time / 300); }
 const booth: NorthPoleSquare = {
@@ -76,7 +76,7 @@ describe('checkSquareCode', () => {
   });
 
   it('catches imports outside the map and the square', () => {
-    expect(rules(`import x from '../../../northpole/booths';\nexport default x;`)).toContain(
+    expect(rules(`import x from '../../../src/northpole/booths';\nexport default x;`)).toContain(
       'import',
     );
     expect(rules(`import x from '../jedi4ever/booth';\nexport default x;`)).toContain('import');
@@ -104,23 +104,23 @@ describe('checkSquareCode', () => {
     expect(
       rules(
         main,
-        lib(`import { theme } from '../../../../northpole/theme';\nexport const a = theme;`),
+        lib(`import { theme } from '../../../../src/northpole/theme';\nexport const a = theme;`),
       ),
     ).toEqual([]);
     expect(
       rules(
         main,
-        lib(`import { scene } from '../../../../northpole/diorama';\nexport const a = scene;`),
+        lib(`import { scene } from '../../../../src/northpole/diorama';\nexport const a = scene;`),
       ),
     ).toEqual([]);
     expect(
       rules(
         main,
-        lib(`import { theme } from '../../../northpole/theme';\nexport const a = theme;`),
+        lib(`import { theme } from '../../../src/northpole/theme';\nexport const a = theme;`),
       ),
     ).toContain('import');
     expect(
-      rules(main, lib(`import { x } from '../../../../northpole/map';\nexport const a = x;`)),
+      rules(main, lib(`import { x } from '../../../../src/northpole/map';\nexport const a = x;`)),
     ).toContain('import');
   });
 

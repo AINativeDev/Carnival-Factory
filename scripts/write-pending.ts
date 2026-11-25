@@ -11,7 +11,7 @@
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { boothPlotNumbers, readPlotFile, type PlotFile } from '../northpole/plots.ts';
+import { boothPlotNumbers, readPlotFile, type PlotFile } from '../src/northpole/plots.ts';
 import { getAll, get, repoPath } from './github-api.ts';
 import { checksOf, latestRequests, pendingList, type Request } from './pending.ts';
 
@@ -34,7 +34,7 @@ interface Pull {
 
 // Every booth's plot, as the build works it out.
 const root = join(import.meta.dirname, '..');
-const pins = JSON.parse(readFileSync(join(root, 'northpole/plots.json'), 'utf8')) as {
+const pins = JSON.parse(readFileSync(join(root, 'src/northpole/plots.json'), 'utf8')) as {
   booths: Record<string, number>;
 };
 const ids = readdirSync(join(root, 'carnival', 'booths'))

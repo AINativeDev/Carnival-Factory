@@ -10,8 +10,8 @@ import {
   cleanCounts,
   isDoorOpenAnywhere,
   type AdventCalendar,
-} from '../northpole/advent.ts';
-import { isRepo } from '../northpole/badges.ts';
+} from '../src/northpole/advent.ts';
+import { isRepo } from '../src/northpole/badges.ts';
 import { formField } from './elf-engineer.ts';
 import { FACTORY_BOTS } from './ownership.ts';
 

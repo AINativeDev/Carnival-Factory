@@ -1,5 +1,5 @@
-import type { MapControls, SquareKind } from '../northpole/map';
-import type { NorthPoleSquare } from '../northpole/square';
+import type { MapControls, SquareKind } from './northpole/map';
+import type { NorthPoleSquare } from './northpole/square';
 import {
   PAGE_SIZE,
   RECENT_COUNT,

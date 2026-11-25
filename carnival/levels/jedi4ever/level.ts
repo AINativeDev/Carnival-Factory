@@ -1,4 +1,4 @@
-import type { NorthPoleLevel } from '../../../northpole/level';
+import type { NorthPoleLevel } from '../../../src/northpole/level';
 
 /**
  * The Frozen Lake Fair: a small fair round a frozen lake, with skaters going

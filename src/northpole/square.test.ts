@@ -145,8 +145,8 @@ describe('idsFromFolders', () => {
   it("gives each square's folder name, sorted", () => {
     expect(
       idsFromFolders([
-        '../carnival/booths/zed/booth.ts',
-        '../carnival/booths/elf/booth.ts',
+        '../../carnival/booths/zed/booth.ts',
+        '../../carnival/booths/elf/booth.ts',
         './a-b/attraction.ts',
       ]),
     ).toEqual(['a-b', 'elf', 'zed']);
