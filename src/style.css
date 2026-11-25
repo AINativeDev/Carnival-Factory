@@ -17,11 +17,17 @@ a {
   color: var(--color-gold);
 }
 
+/*
+ * The top bar: the brand at its left, the menu of places (src/top-menu.ts,
+ * docs/specs/top-bar-menu.md) and the GitHub link at its right. It never
+ * scrolls sideways: labels go at mid width, and on a phone the places fold
+ * behind one Menu button.
+ */
 .banner {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
   height: 44px;
   padding: 0 12px;
   background: repeating-linear-gradient(
@@ -33,6 +39,7 @@ a {
 
 .brand {
   display: inline-block;
+  flex: none;
   padding: 3px 14px;
   border-radius: var(--radius);
   background: var(--color-night);
@@ -59,10 +66,8 @@ a {
 
 /* The way to the repository: every booth starts there, as an issue. */
 .repo-link {
-  position: absolute;
-  top: 50%;
-  right: 12px;
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
@@ -72,20 +77,22 @@ a {
   font-size: 14px;
   font-weight: bold;
   text-decoration: none;
-  transform: translateY(-50%);
 }
 
 .repo-link:hover,
-.repo-link:focus-visible {
+.repo-link:focus-visible,
+.top-menu-item:hover,
+.top-menu-item:focus-visible,
+.top-menu-toggle:hover,
+.top-menu-toggle:focus-visible {
   color: var(--color-gold);
   outline: 3px solid var(--color-gold);
   outline-offset: 2px;
 }
 
-/* On a phone, just the mark, so the title keeps the middle. */
-@media (max-width: 719px) {
+/* Below a laptop's width, just the mark, so the places keep their room. */
+@media (max-width: 1023px) {
   .repo-link {
-    right: 8px;
     padding: 5px;
   }
 
@@ -94,47 +101,102 @@ a {
   }
 }
 
-/* "What is this?": the way back into the intro, at the banner's left. */
-.intro-open {
-  position: absolute;
-  top: 50%;
-  left: 12px;
-  padding: 4px 12px;
+.top-menu {
+  display: flex;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.top-menu-list {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.top-menu-item,
+.top-menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
   border: 0;
   border-radius: 999px;
   background: var(--color-night);
   color: var(--color-snow);
-  font: bold 14px var(--font-family);
+  font: bold 13px var(--font-family);
+  white-space: nowrap;
+  text-decoration: none;
   cursor: pointer;
-  transform: translateY(-50%);
 }
 
-.intro-open:hover,
-.intro-open:focus-visible {
+.top-menu-item[aria-current='page'] {
   color: var(--color-gold);
-  outline: 3px solid var(--color-gold);
-  outline-offset: 2px;
+  box-shadow: inset 0 0 0 2px var(--color-gold);
 }
 
-.intro-open-mark {
+.top-menu-toggle {
   display: none;
 }
 
-/* On a phone, just the question mark, as the GitHub link keeps just its mark. */
+/* At mid width, the icons alone: the label stays for screen readers and the tooltip. */
+@media (max-width: 1023px) {
+  .top-menu-item {
+    padding: 5px;
+  }
+
+  .top-menu-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* On a phone, one Menu button, which opens the places as a list below the bar. */
 @media (max-width: 719px) {
-  .intro-open {
-    left: 8px;
-    width: 28px;
-    height: 28px;
-    padding: 0;
+  .banner {
+    padding: 0 8px;
   }
 
-  .intro-open-mark {
-    display: inline;
+  .top-menu-toggle {
+    display: inline-flex;
   }
 
-  .intro-open-text {
+  .top-menu-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 8px;
+    z-index: 25;
     display: none;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 180px;
+    padding: 6px;
+    border-radius: var(--radius);
+    background: var(--color-night);
+    box-shadow: 0 6px 18px rgb(0 0 0 / 40%);
+  }
+
+  .top-menu[data-open] .top-menu-list {
+    display: flex;
+  }
+
+  .top-menu-item {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 15px;
+  }
+
+  .top-menu-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
   }
 }
 

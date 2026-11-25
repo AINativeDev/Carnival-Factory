@@ -15,9 +15,9 @@ easy to skip.
   `north-pole-intro-seen` in `localStorage`, read and written inside
   `try`/`catch`, so a browser without storage shows it on every first load of
   `#/`.
-- "What is this?" at the left of the banner opens it again at any time, on
-  any page. On a phone it shows just a question mark, with the same name for
-  screen readers.
+- **About** in the top bar's menu ([top bar menu](top-bar-menu.md)) opens it
+  again at any time, on any page. On a phone it sits in the list behind
+  **Menu**, and the intro gives focus back to **Menu** when it closes.
 - It is a dialog (`role="dialog"`, `aria-modal`, labelled by its title,
   "Welcome to Carnival Factory – Christmas edition", from `src/edition.ts`).
   Focus moves to **Explore the North Pole** as it opens, Tab and Shift+Tab go
