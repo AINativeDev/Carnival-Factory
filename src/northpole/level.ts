@@ -9,6 +9,7 @@
  * A level's tiles run from (0, 0) at its north corner to (size - 1, size - 1),
  * with `x` down to the right on screen and `y` down to the left, as on the map.
  */
+import { LEVEL_PROPS, type LevelPropKind } from './level-props';
 import { isAttractionId, isBoothOwner } from './square';
 import { theme } from './theme';
 import {
@@ -19,7 +20,6 @@ import {
   type Ground,
   type Plot,
   type Thing,
-  type ThingKind,
   type Tile,
   type World,
 } from './world';
@@ -27,32 +27,6 @@ import {
 /** The ground a level may lay. Snow is everywhere else. */
 const LEVEL_GROUNDS = ['snow', 'ice', 'path', 'water', 'bridge'] as const;
 type LevelGround = (typeof LEVEL_GROUNDS)[number];
-
-/**
- * The engine's catalogue of North Pole things a level may place, with the
- * tiles each one covers and whether it stops people walking through it. The
- * pond is the one prop that's ground: a sheet of ice that skaters go round.
- */
-const LEVEL_PROPS = {
-  pine: { thing: 'tree', w: 1, h: 1, blocks: true },
-  drift: { thing: 'drift', w: 1, h: 1, blocks: false },
-  cabin: { thing: 'cabin', w: 3, h: 3, blocks: true },
-  lamp: { thing: 'lamp', w: 1, h: 1, blocks: true },
-  fence: { thing: 'fence', w: 1, h: 1, blocks: true },
-  stable: { thing: 'stable', w: 4, h: 3, blocks: true },
-  sleigh: { thing: 'sleigh', w: 2, h: 1, blocks: true },
-  'town-tree': { thing: 'town-tree', w: 1, h: 1, blocks: true },
-  tent: { thing: 'tent', w: 2, h: 2, blocks: true },
-  bench: { thing: 'bench', w: 1, h: 1, blocks: true },
-  cart: { thing: 'cart', w: 1, h: 1, blocks: true },
-  banner: { thing: 'banner', w: 3, h: 1, blocks: false },
-  bunting: { thing: 'bunting', w: 1, h: 5, blocks: false },
-  pond: { thing: undefined, w: 5, h: 4, blocks: true },
-} as const satisfies Record<
-  string,
-  { thing: ThingKind | undefined; w: number; h: number; blocks: boolean }
->;
-type LevelPropKind = keyof typeof LEVEL_PROPS;
 
 /**
  * The looks a level may pick, each from the map's palette: the colours of its

@@ -10,6 +10,8 @@ import { badgeFor, type BadgeTier } from './badges';
 import { trophyFor } from './peoples-choice';
 import { PEOPLES_CHOICE } from './peoples-choice-standings';
 import { alongEdge } from './camera';
+import { block, bulb, corners, diamond, glow, middle, quad, shadow, twinkle } from './brushes';
+import { drawShow } from './show';
 import { canvasFont, theme } from './theme';
 import {
   hash,
@@ -25,80 +27,10 @@ import {
   type World,
 } from './world';
 
+/** Where the map and the smoke test find a footprint's middle, as before the brushes moved. */
+export { middle };
+
 const { colors } = theme;
-
-/** Where a box's ground diamond has its corners on screen. */
-function corners(box: Box) {
-  const at = (x: number, y: number) => toScreen({ x: x - 0.5, y: y - 0.5 });
-  return {
-    top: at(box.x, box.y),
-    right: at(box.x + box.w, box.y),
-    bottom: at(box.x + box.w, box.y + box.h),
-    left: at(box.x, box.y + box.h),
-  };
-}
-
-/** The middle of a box's footprint on screen. */
-export function middle(box: Box): Tile {
-  return toScreen({ x: box.x + (box.w - 1) / 2, y: box.y + (box.h - 1) / 2 });
-}
-
-function diamond(ctx: CanvasRenderingContext2D, c: ReturnType<typeof corners>, lift = 0) {
-  ctx.beginPath();
-  ctx.moveTo(c.top.x, c.top.y - lift);
-  ctx.lineTo(c.right.x, c.right.y - lift);
-  ctx.lineTo(c.bottom.x, c.bottom.y - lift);
-  ctx.lineTo(c.left.x, c.left.y - lift);
-  ctx.closePath();
-}
-
-/** A box standing `height` high on its footprint: its two front faces and its top. */
-function block(
-  ctx: CanvasRenderingContext2D,
-  box: Box,
-  height: number,
-  top: string,
-  left: string,
-  right: string,
-  lift = 0,
-) {
-  const c = corners(box);
-  ctx.fillStyle = left;
-  ctx.beginPath();
-  ctx.moveTo(c.left.x, c.left.y - lift);
-  ctx.lineTo(c.bottom.x, c.bottom.y - lift);
-  ctx.lineTo(c.bottom.x, c.bottom.y - lift - height);
-  ctx.lineTo(c.left.x, c.left.y - lift - height);
-  ctx.fill();
-  ctx.fillStyle = right;
-  ctx.beginPath();
-  ctx.moveTo(c.bottom.x, c.bottom.y - lift);
-  ctx.lineTo(c.right.x, c.right.y - lift);
-  ctx.lineTo(c.right.x, c.right.y - lift - height);
-  ctx.lineTo(c.bottom.x, c.bottom.y - lift - height);
-  ctx.fill();
-  ctx.fillStyle = top;
-  diamond(ctx, c, lift + height);
-  ctx.fill();
-}
-
-/** A soft round glow, as a lamp or a window throws. */
-function glow(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  radius: number,
-  strength: number,
-) {
-  ctx.fillStyle = colors.glow;
-  for (const r of [radius, radius * 0.65, radius * 0.35]) {
-    ctx.globalAlpha = 0.12 * strength;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
 
 /** The tiles in view, as a range to loop over. */
 export interface TileRange {
@@ -182,16 +114,6 @@ function drawDrift(ctx: CanvasRenderingContext2D, thing: Thing) {
   ctx.ellipse(x - 2, y, width * 0.8, 5, 0, Math.PI, 0);
   ctx.ellipse(x + width * 0.3, y, width * 0.45, 8, 0, Math.PI, 0);
   ctx.fill();
-}
-
-/** A shadow on the snow under something standing. */
-function shadow(ctx: CanvasRenderingContext2D, x: number, y: number, width: number) {
-  ctx.fillStyle = colors.night;
-  ctx.globalAlpha = 0.18;
-  ctx.beginPath();
-  ctx.ellipse(x, y, width, width / 2.4, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = 1;
 }
 
 /** A pine tree with snow on its branches, `scale` times the usual size. */
@@ -556,6 +478,8 @@ export function drawThing(ctx: CanvasRenderingContext2D, thing: Thing, time: num
       return drawBanner(ctx, thing, time);
     case 'bunting':
       return drawBunting(ctx, thing, time);
+    default:
+      drawShow(ctx, thing.kind, thing, time);
   }
 }
 
@@ -584,12 +508,6 @@ export function onFace(face: Face, along: number, lift: number, outward = 0): Ti
     x: face.a.x + (face.b.x - face.a.x) * along + face.out.x * outward,
     y: face.a.y + (face.b.y - face.a.y) * along + face.out.y * outward - lift,
   };
-}
-
-function quad(ctx: CanvasRenderingContext2D, points: Tile[]) {
-  ctx.beginPath();
-  points.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
-  ctx.closePath();
 }
 
 /** A strip of a face from `from` to `to` across it, `low` to `high` up it, `outward` tiles out. */
@@ -1531,32 +1449,6 @@ function stripedRoof(
     { x: peak.x + 1, y: peak.y - 10 },
   ]);
   ctx.fill();
-}
-
-/** How bright a string light is at `time`: most of them glow, and now and then one dips. */
-function twinkle(time: number, seed: number) {
-  return 0.65 + 0.35 * Math.sin(time / 420 + seed * 1.7) * Math.sin(time / 1300 + seed * 0.3);
-}
-
-/** One warm light bulb with its glow. */
-function bulb(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  color: string,
-  strength: number,
-) {
-  ctx.globalAlpha = 0.25 * strength;
-  ctx.fillStyle = colors.glow;
-  ctx.beginPath();
-  ctx.arc(x, y, 5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = strength;
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(x, y, 2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = 1;
 }
 
 /** One of the North Pole's attractions: a pavilion on a stage, its square on the front and a striped roof. */

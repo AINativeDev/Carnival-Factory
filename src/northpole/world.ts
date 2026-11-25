@@ -1,18 +1,17 @@
 /**
- * The North Pole as a small isometric world: a tile map with a town square in
- * the middle, an avenue leading out from each of its sides, and lanes off the
- * avenues lined with booth plots. Plain functions, so the map draws it and the
- * tests check it the same way.
+ * The North Pole as a small isometric world: a tile map with a town square in the middle, an
+ * avenue leading out from each of its sides, and lanes off the avenues lined with booth plots.
+ * Plain functions, so the map draws it and the tests check it the same way.
  *
- * Tiles have whole-number coordinates with the town square's centre at (0, 0).
- * `x` runs down to the right on screen and `y` down to the left. The world is
- * built from a fixed seed and the list of squares only, never from
- * `Math.random()`, so the same squares always make the same world. A square's
- * plot comes from its number in `plots.json`, a booth's own `plot.json`, or the
- * next free number (see `plots.ts`), and a plot's number always means the same
- * place, so adding a booth never moves an attraction or an existing booth.
+ * Tiles have whole-number coordinates with the town square's centre at (0, 0). `x` runs down to
+ * the right on screen and `y` down to the left. The world is built from a fixed seed and the list
+ * of squares only, never from `Math.random()`, so the same squares always make the same world. A
+ * square's plot comes from its number in `plots.json`, a booth's own `plot.json`, or the next
+ * free number (see `plots.ts`), and a plot's number always means the same place, so adding a
+ * booth never moves an attraction or an existing booth.
  */
 import { boothPlotNumbers, placePending, type PendingBooth, type PlotFile } from './plots';
+import type { ShowKind } from './show';
 
 export interface Tile {
   x: number;
@@ -42,7 +41,8 @@ export type ThingKind =
   | 'cart'
   | 'arch'
   | 'banner'
-  | 'bunting';
+  | 'bunting'
+  | ShowKind;
 
 /** Something the map draws standing on the ground, over the tiles of `box`. */
 export interface Thing extends Box {
