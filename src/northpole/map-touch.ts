@@ -1,8 +1,10 @@
 /**
- * Fingers on the map, on a touch screen: one drags the camera round, two pinch
- * it nearer or farther, and a tap still walks or opens (map-input.ts). The
- * mouse moving over the map hovers a plot instead. The camera's arithmetic is
- * in camera.ts; this is what each finger does to it.
+ * Fingers and the mouse on the map: one finger, or the mouse with its primary
+ * button held, drags the camera round, two fingers pinch it nearer or farther,
+ * and a tap or a click that barely moved still walks or opens (map-input.ts,
+ * which `trackPointer` tells a drag's release is no click). The mouse moving
+ * with no button held hovers a plot instead. The camera's arithmetic is in
+ * camera.ts; this is what each finger, or the mouse, does to it.
  */
 import { fitZoom } from './camera';
 import { dragCentre } from './camera-view';
@@ -29,9 +31,10 @@ function placeOf(m: MapRun, event: PointerEvent): Tile {
   return { x: event.clientX - box.left, y: event.clientY - box.top };
 }
 
-/** A finger comes down: the first starts a drag, the second a pinch. */
+/** A finger comes down: the first starts a drag, the second a pinch. The mouse's primary button starts a drag too. */
 export function onPointerDown(m: MapRun, event: PointerEvent) {
-  if (event.pointerType !== 'touch' || m.visiting) return;
+  // Inside a square the pointer is the square's to play with, not the camera's.
+  if (m.visiting || (event.pointerType !== 'touch' && event.button !== 0)) return;
   const at = placeOf(m, event);
   m.fingers.set(event.pointerId, at);
   // The drag, or the pinch, goes on when a finger slides off the map.
@@ -48,16 +51,18 @@ export function onPointerDown(m: MapRun, event: PointerEvent) {
 export function onPointerEnd(m: MapRun, event: PointerEvent) {
   m.fingers.delete(event.pointerId);
   m.pinching = m.fingers.size < 2 ? undefined : pinchOf(m);
-  if (m.dragging?.id === event.pointerId) m.dragging = undefined;
+  if (m.dragging?.id !== event.pointerId) return;
+  if (m.dragging.moved) m.canvas.style.cursor = 'default';
+  m.dragging = undefined;
 }
 
-/** A finger moving drags or pinches the camera; the mouse moving hovers a plot. */
+/** A finger, or the mouse held down, moving drags or pinches the camera; the mouse moving otherwise hovers a plot. */
 export function onPointerMove(m: MapRun, event: PointerEvent) {
-  if (event.pointerType !== 'touch') {
-    const at = pointAt(m, event);
-    m.hovered = m.visiting ? undefined : plotUnder(m, at);
-    const link = !m.visiting && billboardUnder(m, at);
-    m.canvas.style.cursor = m.hovered || link ? 'pointer' : 'default';
+  const mouse = event.pointerType !== 'touch';
+  // A button let go off the page sends no pointerup here, so the drag ends at the next move.
+  if (mouse && m.fingers.has(event.pointerId) && !(event.buttons & 1)) onPointerEnd(m, event);
+  if (mouse && !m.fingers.has(event.pointerId)) {
+    hover(m, event);
     return;
   }
   if (!m.fingers.has(event.pointerId) || m.visiting || !m.camera) return;
@@ -65,6 +70,18 @@ export function onPointerMove(m: MapRun, event: PointerEvent) {
   m.fingers.set(event.pointerId, to);
   if (m.pinching) pinch(m, m.camera, m.pinching);
   else drag(m, m.camera, event.pointerId, to);
+  if (mouse && m.dragging?.moved) {
+    m.hovered = undefined;
+    m.canvas.style.cursor = 'grabbing';
+  }
+}
+
+/** The mouse over the map hovers the plot under it, and shows a hand over what a click opens. */
+function hover(m: MapRun, event: PointerEvent) {
+  const at = pointAt(m, event);
+  m.hovered = m.visiting ? undefined : plotUnder(m, at);
+  const link = !m.visiting && billboardUnder(m, at);
+  m.canvas.style.cursor = m.hovered || link ? 'pointer' : 'default';
 }
 
 /** Two fingers pinch the camera nearer or farther, round the point between them. It follows at once, without easing. */
@@ -91,7 +108,7 @@ function pinch(m: MapRun, camera: Tile, pinching: { apart: number; between: Tile
   m.pinching = next;
 }
 
-/** One finger drags the camera round, once it has moved too far to be a tap. It follows at once, without easing. */
+/** One finger, or the mouse, drags the camera round, once it has moved too far to be a tap. It follows at once, without easing. */
 function drag(m: MapRun, camera: Tile, id: number, to: Tile) {
   const { dragging } = m;
   if (dragging?.id !== id) return;

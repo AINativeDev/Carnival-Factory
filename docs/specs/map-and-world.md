@@ -28,6 +28,14 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   at its door first. Esc on the map lets go of the picked square.
 - On a touch screen the first tap on a structure shows its tag, the second
   opens it. One finger drags the map, two fingers pinch the zoom.
+- With a mouse, a press of the primary button that moves past a tap's slop
+  (`TAP_SLOP` in `src/northpole/pointer.ts`) drags the map the same way, on the
+  North Pole and on levels, ride levels too: the camera follows the mouse,
+  the cursor turns to `grabbing` while it does, and letting go is not a click,
+  so the player neither walks nor opens a square. A press that barely moves
+  still walks, opens or rides on as a click. Inside a square's room the mouse
+  is the square's to play with and never drags the camera. The map's
+  label says dragging it looks around (`src/northpole/map-touch.ts`).
 - A roadside billboard, high on braced steel legs with a catwalk and
   spotlights, stands in open snow beside the main road east, in the opening
   view, and says what's on next: AI DevCon, next in London, 7–8 June 2027 at The
@@ -52,7 +60,7 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   island and no nearer than 1.5; a walk that has taken the camera nearer than
   1.5 never makes zooming in take it farther. The camera
   never shows past the island's bounds. A walk, or the overview, takes the
-  camera back from where a finger left it.
+  camera back from where a finger, or the mouse, left it.
 - The Booths and Controls panels start open on a wide map and folded on a phone.
 - Routes (`src/route.ts`): `#/` the map; `#/?booth=<login>` or
   `#/?attraction=<id>` the map showing that square; `#/booth/<login>` and

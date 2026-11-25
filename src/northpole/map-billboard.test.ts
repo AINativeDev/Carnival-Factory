@@ -20,6 +20,7 @@ function running(things: Thing[]): MapRun {
     camera: { x: 0, y: 0 },
     zoom: 1,
     world: { things },
+    fingers: new Map(),
     targets: [],
   } as unknown as MapRun;
 }
