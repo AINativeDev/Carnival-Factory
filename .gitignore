@@ -23,3 +23,6 @@ public/avatars/
 
 # The booth requests being built, written by scripts/write-pending.ts before a deploy's build
 public/pending.json
+
+# Browser coverage the smoke tests record (smoke/coverage.ts)
+coverage-browser/

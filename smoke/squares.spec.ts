@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './coverage';
 import { CLAIM_URL, REPO_URL } from '../src/northpole/links';
 import { worldToScreen } from '../src/northpole/camera';
 import { CLAIM_SIGN, faceOf, middle, onFace } from '../src/northpole/render';

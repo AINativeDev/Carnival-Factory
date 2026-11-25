@@ -13,6 +13,10 @@ What runs on every pull request, and what each check guarantees.
 - On a pull request, CI checks that 99% of the lines it adds to `src/`,
   `scripts/` and `lint/` ran under the unit tests, and runs ShellCheck and
   actionlint.
+- The smoke run in CI records the page's own JavaScript coverage
+  (`smoke/coverage.ts`, `COVERAGE=1`) and adds it to the unit tests' line by
+  line (`npm run coverage:combined`), listing the files with the most untested
+  lines ([ADR 0032](../adr/0032-browser-coverage-counts.md)).
 - Claude Code hooks (`.claude/settings.json`) check each file an agent edits,
   and run types, Knip and the tests before it finishes. When the installed packages
   don't match `package-lock.json`, the Stop hook says only that, and asks for
@@ -111,3 +115,4 @@ What runs on every pull request, and what each check guarantees.
 `scripts/strict-types.test.ts`, `scripts/check-json.test.ts`,
 `scripts/docs-paths.test.ts`, `scripts/workflow-paths.test.ts`,
 `scripts/hooks/hooks.test.ts`, `scripts/hooks/install-drift.test.ts`.
+`scripts/e2e-coverage/convert.test.ts`, `scripts/e2e-coverage/floor.test.ts`.

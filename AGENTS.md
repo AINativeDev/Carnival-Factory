@@ -43,7 +43,9 @@ runs `npm run check` and `npm run build`. `npm run check` is:
 On a pull request, CI also runs `npm run test:changed` (99% of the lines it adds
 to `src/`, `scripts/` and `lint/` must run under the tests) and checks shell
 scripts and workflows with ShellCheck and actionlint (`npm run lint:shell`
-locally, if both are installed).
+locally, if both are installed). The smoke run also records the page's coverage
+(`COVERAGE=1 npm run smoke`, then `npm test` and `npm run coverage:combined`), and
+the combined line coverage may never fall below `lint/combined-coverage-floor.json`.
 
 **Claude Code hooks** (`.claude/settings.json`) run the same checks for you:
 each file you write or edit is checked at once, and the project checks (types,

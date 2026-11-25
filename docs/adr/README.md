@@ -49,6 +49,7 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0028](0028-analytics.md)                  | Cookieless analytics with PostHog                                  | Accepted |
 | [0029](0029-booth-craft.md)                | Squares meet the code conventions too, and show it                 | Accepted |
 | [0030](0030-peoples-choice-on-an-issue.md) | People's Choice votes on a pinned issue, not a discussion          | Accepted |
+| [0032](0032-browser-coverage-counts.md)    | Browser tests count towards coverage, line by line                 | Accepted |
 
 ## Template
 
