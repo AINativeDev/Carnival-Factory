@@ -98,6 +98,20 @@ describe('startAnalytics', () => {
       ['intro_closed', 'explore'],
     ]);
   });
+
+  it('never stops the page when sending fails, as where sendBeacon is switched off', () => {
+    const { page, listeners } = fakePage('#/');
+    let tries = 0;
+    const send = () => {
+      tries += 1;
+      throw new TypeError('navigator.sendBeacon is not a function');
+    };
+    expect(() => {
+      startAnalytics(config, page, () => 'id', send);
+    }).not.toThrow();
+    expect(() => listeners.hashchange?.({ target: null })).not.toThrow();
+    expect(tries).toBe(2);
+  });
 });
 
 describe('the page', () => {

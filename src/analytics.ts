@@ -68,8 +68,14 @@ export function startAnalytics(
 ) {
   if (!config) return;
   const pageId = newId();
+  // index.html runs this before the map in one bundle, so a send that throws
+  // (sendBeacon switched off) must never stop the map from starting.
   const track = (event: AnalyticsEvent) => {
-    capture(config, pageId, event, page.location.href, send);
+    try {
+      capture(config, pageId, event, page.location.href, send);
+    } catch {
+      // A lost event is fine; a page that won't start is not.
+    }
   };
   track(routeEvent(parseHash(page.location.hash)));
   page.addEventListener('hashchange', () => {
