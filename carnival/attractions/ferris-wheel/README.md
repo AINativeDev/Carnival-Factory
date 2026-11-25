@@ -25,8 +25,8 @@ glows warm while the pointer is over it.
 3. After a few seconds the view closes, and the wheel carries your car on
    round at its usual pace. Tap a car to ride again.
 
-Taps while a car is rising or at the top wait for the ride to finish. The ride
-is kept for one visit only, and nothing in it flashes.
+Taps while a car is rising or at the top are ignored: tap again once the ride
+is over. The ride is kept for one visit only, and nothing in it flashes.
 
 The ride's logic, where the wheel is and which car a tap picks, is in
 `ride.ts`; the view from the top is drawn in `view.ts`.
