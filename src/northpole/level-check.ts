@@ -17,6 +17,7 @@ import {
   type Check,
   type Stand,
 } from './level-check-places';
+import { rideProblems } from './coaster-ride';
 import { reachable } from './pathfinding';
 import { isBoothOwner } from './square';
 import { walkable } from './walking';
@@ -79,5 +80,6 @@ export function validateLevel(
   if (!arrival || !within(check, arrival))
     problems.push('its arrival point is not inside the level');
   if (problems.length) return problems;
-  return walkProblems(level, stands);
+  const ride = rideProblems(level.props ?? []);
+  return ride.length ? ride : walkProblems(level, stands);
 }

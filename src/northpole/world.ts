@@ -9,6 +9,7 @@
  * the right on screen and `y` down to the left. The world is built from a fixed seed and the list
  * of squares only, never from `Math.random()`, so the same squares always make the same world.
  */
+import type { CoasterLeg } from './coaster-ride';
 import type { ShowKind } from './show';
 
 export interface Tile {
@@ -50,6 +51,8 @@ export interface Thing extends Box {
   seed: number;
   /** Whether it stops people walking through it. */
   blocks: boolean;
+  /** A coaster piece's part of its level's ride (`coaster-ride.ts`). */
+  ride?: CoasterLeg;
 }
 
 /**

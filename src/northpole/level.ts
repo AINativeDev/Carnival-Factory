@@ -10,6 +10,7 @@
  * A level's tiles run from (0, 0) at its north corner to (size - 1, size - 1),
  * with `x` down to the right on screen and `y` down to the left, as on the map.
  */
+import { rideCoaster } from './coaster-ride';
 import { LEVEL_PROPS, type LevelPropKind } from './level-props';
 import { theme } from './theme';
 import { type Box, type Ground, key, type Plot, type Thing, type Tile, type World } from './world';
@@ -122,7 +123,7 @@ function layProps(
     things.push({ kind: look.thing, ...box, seed: prop.variant ?? 0, blocks: look.blocks });
     if (look.blocks) for (const t of tilesOf(box)) blocked.add(key(t.x, t.y));
   }
-  return { things, pond };
+  return { things: rideCoaster(things), pond };
 }
 
 /**
