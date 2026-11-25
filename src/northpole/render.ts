@@ -19,9 +19,9 @@ import { drawShow, type ShowKind } from './show';
 import type { NorthPoleSquare } from './square';
 import type { PaintSquare } from './faces';
 import { drawStall } from './stall';
+import { LANDMARK_DRAWERS } from './landmarks';
 import { drawBench, drawCart, drawDrift, drawFence, drawLamp, drawSleigh } from './street-things';
 import { theme } from './theme';
-import { drawTower } from './tower';
 import type { Box, Plot, Thing, ThingKind } from './world';
 
 const { colors } = theme;
@@ -77,11 +77,15 @@ export function drawPlot(
 ): Box {
   if (plot.kind === 'open' || !square) return drawOpenPlot(ctx, plot, time, near);
   const attraction = plot.kind === 'attraction';
-  const tower = attraction ? square.stall?.tower : undefined;
-  if (tower) return drawTower(ctx, plot, square, paint, time, tower);
+  // An attraction stands as the landmark it asked for: only attractions keep one (frame-protocol.ts, stallFor).
+  const landmark = attraction ? square.stall?.landmark : undefined;
+  if (landmark) return LANDMARK_DRAWERS[landmark](ctx, plot, square, paint, time);
   if (attraction && square.stall?.display) return drawDisplay(ctx, plot, square, paint);
-  // An attraction is a pavilion, unless it chose a stall, as a level's squares do: then it's that stall, signed by nobody.
-  if (attraction && !square.stall) return drawAttraction(ctx, plot, square, paint, time);
+  // An attraction with no stall is a pavilion. A level's square stands on an
+  // attraction's plot too, but it's a stall like a booth's, signed by nobody.
+  const levelSquare = 'kind' in square && square.kind === 'level';
+  if (attraction && !square.stall && !levelSquare)
+    return drawAttraction(ctx, plot, square, paint, time);
   const nobody: Owner = { color: colors.gold, you: false, ...(attraction ? { by: '' } : {}) };
   return drawStall(ctx, plot, square, paint, time, owner ?? nobody);
 }

@@ -48,6 +48,8 @@ const theAcademy: NorthPoleSquare = {
   id: 'the-academy',
   name: 'The Academy',
   description: 'Take the sleigh to the campus and walk the Academy’s lessons, one stall for each.',
+  // How it stands on the home map: what it is, not a pavilion (ADR 0042).
+  stall: { shape: 'barn', roof: 'berry', trim: 'cream', landmark: 'schoolhouse' },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
       const foot = iso(0, 0);

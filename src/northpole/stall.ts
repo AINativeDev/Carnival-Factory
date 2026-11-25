@@ -14,11 +14,12 @@ import { trophyFor } from './peoples-choice';
 import { PEOPLES_CHOICE } from './peoples-choice-standings';
 import type { NorthPoleSquare } from './square';
 import { drawElfHatPin, drawTrophy } from './stall-honours';
+import { SHAPE_PLANS } from './stall-catalogue';
+import { chosenStall } from './stall-default';
 import { STALL_BODIES } from './stall-shapes';
 import {
   plotPoint,
   STALL,
-  STALL_SHAPES_DRAWN,
   stallLook,
   stallOutline,
   stallReach,
@@ -32,8 +33,8 @@ const { colors } = theme;
 
 /**
  * A booth's stall: its square on the front, framed, with the name board over
- * it, in the shape and colours the booth chose, or a market stall with a
- * striped awning. Every shape stands on its plot, so the door and the depth
+ * it, in the shape and colours the booth chose, or else the ones its id
+ * picks (`stall-default.ts`). Every shape stands on its plot, so the door and the depth
  * order stay the same.
  */
 export function drawStall(
@@ -47,8 +48,8 @@ export function drawStall(
   const { x, y } = middle(plot);
   const face = faceOf(plot);
   const deep = face.out.x > 0 ? plot.w : plot.h;
-  const look = stallLook(square.stall);
-  const { wall, roof } = STALL_SHAPES_DRAWN[look.shape];
+  const look = stallLook(chosenStall(square));
+  const { wall, roof } = SHAPE_PLANS[look.shape];
   const ground = stallOutline(look.shape).map((at) => plotPoint(face, deep, at));
   shadow(ctx, x, y + 6, 48);
   STALL_BODIES[look.shape](ctx, {
@@ -62,6 +63,7 @@ export function drawStall(
     square,
     paint,
     owner,
+    time,
   });
   // A stall nobody owns wears no honours.
   const who = owner.by === undefined ? square.id : '';

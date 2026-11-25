@@ -48,7 +48,10 @@ describe, so a little detail goes a long way. Borrow freely from anything here.
   `acoustic-panel`s, an `on-air-light` or a pair of doors (`wall-door`) on
   the walls. The Academy and The Recording Studio are rooms like this.
 - **Squares of its own,** up to 8: little animated scenes on stalls, each drawn
-  like a booth, that visitors walk into.
+  like a booth, that visitors walk into. Each stall can be any of the booth
+  shapes in [Booth ideas](booth-ideas.md#your-stall), such as an igloo, a
+  windmill, a lighthouse or a pagoda, so the level doesn't look like one stall
+  over and over.
   In a room, a square can stand on a small display instead, an item for
   visitors to find, with its drawing on a framed card.
 - **Where visitors arrive,** and a sleigh back to the North Pole.

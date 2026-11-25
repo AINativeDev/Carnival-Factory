@@ -21,7 +21,16 @@ const square = (id: string, tower?: string): NorthPoleSquare => ({
   name: 'The Factory',
   description: '',
   draw: () => undefined,
-  ...(tower ? { stall: { shape: 'shed' as const, roof: 'gold' as const, tower } } : {}),
+  ...(tower
+    ? {
+        stall: {
+          shape: 'shed' as const,
+          roof: 'gold' as const,
+          landmark: 'tower' as const,
+          letters: tower,
+        },
+      }
+    : {}),
 });
 
 describe('a tower', () => {

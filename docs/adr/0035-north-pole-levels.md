@@ -19,7 +19,8 @@ level checks all key a level by that folder name.
 
 - A North Pole level is a folder in `carnival/levels/` like any other,
   `carnival/levels/the-factory/`, plain data plus sandboxed squares, checked by
-  `validateLevel` and given a platform at the sleigh station. Its id is in
+  `validateLevel`. It has no platform at the sleigh station: its landmark is
+  the way in ([ADR 0042](0042-attractions-stand-as-what-they-are.md)). Its id is in
   `NORTH_POLE_LEVELS` in `src/northpole/north-pole-levels.ts`.
 - The ownership check gives a North Pole level's folder only to maintainers,
   even to someone whose GitHub login is the level's id: that person keeps

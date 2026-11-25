@@ -68,8 +68,11 @@ set them, so trust labels over comments.
   small change to what's there.
 - A stall shape or roof colour is an ordinary change to the author's booth:
   the booth sets `stall` in its own `booth.ts` (see `AGENTS.md`), so it needs
-  nothing outside `carnival/booths/<author>/`. The shapes are a market stall, a shed,
-  a tent, a log cabin and a kiosk, and the colours are the `theme`'s.
+  nothing outside `carnival/booths/<author>/`. The shapes are a market stall, a shed, a tent, a log cabin, a kiosk, an igloo, a gazebo, a chalet, a treehouse, a windmill, a lighthouse, a food truck, a little carousel, a stone turret, a barn and a pagoda (`STALL_SHAPES` in
+  `src/northpole/square.ts`), and the colours are the `theme`'s. When the
+  request names no shape, the accepted proposal picks the one that suits the
+  booth's theme (a lighthouse for a seaside scene, an igloo for penguins, a
+  food truck for snacks) rather than leaving the map to pick one from the id.
 - It can be drawn with the canvas, the `theme` colours and fonts, and the
   `draw(ctx, size, time, pointer?)` contract, inside the house rules in
   `AGENTS.md`. The pointer is only where the mouse or a finger is over the
@@ -113,9 +116,9 @@ say yes. For example:
 - a character or logo someone else owns: propose an original character _in
   the spirit of_ it;
 - fast flashing: propose a gentle glow or a slow twinkle;
-- a stall shape the map doesn't draw, like a castle or a lighthouse: propose
-  the closest of the five shapes, with the rest of the idea in the drawing on
-  its front;
+- a stall shape the map doesn't draw, like a castle or a spaceship: propose
+  the closest of the shapes it does draw (a turret for a castle), with the
+  rest of the idea in the drawing on its front;
 - more than one idea, or a whole town: propose the single best scene from it.
 
 ### A picture to draw from

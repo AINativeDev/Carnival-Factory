@@ -13,6 +13,8 @@ const attraction: NorthPoleSquare = {
   name: 'Gift Shop',
   description:
     'Five small factory loops wrapped as gifts, each installable on your own repository with one command.',
+  // How it stands on the home map: what it is, not a pavilion (ADR 0042).
+  stall: { shape: 'stall', roof: 'pine', trim: 'cream', landmark: 'shopfront' },
   draw(ctx, size, time) {
     scene(ctx, size, time, () => {
       shop(ctx, time, inSpotlight(time));

@@ -1,19 +1,21 @@
 /**
  * Dresses a square's room so its inside matches its outside: log walls for a
- * cabin, striped fabric for a tent, planks for a shed, a kiosk or the usual
- * stall, trimmed in the roof colour the owner chose. And a window in the lit
+ * cabin or a chalet, striped fabric for a tent or a carousel, blocks for an
+ * igloo, a lighthouse or a turret, planks for the rest (`stall-catalogue.ts`),
+ * trimmed in the roof colour the owner chose. And a window in the lit
  * wall shows the dusk outside with snow falling, so the room feels like part of
  * the North Pole rather than a box in the dark.
  */
 import type { Room } from './interior';
 import type { StallStyle } from './square';
+import { SHAPE_PLANS, type WallMaterial } from './stall-catalogue';
 import { theme } from './theme';
 import type { Tile } from './world';
 
 const { colors } = theme;
 
 export interface WallStyle {
-  material: 'logs' | 'stripes' | 'planks';
+  material: WallMaterial;
   /** The roof colour, for the trim and a tent's stripes. */
   trim: string;
   /** A second colour: a tent's other stripe, and a highlight. */
@@ -21,13 +23,11 @@ export interface WallStyle {
 }
 
 /** How a square's room looks inside, from its stall. */
-export function wallStyle(stall: StallStyle | undefined): WallStyle {
-  const material =
-    stall?.shape === 'cabin' ? 'logs' : stall?.shape === 'tent' ? 'stripes' : 'planks';
+export function wallStyle(stall: StallStyle): WallStyle {
   return {
-    material,
-    trim: colors[stall?.roof ?? 'berry'],
-    accent: colors[stall?.trim ?? 'cream'],
+    material: SHAPE_PLANS[stall.shape].inside,
+    trim: colors[stall.roof],
+    accent: colors[stall.trim ?? 'cream'],
   };
 }
 
@@ -81,6 +81,16 @@ export function drawSideWalls(ctx: CanvasRenderingContext2D, room: Room, style: 
         ctx.globalAlpha = 0.18;
         ctx.fillStyle = colors.snowLit;
         patch(ctx, room, side, 0, 1, v, v + 0.025);
+      }
+    } else if (style.material === 'blocks') {
+      // Courses of blocks, of snow or stone, each course's joints half a block on.
+      ctx.globalAlpha = 0.28;
+      ctx.fillStyle = colors.slabShade;
+      for (let n = 0; n < 8; n++) {
+        const v = 0.06 + n * 0.11;
+        patch(ctx, room, side, 0, 1, v + 0.1, v + 0.11);
+        for (let k = n % 2 ? 0.5 : 1; k < 6; k++)
+          patch(ctx, room, side, k / 6 - 0.004, k / 6 + 0.004, v, v + 0.1);
       }
     } else if (style.material === 'stripes') {
       for (let n = 0; n < 10; n++) {

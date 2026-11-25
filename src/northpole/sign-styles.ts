@@ -2,13 +2,13 @@
  * How each kind of square letters its name board, so the midway doesn't read as
  * one typeface on one cream board: a market stall's painted cream board, a
  * shed's dark board with condensed capitals, a tent's berry banner in gold
- * italics, a cabin's carved plank, a kiosk's gold plaque, and the North Pole's
+ * italics, a cabin's carved plank, a kiosk's gold plaque, an igloo's or a
+ * lighthouse's board of snow edged in ice, and the North Pole's
  * own pavilions and towers in gold serif capitals. And how a long name stays
  * readable: it wraps onto two lines before it shrinks, and only a name too long
  * even then is shortened (its hover tag shows it whole). Plain data and
  * functions; name-board.ts draws them.
  */
-import type { StallShape } from './square';
 import { type SignFamily, theme } from './theme';
 
 const { colors } = theme;
@@ -24,8 +24,11 @@ export interface SignStyle {
   caps?: boolean;
 }
 
+/** The boards a square's name is lettered on: one per kind of stall, and the North Pole's own. */
+export type SignKind = 'stall' | 'shed' | 'tent' | 'cabin' | 'kiosk' | 'ice' | 'pavilion' | 'tower';
+
 /** Each kind of square's board. */
-export const SIGN_STYLES: Record<StallShape | 'pavilion' | 'tower', SignStyle> = {
+export const SIGN_STYLES: Record<SignKind, SignStyle> = {
   stall: {
     board: colors.cream,
     edge: colors.cocoa,
@@ -61,6 +64,13 @@ export const SIGN_STYLES: Record<StallShape | 'pavilion' | 'tower', SignStyle> =
     edge: colors.cocoa,
     ink: colors.ink,
     byInk: colors.cocoa,
+    family: 'rounded',
+  },
+  ice: {
+    board: colors.snow,
+    edge: colors.ice,
+    ink: colors.night,
+    byInk: colors.surface,
     family: 'rounded',
   },
   pavilion: {

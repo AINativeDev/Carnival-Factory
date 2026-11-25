@@ -1,7 +1,7 @@
 /**
- * An attraction that asks for a tower (`stall.tower`, its letters) stands as a
- * tall brick tower over a hall: its letters down the front in gold, lit
- * windows up its sides, a gold cog turning on top and smoke from its chimney.
+ * An attraction that asks for the tower landmark (`stall.landmark: 'tower'`,
+ * with its `letters`) stands as a tall brick tower over a hall: its letters
+ * down the front in gold, lit windows up its sides, a gold cog turning on top and smoke from its chimney.
  * It rises above every other attraction, the way The Factory's TESSL tower
  * marks the way into the level that shows how the North Pole gets built. Its
  * square's drawing still hangs at its foot, as every attraction's does, so the
@@ -10,6 +10,7 @@
  */
 import { block, bulb, corners, glow, middle, shadow, twinkle } from './brushes';
 import { band, faceOf, onFace, paintOnFace, type Face, type PaintSquare } from './faces';
+import { inset } from './landmark-parts';
 import { faceSign } from './name-board';
 import { SIGN_STYLES } from './sign-styles';
 import { PAVILION, standing } from './stall-plan';
@@ -24,14 +25,6 @@ export const TOWER = { hall: 120, tower: 190, cog: 22 };
 
 /** How far the cog on top has turned at `time`, in radians: one slow turn every 12 seconds. */
 export const cogTurn = (time: number) => ((time / 12_000) % 1) * Math.PI * 2;
-
-/** A box `inset` tiles in from each side of `box`. */
-const inset = (box: Box, by: number): Box => ({
-  x: box.x + by,
-  y: box.y + by,
-  w: box.w - by * 2,
-  h: box.h - by * 2,
-});
 
 /** The cog on top: a gold wheel with eight teeth, turning. */
 function cog(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, time: number) {

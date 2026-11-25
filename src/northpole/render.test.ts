@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { decorationsFor } from './advent';
 import { adventCrown, ADVENT_SIGN } from './advent-decorations';
-import { STALL_SHAPES_DRAWN, stallLook, stallOutline, stallReach } from './stall-plan';
+import { SHAPE_PLANS } from './stall-catalogue';
+import { PAVILION, stallLook, stallOutline, stallReach } from './stall-plan';
 import { STALL_SHAPES } from './square';
 import { theme } from './theme';
 
@@ -41,14 +42,6 @@ describe('stallOutline', () => {
 });
 
 describe('stallLook', () => {
-  it("draws today's market stall without an option", () => {
-    expect(stallLook(undefined)).toEqual({
-      shape: 'stall',
-      roof: theme.colors.berry,
-      trim: theme.colors.snow,
-    });
-  });
-
   it("uses the booth's shape and theme colours", () => {
     expect(stallLook({ shape: 'shed', roof: 'gold' })).toEqual({
       shape: 'shed',
@@ -64,14 +57,14 @@ describe('stallLook', () => {
 });
 
 describe('stallReach', () => {
-  it('covers each shape, and keeps the shed the lowest', () => {
+  it('covers each shape, tall ones under an attraction, and keeps the shed lower than the classic ones', () => {
     for (const shape of STALL_SHAPES) {
-      const { wall, roof } = STALL_SHAPES_DRAWN[shape];
+      const { wall, roof } = SHAPE_PLANS[shape];
       expect(stallReach(shape)).toBeGreaterThanOrEqual(wall + roof);
-      expect(stallReach(shape)).toBeLessThan(200);
+      expect(stallReach(shape)).toBeLessThan(PAVILION.wall + PAVILION.roof);
     }
-    const others = STALL_SHAPES.filter((shape) => shape !== 'shed').map(stallReach);
-    expect(stallReach('shed')).toBeLessThan(Math.min(...others));
+    const classic = (['stall', 'tent', 'cabin', 'kiosk'] as const).map(stallReach);
+    expect(stallReach('shed')).toBeLessThan(Math.min(...classic));
   });
 });
 

@@ -8,6 +8,17 @@ import { block, quad } from './brushes';
 import { band } from './faces';
 import type { StallShape } from './square';
 import { drawCabinStall } from './stall-cabin';
+import { drawIgloo } from './stall-igloo';
+import { drawGazebo } from './stall-gazebo';
+import { drawChalet } from './stall-chalet';
+import { drawTreehouse } from './stall-treehouse';
+import { drawWindmill } from './stall-windmill';
+import { drawLighthouse } from './stall-lighthouse';
+import { drawFoodTruck } from './stall-food-truck';
+import { drawCarouselStall } from './stall-carousel';
+import { drawTurret } from './stall-turret';
+import { drawBarn } from './stall-barn';
+import { drawPagoda } from './stall-pagoda';
 import { awning, stallCounter, stallFront } from './stall-front';
 import { plotPoint, STALL, stallOutline, type StallParts } from './stall-plan';
 import { peakedRoof, prism } from './stall-volumes';
@@ -118,4 +129,15 @@ export const STALL_BODIES: Record<
   tent: drawTentStall,
   cabin: drawCabinStall,
   kiosk: drawKiosk,
+  igloo: drawIgloo,
+  gazebo: drawGazebo,
+  chalet: drawChalet,
+  treehouse: drawTreehouse,
+  windmill: drawWindmill,
+  lighthouse: drawLighthouse,
+  'food-truck': drawFoodTruck,
+  carousel: drawCarouselStall,
+  turret: drawTurret,
+  barn: drawBarn,
+  pagoda: drawPagoda,
 };

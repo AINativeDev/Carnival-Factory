@@ -43,6 +43,8 @@ const attraction: NorthPoleSquare = {
   id: 'big-top',
   name: "Santa's Big Top",
   description: "Santa's workshop under a striped big top, with elves peeking out of the flaps.",
+  // How it stands on the home map: what it is, not a pavilion (ADR 0042).
+  stall: { shape: 'tent', roof: 'berry', trim: 'snow', landmark: 'big-top' },
   draw(ctx, size, time) {
     scene(ctx, size, time, () => {
       const x = 50;

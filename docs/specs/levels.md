@@ -9,8 +9,10 @@ and The Recording Studio, `carnival/levels/the-studio/`
 
 ## Behaviour
 
-- The sleigh station has one 2 by 2 platform per level, 3 tiles apart, along
-  the main path by the entrance, sorted by login. E, Enter or a click on an
+- The sleigh station has one 2 by 2 platform per participant's level, 3 tiles
+  apart, along the main path by the entrance, sorted by login. The North
+  Pole's own levels have no platform: their landmark attraction is the way in
+  ([ADR 0042](../adr/0042-attractions-stand-as-what-they-are.md)). E, Enter or a click on an
   open platform takes the sleigh there. A closed level's platform says
   "Closed for repairs" and has no sleigh.
 - `#/level/<login>` walks the level's own world, with "Back to the North

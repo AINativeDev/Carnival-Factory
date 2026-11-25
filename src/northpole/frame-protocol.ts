@@ -8,8 +8,9 @@ import {
   isAttractionId,
   isBoothOwner,
   MAX_PRESSES,
+  LANDMARK_LETTERS,
+  LANDMARKS,
   STALL_SHAPES,
-  TOWER_LETTERS,
   type SquarePointer,
   type StallStyle,
   type ThemeColor,
@@ -83,28 +84,48 @@ const isThemeColor = (value: unknown): value is ThemeColor =>
 
 /**
  * Checks a square's stall option: a `shape` from `STALL_SHAPES`, a `roof`
- * that names a `theme` colour, a `trim` that is missing or names one too, and
- * a `tower` that is missing or one to six capitals, and a `display` that is
- * missing or a boolean, kept only when it's true. Anything else gives
- * undefined, and the map draws the usual stall. Only those fields are kept.
+ * that names a `theme` colour, a `trim` that is missing or names one too, a
+ * `landmark` that is missing or one of `LANDMARKS`, and `letters` that are
+ * missing or one to six capitals, and a `display` that is missing or a
+ * boolean, kept only when it's true. Anything else gives undefined, and the
+ * map draws the stall the square's id picks. Only those fields are kept.
  */
 export function readStall(value: unknown): StallStyle | undefined {
   if (typeof value !== 'object' || value === null) return undefined;
-  const { shape, roof, trim, tower, display } = value as Record<string, unknown>;
-  if (typeof shape !== 'string' || !(STALL_SHAPES as readonly string[]).includes(shape)) {
-    return undefined;
-  }
-  if (!isThemeColor(roof)) return undefined;
+  const { shape, roof, trim, landmark, letters, display } = value as Record<string, unknown>;
+  if (!isOneOf(STALL_SHAPES, shape) || !isThemeColor(roof)) return undefined;
   if (trim !== undefined && !isThemeColor(trim)) return undefined;
-  if (tower !== undefined && (typeof tower !== 'string' || !TOWER_LETTERS.test(tower)))
+  if (landmark !== undefined && !isOneOf(LANDMARKS, landmark)) return undefined;
+  if (letters !== undefined && (typeof letters !== 'string' || !LANDMARK_LETTERS.test(letters)))
     return undefined;
   if (display !== undefined && typeof display !== 'boolean') return undefined;
   return {
-    shape: shape as StallStyle['shape'],
+    shape,
     roof,
     ...(trim === undefined ? {} : { trim }),
-    ...(tower === undefined ? {} : { tower }),
-    ...(display ? { display } : {}),
+    ...(landmark === undefined ? {} : { landmark }),
+    ...(letters === undefined ? {} : { letters }),
+    ...(display === true ? { display } : {}),
+  };
+}
+
+/** Whether `value` is one of `list`'s strings. */
+const isOneOf = <T extends string>(list: readonly T[], value: unknown): value is T =>
+  typeof value === 'string' && (list as readonly string[]).includes(value);
+
+/**
+ * The stall a square of `kind` may stand in: an attraction keeps all of it, a
+ * booth or a level's square loses any landmark and its letters, since only
+ * the North Pole's own attractions stand as landmarks (ADR 0042). A level's
+ * square keeps its `display` (ADR 0040); a booth never stands as one.
+ */
+export function stallFor(kind: SquareKind, stall: StallStyle | undefined): StallStyle | undefined {
+  if (!stall || kind === 'attraction') return stall;
+  return {
+    shape: stall.shape,
+    roof: stall.roof,
+    ...(stall.trim === undefined ? {} : { trim: stall.trim }),
+    ...(kind === 'level' && stall.display ? { display: true } : {}),
   };
 }
 

@@ -99,7 +99,7 @@ describe('the plots, pinned before the renderer split', () => {
       );
     prints.tower = atTimes(
       attraction,
-      square('f', { shape: 'shed', roof: 'gold', tower: 'TESSL' }),
+      square('f', { shape: 'shed', roof: 'gold', landmark: 'tower', letters: 'TESSL' }),
     );
     prints.open = atTimes({ ...front, kind: 'open' }, undefined);
     prints['open near'] = atTimes({ ...front, kind: 'open' }, undefined, true);

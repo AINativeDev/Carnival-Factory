@@ -10,6 +10,12 @@ A booth is one participant's square on the map: the folder
 - A booth's sign shows `@<login>` and the owner's avatar, or an elf's
   silhouette when the build has none. Elf Engineer pins, People's Choice
   trophies and advent decorations are drawn on the stall by the map.
+- A booth's stall stands in the shape its `stall` names, one of 16
+  (`STALL_SHAPES`), with the drawing on its front and the name board over it.
+  A booth with no `stall` gets a shape and colours picked from its login, the
+  same every time, so the lanes are varied without any request
+  (`src/northpole/stall-default.ts`). The factory picks a shape that suits
+  each booth unless the request names one.
 - Inside a booth, the visit panel offers Remix this booth, Ask for a change,
   Share it as yours and the owner's season card (see
   [visit panel](visit-panel-and-history.md)).
@@ -67,5 +73,7 @@ A booth is one participant's square on the map: the folder
 ## Tested by
 
 `src/northpole/booths.test.ts`, `scripts/ownership.test.ts`,
-`scripts/square-lint.test.ts`, `src/northpole/links.test.ts`, each booth's own
-`booth.test.ts`.
+`scripts/square-lint.test.ts`, `src/northpole/links.test.ts`,
+`src/northpole/stall-default.test.ts` (a shape picked from the id),
+`src/northpole/render-pins-plots.test.ts` (every stall shape pinned),
+`smoke/stall-shapes.spec.ts`, each booth's own `booth.test.ts`.

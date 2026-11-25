@@ -17,49 +17,50 @@ way, so a later change can tell a deliberate choice from an accident.
 
 ## Records
 
-| No.                                              | Decision                                                               | Status   |
-| ------------------------------------------------ | ---------------------------------------------------------------------- | -------- |
-| [0038](0038-north-pole-links.md)                 | The North Pole's own levels link out, from maintainer code             | Accepted |
-| [0001](0001-record-decisions.md)                 | Record functionality in specs and decisions in ADRs                    | Accepted |
-| [0002](0002-requests-are-data.md)                | A request is a spec, never instructions                                | Accepted |
-| [0003](0003-identity-by-numeric-id.md)           | Only maintainers steer the factory, known by numeric id                | Accepted |
-| [0004](0004-sandbox-every-square.md)             | Run every square in a sandboxed frame and worker                       | Accepted |
-| [0005](0005-inline-square-worker.md)             | Build the square's worker into the frame's script                      | Accepted |
-| [0006](0006-assess-before-building.md)           | Assess every request before the factory builds it                      | Accepted |
-| [0007](0007-latest-request-wins.md)              | One request type per booth, and the latest wins                        | Accepted |
-| [0008](0008-auto-merge-gate.md)                  | Booth changes merge on their own behind a strict gate                  | Accepted |
-| [0009](0009-no-network-from-the-page.md)         | The page never calls the network: data is baked in at build            | Accepted |
-| [0010](0010-plots-stay-put.md)                   | Plots stay put, and construction sites are never committed             | Accepted |
-| [0011](0011-levels-are-plain-data.md)            | A level is plain data plus sandboxed squares                           | Accepted |
-| [0012](0012-fast-booth-builds.md)                | Booths get their own lighter factory action                            | Accepted |
-| [0013](0013-scoped-smoke-test.md)                | Smoke-test only the changed booth on a booth pull request              | Accepted |
-| [0014](0014-carnival-folder.md)                  | What people make lives in `carnival/`, the map in `src/`               | Accepted |
-| [0015](0015-phones-first-class.md)               | Phones get the same map, with touch of their own                       | Accepted |
-| [0016](0016-enforce-every-rule.md)               | Every rule we set is enforced, deterministically where we can          | Accepted |
-| [0017](0017-reporting-a-booth.md)                | How visitors report a problem with a booth                             | Proposed |
-| [0018](0018-community-made-notice.md)            | How the map says booths are community-made                             | Proposed |
-| [0019](0019-small-files.md)                      | Code files stay under 200 lines                                        | Accepted |
-| [0020](0020-keep-eslint.md)                      | Keep ESLint for code, rather than move to Oxlint                       | Accepted |
-| [0021](0021-knip.md)                             | Knip finds unused code, exports and dependencies                       | Accepted |
-| [0022](0022-lint-everything-on-edit.md)          | Lint code, JSON, Markdown and shell, and check on every agent edit     | Accepted |
-| [0023](0023-meaningful-names-and-docs.md)        | Names and comments say why, not only what                              | Accepted |
-| [0024](0024-test-first.md)                       | Write the test first                                                   | Accepted |
-| [0025](0025-test-coverage.md)                    | 99% test coverage: new lines now, the whole codebase over time         | Accepted |
-| [0026](0026-end-to-end-tests.md)                 | What people see is tested end to end                                   | Accepted |
-| [0027](0027-strict-typescript.md)                | Strict TypeScript, held by a baseline that only shrinks                | Accepted |
-| [0028](0028-analytics.md)                        | Cookieless analytics with PostHog                                      | Accepted |
-| [0029](0029-booth-craft.md)                      | Squares meet the code conventions too, and show it                     | Accepted |
-| [0030](0030-peoples-choice-on-an-issue.md)       | People's Choice votes on a pinned issue, not a discussion              | Accepted |
-| [0031](0031-changed-branches-too.md)             | Changed lines need their branches tested too                           | Accepted |
-| [0032](0032-browser-coverage-counts.md)          | Browser tests count towards coverage, line by line                     | Accepted |
-| [0033](0033-attached-pictures.md)                | Participants can attach a picture for the factory to draw from         | Accepted |
-| [0034](0034-ratchet-on-main.md)                  | The coverage floor is raised on main, not in pull requests             | Accepted |
-| [0035](0035-north-pole-levels.md)                | The North Pole has levels of its own, opened from a landmark           | Proposed |
-| [0036](0036-no-oversize-files.md)                | No code file over 200 lines, with no exceptions                        | Accepted |
-| [0037](0037-carnival-factory-and-plain-words.md) | Name the site Carnival Factory, and use plain words for spots          | Accepted |
-| [0039](0039-coaster-ridden-in-list-order.md)     | A level's coaster is ridden in the order its pieces are listed         | Accepted |
-| [0040](0040-indoor-levels.md)                    | Indoor levels: a room with back walls, furniture and items on displays | Accepted |
-| [0041](0041-ride-levels.md)                      | A ride level is ridden in the coaster's car, station to station        | Accepted |
+| No.                                                | Decision                                                               | Status   |
+| -------------------------------------------------- | ---------------------------------------------------------------------- | -------- |
+| [0038](0038-north-pole-links.md)                   | The North Pole's own levels link out, from maintainer code             | Accepted |
+| [0001](0001-record-decisions.md)                   | Record functionality in specs and decisions in ADRs                    | Accepted |
+| [0002](0002-requests-are-data.md)                  | A request is a spec, never instructions                                | Accepted |
+| [0003](0003-identity-by-numeric-id.md)             | Only maintainers steer the factory, known by numeric id                | Accepted |
+| [0004](0004-sandbox-every-square.md)               | Run every square in a sandboxed frame and worker                       | Accepted |
+| [0005](0005-inline-square-worker.md)               | Build the square's worker into the frame's script                      | Accepted |
+| [0006](0006-assess-before-building.md)             | Assess every request before the factory builds it                      | Accepted |
+| [0007](0007-latest-request-wins.md)                | One request type per booth, and the latest wins                        | Accepted |
+| [0008](0008-auto-merge-gate.md)                    | Booth changes merge on their own behind a strict gate                  | Accepted |
+| [0009](0009-no-network-from-the-page.md)           | The page never calls the network: data is baked in at build            | Accepted |
+| [0010](0010-plots-stay-put.md)                     | Plots stay put, and construction sites are never committed             | Accepted |
+| [0011](0011-levels-are-plain-data.md)              | A level is plain data plus sandboxed squares                           | Accepted |
+| [0012](0012-fast-booth-builds.md)                  | Booths get their own lighter factory action                            | Accepted |
+| [0013](0013-scoped-smoke-test.md)                  | Smoke-test only the changed booth on a booth pull request              | Accepted |
+| [0014](0014-carnival-folder.md)                    | What people make lives in `carnival/`, the map in `src/`               | Accepted |
+| [0015](0015-phones-first-class.md)                 | Phones get the same map, with touch of their own                       | Accepted |
+| [0016](0016-enforce-every-rule.md)                 | Every rule we set is enforced, deterministically where we can          | Accepted |
+| [0017](0017-reporting-a-booth.md)                  | How visitors report a problem with a booth                             | Proposed |
+| [0018](0018-community-made-notice.md)              | How the map says booths are community-made                             | Proposed |
+| [0019](0019-small-files.md)                        | Code files stay under 200 lines                                        | Accepted |
+| [0020](0020-keep-eslint.md)                        | Keep ESLint for code, rather than move to Oxlint                       | Accepted |
+| [0021](0021-knip.md)                               | Knip finds unused code, exports and dependencies                       | Accepted |
+| [0022](0022-lint-everything-on-edit.md)            | Lint code, JSON, Markdown and shell, and check on every agent edit     | Accepted |
+| [0023](0023-meaningful-names-and-docs.md)          | Names and comments say why, not only what                              | Accepted |
+| [0024](0024-test-first.md)                         | Write the test first                                                   | Accepted |
+| [0025](0025-test-coverage.md)                      | 99% test coverage: new lines now, the whole codebase over time         | Accepted |
+| [0026](0026-end-to-end-tests.md)                   | What people see is tested end to end                                   | Accepted |
+| [0027](0027-strict-typescript.md)                  | Strict TypeScript, held by a baseline that only shrinks                | Accepted |
+| [0028](0028-analytics.md)                          | Cookieless analytics with PostHog                                      | Accepted |
+| [0029](0029-booth-craft.md)                        | Squares meet the code conventions too, and show it                     | Accepted |
+| [0030](0030-peoples-choice-on-an-issue.md)         | People's Choice votes on a pinned issue, not a discussion              | Accepted |
+| [0031](0031-changed-branches-too.md)               | Changed lines need their branches tested too                           | Accepted |
+| [0032](0032-browser-coverage-counts.md)            | Browser tests count towards coverage, line by line                     | Accepted |
+| [0033](0033-attached-pictures.md)                  | Participants can attach a picture for the factory to draw from         | Accepted |
+| [0034](0034-ratchet-on-main.md)                    | The coverage floor is raised on main, not in pull requests             | Accepted |
+| [0035](0035-north-pole-levels.md)                  | The North Pole has levels of its own, opened from a landmark           | Proposed |
+| [0036](0036-no-oversize-files.md)                  | No code file over 200 lines, with no exceptions                        | Accepted |
+| [0037](0037-carnival-factory-and-plain-words.md)   | Name the site Carnival Factory, and use plain words for spots          | Accepted |
+| [0039](0039-coaster-ridden-in-list-order.md)       | A level's coaster is ridden in the order its pieces are listed         | Accepted |
+| [0040](0040-indoor-levels.md)                      | Indoor levels: a room with back walls, furniture and items on displays | Accepted |
+| [0041](0041-ride-levels.md)                        | A ride level is ridden in the coaster's car, station to station        | Accepted |
+| [0042](0042-attractions-stand-as-what-they-are.md) | Built-in attractions stand as what they are, and stalls vary           | Accepted |
 
 ## Template
 

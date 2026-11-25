@@ -196,7 +196,9 @@ src/
                             file that draws it: sky.ts, island.ts, ground.ts, pines.ts,
                             houses.ts, street-things.ts, midway.ts, entrance.ts,
                             people.ts; stall.ts and the stall-*.ts files for each
-                            booth's chosen shape, pavilion.ts, tower.ts, open-plot.ts,
+                            booth's chosen shape (stall-catalogue.ts plans each one),
+                            pavilion.ts, landmarks.ts and the landmark-*.ts files
+                            for each attraction's landmark, tower.ts, open-plot.ts,
                             site.ts, platform.ts and plot-marks.ts; faces.ts and
                             name-board.ts for the signs and drawings on their fronts
     map.ts                  the walkable map (camera, keys, clicks, hover tags,
@@ -412,20 +414,26 @@ uses any of it:
    its own square by relative paths from where it sits. These rules catch the
    plain ways out, not every one, so never look for a way around them: the
    house-rules review lens looks for exactly that.
-5. Optionally, a `stall` that says how its stall on the map looks, as plain
-   data: `stall: { shape: 'shed', roof: 'gold' }`. `shape` is one of
-   `'stall'` (the market stall with a striped awning, and the default),
-   `'shed'` (long and low, with a flat roof), `'tent'` (a round, striped
-   tent), `'cabin'` (a log cabin with a snowy pitched roof) or `'kiosk'` (a
-   small hexagonal kiosk). `roof` is a `theme` colour's name, and `trim`, a
-   second one for the stripes or the awning, is optional. An attraction may
-   also set `tower`, one to six capitals, to stand as a tower with them down
-   its front, as The Factory does; a booth's is ignored. The map draws the
-   stall itself, with the booth's drawing on its front: the option only
-   travels in the frame's `ready` message, and `readStall` in
-   `src/northpole/frame-protocol.ts` drops anything else, so an invalid option
-   draws the usual stall. A request for a stall shape or roof colour is an
-   ordinary change to the booth, made in its own `booth.ts`.
+5. A `stall` that says how its stall on the map looks, as plain data:
+   `stall: { shape: 'lighthouse', roof: 'berry', trim: 'snow' }`. `shape` is
+   one of `STALL_SHAPES` in `src/northpole/square.ts`: `'stall'` (a market
+   stall with a striped awning), `'shed'`, `'tent'`, `'cabin'`, `'kiosk'`,
+   `'igloo'`, `'gazebo'`, `'chalet'`, `'treehouse'`, `'windmill'`,
+   `'lighthouse'`, `'food-truck'`, `'carousel'`, `'turret'`, `'barn'` or
+   `'pagoda'`. Always choose the shape that suits the booth's theme, unless
+   the request names one: a booth that leaves `stall` out gets a shape picked
+   from its id (`src/northpole/stall-default.ts`). `roof` is a `theme`
+   colour's name, and `trim`, a second one for the stripes or the awning, is
+   optional. An attraction may also set a `landmark`, one of `LANDMARKS`, to
+   stand on the home map as what it is (a big wheel, a big top, an ice rink,
+   The Factory's `tower` with its `letters` down its front: see
+   [ADR 0042](docs/adr/0042-attractions-stand-as-what-they-are.md)); the map
+   drops a booth's or a level square's. The map draws the stall itself, with
+   the booth's drawing on its front: the option only travels in the frame's
+   `ready` message, and `readStall` in `src/northpole/frame-protocol.ts` drops
+   anything else, so an invalid option draws the stall the id picks. A request
+   for a stall shape or roof colour is an ordinary change to the booth, made in
+   its own `booth.ts`.
 6. A `README.md` that says what the booth shows and stays true to the code.
 7. Within the size budget in `scripts/square-size.ts`: 50 KB of code gzipped,
    and 200 KB of other files.
@@ -491,8 +499,9 @@ A participant's **level** is a whole patch of the North Pole of their own,
 `carnival/levels/<their login>/`, theirs exactly like their booth: the **Booth
 ownership** check lets them change `carnival/booths/<login>/` and `carnival/levels/<login>/`, and
 nothing else. Visitors reach it from the **sleigh station**, one platform per
-level along the main path by the entrance (`platformPlot` in
-`src/northpole/world-plots.ts`): E, Enter or a click on a platform takes the sleigh there,
+participant's level along the main path by the entrance (`platformPlot` in
+`src/northpole/world-plots.ts`); the North Pole's own levels have none, since
+their landmark attraction is the way in. E, Enter or a click on a platform takes the sleigh there,
 and `#/level/<login>` opens it directly. Inside, the map walks the level's own
 world, `#/level/<login>?square=<id>` puts the player in front of one of its
 squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to

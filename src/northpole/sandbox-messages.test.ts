@@ -155,3 +155,23 @@ describe('what a sandboxed square tells its frame of the pointer', () => {
     expect(presses).toEqual([undefined, 20, 10]);
   });
 });
+
+describe("the stall a frame's ready message asks for", () => {
+  const landmarked = { shape: 'tent', roof: 'berry', landmark: 'big-top' };
+
+  it("keeps an attraction's landmark, and drops a booth's (ADR 0042)", async () => {
+    vi.resetModules();
+    const { sandboxedSquare } = await import('./sandbox');
+    const attraction = sandboxedSquare('attraction', 'big-top');
+    const booth = sandboxedSquare('booth', 'cheeky');
+    for (const [square, id] of [
+      [attraction, 'big-top'],
+      [booth, 'cheeky'],
+    ] as const) {
+      square.draw(fakeContext().canvas, 100, 0);
+      playFrame(id).send({ type: 'ready', name: 'Top', description: '', stall: landmarked });
+    }
+    expect(attraction.stall).toEqual(landmarked);
+    expect(booth.stall).toEqual({ shape: 'tent', roof: 'berry' });
+  });
+});

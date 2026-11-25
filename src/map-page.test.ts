@@ -51,7 +51,7 @@ describe('renderMap', () => {
     expect([document.body.dataset.view, page.shown]).toEqual(['map', '']);
   });
 
-  it('starts the map with the sleigh station, and shows the booths being built', () => {
+  it("starts the map with the participants' levels at the sleigh station, and shows the booths being built", () => {
     const page = newPage();
     renderMap(page, { kind: 'booth', id: 'ana' });
     expect(lastMap().options.levels?.map((level) => [level.login, level.closed])).toEqual([

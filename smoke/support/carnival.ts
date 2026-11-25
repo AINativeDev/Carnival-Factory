@@ -8,6 +8,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from '../coverage';
+import { isNorthPoleLevel } from '../../src/northpole/north-pole-levels';
 import { buildWorld, type PinnedPlots, type WorldExtras } from '../../src/northpole/world-build';
 
 const root = join(import.meta.dirname, '..', '..');
@@ -52,9 +53,10 @@ const attractions = squares.filter((s) => s.kind === 'attraction').map((s) => s.
 const pinned = JSON.parse(
   readFileSync(join(root, 'src/northpole/plots.json'), 'utf8'),
 ) as PinnedPlots;
-/** Every level, each with its platform at the sleigh station, as the map lays them out. */
+/** Every participant's level, each with its platform at the sleigh station, as the map lays them out. */
 const levelLogins = readdirSync(join(root, 'carnival', 'levels'))
   .filter((name) => existsSync(join(root, 'carnival', 'levels', name, 'level.ts')))
+  .filter((name) => !isNorthPoleLevel(name))
   .sort();
 
 /** The world the map builds, so a test can find a plot where the page draws it. */
