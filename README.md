@@ -25,283 +25,71 @@
 Every square on this map was built by a software factory. A ferris wheel, a
 reindeer carousel and a hot cocoa stand stand round the town square, and along
 the lanes every participant owns one square of their own, their **booth**.
-Nobody writes the code by hand. You describe what you want in an issue, an
-agent checks the request, builds it on a branch and opens a pull request with a
-preview, and code review checks the result before it lands on the map.
+Nobody writes the code by hand: you describe what you want in an issue, an
+agent checks the request, builds it and opens a pull request with a preview,
+and code review checks it before it lands on the map.
 
 Each booth runs sandboxed in its own frame, so the worst a booth can do is
-break itself. A booth can react to the mouse or a finger over it, hover and
-taps, so it can be something people play with, not just watch.
+break itself, and a booth can react to the mouse or a tap, so it can be
+something people play with, not just watch.
 
-There are two ways to play:
+## Get a booth
 
-1. **[Build the carnival together](#build-it-together).** Everyone
-   shares this repository and one factory. Ask for a booth, change it as often
-   as you like, and watch the carnival grow as everyone's requests land.
-2. **[Try it on your own](#try-it-on-your-own).** Fork the repository and run
-   your own factory on it as the maintainer: change the map, the attractions,
-   the rules and the loops themselves.
+1. **Ask for it.** Open **Issues → New issue → Your booth** and say what your
+   booth should show, and its name. You can attach a picture, such as your logo
+   or a sketch.
+2. **The factory checks it.** An agent reads your request first. If it's
+   clear, the factory builds it; if not, it asks you a question: edit the issue
+   to answer.
+3. **Watch it being built.** A **Being built** sign stands on your spot on the
+   map while the factory works. It opens a pull request linked from your
+   issue, with a **Preview** link to the whole map with your booth on it.
+4. **It's on the map.** Once it merges, your booth is at
+   `…/#/booth/<your-login>`, and its page shows how it was built, step by step.
+5. **Share it.** Your booth's page has **Share**, with a link that opens the
+   map in front of your booth: `…/#/?booth=<your-login>`.
+6. **Change it** whenever you like: open **Your booth** again. Your latest
+   request is the one that counts.
 
-It's based on [Tessl Carnival](https://github.com/tesslio/tessl-carnival), the
-starter repo for the "Build your own software factory with context" workshop.
+**Want a whole place of your own?** Open **Your level** for a level: a patch of
+the North Pole laid out how you like, with up to 8 squares, that visitors reach
+by sleigh. [Level ideas](docs/level-ideas.md) and
+[booth ideas](docs/booth-ideas.md) help you write the request.
+[How your request is built](docs/how-it-works.md) explains every step.
 
-## Build it together
+## Vote for your favourite
 
-1. **Ask for your booth.** Open **Issues → New issue → Your booth**, and say
-   what your square should show. Your booth lives in
-   `carnival/booths/<your GitHub login>/`.
-2. **Let the factory assess it.** An agent reads your request first. If it's a
-   sane change to your own booth, it hands it to the factory with the `tessl`
-   label. If it's unclear, it asks a question: edit the issue to answer.
-   Anything else it declines, with a reason.
-3. **Watch it build.** The factory builds your booth on a `tessl/` branch and
-   opens a pull request linked from your issue. If it asks a question there,
-   reply, and a maintainer passes your answer on: only maintainers' comments
-   steer the factory.
-4. **Preview it.** Once the pull request's build passes, it gets a comment
-   with a **Preview** link: the whole map, with your booth on it, at
-   `…/previews/pr-<number>/#/booth/<your-login>`. Once it merges, it's on the
-   live map at the same `#/booth/<your-login>` link.
-5. **Share it.** Your booth's page has **See it on the map**, which opens the
-   map with you standing in front of your booth, lit up for a few seconds, and **Copy
-   link**, which copies that link to send to anyone:
-   `…/#/?booth=<your-login>`. An attraction's is `…/#/?attraction=<id>`.
-6. **Look back on your season.** Your booth's page links to **Your season**,
-   a card at
-   [`…/#/season/<your-login>`](https://ainativedev.github.io/Northpole-Carnival-Factory/#/season/jedi4ever)
-   with your booth and the numbers from your season: requests made and
-   shipped, and the review findings the factory fixed. **Download** saves it
-   as a PNG, and **Copy link** copies your booth's link on the map. Nothing is
-   posted for you. The numbers are counted when the site is built.
-7. **Change it.** Open **Your booth** again for anything after that: the same
-   form builds your booth if it's new and changes it if it's there. Your latest
-   request is the one that counts, so a new one closes any older one you still
-   have open.
+Every booth has a comment on the pinned **People's Choice** issue, and a 👍 on
+it is a vote: a booth's page links to it with **Vote for this booth**. One vote
+per GitHub account, and your vote for your own booth doesn't count. Voting
+closes at the end of 31 December 2026 (UTC), and the top three get a trophy on
+their sign.
 
-**Want a whole world of your own?** Open **Issues → New issue → Your level**
-for a level: a patch of the North Pole laid out how you like, with up to 8
-squares of its own, that visitors reach by sleigh from the sleigh station by
-the entrance. It lives in `carnival/levels/<your-login>/` and opens at
-`…/#/level/<your-login>`. [Level ideas](docs/level-ideas.md) helps you write
-the request.
+## Feedback and ideas
 
-**Built a factory of your own?** Set up Tessl on a repository of yours, then
-ask for the [Elf Engineer badge](docs/elf-engineer.md) with **Issues → New
-issue → Elf Engineer badge**. Once it's granted, your booth gets an elf-hat pin
-and a link to your factory, and you get a badge for your README.
-
-**Keep going in December.** The [advent calendar](docs/advent.md), at
-`#/advent` on the map, has a small factory challenge a day from 1 to 24
-December, each about 15 minutes on a repository of your own. Mark one done
-with **Issues → New issue → Advent challenge**, and once it's accepted your
-booth gets a decoration.
-
-Booths are drawn in the [diorama style](docs/style.md) by default, the same
-as the North Pole's attractions: a little isometric scene at dusk, lit warm.
-A booth built before that keeps its own look until its owner asks for a
-restyle, which is a request like any other through **Your booth**.
-
-## People's Choice
-
-Vote for your favourite booth. Every booth has a comment on the pinned **People's
-Choice** issue, and a 👍 on it is a vote: its page links to it with **Vote
-for this booth**. There's a second category, **Home factory**, for what people's
-own factories built on their own repositories: every
-[Elf Engineer](docs/elf-engineer.md) gets a comment there too, linking their
-repository, voted on the same way.
-
-- One vote per GitHub account, because GitHub keeps one 👍 per account on a
-  comment. A booth's owner's vote for their own booth doesn't count.
-- A booth switched off by the kill switch drops out.
-- Voting closes at the end of **31 December 2026** (UTC). A 👍 given after
-  that doesn't count. The date is `VOTING_CLOSES` in
-  `src/northpole/peoples-choice.ts`.
-- The standings are counted every time the site is deployed, so they lag the
-  votes by a deploy. The map shows a trophy on the top three booths' signs, and
-  the People's Choice list below the map has every entry's votes and the Home
-  factory's leader. The page itself never asks GitHub: the build bakes the
-  standings in.
-
-## Try it on your own
-
-Run your own copy, with you as the maintainer.
-
-1. **Sign up and log in.** Create an account at [tessl.io](https://tessl.io),
-   install the Tessl CLI ([setup guide](https://docs.tessl.io/introduction-to-tessl/set-up-tessl)),
-   then:
-
-   ```sh
-   tessl login
-   ```
-
-2. **Fork and clone** this repository. In your fork, set **Settings → Pages →
-   Source** to **GitHub Actions**.
-3. **Install the Tessl GitHub App** on your fork, from the Tessl web app (see
-   the setup guide).
-4. **Turn on Tessl Code Review** for your fork
-   ([guide](https://docs.tessl.io/tutorials/setting-up-agentic-code-review)).
-   Its lenses are in `.tessl-code-review.yml`.
-5. **Make yourself the maintainer.** Put your login in `.github/CODEOWNERS` and
-   in `MAINTAINERS` in `scripts/ownership.ts`. In `tessl.json`, replace the
-   ids in each `event.sender.id` and `event.pull_request.head.repo.id` with
-   yours:
-
-   ```sh
-   gh api users/<you> -q .id          # your user id
-   gh api repos/<you>/<fork> -q .id   # your fork's id
-   ```
-
-6. **Set up the factory** in your clone, and put the two environment names in
-   `tessl.json` (the top-level `environment`, and `merge-conflict-sweep`'s):
-
-   ```sh
-   tessl init
-   tessl environment create my-carnival --github-access write
-   tessl environment create my-carnival-sweep --github-access read
-   tessl doctor --automations
-   ```
-
-7. **Create the labels** the loops use:
-
-   ```sh
-   for l in tessl booth-request level-request badge-request badge-granted needs-info declined; do gh label create "$l"; done
-   ```
-
-8. **File your first issue** with the **Your booth** form, and watch it come
-   back as a pull request.
+We love kudos and ideas. Open **Issues → New issue → Feedback on the factory**
+or **An idea**: they stay open, and the maintainers read every one.
 
 ## The rules of the map
 
-- **Your booth is yours alone.** The **Booth ownership** check fails any pull
-  request that changes a file outside its owner's booth. For a pull request the
-  factory opens, the owner is whoever wrote the issue it closes.
-- **The attractions belong to the North Pole.** They live in
-  `carnival/attractions/<id>/`, outside every booth, so only maintainers change them.
-  Their signs say "North Pole" instead of a `@login`, and each opens at
-  `#/attraction/<id>`. They follow the same house rules as booths.
-- **Issues, not pull requests.** Every change starts as an issue. A pull
-  request from someone who isn't a collaborator is closed automatically with a
-  pointer to the issue forms. Closing it doesn't stop **CI**, which checks out
-  and runs a pull request's code, so keep outside contributors' workflows
-  waiting for approval (see below) and don't approve them.
-- **Only maintainers merge.** For now that's
-  [@jedi4ever](https://github.com/jedi4ever). The maintainers may change any
-  file, such as the map itself.
-- **A booth can't break the map.** Every booth and attraction runs sandboxed:
-  in an iframe of its own with no network, storage or access to the page, on a
-  worker thread that's stopped if it hangs. The map only ever sees the picture
-  it draws. One that throws, hangs or never loads shows "Under construction",
-  and everything else keeps running. A smoke test plays every square in a real
-  browser on each pull request. A size budget keeps each square to 50 KB of code gzipped and 200 KB of
-  other files.
-- **A booth only draws.** ESLint's house rules in `eslint.config.js` stop a
-  booth from importing anything but the map and its own files, and from using
-  the network, storage, other windows, the page's address, `eval` or string
-  timers, or `window`, `document` and the other ways back to them. A lint rule
-  reads code, it doesn't sandbox it, so it catches the plain ways in, not
-  every one. A Tessl Code Review lens, `review-house-rules`, looks for the
-  other ways in every booth and attraction, and a maintainer still looks at
-  each one before merging it.
+- **Your booth is yours alone.** A change for you only ever touches your own
+  booth or level.
+- **Issues, not pull requests.** Every change starts as an issue; a pull request
+  from outside is closed with a pointer to the forms.
+- **A booth can't break the map.** Every booth runs sandboxed, with no network,
+  storage or access to the page. One that breaks shows "Under construction",
+  and everything else keeps running.
+- **A booth only draws.** House rules and code review keep it to drawing.
+- **The attractions belong to the North Pole**, and only maintainers change
+  them.
 
-## For maintainers
+## Run your own
 
-Some of the rules live in the repository's settings, not its code:
+Want a Carnival Factory of your own, with you as the maintainer?
+[RUN-YOUR-OWN.md](RUN-YOUR-OWN.md) has the steps to fork and set it up.
 
-- A ruleset, **Protect main**, requires a pull request and the **check** (from
-  **CI**) and **ownership** (from **Booth ownership**) status checks, and blocks
-  force pushes and deleting `main`. It requires no approvals for now, so a
-  maintainer can merge a green pull request straight away. To require one, set
-  the ruleset's required approvals to 1 and turn on **Require review from Code
-  Owners**.
-- **Settings → Actions → General** requires approval for workflows from all
-  outside contributors, not only first-time ones, and the workflow token is
-  read-only by default.
-
-Booth changes that pass every check merge on their own, through the auto-merge
-gate. Anything in doubt gets the `needs-human` label and waits for a
-maintainer, and a daily digest issue lists everything that merged on its own.
-[How your request is built](docs/how-it-works.md) explains each step.
-
-Booth requests are assessed before the factory builds them: see
-`plugins/north-pole/skills/assess-booth-request/`. Only maintainers can start or steer the
-factory directly: the `tessl.json` triggers that start or steer work (adding
-`tessl`, commenting on a `tessl` issue, or reviewing or commenting on a factory
-pull request) are filtered on `event.sender.id`. The Tessl Reviewer's reviews
-still reach the shepherd. Triggers that only stop work, such as closing an
-issue, removing `tessl` or closing a pull request, aren't filtered, so a
-participant can still withdraw their own request.
-
-To add a maintainer, find their numeric GitHub user id
-(`gh api users/<login> -q .id`). Add them to `.github/CODEOWNERS`, to
-`MAINTAINERS` in `scripts/ownership.ts` with that id, and add the id to each
-`event.sender.id` list in `tessl.json`. Maintainers are checked by id, because
-a login can be renamed and taken by someone else.
-
-To let the factory build a participant's issue that changes more than their
-booth, such as the map's scenery, add `tessl` to it yourself: the **Booth
-ownership** check treats an issue a maintainer labelled, by user id, like a
-maintainer's own.
-
-To switch a misbehaving square off, add its login to `booths`, or its id to
-`attractions`, in `src/northpole/disabled.json`: it shows "Closed for repairs" and
-its `draw` never runs. Its code is still loaded, so for code that misbehaves as
-soon as it loads, remove its folder instead.
-
-To open People's Choice, open an issue titled exactly `People's Choice` from a
-maintainer's account, pin it, and leave it unlocked: on a locked issue, people
-without write access can't react, so they couldn't vote. Every deploy then adds a comment for each new booth and
-Elf Engineer while voting is open (`scripts/write-peoples-choice.ts`, with the
-deploy's own token), and counts the 👍. Until the issue exists, the map
-shows no standings. To move the closing date, change `VOTING_CLOSES` in
-`src/northpole/peoples-choice.ts`. On a fork, set `REPO_URL` in
-`src/northpole/links.ts` to your fork's address too: the build keeps only
-standings whose links are into that repository's issues.
-
-Every pull request from this repository gets a **Preview** link to its build,
-published next to the live map under `previews/pr-<number>/` and removed when
-it closes. Tessl Code Review's lenses are set in `.tessl-code-review.yml`. To publish the map, go to **Settings → Pages** and set
-**Source** to **GitHub Actions**: every merge to `main` then redeploys it.
-
-## Commands
-
-| Command          | What it does                                              |
-| ---------------- | --------------------------------------------------------- |
-| `npm ci`         | Install dependencies                                      |
-| `npm run dev`    | Run the map locally at <http://localhost:5173>            |
-| `npm run format` | Format the repo with Prettier, skipping `.prettierignore` |
-| `npm run check`  | Lint, check formatting, type-check and test everything    |
-| `npm run build`  | Build the site into `dist/`                               |
-| `npm run smoke`  | Play every booth and attraction in a real browser         |
-
-## How it's built
-
-TypeScript, Vite and plain HTML canvas, with Vitest. No UI framework and no
-native dependencies, so `npm ci` is the whole setup. Node 22.13 or later.
-
-- `index.html` and `src/main.ts`: the page and the router: `#/` is the map,
-  `#/booth/<login>` and `#/attraction/<id>` open the world with the player
-  inside that square, in a room the map draws (`src/northpole/interior.ts`) beside
-  its HUD (`src/visit-hud.ts`), and
-  `#/?booth=<login>` and `#/?attraction=<id>` open the map on that square.
-  `src/route.ts` reads the hash. The build also writes a link-preview page per
-  square, `share/<kind>-<id>.html` (`scripts/share-pages.ts`), which Share
-  copies.
-- `src/northpole/`: the map: the `NorthPoleSquare` shape and registries, the
-  isometric world you walk round (`world.ts`), how the camera frames its
-  island (`camera.ts`), its drawing (`render.ts`, the files it hands each
-  thing to, and `map.ts`), which plot
-  each square keeps (`plots.json`) and the theme.
-- `carnival/booths/<login>/`: one folder per participant. `carnival/booths/jedi4ever/` is the
-  pattern to copy.
-- `carnival/attractions/<id>/`: one folder per attraction the North Pole owns.
-- `plugins/north-pole/`: the factory's own skills: assessing booth requests,
-  and the house-rules review lens.
-- `scripts/ownership.ts` and `scripts/check-booth-ownership.ts`: the booth
-  ownership rule and the check that enforces it.
-
-[`AGENTS.md`](AGENTS.md) is where an agent starts. [`docs/specs/`](docs/specs/)
-says what each part of the system does, and [`docs/adr/`](docs/adr/) records the
-decisions behind it.
+It's based on [Tessl Carnival](https://github.com/tesslio/tessl-carnival), the
+starter repo for the "Build your own software factory with context" workshop.
 
 ## License
 

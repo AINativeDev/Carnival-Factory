@@ -96,7 +96,7 @@ export const keepPostedHref = (url: string = KEEP_POSTED_URL) => url || '#/keep-
 export const HOW_IT_WORKS_URL = `${REPO_URL}/blob/main/docs/how-it-works.md`;
 
 /** "Run this on your own repo": how to set up a Tessl factory on a repository of your own. */
-export const OWN_REPO_URL = `${REPO_URL}#try-it-on-your-own`;
+export const OWN_REPO_URL = `${REPO_URL}/blob/main/RUN-YOUR-OWN.md`;
 
 /**
  * The free credits offer for people who sign up for Tessl, shown beside the
