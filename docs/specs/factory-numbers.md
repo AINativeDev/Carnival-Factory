@@ -37,4 +37,4 @@ see the loop behind the booths.
 ## Tested by
 
 `src/factory.test.ts`, `scripts/factory-stats.test.ts`,
-`smoke/squares.spec.ts` (`#/factory` at 390 and wider, Esc goes back).
+`smoke/factory-page.spec.ts` (`#/factory` at 390 and wider, Esc goes back).

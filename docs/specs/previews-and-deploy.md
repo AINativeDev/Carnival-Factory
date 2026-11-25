@@ -47,7 +47,7 @@ the page never calls GitHub.
 - The page and its squares make no request to another origin: avatars are
   bundled, and history, badge holders, advent counts, the season and People's
   Choice are baked in. The page fetches only its own `version.json` and
-  `pending.json` (enforced by: the request check in smoke/squares.spec.ts and
+  `pending.json` (enforced by: the request check in smoke/support/carnival.ts and
   smoke/levels.spec.ts, the CSP in square.html for squares).
 - Share pages have no scripts: a meta refresh into the square, with a plain
   link. Switched-off squares say "Closed for repairs." (enforced by:

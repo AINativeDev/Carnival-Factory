@@ -41,7 +41,7 @@ decorates the participant's booth. The participant guide is
   at midnight on their day by the visitor's clock (enforced by:
   src/northpole/advent.test.ts).
 - Security: counts are baked in at build time, so the page never asks the
-  network (enforced by: the request check in smoke/squares.spec.ts). Every
+  network (enforced by: the request check in smoke/support/carnival.ts). Every
   challenge is set as text and nothing is tracked (not enforced yet).
 
 ## Where it lives

@@ -48,7 +48,7 @@ site on the plot held for it, so the booth lands where its site stood.
   request's check states are read, never a request's title or body. The page
   drops any entry with an invalid login, issue, plot or stage, and any other
   field (enforced by: scripts/pending.test.ts, src/northpole/plots.test.ts,
-  the construction-site test in smoke/squares.spec.ts).
+  the construction-site test in smoke/claiming.spec.ts).
 - A new booth's `plot.json` comes from the live `pending.json`, and a change
   to an existing booth never adds or changes it (enforced by: the
   implement-booth instructions in tessl.json, scripts/square-code.ts in the
@@ -63,5 +63,5 @@ site on the plot held for it, so the booth lands where its site stood.
 ## Tested by
 
 `scripts/pending.test.ts`, `src/northpole/plots.test.ts`,
-`src/northpole/visit.test.ts`, `smoke/squares.spec.ts` (an accepted request
+`src/northpole/visit.test.ts`, `smoke/claiming.spec.ts` (an accepted request
 shows a site, its stage and a link, never its text).

@@ -40,4 +40,4 @@ short lists, every booth A to Z, and a way to say which booth is theirs.
 ## Tested by
 
 `src/booth-panel.test.ts`, `scripts/booth-dates.test.ts`,
-`smoke/squares.spec.ts` (picking, shift-click to walk, finding a login).
+`smoke/booths-panel.spec.ts` (picking, shift-click to walk, finding a login).

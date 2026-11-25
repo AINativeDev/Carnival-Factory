@@ -35,7 +35,9 @@ What runs on every pull request, and what each check guarantees.
   the network, storage and the page, the map's own frame budget (25 ms on CI),
   deep links, stall shapes, Share, the season card, badges, `#/factory`,
   walking, visiting and leaving, construction sites, the Booths panel, fitting
-  the window, the pointer, and history layout.
+  the window, the pointer, and history layout. Each part of the map has its
+  own spec file, and what they share (the squares, the budgets, the request
+  check, reading the map's camera and stage) is in `smoke/support/`.
 - `smoke/levels.spec.ts` walks every open level from its arrival to each
   square, inside each one, and to the sleigh home. `smoke/level-walk.ts`
   walks to each door in steps, each a click on the furthest tile of the way
@@ -58,7 +60,7 @@ What runs on every pull request, and what each check guarantees.
   (not enforced yet).
 - Every booth and attraction opens, draws within the frame budget and stays
   quiet, and every open level walks from arrival to each square and home
-  (enforced by: smoke/squares.spec.ts, smoke/levels.spec.ts).
+  (enforced by: smoke/squares-play.spec.ts, smoke/levels.spec.ts).
 - The house rules reach every square: every `.ts` and `.js` file under
   `carnival/booths`, `carnival/attractions` and each level's `squares/` runs
   with `no-restricted-globals`, `no-restricted-imports` and `no-eval` at error,

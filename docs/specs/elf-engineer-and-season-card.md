@@ -50,7 +50,7 @@ Season card, `#/season/<login>`:
   threads by `tessl-reviewer` on those pull requests, each pull request once
   per person (enforced by: scripts/season.test.ts, src/season.test.ts).
 - Security: holders and seasons are baked in at build time, so the page never
-  asks the network (enforced by: the request check in smoke/squares.spec.ts).
+  asks the network (enforced by: the request check in smoke/support/carnival.ts).
   The badge page has no scripts (enforced by: scripts/badge-page.test.ts).
   Every name is set as text (not enforced yet).
 
@@ -69,5 +69,5 @@ an issue form's fields), `scripts/check-elf-engineer.ts`,
 `src/northpole/badges.test.ts`, `scripts/elf-engineer.test.ts`,
 `scripts/badge-grants.test.ts`, `scripts/badge-page.test.ts`,
 `scripts/issue-form.test.ts`,
-`src/season.test.ts`, `scripts/season.test.ts`, `smoke/squares.spec.ts` (the
+`src/season.test.ts`, `scripts/season.test.ts`, `smoke/sharing.spec.ts` (the
 season card downloads and copies its link; badges are plain files).
