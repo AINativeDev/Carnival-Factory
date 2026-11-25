@@ -9,8 +9,20 @@ accepted ones.
 - Issue forms (blank issues are off): **Your booth** (`booth-request`, title
   "My booth: "), **Your level** (`level-request`, "My level: "), **Elf
   Engineer badge** (`badge-request`), **Advent challenge** (`advent-done`),
-  **Feedback on the factory** (`feedback`, "Feedback: ") and **An idea**
-  (`idea`, "Idea: ").
+  **Feedback on the factory** (`feedback`, "Feedback: "), **An idea**
+  (`idea`, "Idea: ") and **Year in review** (`year-in-review`, "Year in
+  review: ").
+- The **Year in review** form asks which of the Year in Review's 13 questions
+  the visitor answers, or "My own question" with their own (up to 140
+  characters), and their answer (up to 280). The `welcome-year-in-review`
+  skill thanks the author; a fitting answer (friendly, on topic, naming nobody
+  else, nothing unsafe) gets `year-in-review-accepted` and is closed as
+  completed, an unfitting one gets `declined` and is closed as not planned, and
+  an unsure one gets `needs-human` and stays open. It never adds `tessl`
+  ([year-in-review.md](year-in-review.md),
+  [ADR 0047](../adr/0047-year-in-review-answers.md)) (enforced by: the skill,
+  the `welcome-year-in-review-opened` trigger in tessl.json, and
+  scripts/year-in-review.test.ts for the form's fields and options).
 - The `welcome-feedback` skill thanks the author of a `feedback` or `idea`
   issue, adds `kudos` to praise, and leaves it open for the maintainers. It
   closes one, as not planned with `declined`, only when it's spam, abuse,

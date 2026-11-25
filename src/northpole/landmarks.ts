@@ -15,6 +15,7 @@ import { drawCocoaHut } from './landmark-cocoa-hut';
 import { drawGameStall } from './landmark-game-stall';
 import { drawSchoolhouse } from './landmark-schoolhouse';
 import { drawStudio } from './landmark-studio';
+import { drawGallery } from './landmark-gallery';
 import type { Landmark } from './square';
 import { drawTower } from './tower';
 
@@ -34,4 +35,5 @@ export const LANDMARK_DRAWERS: Record<Landmark, LandmarkDrawer> = {
   'game-stall': drawGameStall,
   schoolhouse: drawSchoolhouse,
   studio: drawStudio,
+  gallery: drawGallery,
 };

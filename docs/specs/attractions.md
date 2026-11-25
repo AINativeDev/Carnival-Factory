@@ -29,6 +29,8 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
     candy-cane prizes and a lamp under the hood;
   - The Academy: `schoolhouse`, with a bell tower and lit windows;
   - The Recording Studio: `studio`, with a glowing ON AIR sign, a dish and an antenna;
+  - The Year in Review: `gallery`, a cream museum with columns, '26 → '27 on
+    its frieze under a pediment, lit windows and a gold dome;
   - The Factory: `tower`, a tall brick tower with its `letters`, TESSL, down
     the front in gold, lit windows, a turning cog and chimney smoke
     (`src/northpole/tower.ts`).
@@ -48,13 +50,14 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   treat on the house where it lands (a gumdrop, an icing swirl and a candy in
   turn, up to 24, kept only while its frame runs), and an elf strolling past its two mirror
   windows shows in them stretched tall or squashed wide.
-- The Factory, The Academy and The Recording Studio are landmarks: opening
+- The Factory, The Academy, The Recording Studio and The Year in Review are landmarks: opening
   one from the map, by a click, E or Enter, takes the sleigh into the North
   Pole's level of the same id rather than into a room. `#/attraction/<id>`
   still shows its room, whose panel has a link to take the sleigh inside
   ([ADR 0035](../adr/0035-north-pole-levels.md)). The Academy (plot 10) is a
   schoolhouse with a swinging bell, and The Recording Studio (plot 11) a
-  studio with a glowing ON AIR sign. Neither has a platform at the sleigh
+  studio with a glowing ON AIR sign, and The Year in Review (plot 12) a
+  gallery ([year-in-review.md](year-in-review.md)). None has a platform at the sleigh
   station: the landmark is the way in. Their rooms
   show their level's links out as buttons ([ADR 0038](../adr/0038-north-pole-links.md)).
 - The Gift shop shows the gifts of `plugins/north-pole-gifts/`: small factory

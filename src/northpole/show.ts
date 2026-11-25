@@ -17,6 +17,10 @@ import {
   drawWallDoor,
   drawWallWindow,
 } from './wall-things';
+import { drawFramedPicture } from './gallery-art';
+import { drawArtSign, drawMobile, drawStatue, drawVelvetRope } from './gallery-floor';
+import { drawBalloons, drawConfetti, drawGalleryElf, drawMirrorball } from './gallery-party';
+import { drawNeonArt, drawWallSign } from './gallery-walls';
 import { drawCoaster, drawCoasterLoop } from './coaster';
 import { drawCoasterDrop, drawCoasterLift, drawCoasterStation } from './coaster-fittings';
 import { drawFireBreather, drawJuggler, drawStiltWalker } from './performers';
@@ -62,13 +66,25 @@ const SHOW = {
   'projector-screen': drawProjectorScreen,
   'on-air-light': drawOnAirLight,
   'wall-door': drawWallDoor,
+  // A gallery's art and dressing (ADR 0047).
+  'framed-picture': drawFramedPicture,
+  'neon-art': drawNeonArt,
+  'wall-sign': drawWallSign,
+  statue: drawStatue,
+  mobile: drawMobile,
+  'velvet-rope': drawVelvetRope,
+  'art-sign': drawArtSign,
+  'gallery-elf': drawGalleryElf,
+  balloons: drawBalloons,
+  confetti: drawConfetti,
+  mirrorball: drawMirrorball,
 } as const satisfies Record<string, Draw>;
 
 /** A performer, a ride, a piece of factory dressing or furniture: the things a level adds to the map's scenery. */
 export type ShowKind = keyof typeof SHOW;
 
 /** What lies flat on the ground, under everything standing, so it's drawn first and people walk over it. */
-export const FLAT: ReadonlySet<string> = new Set(['drift', 'rug', 'cable']);
+export const FLAT: ReadonlySet<string> = new Set(['drift', 'rug', 'cable', 'confetti']);
 
 /** Draws a performer or a ride standing on the snow. */
 export function drawShow(

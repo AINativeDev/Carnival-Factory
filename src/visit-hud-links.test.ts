@@ -38,6 +38,12 @@ describe("a square's panel, for the North Pole's own levels (ADR 0038)", () => {
     ]);
   });
 
+  it("shows a Year in Review item's answers after its link to add yours", () => {
+    expect(linksOf('hot-take', 'the-year-in-review')).toHaveLength(1);
+    const after = document.querySelector('.visit .level-links')?.nextElementSibling;
+    expect(after?.className).toBe('year-answers');
+  });
+
   it("never links out of an ordinary attraction or a participant's level", () => {
     expect(linksOf('ferris-wheel')).toEqual([]);
     expect(linksOf('hut', 'bo')).toEqual([]);

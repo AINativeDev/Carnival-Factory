@@ -72,6 +72,7 @@ describe('the worlds the map lays out', () => {
         "../../carnival/levels/the-academy/level.ts: 2aa4e0f718c16ee2",
         "../../carnival/levels/the-factory/level.ts: 07acd7bbf8cbe1dd",
         "../../carnival/levels/the-studio/level.ts: 7452a2b630565000",
+        "../../carnival/levels/the-year-in-review/level.ts: 95bf31cce32d4855",
       ]
     `);
   });

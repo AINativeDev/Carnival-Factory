@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { httpsOnly, linksHome, NORTH_POLE_LINKS, northPoleLinks } from './north-pole-links';
 import { isNorthPoleLevel } from './north-pole-levels';
+import { YEAR_IN_REVIEW_URL } from './links';
 
 const levelFolders = Object.keys(import.meta.glob('../../carnival/levels/*/level.ts')).map(
   (path) => path.split('/').at(-2) ?? '',
@@ -18,6 +19,13 @@ describe("the North Pole's own links out", () => {
       { label: 'Listen to the podcast', href: 'https://tessl.io/podcast/' },
       { label: 'Watch on YouTube', href: 'https://www.youtube.com/@tessl-ai' },
     ]);
+  });
+
+  it('asks for your answer in the Year in Review, on its own form', () => {
+    expect(northPoleLinks('the-year-in-review')).toEqual([
+      { label: 'Add your answer', href: YEAR_IN_REVIEW_URL },
+    ]);
+    expect(YEAR_IN_REVIEW_URL).toMatch(/\/issues\/new\?template=07-year-in-review\.yml$/);
   });
 
   it("gives links only to the North Pole's own levels, never a participant's", () => {

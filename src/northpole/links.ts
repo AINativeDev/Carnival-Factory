@@ -34,6 +34,13 @@ export const ADVENT_REQUEST_URL = `${REPO_URL}/issues/new?template=04-advent-cha
  */
 export const FEEDBACK_URL = `${REPO_URL}/issues/new?template=05-feedback.yml`;
 
+/**
+ * The Year in Review form: a visitor's answer to one of the room's questions,
+ * or a question of their own, shown in the room once it's accepted
+ * (docs/specs/year-in-review.md).
+ */
+export const YEAR_IN_REVIEW_URL = `${REPO_URL}/issues/new?template=07-year-in-review.yml`;
+
 /** Where "claim a booth" links go: the same form, for someone without a booth.
  * @alias the same form under the name its links use
  */

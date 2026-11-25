@@ -175,6 +175,22 @@
           }
         ]
       }
+    },
+    "welcome-year-in-review": {
+      "tags": [
+        "Ticket to PR"
+      ],
+      "agent": "claude",
+      "model": "claude-sonnet-5-5",
+      "skill": "file:plugins/north-pole#welcome-year-in-review",
+      "concurrency": {
+        "keys": [
+          {
+            "key": "welcome-year-in-review:github-issue:{{ inputs.GITHUB_ISSUE_NUMBER }}",
+            "limit": 1
+          }
+        ]
+      }
     }
   },
   "triggers": {
@@ -759,6 +775,25 @@
       },
       "action": {
         "use": "welcome-feedback",
+        "inputs": {
+          "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
+        }
+      }
+    },
+    "welcome-year-in-review-opened": {
+      "on": [
+        "github:issues.opened"
+      ],
+      "when": {
+        "event.issue.labels.*.name": {
+          "any": {
+            "equals": "year-in-review"
+          }
+        },
+        "event.sender.type": "User"
+      },
+      "action": {
+        "use": "welcome-year-in-review",
         "inputs": {
           "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
         }

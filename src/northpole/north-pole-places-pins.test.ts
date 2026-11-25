@@ -1,6 +1,6 @@
 /**
- * Pins what the Academy's and the Recording Studio's squares draw, their
- * landmarks and every lesson or studio stall, at two moments each, so a later
+ * Pins what the Academy's, the Recording Studio's and the Year in Review's
+ * squares draw, their landmarks and every lesson, studio stall or question, at two moments each, so a later
  * split or tidy of any of them is proven to draw the same
  * (docs/adr/0024-test-first.md). The drawings' own logic is tested beside them.
  */
@@ -14,6 +14,8 @@ const squares = import.meta.glob<{ default: NorthPoleSquare }>(
     '../../carnival/attractions/the-studio/attraction.ts',
     '../../carnival/levels/the-academy/squares/*/square.ts',
     '../../carnival/levels/the-studio/squares/*/square.ts',
+    '../../carnival/attractions/the-year-in-review/attraction.ts',
+    '../../carnival/levels/the-year-in-review/squares/*/square.ts',
   ],
   { eager: true },
 );
@@ -38,6 +40,7 @@ describe("the North Pole's Academy and Recording Studio", () => {
       [
         "attractions/the-academy/attraction.ts: 626ff888b10c1753 (347 calls) / f4691dd6c622e353 (347 calls)",
         "attractions/the-studio/attraction.ts: 24f7971271aec455 (312 calls) / f4c7c779a8986e2f (312 calls)",
+        "attractions/the-year-in-review/attraction.ts: c5852681c47536a0 (426 calls) / a34a380ad211fac9 (426 calls)",
         "levels/the-academy/squares/code-review-loops/square.ts: 4be7628ea8bcfbac (337 calls) / 811526edeac339a1 (351 calls)",
         "levels/the-academy/squares/quickstart/square.ts: 147db2b6a9a5b617 (433 calls) / 9cd09cbd585e1e39 (433 calls)",
         "levels/the-academy/squares/reference/square.ts: fcf603cf3928dc6b (731 calls) / c85ca4a8c5ba2ea0 (731 calls)",
@@ -50,6 +53,20 @@ describe("the North Pole's Academy and Recording Studio", () => {
         "levels/the-studio/squares/microphone/square.ts: d7e5770064906f89 (357 calls) / 160903cc81eac1a8 (357 calls)",
         "levels/the-studio/squares/mixing-desk/square.ts: 07a3afee079ddd05 (573 calls) / e230e35157f936a2 (573 calls)",
         "levels/the-studio/squares/on-air/square.ts: 6839254dc13ac090 (288 calls) / 853dbc9bb9ee6128 (288 calls)",
+        "levels/the-year-in-review/squares/buzzword-dies/square.ts: 4fb506cb5fe815ee (278 calls) / 6a0da5b9b643414c (278 calls)",
+        "levels/the-year-in-review/squares/coding-disaster/square.ts: fbfb9a0dd4165dbb (274 calls) / fbfb9a0dd4165dbb (274 calls)",
+        "levels/the-year-in-review/squares/dumbest-ai-moment/square.ts: 2b3a4fac45b15d4c (275 calls) / 0feb80be607bdf53 (275 calls)",
+        "levels/the-year-in-review/squares/felt-like-magic/square.ts: aaa3c7bb10e6ffc4 (280 calls) / 68b8ab21ec57bd77 (280 calls)",
+        "levels/the-year-in-review/squares/finally-fixed/square.ts: ce6aacca48e45da7 (290 calls) / 990cb71e4dfc155d (290 calls)",
+        "levels/the-year-in-review/squares/hands-off/square.ts: 2e3fa430779d4c05 (278 calls) / 6cf0459215c4e3d6 (278 calls)",
+        "levels/the-year-in-review/squares/hot-take/square.ts: 14106194e74f3c45 (277 calls) / 034ce8b58de52a70 (277 calls)",
+        "levels/the-year-in-review/squares/most-overrated/square.ts: 842893344349fb32 (274 calls) / c9abdc4b61f0916a (274 calls)",
+        "levels/the-year-in-review/squares/my-day-in-27/square.ts: 8c9967c963b3ec5d (275 calls) / a136f4c249665d2d (275 calls)",
+        "levels/the-year-in-review/squares/still-reviewing/square.ts: c116936b2f8123de (278 calls) / 23e1a38cf49e6dff (278 calls)",
+        "levels/the-year-in-review/squares/stopped-doing/square.ts: 9bbc5cbcfdf07f80 (269 calls) / 1ff1455f23dabf2f (269 calls)",
+        "levels/the-year-in-review/squares/vibe-code-regret/square.ts: 5dc0a3f516454c1c (279 calls) / f85579aa184b2dee (279 calls)",
+        "levels/the-year-in-review/squares/worse-before-better/square.ts: da334d0bb6025240 (286 calls) / 4fdfef0791660ca5 (286 calls)",
+        "levels/the-year-in-review/squares/your-questions/square.ts: 19c0cbbb18ff8b57 (295 calls) / 6c1d9e8208cd2048 (297 calls)",
       ]
     `);
   });

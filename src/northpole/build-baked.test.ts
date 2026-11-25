@@ -70,3 +70,18 @@ describe("the People's Choice standings the build found", () => {
     expect((await import('./peoples-choice-standings')).PEOPLES_CHOICE).toBeUndefined();
   });
 });
+
+describe("the Year in Review's answers the build found", () => {
+  it('keeps the clean answers of the room’s items, and nothing else', async () => {
+    const answer = { login: 'ana', answer: 'Yes.', at: '2026-11-20T00:00:00Z' };
+    vi.stubGlobal('__YEAR_IN_REVIEW__', { 'hot-take': [answer], 'not-an-item': [answer] });
+    const { YEAR_ANSWERS } = await import('./year-in-review-answers');
+    expect(YEAR_ANSWERS).toEqual({ 'hot-take': [answer] });
+  });
+
+  it('has none when nothing was baked in', async () => {
+    vi.stubGlobal('__YEAR_IN_REVIEW__', undefined);
+    const { YEAR_ANSWERS } = await import('./year-in-review-answers');
+    expect(YEAR_ANSWERS).toEqual({});
+  });
+});
