@@ -58,6 +58,10 @@ import {
 } from './owners';
 import { isTap, onMapping, onRect } from './pointer';
 import type { NorthPoleSquare, SquarePointer } from './square';
+import type { MapControls, MapOptions, SquareKind } from './map-options';
+
+// The page's entry point and the Booths panel name these here, beside startMap.
+export type { MapControls, SquareKind, StationEntry } from './map-options';
 import { canvasFont, theme } from './theme';
 import {
   clickInRoom,
@@ -131,47 +135,6 @@ export function drawSquare(
     ctx.fillText('Under construction', x + size / 2, y + size / 2);
     ctx.restore();
   }
-}
-
-export type SquareKind = 'attraction' | 'booth';
-
-export interface MapOptions {
-  /** The North Pole's own attractions, round the town square. */
-  attractions: readonly NorthPoleSquare[];
-  /** Participants' booths, along the lanes. */
-  booths: readonly NorthPoleSquare[];
-  /** Opens a square: `id` is a booth's owner or an attraction's id. */
-  onOpen(kind: SquareKind, id: string): void;
-  /** Asks to leave the square the player is inside: they walked out through its doorway. */
-  onLeave(): void;
-  /** A square to open the map on: the player starts in front of it, and it's picked, so it's highlighted. */
-  focus?: { kind: SquareKind; id: string };
-  /** The logins whose avatars the build downloaded (scripts/download-avatars.ts); the rest get the elf. */
-  avatars?: ReadonlySet<string>;
-  /** The visitor's own login, once the page knows it: their booth glows and says "You". */
-  me?: string;
-  /** Says the picked square changed: picked, or let go with Esc, by going inside, or by picking another. */
-  onSelect?(selected: { kind: SquareKind; id: string } | undefined): void;
-  /** The accepted booth requests not merged yet, from `pending.json`, if the page has read it. */
-  pending?: readonly PendingBooth[];
-  /** The logins that were construction sites when the page last saw them: the ones with a booth now sparkle, once. */
-  wereSites?: Iterable<string>;
-  /** The levels, each with a platform at the sleigh station, and whether it's closed for repairs. */
-  levels?: readonly StationEntry[];
-  /** A level to walk instead of the North Pole: its world (`levelWorld` in level.ts), its squares as `attractions`. */
-  level?: { id: string; name: string; world: World; tint: string };
-  /** Takes the sleigh from a platform: to the level of `login`, or, without one, back to the North Pole. */
-  onTravel?(login: string | undefined): void;
-}
-
-/** A level's platform at the sleigh station: its name, its owner, its sign's colour, and whether it's closed. */
-export interface StationEntry {
-  login: string;
-  name: string;
-  color: string;
-  closed: boolean;
-  /** Who its sign says it belongs to: `@login`, or the North Pole for its own. */
-  owner?: string;
 }
 
 /** Where the player stood when they last opened a square, in each world, so coming back puts them there. */
@@ -306,42 +269,6 @@ function trackPointer(element: HTMLElement) {
       for (const [name, listener] of events) element.removeEventListener(name, listener);
     },
   };
-}
-
-/** What the page can ask of a running map. */
-export interface MapControls {
-  /** Stops it all. */
-  stop(): void;
-  /** Picks a square and walks the player to its door, leaving footprints and pointing the way. */
-  walkTo(kind: SquareKind, id: string): void;
-  /** Puts the player straight at a square's door, glides the camera there, and picks it. */
-  jumpTo(kind: SquareKind, id: string): void;
-  /** The square picked now, highlighted and invited into, if any. */
-  readonly selected: { kind: SquareKind; id: string } | undefined;
-  /** Lets go of the picked square. */
-  clearSelection(): void;
-  /** The `count` squares nearest the player, nearest first. */
-  nearest(count: number): { kind: SquareKind; id: string }[];
-  /** Says who the visitor is, so their own booth stands out, or that the page doesn't know. */
-  setMe(login: string | undefined): void;
-  /** Shows the booth requests being built: construction sites on their plots, and "Being updated" on booths. */
-  setPending(pending: readonly PendingBooth[]): void;
-  /** The logins whose booths are being built, on construction sites now. */
-  readonly sites: string[];
-  /** Walks the player to the nearest open plot. */
-  walkToOpenPlot(): void;
-  /** Walks the player to the open plot nearest them, leaving footprints, and bounces its sign. */
-  claimNextDoor(): void;
-  /** Takes the player inside a square, with a short fade. Returns whether it's there. */
-  visit(kind: SquareKind, id: string): boolean;
-  /** Takes the player back out, just outside the square's door, facing out. */
-  leave(): void;
-  /** The square being visited, if any. */
-  readonly visiting: { kind: SquareKind; id: string } | undefined;
-  /** Shows the whole island, or goes back to the carnival. Returns whether it shows the whole island. */
-  toggleOverview(): boolean;
-  /** Whether it shows the whole island. */
-  readonly overview: boolean;
 }
 
 /** A canvas of its own, to draw a layer on once. */

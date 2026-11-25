@@ -7,7 +7,7 @@
  */
 import { fillTourStop } from './factory-tour';
 import { BADGE_REQUEST_URL, CHANGE_URL, CLAIM_URL } from './northpole/links';
-import type { SquareKind } from './northpole/map';
+import type { SquareKind } from './northpole/map-options';
 import { isNorthPoleLevel, landmarkLevel } from './northpole/north-pole-levels';
 import { levelLink, seasonLink } from './route';
 

@@ -5,7 +5,7 @@
  * participant's work is on public display.
  */
 import { REPO_URL } from './northpole/links';
-import type { SquareKind } from './northpole/map';
+import type { SquareKind } from './northpole/map-options';
 
 declare const __SQUARE_CRAFT__: unknown;
 

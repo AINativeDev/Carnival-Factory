@@ -1,4 +1,4 @@
-import type { SquareKind } from './northpole/map';
+import type { SquareKind } from './northpole/map-options';
 import { landmarkLevel } from './northpole/north-pole-levels';
 
 /**
