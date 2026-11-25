@@ -1,6 +1,6 @@
 /**
  * The catalogue a level places its props from: the North Pole's scenery, and
- * the show (performers, rides and factory dressing, drawn by way of `show.ts`). `validateLevel` and
+ * the show (performers, rides, factory dressing and the coaster, drawn by way of `show.ts`). `validateLevel` and
  * `levelWorld` in `level.ts` read each one's footprint from here.
  */
 import type { ThingKind } from './world';
@@ -40,6 +40,11 @@ export const LEVEL_PROPS = {
   cog: { thing: 'cog', w: 1, h: 1, blocks: true },
   'candy-pipe': { thing: 'candy-pipe', w: 2, h: 1, blocks: true },
   lantern: { thing: 'lantern', w: 1, h: 1, blocks: false },
+  // The roller coaster, ridden by a golden ticket in the order its pieces are
+  // listed (`coaster-ride.ts`). Its rail runs overhead, so people walk under a
+  // straight; a loop stands on an A-frame over its tile.
+  coaster: { thing: 'coaster', w: 1, h: 1, blocks: false },
+  'coaster-loop': { thing: 'coaster-loop', w: 1, h: 1, blocks: true },
 } as const satisfies Record<
   string,
   { thing: ThingKind | undefined; w: number; h: number; blocks: boolean }

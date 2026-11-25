@@ -4,6 +4,7 @@
  * the card's own units. Kept apart from the page that shows it
  * (src/season-card.ts), so the drawing is pinned by a test of its own.
  */
+import { SITE_NAME } from './edition';
 import { backdrop } from './northpole/diorama';
 import { canvasFont, theme } from './northpole/theme';
 import { seasonHeadline, type SeasonLine } from './season';
@@ -62,7 +63,7 @@ function drawWho(
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = colors.gold;
   ctx.font = canvasFont('small', 'bold');
-  ctx.fillText('NORTH POLE CARNIVAL', left, 50, room);
+  ctx.fillText(SITE_NAME.toUpperCase(), left, 50, room);
   ctx.fillStyle = colors.text;
   ctx.font = canvasFont('title', 'bold');
   ctx.fillText(`@${login}`, left, 88, room);

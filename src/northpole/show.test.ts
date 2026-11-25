@@ -24,6 +24,8 @@ const SHOW: ShowKind[] = [
   'cog',
   'candy-pipe',
   'lantern',
+  'coaster',
+  'coaster-loop',
 ];
 
 /** A show prop as a level lays it out: its catalogue footprint, at (2, -1). */
@@ -52,6 +54,8 @@ describe('the show', () => {
         "band": "cbf157523eefbf22 (1716 calls)",
         "candy-pipe": "0640c4ffcf42f20f (912 calls)",
         "carousel": "09b920c178bb5ec3 (5532 calls)",
+        "coaster": "201c9ff47d458287 (996 calls)",
+        "coaster-loop": "ba27e3935b1e356c (3060 calls)",
         "cog": "9a60fea6f94e035a (720 calls)",
         "conveyor": "94bfc4c774311e36 (1212 calls)",
         "ferris-wheel": "f0f43285361d0624 (2976 calls)",
@@ -78,7 +82,9 @@ describe('the show', () => {
   });
 
   it("doesn't move two of a kind in step when their variants differ", () => {
-    for (const kind of SHOW) expect(drawn(kind, 0.2, 1000)).not.toEqual(drawn(kind, 0.7, 1000));
+    // A coaster's pieces carry one ticket between them, so they ride as one, whatever their variants.
+    const apart = SHOW.filter((kind) => kind !== 'coaster' && kind !== 'coaster-loop');
+    for (const kind of apart) expect(drawn(kind, 0.2, 1000)).not.toEqual(drawn(kind, 0.7, 1000));
   });
 
   it('paints only with the theme', () => {

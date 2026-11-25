@@ -5,7 +5,9 @@ import type { NorthPoleLevel } from '../../../src/northpole/level';
  * built. The path runs from the arrival point up the first lane, past the
  * letter box, the assessment desk and the workshop, across the top, and down
  * the second lane past the inspection bench, the gate and the map, to the
- * sleigh home. Plain data: the engine checks it and draws it (ADR 0035).
+ * sleigh home. Beside it runs a roller coaster, with a loop-the-loop at every
+ * stall, and a golden ticket, the visitor's request, rides it from the first
+ * loop to the last. Plain data: the engine checks it and draws it (ADR 0035).
  */
 const level: NorthPoleLevel = {
   id: 'the-factory',
@@ -22,6 +24,54 @@ const level: NorthPoleLevel = {
     { tile: 'bridge', area: { x: 17, y: 10 } },
   ],
   props: [
+    // The coaster, ridden in this order: up beside the first lane, across the
+    // top over the path, and down beside the second, with a loop just past
+    // each stall's door, so it never stands in front of one.
+    { kind: 'coaster', x: 7, y: 19 },
+    { kind: 'coaster', x: 7, y: 18 },
+    { kind: 'coaster', x: 7, y: 17 },
+    { kind: 'coaster', x: 7, y: 16 },
+    { kind: 'coaster-loop', x: 7, y: 15 },
+    { kind: 'coaster', x: 7, y: 14 },
+    { kind: 'coaster', x: 7, y: 13 },
+    { kind: 'coaster-loop', x: 7, y: 12 },
+    { kind: 'coaster', x: 7, y: 11 },
+    { kind: 'coaster', x: 7, y: 10 },
+    { kind: 'coaster', x: 7, y: 9 },
+    { kind: 'coaster', x: 7, y: 8 },
+    { kind: 'coaster', x: 7, y: 7 },
+    { kind: 'coaster-loop', x: 7, y: 6 },
+    { kind: 'coaster', x: 7, y: 5 },
+    { kind: 'coaster', x: 7, y: 4 },
+    { kind: 'coaster', x: 7, y: 3 },
+    { kind: 'coaster', x: 7, y: 2 },
+    { kind: 'coaster', x: 7, y: 1 },
+    { kind: 'coaster', x: 8, y: 1 },
+    { kind: 'coaster', x: 9, y: 1 },
+    { kind: 'coaster', x: 10, y: 1 },
+    { kind: 'coaster', x: 11, y: 1 },
+    { kind: 'coaster', x: 12, y: 1 },
+    { kind: 'coaster', x: 13, y: 1 },
+    { kind: 'coaster', x: 14, y: 1 },
+    { kind: 'coaster', x: 15, y: 1 },
+    { kind: 'coaster', x: 15, y: 2 },
+    { kind: 'coaster-loop', x: 15, y: 3 },
+    { kind: 'coaster', x: 15, y: 4 },
+    { kind: 'coaster', x: 15, y: 5 },
+    { kind: 'coaster', x: 15, y: 6 },
+    { kind: 'coaster', x: 15, y: 7 },
+    { kind: 'coaster-loop', x: 15, y: 8 },
+    { kind: 'coaster', x: 15, y: 9 },
+    { kind: 'coaster', x: 15, y: 10 },
+    { kind: 'coaster', x: 15, y: 11 },
+    { kind: 'coaster', x: 15, y: 12 },
+    { kind: 'coaster', x: 15, y: 13 },
+    { kind: 'coaster-loop', x: 15, y: 14 },
+    { kind: 'coaster', x: 15, y: 15 },
+    { kind: 'coaster', x: 15, y: 16 },
+    { kind: 'coaster', x: 15, y: 17 },
+    { kind: 'coaster', x: 15, y: 18 },
+    { kind: 'coaster', x: 15, y: 19 },
     // The factory floor between the lanes: belts carrying parcels, cogs turning, candy-striped pipes.
     { kind: 'conveyor', x: 9, y: 5 },
     { kind: 'conveyor', x: 11, y: 14 },
@@ -40,10 +90,10 @@ const level: NorthPoleLevel = {
     { kind: 'fire-breather', x: 11, y: 10 },
     { kind: 'juggler', x: 8, y: 11, variant: 0.6 },
     { kind: 'acrobats', x: 12, y: 12 },
-    { kind: 'band', x: 7, y: 2 },
+    { kind: 'band', x: 8, y: 3 },
     { kind: 'ferris-wheel', x: 18, y: 12 },
     { kind: 'balloon', x: 18, y: 5 },
-    { kind: 'lamp', x: 7, y: 6 },
+    { kind: 'lamp', x: 8, y: 6 },
     { kind: 'lamp', x: 13, y: 7 },
     { kind: 'sleigh', x: 9, y: 19, variant: 0.3 },
     { kind: 'pine', x: 1, y: 2, variant: 0.2 },

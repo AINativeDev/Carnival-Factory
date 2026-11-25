@@ -1,6 +1,6 @@
 /**
  * The note over the map for a link to a square that isn't there: on the
- * North Pole, with a way to claim a booth for that login, and in a level.
+ * North Pole, with a way to get a booth for that login, and in a level.
  * The id comes from the address, so it's only ever set as text.
  */
 import { the } from './dom';
@@ -18,7 +18,7 @@ export function renderUnknown(note: HTMLElement, focus: { kind: SquareKind; id: 
     claim.href = CLAIM_URL;
     claim.target = '_blank';
     claim.rel = 'noopener';
-    claim.textContent = 'Claim it!';
+    claim.textContent = 'Get a booth';
     note.append(claim);
   }
   note.hidden = false;

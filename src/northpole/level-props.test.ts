@@ -36,6 +36,8 @@ describe('the show in the catalogue', () => {
           'cog',
           'candy-pipe',
           'lantern',
+          'coaster',
+          'coaster-loop',
         ] as const
       ).map((kind) => {
         const { w, h, blocks } = LEVEL_PROPS[kind];
@@ -56,6 +58,8 @@ describe('the show in the catalogue', () => {
       cog: '1x1',
       'candy-pipe': '2x1',
       lantern: '1x1 open',
+      coaster: '1x1 open',
+      'coaster-loop': '1x1',
     });
   });
 

@@ -29,6 +29,6 @@ describe('drawThing', () => {
         drawThing(ctx, { kind, x: n, y: -n, w: 2, h: 2, seed: 0.3, blocks: true }, 4321);
       });
     });
-    expect(fingerprint(calls)).toBe('5e83952cb5e2b0ac (1898 calls)');
+    expect(fingerprint(calls)).toBe('bfc8ea8ccdc8f221 (1895 calls)');
   });
 });

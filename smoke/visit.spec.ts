@@ -24,7 +24,7 @@ async function expectJedi4everPanel(card: Locator) {
     'href',
     /template=01-your-booth\.yml&title=.+&what=Start%20from%20%40jedi4ever's%20/,
   );
-  await expect(card.getByRole('link', { name: 'Build your own booth' })).toBeHidden(); // a shared link: Claim instead
+  await expect(card.getByRole('link', { name: 'Get a booth', exact: true })).toBeHidden(); // a shared link: the spot next door instead
   await expect(card).toContainText('Esc or walk out to leave');
 }
 
@@ -87,7 +87,7 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
   expect(problems).toEqual([]);
 });
 
-test('a shared link starts inside the booth, and invites the visitor to claim the plot next door', async ({
+test('a shared link starts inside the booth, and invites the visitor to the spot next door', async ({
   page,
   context,
 }) => {
@@ -98,9 +98,9 @@ test('a shared link starts inside the booth, and invites the visitor to claim th
   await expect(card).toBeVisible();
   await expect(page.locator('.map-canvas')).toHaveAttribute('data-room', '0.50,0.85');
   const invite = card.locator('.visit-want');
-  await expect(invite).toContainText('Want one of your own?');
-  await expect(invite.getByRole('link', { name: 'Build your own booth' })).toBeHidden();
-  await invite.getByRole('button', { name: 'Claim the plot next door' }).click();
+  await expect(invite).toContainText('Want one too?');
+  await expect(invite.getByRole('link', { name: 'Get a booth', exact: true })).toBeHidden();
+  await invite.getByRole('button', { name: 'Get the spot next door' }).click();
   await expect(card).toHaveCount(0);
   await expect(page).toHaveURL(/#\/$/);
   const canvas = page.locator('.map-canvas');

@@ -50,7 +50,8 @@ the page never calls GitHub.
   `pending.json` (enforced by: the request check in smoke/support/carnival.ts and
   smoke/levels.spec.ts, the CSP in square.html for squares).
 - Share pages have no scripts: a meta refresh into the square, with a plain
-  link. Switched-off squares say "Closed for repairs." (enforced by:
+  link. They name the site from `src/edition.ts`: "<name> at Carnival
+  Factory", with "Carnival Factory – Christmas edition" as `og:site_name`. Switched-off squares say "Closed for repairs." (enforced by:
   scripts/share-pages.test.ts).
 - A data step that fails or times out publishes the map without that data
   (enforced by: .github/workflows/pages.yml).

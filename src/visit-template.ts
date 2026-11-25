@@ -4,6 +4,7 @@
  * everything else folded under More. Only fixed text and the repository's own
  * links are written here; every name and description is set as text later.
  */
+import { SITE_NAME } from './edition';
 import {
   BUILD_YOUR_OWN_URL,
   KEEP_POSTED_URL,
@@ -35,7 +36,7 @@ export const VISIT_PANEL = `
       <a class="visit-vote" target="_blank" rel="noopener" hidden>Vote for this booth</a>
       <a class="visit-remix-link" target="_blank" rel="noopener">Remix this booth</a>
     </div>
-    <p class="visit-want">Want one of your own? <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Build your own booth</a><button class="visit-claim" type="button" hidden>Claim the plot next door</button></p>
+    <p class="visit-want">Want one too? <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Get a booth</a><button class="visit-claim" type="button" hidden>Get the spot next door</button></p>
     <details class="visit-more">
       <summary>More</summary>
       <div class="visit-edit">
@@ -47,5 +48,5 @@ export const VISIT_PANEL = `
       <p><a class="history-factory-link" href="#/factory">See the factory's numbers</a> · <a class="history-own-link" href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run a factory on your own repo</a></p>
       ${SIGNUP_OFFER}
       <div class="visit-help"></div>
-      <p class="visit-foot">Next North Pole event? ${KEEP_POSTED_LINK}</p>
+      <p class="visit-foot">Next edition of ${SITE_NAME}? ${KEEP_POSTED_LINK}</p>
     </details>`;

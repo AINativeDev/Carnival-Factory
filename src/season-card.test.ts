@@ -107,7 +107,7 @@ describe('renderSeason', () => {
     expect(page.querySelector('.season-keep-posted')?.getAttribute('target')).toBeNull();
     expect(page.querySelector<HTMLElement>('.season-offer')?.hidden).toBe(true);
     const share = page.querySelector<HTMLTextAreaElement>('.season-share-text');
-    expect(share?.value).toMatch(/^My season at the North Pole Carnival as @ana: I built ana\./);
+    expect(share?.value).toMatch(/^My season at Carnival Factory as @ana: I built ana\./);
     const canvas = page.querySelector('canvas');
     expect(canvas?.getAttribute('aria-label')).toBe("@ana's season card: ana, 2 requests made.");
     expect([canvas?.width, canvas?.height]).toEqual([1200, 630]);

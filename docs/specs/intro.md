@@ -18,7 +18,8 @@ easy to skip.
 - "What is this?" at the left of the banner opens it again at any time, on
   any page. On a phone it shows just a question mark, with the same name for
   screen readers.
-- It is a dialog (`role="dialog"`, `aria-modal`, labelled by its title).
+- It is a dialog (`role="dialog"`, `aria-modal`, labelled by its title,
+  "Welcome to Carnival Factory – Christmas edition", from `src/edition.ts`).
   Focus moves to **Explore the North Pole** as it opens, Tab and Shift+Tab go
   round its buttons and links, and when it closes focus goes back where it
   was, or to the map's canvas when that was nowhere. While it is open the map
@@ -32,9 +33,9 @@ easy to skip.
   from `theme`, nothing loaded from the network, with one short line:
   **Write an issue** (an elf holds up a letter that writes itself),
   **The factory builds it** (a workshop with a lit window, a turning gear and
-  smoke), and **It lands on the map** (a stall pops up on an empty plot).
-- Then **Explore the North Pole**, which closes it, and **Build your own
-  booth**, which opens the booth form (`BOOTH_REQUEST_URL`) in a new tab and
+  smoke), and **It lands on the map** (a stall pops up on a free spot).
+- Then **Explore the North Pole**, which closes it, and **Get a booth**,
+  which opens the booth form (`BOOTH_REQUEST_URL`) in a new tab and
   closes it too.
 - It closes with Skip, Esc, a click outside it, or either button. Closing
   marks it seen.

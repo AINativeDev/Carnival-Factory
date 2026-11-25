@@ -1,4 +1,4 @@
-<h1 align="center">North Pole Carnival</h1>
+<h1 align="center">Carnival Factory – Christmas edition</h1>
 
 <p align="center">
   <strong>A Christmas carnival that a software factory builds, one booth at a time.</strong><br />
@@ -18,7 +18,7 @@
 
 <p align="center">
   <a href="https://ainativedev.github.io/Northpole-Carnival-Factory/">
-    <img alt="The North Pole Carnival map at dusk, in isometric 3D: striped carnival tents round a decorated tree, wooden booth stalls with their owners' pennants, a ferris wheel, snowy log cabins, a frozen pond with skating elves, and plots marked For claim" src="docs/north-pole.png" width="880" />
+    <img alt="The Carnival Factory map of the North Pole at dusk, in isometric 3D: striped carnival tents round a decorated tree, wooden booth stalls with their owners' pennants, a ferris wheel, snowy log cabins, a frozen pond with skating elves, and free spots waiting for a booth" src="docs/north-pole.png" width="880" />
   </a>
 </p>
 
@@ -35,7 +35,7 @@ taps, so it can be something people play with, not just watch.
 
 There are two ways to play:
 
-1. **[Build the North Pole Carnival together](#build-it-together).** Everyone
+1. **[Build the carnival together](#build-it-together).** Everyone
    shares this repository and one factory. Ask for a booth, change it as often
    as you like, and watch the carnival grow as everyone's requests land.
 2. **[Try it on your own](#try-it-on-your-own).** Fork the repository and run

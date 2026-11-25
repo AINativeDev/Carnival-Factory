@@ -298,10 +298,10 @@ jobs:
             cat > "$dir/index.html" <<'HTML'
           <!doctype html>
           <meta charset="utf-8" />
-          <title>North Pole Carnival</title>
+          <title>Carnival Factory – Christmas edition</title>
           <meta name="robots" content="noindex" />
           <script>location.replace('../../' + location.hash);</script>
-          <p>This preview has closed. <a href="../../">Go to the North Pole Carnival</a>.</p>
+          <p>This preview has closed. <a href="../../">Go to Carnival Factory</a>.</p>
           HTML
           done
 
