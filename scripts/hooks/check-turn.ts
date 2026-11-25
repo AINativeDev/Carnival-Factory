@@ -5,6 +5,9 @@
  * agent stop, so a check it can't fix can't trap it; CI still holds the line.
  */
 import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { installDrift, installFeedback, parseLockfile } from './install-drift.ts';
 import type { Runner } from './checks-for-file.ts';
 
 export const PROJECT_CHECKS: [string, string[]][] = [
@@ -30,8 +33,14 @@ export function touchedSquares(porcelain: string): string[] {
  * Why the agent isn't done yet, or undefined when every project check passes
  * and every square it changed meets the craft conventions (docs/adr/0029).
  */
-export function turnFeedback(alreadyBlocked: boolean, run: Runner): string | undefined {
+export function turnFeedback(
+  alreadyBlocked: boolean,
+  run: Runner,
+  installProblem?: string,
+): string | undefined {
   if (alreadyBlocked) return undefined;
+  // A stale install fails the checks for reasons that aren't the code's: say that alone.
+  if (installProblem) return installProblem;
   const failures = PROJECT_CHECKS.flatMap(([name, args]) => {
     const ran = run('npx', args);
     const output = `${ran.stdout}${ran.stderr}`.trim().slice(-4000);
@@ -53,7 +62,13 @@ if (process.argv[1]?.endsWith('check-turn.ts')) {
   const input = JSON.parse(await new Response(process.stdin as never).text());
   const root = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
   const run: Runner = (command, args) => spawnSync(command, args, { cwd: root, encoding: 'utf8' });
-  const problem = turnFeedback(Boolean(input.stop_hook_active), run);
+  const lockfile = (path: string) =>
+    parseLockfile(
+      existsSync(join(root, path)) ? readFileSync(join(root, path), 'utf8') : undefined,
+    );
+  const wanted = lockfile('package-lock.json');
+  const drift = wanted ? installDrift(wanted, lockfile('node_modules/.package-lock.json')) : [];
+  const problem = turnFeedback(Boolean(input.stop_hook_active), run, installFeedback(drift));
   if (problem) {
     console.error(problem);
     process.exit(2);
