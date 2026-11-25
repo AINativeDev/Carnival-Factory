@@ -4,7 +4,7 @@
  * only to maintainers, whoever's login matches its name, and the attraction
  * of the same id is its landmark on the home map (ADR 0035).
  */
-export const NORTH_POLE_LEVELS: readonly string[] = ['the-factory'];
+export const NORTH_POLE_LEVELS: readonly string[] = ['the-factory', 'the-academy', 'the-studio'];
 
 export function isNorthPoleLevel(id: string): boolean {
   return NORTH_POLE_LEVELS.includes(id);
