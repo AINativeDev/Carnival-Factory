@@ -59,8 +59,9 @@ function frame(time: number, n?: number, presses = 0) {
   return texts.map(String);
 }
 
+// One test, because the shop's memory lives in its module: each step starts where the last left it.
 describe('the drawing', () => {
-  it('asks for the paper, then the ribbon, then the bow, and shows the tag once wrapped', () => {
+  it('asks for the paper, the ribbon and the bow, shows the tag, and counts every press', () => {
     expect(frame(0)).toContain('Pick the paper for Stocking stuffer');
     expect(frame(100, 1)).toContain('Pick the paper for Stocking stuffer');
     expect(frame(200, 1, 1)).toContain('Pick the ribbon for Stocking stuffer');
@@ -72,9 +73,7 @@ describe('the drawing', () => {
     const next = frame(500, 0, 1);
     expect(next).toContain('Pick the paper for Tidy elf');
     expect(next).toContain('1 of 12 on the shelves');
-  });
-
-  it('counts every press since the last frame', () => {
+    // Two presses since the last frame are two picks: the paper and the ribbon.
     expect(frame(10_000, 0, 2)).toContain('Pick the bow for Tidy elf');
   });
 });

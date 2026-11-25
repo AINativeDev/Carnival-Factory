@@ -19,7 +19,8 @@ with four swatches to tap or click:
 
 The present on the counter takes on each pick as you make it. With the bow on,
 the parcel drops onto the shelves in the window, in a warm pool of light, and
-the card turns into its gift tag. Tap again to wrap the next one. The window
+the card turns into its gift tag for four seconds. Tap again to wrap the next
+one sooner. The window
 holds twelve parcels, four to a shelf from the bottom up; wrap a thirteenth
 and the shelves start again.
 

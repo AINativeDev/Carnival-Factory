@@ -25,7 +25,8 @@ const { colors } = theme;
 
 /** The card's paper, its shadow and the gift's colour down its left edge. */
 function blank(ctx: Ctx, wrap: string) {
-  shadow(ctx, 50, 96, 42);
+  // Centred high enough that the shadow's soft lower edge (a fifth of its width below) stays in the square.
+  shadow(ctx, 50, 91.5, 42);
   ctx.fillStyle = colors.shadow;
   ctx.globalAlpha = 0.25;
   ctx.fillRect(8.6, 78.6, 84, 19);

@@ -56,7 +56,7 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   them: taps on the card's four swatches pick the paper, then the ribbon, then
   the bow, the finished parcel goes up on the window's shelves (twelve, then
   they start again) and the card turns into that gift's tag, with its install
-  command, until the next tap.
+  command, for four seconds or until the next tap.
 
 ## Rules
 
