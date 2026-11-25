@@ -1,6 +1,7 @@
 # 0009. The page never calls the network: data is baked in at build
 
-- Status: Accepted
+- Status: Accepted, partly superseded by [0028](0028-analytics.md) (analytics
+  events from the map page)
 - Date: 2026-11-24
 - Pull requests: #92, #96, #98, #106, #120, #121
 - Spec: [previews-and-deploy.md](../specs/previews-and-deploy.md)

@@ -231,6 +231,12 @@ jobs:
       # replaced by the next event, and that run must still publish main.
       - name: Build main into the root
         working-directory: main
+        # Analytics switch on when both repository variables are set, and only
+        # for the live site: previews are built elsewhere and never get them
+        # (docs/adr/0028-analytics.md).
+        env:
+          VITE_POSTHOG_KEY: ${{ vars.POSTHOG_KEY }}
+          VITE_POSTHOG_HOST: ${{ vars.POSTHOG_HOST }}
         run: |
           npm ci
           BADGE_HOLDERS_FILE="$RUNNER_TEMP/badge-holders.json" \
