@@ -1,8 +1,9 @@
+import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
+import { squareCraft } from '../scripts/build-data.ts';
 
 // A square's panel shows the craft badges it earned and nothing it missed
-// (docs/adr/0029-booth-craft.md). The ferris wheel meets every convention; a
-// booth whose code is still one long file earns no small-files badge.
+// (docs/adr/0029-booth-craft.md).
 
 test('a square that meets every convention shows all four craft badges', async ({ page }) => {
   await page.goto('#/attraction/ferris-wheel');
@@ -18,13 +19,27 @@ test('a square that meets every convention shows all four craft badges', async (
   await expect(craft.locator('.visit-craft-about')).toHaveAttribute('href', /booth-craft\.md$/);
 });
 
-test('a square shows only the badges it earned, never one it missed', async ({ page }) => {
-  await page.goto('#/booth/chandler767');
-  const badges = page.locator('.visit .visit-craft .visit-craft-badge');
-  await expect(badges.first()).toBeVisible();
-  await expect(badges).not.toContainText(['Small files']);
-  await expect(page.locator('.visit')).not.toContainText(/not earned|missing|fail/i);
-});
+// What each booth earns changes as booths improve, so the expectation comes from
+// the same craft check the build runs, never from a booth's state on one day.
+const LABELS: Record<string, string> = {
+  'small-files': 'Small files',
+  tested: 'Tested',
+  documented: 'Documented',
+  'clear-names': 'Clear names',
+};
+const craft = squareCraft(join(import.meta.dirname, '..'));
+const booths = Object.keys(craft).filter((key) => key.startsWith('booth/'));
+
+for (const key of booths) {
+  test(`${key} shows exactly the badges it earned, and nothing it missed`, async ({ page }) => {
+    await page.goto(`#/${key}`);
+    const earned = (craft[key] ?? []).map((badge) => LABELS[badge] ?? badge);
+    const line = page.locator('.visit .visit-craft');
+    if (earned.length === 0) await expect(line).toBeHidden();
+    else await expect(line.locator('.visit-craft-badge')).toHaveText(earned);
+    await expect(page.locator('.visit')).not.toContainText(/not earned|missing|fail/i);
+  });
+}
 
 test('craft badges fit on a phone, inside the panel', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
