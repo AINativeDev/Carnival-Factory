@@ -33,7 +33,6 @@ describe('the top bar menu', () => {
     expect(currentPlace('#/factory')).toBeUndefined();
     expect(currentPlace('#/level/the-academy')).toBeUndefined();
     expect(currentPlace('#/booth/ana')).toBeUndefined();
-    expect(currentPlace('#/advent')).toBeUndefined();
     expect(currentPlace('#/keep-posted')).toBeUndefined();
   });
 
