@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BOOTH_REQUEST_URL, REPO_URL } from './northpole/links';
-import { clickEvent, routeEvent, type Clicked } from './analytics-events';
+import { clickEvent, introEvent, routeEvent, type Clicked } from './analytics-events';
 
 describe('routeEvent: what a visitor is looking at', () => {
   it('names each view of the map', () => {
@@ -60,5 +60,18 @@ describe('clickEvent: what a visitor does', () => {
   it('ignores every other click', () => {
     expect(clickEvent(clicked({ href: 'https://example.com' }))).toBeUndefined();
     expect(clickEvent(clicked())).toBeUndefined();
+  });
+});
+
+describe('introEvent: the first-visit intro', () => {
+  it('counts it opening, and how it closed', () => {
+    expect(introEvent('opened')).toEqual({ event: 'intro_opened', properties: {} });
+    for (const how of ['skip', 'explore', 'build'])
+      expect(introEvent(how)).toEqual({ event: 'intro_closed', properties: { how } });
+  });
+
+  it('ignores anything else', () => {
+    expect(introEvent('closed')).toBeUndefined();
+    expect(introEvent({ how: 'skip' })).toBeUndefined();
   });
 });

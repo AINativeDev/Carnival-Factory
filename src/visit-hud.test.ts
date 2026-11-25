@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { NorthPoleSquare } from './northpole/square';
 import { openVisitHud, type VisitHudOptions } from './visit-hud';
 
@@ -29,6 +29,14 @@ function open(options: Partial<VisitHudOptions> & Pick<VisitHudOptions, 'kind' |
   });
   return { hud, card: the(frame, '.visit') };
 }
+
+// A test never reaches the network: by default there is no history file beside the page.
+beforeEach(() => {
+  vi.stubGlobal('fetch', () => Promise.resolve({ ok: false } as Response));
+});
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("a square's panel", () => {
   it('shows its name and description as text, and its craft badges under them', () => {
@@ -81,12 +89,12 @@ describe("a square's panel", () => {
     expect(card.querySelector<HTMLElement>('.history-empty')?.hidden).toBe(false);
   });
 
-  it('keeps one row of actions, with the map link and the message in Share options', () => {
+  it('keeps one quiet row of actions, with the map link and the message under More', () => {
     const { card } = open({ kind: 'booth', square: square('ana', "Ana's booth") });
     const actions = the(card, '.visit-actions');
     expect([...actions.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Share']);
-    const options = the(card, '.visit-edit');
-    expect(options.querySelector('summary')?.textContent).toBe('Share options');
+    const options = the(card, '.visit-more');
+    expect(options.querySelector('summary')?.textContent).toBe('More');
     expect(options.querySelector<HTMLAnchorElement>('.visit-map')?.getAttribute('href')).toBe(
       '#/?booth=ana',
     );
@@ -103,7 +111,76 @@ describe("a square's panel", () => {
     });
     the(card, '.visit-mine').click();
     expect(mine).toBe(true);
-    expect((the(card, '.visit-edit') as HTMLDetailsElement).open).toBe(true);
+    expect((the(card, '.visit-more') as HTMLDetailsElement).open).toBe(true);
+  });
+
+  it('asks one thing: a booth of your own, or the plot next door after a shared link', () => {
+    const visitor = open({ kind: 'booth', square: square('ana', "Ana's booth") }).card;
+    expect(visitor.querySelector('.visit-want')?.textContent).toContain('Want one of your own?');
+    expect(the(visitor, '.visit-build').hidden).toBe(false);
+    expect(the(visitor, '.visit-claim').hidden).toBe(true);
+    let claimed = false;
+    const invited = open({
+      kind: 'booth',
+      square: square('ana', "Ana's booth"),
+      invite: true,
+      onClaim: () => (claimed = true),
+    }).card;
+    expect(the(invited, '.visit-build').hidden).toBe(true);
+    the(invited, '.visit-claim').click();
+    expect(claimed).toBe(true);
+  });
+
+  it('folds everything else under More', () => {
+    const { card } = open({ kind: 'booth', square: square('ana', "Ana's booth") });
+    const more = the(card, '.visit-more') as HTMLDetailsElement;
+    expect(more.open).toBe(false);
+    expect(more.querySelector('.visit-help')?.textContent).toContain('Is this yours?');
+    expect(more.textContent).toContain("See the factory's numbers");
+  });
+
+  it("tells a preview's story from the history file beside it", async () => {
+    const history = {
+      squares: {
+        'booth/ana': [
+          {
+            issue: 7,
+            title: 'My booth',
+            url: 'https://github.com/o/r/issues/7',
+            author: 'ana',
+            openedAt: '2026-11-24T10:00:00Z',
+            decision: 'accepted',
+            pulls: [],
+          },
+        ],
+      },
+      credits: {},
+    };
+    vi.stubGlobal('fetch', () =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve(history) } as Response),
+    );
+    const { card } = open({ kind: 'booth', square: square('ana', "Ana's booth") });
+    await vi.waitFor(() => {
+      expect(card.querySelector('.story-step')?.textContent).toContain('Asked for by @ana in #7');
+    });
+  });
+
+  it('fills in the name and description again once a sandboxed square says it is ready', () => {
+    let ready: (() => void) | undefined;
+    const late = {
+      ...square('ana', 'Opening…'),
+      onReady: (listener: () => void) => {
+        ready = listener;
+      },
+    };
+    const { hud, card } = open({ kind: 'booth', square: late });
+    late.name = "Ana's booth";
+    ready?.();
+    expect(card.querySelector('.visit-title')?.textContent).toBe("Ana's booth");
+    hud.close();
+    late.name = 'Changed after closing';
+    ready?.();
+    expect(card.querySelector('.visit-title')?.textContent).toBe("Ana's booth");
   });
 
   it('closes, taking the panel away', () => {

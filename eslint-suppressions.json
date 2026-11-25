@@ -235,11 +235,6 @@
       "count": 1
     }
   },
-  "src/northpole/frame-protocol.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    }
-  },
   "src/northpole/frame.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 2
@@ -345,14 +340,6 @@
       "count": 1
     }
   },
-  "src/northpole/sandbox.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 2
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    }
-  },
   "src/northpole/square-worker.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 2
@@ -412,9 +399,6 @@
     "@typescript-eslint/no-non-null-assertion": {
       "count": 3
     },
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
     "@typescript-eslint/no-unnecessary-type-parameters": {
       "count": 1
     }
@@ -433,13 +417,7 @@
     }
   },
   "src/visit-hud.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 3
-    },
     "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
     },
     "@typescript-eslint/no-unnecessary-type-parameters": {

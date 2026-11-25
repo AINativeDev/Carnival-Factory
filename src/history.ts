@@ -83,3 +83,28 @@ export const decisionText = (decision: Decision) => DECISIONS[decision];
 
 /** Only https links: the data is the build's own, but its links never run script. */
 export const safeHref = (href: string) => (/^https:\/\//i.test(href) ? href : '#');
+
+/** The history from JSON that isn't baked in: kept only when it's shaped like one. */
+export function readHistory(data: unknown): SquareHistory | undefined {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return undefined;
+  const { squares } = data as { squares?: unknown };
+  if (!squares || typeof squares !== 'object') return undefined;
+  if (!Object.values(squares).every((entries) => Array.isArray(entries))) return undefined;
+  return data as SquareHistory;
+}
+
+/**
+ * A preview has no history baked in, so the deploy puts the live site's beside
+ * it, and the panel reads it from the page's own site, like pending.json
+ * (docs/adr/0009). Anything missing or unreadable is no history.
+ */
+export async function loadHistoryFile(
+  fetchFile: (url: string) => Promise<Response> = (url) => fetch(url),
+): Promise<SquareHistory | undefined> {
+  try {
+    const response = await fetchFile('square-history.json');
+    return response.ok ? readHistory(await response.json()) : undefined;
+  } catch {
+    return undefined;
+  }
+}

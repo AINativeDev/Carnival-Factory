@@ -38,7 +38,9 @@ runs `npm run check` and `npm run build`. `npm run check` is:
 - `npm run format:check`: Prettier;
 - `npm run typecheck`: TypeScript, and the strict flags against their baseline
   (`node scripts/strict-types.ts`);
-- `npm test`: the unit tests with coverage, whose thresholds only rise.
+- `npm test`: the unit tests with coverage, held to the floor in
+  `vitest.config.ts`. Don't raise the floor in a pull request: maintainers raise
+  it on `main` with `npm run coverage:ratchet`.
 
 On a pull request, CI also runs `npm run test:changed` (99% of the lines it adds
 to `src/`, `scripts/` and `lint/`, and of the branches on them, must run under
@@ -133,6 +135,11 @@ src/
                             requests, bundled from square-history.json at build time
   advent.ts                 the advent calendar page, #/advent: its doors by date
                             (plain functions), over the map like the factory's numbers
+  intro.ts                  the first-visit intro on #/: when it opens, opening and closing
+                            it, and "What is this?" in the banner to open it again
+  intro-dialog.ts           the intro's dialog: Skip, its title, the beats and the two ways on
+  intro-scene.ts            the intro's three little dioramas and their lines
+  keep-posted.ts            the "keep me posted" page, #/keep-posted, until its form is set
   offer.ts                  the free credits offer beside "Run this on your own repo",
                             hidden until TESSL_SIGNUP_URL and TESSL_SIGNUP_OFFER are set
   factory.ts                the factory's numbers page, #/factory: its counts and figures

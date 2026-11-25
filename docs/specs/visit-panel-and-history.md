@@ -26,11 +26,16 @@ them.
   @<login>."
 - An Elf Engineer's booth links to their own factory. A booth with a People's
   Choice comment links to it with "Vote for this booth".
-- One row of actions follows: **Share** (the one button), **Vote for this
-  booth**, **Remix this booth** and **Build your own**. **Share options** folds
-  away the message and **See it on the map**. A quiet footer holds the factory's
-  numbers, running a factory on your own repo, the owner's links and keep me
-  posted.
+- Under the story, one quiet row: **Share**, **Vote for this booth** and
+  **Remix this booth**, then one ask: "Want one of your own? Build your own
+  booth". Someone who arrived by a shared link to a booth gets **Claim the plot
+  next door** in its place, until they leave or claim.
+- Everything else folds under **More**: the message Share copies and **See it
+  on the map**, an Elf Engineer's own factory, the factory's numbers, running a
+  factory on your own repo, the owner's links and keep me posted.
+- A preview build has no history baked in, so the deploy puts the live site's
+  `square-history.json` beside each preview, and the panel reads it from its
+  own site and tells the story from it.
 - **Share** copies a line such as "@<login> built <name> at the North Pole
   Carnival. Come visit, and build your own: <link>". The link is the square's
   share page, `share/<kind>-<id>.html`, on the live site even from a preview.
@@ -38,8 +43,6 @@ them.
 - A booth's help lists Ask for a change, Share it as yours (the line then
   says "I built"), the Elf Engineer form, the advent calendar and the owner's
   season card.
-- Someone who arrived by a shared link to a booth is invited, after the
-  timeline, to claim the plot next door, until they leave or claim.
 - Leaving: Esc, the Leave button, the "Back to the map" button in the top
   left corner, or walking out through the doorway.
 - The banner's GitHub link goes to the repository.
@@ -69,7 +72,7 @@ them.
 ## Where it lives
 
 `src/visit-hud.ts`, `src/build-story.ts`, `src/build-story-view.ts`,
-`src/visit-share.ts`, `src/visit-help.ts`, `src/craft-badges.ts`, `src/history.ts`, `scripts/square-history.ts`,
+`src/visit-share.ts`, `src/visit-template.ts`, `src/visit-help.ts`, `src/craft-badges.ts`, `src/history.ts`, `scripts/square-history.ts`,
 `scripts/write-square-history.ts`, `scripts/share-pages.ts`,
 `src/northpole/visit.ts`, `src/northpole/links.ts`, `src/northpole/interior.ts`,
 `index.html`.
@@ -77,7 +80,7 @@ them.
 ## Tested by
 
 `src/history.test.ts`, `src/build-story.test.ts`, `src/build-story-view.test.ts`,
-`src/visit-hud.test.ts`, `src/visit-share.test.ts`, `scripts/square-history.test.ts`,
+`src/visit-hud.test.ts`, `src/visit-share.test.ts`, `src/history-load.test.ts`, `scripts/square-history.test.ts`,
 `scripts/share-pages.test.ts`, `src/northpole/visit.test.ts`,
 `src/northpole/links.test.ts`, `src/northpole/interior.test.ts`,
 `smoke/squares.spec.ts` (Share, leaving, the invitation, the back button, the

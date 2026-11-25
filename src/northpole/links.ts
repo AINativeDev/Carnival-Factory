@@ -10,13 +10,13 @@ export const BOOTH_REQUEST_URL = `${REPO_URL}/issues/new?template=01-your-booth.
  * The Elf Engineer form: asks for the badge, for someone who set up a Tessl
  * factory on a repository of their own.
  */
-export const BADGE_REQUEST_URL = `${REPO_URL}/issues/new?template=02-elf-engineer.yml`;
+export const BADGE_REQUEST_URL = `${REPO_URL}/issues/new?template=03-elf-engineer.yml`;
 
 /**
  * The Advent challenge form: marks one of the advent calendar's challenges
  * done, with a link that shows it, so the owner's booth gets a decoration.
  */
-export const ADVENT_REQUEST_URL = `${REPO_URL}/issues/new?template=03-advent-challenge.yml`;
+export const ADVENT_REQUEST_URL = `${REPO_URL}/issues/new?template=04-advent-challenge.yml`;
 
 /** Where "claim a booth" links go: the same form, for someone without a booth.
  * @alias the same form under the name its links use
@@ -75,7 +75,7 @@ export const CHANGE_URL = BOOTH_REQUEST_URL;
  * only links to it. Empty until a maintainer fills it in, and until then the
  * link goes to a page here that says the list opens soon and collects nothing.
  */
-export const KEEP_POSTED_URL = '';
+export const KEEP_POSTED_URL: string = '';
 
 /** Where "Keep me posted" links go: the real form once it's set, or the placeholder page. */
 export const keepPostedHref = (url: string = KEEP_POSTED_URL) => url || '#/keep-posted';

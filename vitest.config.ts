@@ -4,8 +4,10 @@ import viteConfig from './vite.config.ts';
 /**
  * The unit tests, with the page's own build settings so they see what the page
  * sees. Coverage is a ratchet towards 99% (docs/adr/0025-test-coverage.md):
- * the thresholds below are the floor, and every run that beats them writes the
- * new, higher numbers back here, so coverage can rise and never quietly fall.
+ * the thresholds below are the floor every run is held to, so coverage never
+ * quietly falls. They're raised only on main, by `npm run coverage:ratchet`
+ * (RATCHET=1), never inside a pull request, so two pull requests never fight
+ * over the same line (docs/adr/0034-ratchet-on-main.md).
  * New and changed lines are held to 99% on their own by scripts/diff-coverage.ts.
  */
 export default mergeConfig(
@@ -21,9 +23,10 @@ export default mergeConfig(
         reporter: ['text-summary', 'json'],
         thresholds: {
           // Whole points: runs differ by a fraction of a percent between machines.
-          autoUpdate: (threshold: number) => Math.floor(threshold),
-          lines: 48,
-          statements: 49,
+          autoUpdate:
+            process.env.RATCHET === '1' ? (threshold: number) => Math.floor(threshold) : false,
+          lines: 49,
+          statements: 50,
           functions: 63,
           branches: 58,
         },

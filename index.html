@@ -15,6 +15,10 @@
   </head>
   <body>
     <header class="banner">
+      <button class="intro-open" type="button" aria-label="What is this?" title="What is this?">
+        <span aria-hidden="true" class="intro-open-mark">?</span>
+        <span class="intro-open-text">What is this?</span>
+      </button>
       <a class="brand" href="#/">North Pole Carnival</a>
       <a
         class="repo-link"
@@ -34,7 +38,8 @@
       </a>
     </header>
     <main id="app"></main>
-    <script type="module" src="/src/main.ts"></script>
+    <!-- Analytics first, so it hears the intro open as the map starts (docs/specs/intro.md). -->
     <script type="module" src="/src/analytics.ts"></script>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

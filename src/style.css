@@ -80,6 +80,200 @@ a {
   }
 }
 
+/* "What is this?": the way back into the intro, at the banner's left. */
+.intro-open {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-night);
+  color: var(--color-snow);
+  font: bold 14px var(--font-family);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.intro-open:hover,
+.intro-open:focus-visible {
+  color: var(--color-gold);
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.intro-open-mark {
+  display: none;
+}
+
+/* On a phone, just the question mark, as the GitHub link keeps just its mark. */
+@media (max-width: 719px) {
+  .intro-open {
+    left: 8px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+  }
+
+  .intro-open-mark {
+    display: inline;
+  }
+
+  .intro-open-text {
+    display: none;
+  }
+}
+
+/*
+ * The first-visit intro (src/intro.ts): a dialog over a dimmed page, its three
+ * beats side by side on a wide screen and stacked on a phone, never wider
+ * than the window.
+ */
+.intro-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  overflow-y: auto;
+  background: color-mix(in srgb, var(--color-night) 72%, transparent);
+  animation: visit-in 0.4s ease-out;
+}
+
+.intro {
+  position: relative;
+  width: min(640px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 20px 20px 18px;
+  border: 3px solid var(--color-gold);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: center;
+}
+
+.intro-title {
+  margin: 0 64px 6px;
+  color: var(--color-gold);
+  font-size: 22px;
+}
+
+.intro-lead {
+  margin: 0 0 14px;
+  color: var(--color-muted);
+}
+
+.intro-beats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.intro-beat p {
+  margin: 8px 0 0;
+  font-size: 15px;
+}
+
+.intro-scene {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+}
+
+.intro-beat strong {
+  color: var(--color-gold);
+}
+
+.intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.intro-explore,
+.intro-build,
+.intro-skip {
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  font: bold 15px var(--font-family);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.intro-explore {
+  border: 2px solid var(--color-gold);
+  background: var(--color-gold);
+  color: var(--color-ink);
+}
+
+.intro-build {
+  border: 2px solid var(--color-gold);
+  color: var(--color-gold);
+}
+
+.intro-skip {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 12px;
+  border: 1px solid var(--color-muted);
+  background: none;
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.intro-explore:focus-visible,
+.intro-build:focus-visible,
+.intro-skip:focus-visible {
+  outline: 3px solid var(--color-snow);
+  outline-offset: 2px;
+}
+
+/* On a phone, each beat is a row: its scene beside its line. */
+@media (max-width: 719px) {
+  .intro {
+    padding: 16px 14px 14px;
+  }
+
+  .intro-title {
+    margin: 0 56px 6px 0;
+    font-size: 19px;
+    text-align: left;
+  }
+
+  .intro-beats {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .intro-beat {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 10px;
+    align-items: center;
+    text-align: left;
+  }
+
+  .intro-beat p {
+    margin: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-backdrop {
+    animation: none;
+  }
+}
+
 /* On the map, the diorama fills the window below the banner, and the page never scrolls. */
 body[data-view='map'] {
   display: flex;
@@ -951,14 +1145,43 @@ kbd {
   color: var(--color-muted);
 }
 
-/* One row of actions: Share is the one button, the rest are links. */
+/* One quiet row of actions under the story. */
 .visit-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 16px;
-  margin: 18px 0 6px;
+  margin: 16px 0 6px;
   font-size: 14px;
+}
+
+.visit-actions .visit-copy {
+  padding: 3px 14px;
+  border: 1.5px solid var(--color-berry);
+  background: none;
+  color: var(--color-berry);
+  font-size: 14px;
+}
+
+/* The one ask: a booth of your own, or the plot next door for someone who came by a shared link. */
+.visit-want {
+  margin: 12px 0 4px;
+  font-size: 14px;
+}
+
+.visit-want a {
+  font-weight: 600;
+}
+
+.visit-want [hidden] {
+  display: none;
+}
+
+.visit-want .visit-claim:not([hidden]) {
+  display: block;
+  margin: 8px 0 0;
+  padding: 8px 20px;
+  font-size: 16px;
 }
 
 .visit-actions a {
@@ -994,14 +1217,9 @@ kbd {
   cursor: pointer;
 }
 
-/* Share's options, folded away until someone wants them. */
+/* The message Share copies, and the map link, under More. */
 .visit-edit {
   font-size: 12px;
-}
-
-.visit-edit summary {
-  cursor: pointer;
-  color: var(--color-muted);
 }
 
 .visit-edit .visit-map {
@@ -1026,11 +1244,15 @@ kbd {
   resize: vertical;
 }
 
-/* The footer: quiet links, the owner's next steps, and keep me posted. */
+/* Everything else, folded: the owner's links, the factory's numbers, keep me posted. */
 .visit-more {
-  margin-top: 22px;
+  margin-top: 14px;
   color: var(--color-muted);
   font-size: 12px;
+}
+
+.visit-more summary {
+  cursor: pointer;
 }
 
 .visit-more p,
@@ -1052,34 +1274,6 @@ kbd {
 
 .visit-foot {
   margin: 10px 0 0;
-}
-
-/* The invitation, for someone who came by a shared link. */
-.visit-invite {
-  margin-top: 14px;
-  padding: 12px;
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--color-berry) 8%, transparent);
-  text-align: center;
-}
-
-.visit-invite[hidden] {
-  display: none;
-}
-
-.visit-invite p {
-  margin: 0 0 10px;
-}
-
-.visit-claim {
-  display: block;
-  margin: 0 auto 8px;
-  padding: 10px 24px;
-  font-size: 18px;
-}
-
-.visit-how {
-  font-size: 13px;
 }
 
 .history-offer p {

@@ -6,6 +6,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpFailure, scriptedGitHub, type Routes } from './merge-gate-fake-github.ts';
+import { publishIfBehind } from './merge-gate-publish.ts';
 import { runMergeGate } from './merge-gate-round.ts';
 import {
   boothPull,
@@ -109,6 +110,65 @@ describe('a round with a failure', () => {
     expect(errors).toEqual([
       '#7: Error: GET pulls/7/reviews?per_page=100&page=1 answered HTTP 500',
     ]);
+  });
+});
+
+describe('one bad pull request among good ones', () => {
+  it('is logged and skipped, and the round still merges the others and fails', async () => {
+    const errors: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: string) => errors.push(line));
+    const routes = mergeableBooth();
+    const bad = boothPull({ number: 9, body: 'Closes #6', head: { ...boothPull().head } });
+    routes['GET pulls?state=open'] = [bad, boothPull()];
+    routes['GET issues/6'] = new HttpFailure(504);
+    const run = await round(routes);
+    expect(run.ok).toBe(false);
+    expect(errors).toEqual(['#9: Error: GET issues/6 answered HTTP 504']);
+    expect(run.writes().map((w) => w.path)).toContain('pulls/7/merge');
+  });
+
+  it('skips a held pull request whose history GitHub fails to give, and publishes for the rest', async () => {
+    const errors: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: string) => errors.push(line));
+    const routes = mergeableBooth();
+    routes['GET issues/9/events'] = new HttpFailure(504);
+    routes['GET issues/7/events'] = [
+      { event: 'labeled', label: { name: 'needs-human' }, created_at: minutesAgo(10) },
+    ];
+    const github = scriptedGitHub(routes);
+    const held = new Set([9, 7]);
+    const ok = await publishIfBehind(github.client, { merged: false, held, dryRun: false });
+    expect(ok).toBe(false);
+    expect(errors).toEqual([
+      '#9: Error: GET issues/9/events?per_page=100&page=1 answered HTTP 504',
+    ]);
+    expect(logs).toContain('published the map');
+  });
+
+  it('fails the round when a held pull request’s history fails, though gating it passed', async () => {
+    const errors: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: string) => errors.push(line));
+    const routes = mergeableBooth();
+    routes['GET pulls?state=open'] = [boothPull({ labels: [{ name: 'needs-human' }] })];
+    routes['GET issues/7/events'] = new HttpFailure(504);
+    const run = await round(routes);
+    expect(errors).toEqual([
+      '#7: Error: GET issues/7/events?per_page=100&page=1 answered HTTP 504',
+    ]);
+    expect(run.ok).toBe(false);
+  });
+
+  it('reads no held pull request’s history once a merge has made the map stale', async () => {
+    const routes = mergeableBooth();
+    routes['GET issues/7/events'] = new HttpFailure(504);
+    const github = scriptedGitHub(routes);
+    const ok = await publishIfBehind(github.client, {
+      merged: true,
+      held: new Set([7]),
+      dryRun: false,
+    });
+    expect(ok).toBe(true);
+    expect(github.requests.map((r) => r.path)).not.toContain('issues/7/events?per_page=100&page=1');
   });
 });
 

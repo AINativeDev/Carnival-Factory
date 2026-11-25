@@ -22,7 +22,8 @@ What runs on every pull request, and what each check guarantees.
 - `npm run smoke` is Playwright against the built site on port 4173, one
   worker. Projects: `chromium` at 1200 by 1000 (or the local Chrome with
   `PLAYWRIGHT_CHANNEL=chrome`), and `webkit` as an iPhone 13, which runs only
-  `smoke/safari.spec.ts`.
+  `smoke/safari.spec.ts`. Every test starts with the first-visit intro seen
+  (`storageState`), except `smoke/intro.spec.ts`, which tests it.
 - The smoke test plays every booth and attraction not switched off: it opens,
   draws within budget (slowest frame after 5 warm-up frames: 16 ms on CI,
   8 ms locally) and stays quiet (no console errors, uncaught errors or
@@ -86,7 +87,8 @@ What runs on every pull request, and what each check guarantees.
   scripts/strict-types.ts, `strictTypeChecked` with eslint-suppressions.json).
 - Coverage: 99% of added lines, and of the branch arms on them, in `src/`,
   `scripts/` and `lint/` ([ADR 0031](../adr/0031-changed-branches-too.md)), and the
-  whole-repository thresholds only rise (enforced by: scripts/diff-coverage.ts,
+  whole-repository thresholds only rise, raised on main with
+  `npm run coverage:ratchet` ([ADR 0034](../adr/0034-ratchet-on-main.md)) (enforced by: scripts/diff-coverage.ts,
   the thresholds in vitest.config.ts).
 - The docs name only files that exist, and the ADR index lists every record
   (enforced by: scripts/docs-paths.test.ts). Whether the prose is still true,

@@ -23,12 +23,14 @@ async function labelledSince(github: GitHub, number: number, since: number): Pro
  * Both are read from GitHub rather than remembered, so every run retries a
  * dispatch that failed or was skipped while a deploy was already running.
  * `merged` says this round merged a booth, and `held` are the pull requests
- * it saw with needs-human.
+ * it saw with needs-human. A held pull request whose history GitHub fails to
+ * give is logged and skipped, so the others still publish the map; it returns
+ * false then, so the round's failure shows.
  */
 export async function publishIfBehind(
   github: GitHub,
   { merged, held, dryRun }: { merged: boolean; held: ReadonlySet<number>; dryRun: boolean },
-) {
+): Promise<boolean> {
   type Runs = { workflow_runs: { created_at: string }[] };
   const pages = 'actions/workflows/pages.yml';
   const done = await get<Runs>(github, `${pages}/runs?status=success&per_page=1`);
@@ -40,14 +42,23 @@ export async function publishIfBehind(
       names(pull.labels).includes('auto-merged') &&
       new Date(pull.merged_at).getTime() > lastPublished,
   );
-  if (running.workflow_runs.length > 0) return;
+  if (running.workflow_runs.length > 0) return true;
   let stale = behind || merged;
-  for (const number of held) stale ||= await labelledSince(github, number, lastPublished);
-  if (!stale) return;
-  if (dryRun) {
-    console.log('would publish the map');
-    return;
+  let ok = true;
+  for (const number of held) {
+    if (stale) break;
+    try {
+      stale = await labelledSince(github, number, lastPublished);
+    } catch (error) {
+      console.error(`#${String(number)}: ${String(error)}`);
+      ok = false;
+    }
   }
-  await github.call('POST', `${pages}/dispatches`, { ref: 'main' });
-  console.log('published the map');
+  if (!stale) return ok;
+  if (dryRun) console.log('would publish the map');
+  else {
+    await github.call('POST', `${pages}/dispatches`, { ref: 'main' });
+    console.log('published the map');
+  }
+  return ok;
 }

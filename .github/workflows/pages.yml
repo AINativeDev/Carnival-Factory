@@ -335,6 +335,13 @@ jobs:
           done <<<"$open"
           echo "placed=${placed[*]}" >> "$GITHUB_OUTPUT"
 
+          # A preview build has no history of its own, so every preview gets the
+          # live site's beside it, which its visit panel reads to tell how each
+          # square was built (docs/specs/visit-panel-and-history.md).
+          if [ -f main/square-history.json ]; then
+            for dir in site/previews/pr-*/; do cp main/square-history.json "$dir"; done
+          fi
+
       - name: Commit and push gh-pages
         working-directory: site
         run: |

@@ -53,3 +53,20 @@ export function clickEvent(target: Clicked): AnalyticsEvent | undefined {
   if (target.closest('.repo-link')) return { event: 'repo_opened', properties: {} };
   return undefined;
 }
+
+/**
+ * The page event the first-visit intro (src/intro.ts) sends when it opens or
+ * closes, for analytics to count: its detail is `opened`, or how it closed.
+ */
+export const INTRO_EVENT = 'north-pole-intro';
+
+/** How the intro closed: Skip (or Esc, or a click outside it), Explore, or Build. */
+export type IntroClose = 'skip' | 'explore' | 'build';
+
+/** The event for the intro opening or closing, if the detail is one it sends. */
+export function introEvent(detail: unknown): AnalyticsEvent | undefined {
+  if (detail === 'opened') return { event: 'intro_opened', properties: {} };
+  if (detail === 'skip' || detail === 'explore' || detail === 'build')
+    return { event: 'intro_closed', properties: { how: detail } };
+  return undefined;
+}

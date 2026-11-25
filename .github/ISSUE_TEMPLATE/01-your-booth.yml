@@ -45,6 +45,12 @@ body:
         lantern on a post.
     validations:
       required: true
+  - type: input
+    id: name
+    attributes:
+      label: Your booth's name
+      description: Shown on your booth's sign, up to about 24 characters. Leave it empty to keep the name it has.
+      placeholder: Penguin Pond
   - type: dropdown
     id: style
     attributes:
@@ -109,12 +115,6 @@ body:
         - Aurora green and violet
         - Mint
         - Night blue
-  - type: input
-    id: name
-    attributes:
-      label: Your booth's name
-      description: Shown on your booth's sign, up to about 24 characters. Leave it empty to keep the name it has.
-      placeholder: Penguin Pond
   - type: textarea
     id: done
     attributes:
