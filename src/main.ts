@@ -9,7 +9,6 @@ import type { SandboxedSquare } from './northpole/sandbox';
 import type { NorthPoleSquare } from './northpole/square';
 import { applyTheme, theme } from './northpole/theme';
 import { boothRegistry } from './northpole/booths';
-import { avatarPath } from './northpole/owners';
 import { PEOPLES_CHOICE } from './northpole/peoples-choice-standings';
 import { sitesToRemember } from './northpole/plots';
 import { BOOTHS_PANEL, startBoothsPanel, type BoothsPanel } from './booths-hud';
@@ -382,7 +381,6 @@ function visit(kind: SquareKind, id: string, fromHistory: boolean) {
     square,
     level: shown || undefined,
     invite: kind === 'booth' && invite === id,
-    avatar: kind === 'booth' && AVATARS.has(id) ? avatarPath(id) : undefined,
     onMine: () => panel?.setMe(id),
     onClose: () => closeCard(true),
     onClaim: () => {

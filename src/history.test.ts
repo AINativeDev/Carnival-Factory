@@ -7,7 +7,7 @@ import {
   historyOf,
   pullState,
   pullSummary,
-  requestLine,
+  decisionText,
   safeHref,
 } from './history';
 
@@ -82,19 +82,11 @@ describe('pullSummary and pullState', () => {
   });
 });
 
-describe('requestLine', () => {
-  it('names who asked without mentioning them, and what was decided', () => {
-    expect(
-      requestLine({
-        issue: 1,
-        title: 'A booth',
-        url: '',
-        author: 'ana',
-        openedAt: '2026-11-20T10:00:00Z',
-        decision: 'question',
-        pulls: [],
-      }),
-    ).toBe('@ana · 20 Nov 2026 · Asked a question');
+describe('decisionText', () => {
+  it('says what the assessment decided, in words', () => {
+    expect(decisionText('accepted')).toBe('Accepted');
+    expect(decisionText('question')).toBe('Asked a question');
+    expect(decisionText('waiting')).toBe('Waiting for the assessment');
   });
 });
 

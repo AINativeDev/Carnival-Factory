@@ -73,8 +73,10 @@ describe('renderCraft', () => {
       earnedBadges({ 'booth/ana': ['tested'] }, 'booth/ana'),
       make,
     );
-    const badge = line.children.at(0);
-    const link = line.children.at(1);
+    const label = line.children.at(0);
+    const badge = line.children.at(1);
+    const link = line.children.at(2);
+    expect(label).toMatchObject({ className: 'visit-craft-label', textContent: 'Code:' });
     expect(badge).toMatchObject({ className: 'visit-craft-badge', textContent: 'Tested' });
     expect(link?.href).toMatch(/docs\/specs\/booth-craft\.md$/);
     expect(line.hidden).toBe(false);

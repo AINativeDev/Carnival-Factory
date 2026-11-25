@@ -1,27 +1,24 @@
 import { badgeFor, factoryUrl } from './northpole/badges';
 import { voteUrl } from './northpole/peoples-choice';
 import { PEOPLES_CHOICE } from './northpole/peoples-choice-standings';
-import {
-  BUILD_YOUR_OWN_URL,
-  HOW_IT_WORKS_URL,
-  KEEP_POSTED_URL,
-  OWN_REPO_URL,
-  keepPostedHref,
-  remixUrl,
-} from './northpole/links';
+import { remixUrl } from './northpole/links';
 import type { SquareKind } from './northpole/map';
 import type { SandboxedSquare } from './northpole/sandbox';
 import type { NorthPoleSquare } from './northpole/square';
-import { shareLink, shareText } from './northpole/visit';
+import { shareLink } from './northpole/visit';
 import {
   SQUARE_HISTORY,
   creditsFor,
   emptyHistoryText,
   historyOf,
-  renderCredits,
-  renderHistory,
+  loadHistoryFile,
 } from './history';
-import { SIGNUP_OFFER, showSignupOffer } from './offer';
+import type { SquareHistory } from '../scripts/square-history';
+import { storySteps } from './build-story';
+import { renderStory } from './build-story-view';
+import { wireShare } from './visit-share';
+import { showSignupOffer } from './offer';
+import { VISIT_PANEL } from './visit-template';
 import { deepLink, levelLink } from './route';
 import { SQUARE_CRAFT, craftKey, earnedBadges, renderCraft } from './craft-badges';
 import { fillVisitHelp } from './visit-help';
@@ -35,18 +32,11 @@ export interface VisitHudOptions {
   onClose(): void;
   /** Claim the plot next door. */
   onClaim(): void;
-  /** The owner's build-time avatar, for a booth whose owner has one. */
-  avatar?: string;
   /** Says the visitor shared this booth as theirs, so the map knows who they are. */
   onMine?(): void;
   /** The owner of the level this square is in, for one of a level's own squares. */
   level?: string;
 }
-
-/** The "Keep me posted" link: to the real form once it's set, or to the placeholder page. */
-const KEEP_POSTED_LINK = KEEP_POSTED_URL
-  ? `<a href="${keepPostedHref()}" target="_blank" rel="noopener">Keep me posted</a>.`
-  : `<a href="${keepPostedHref()}">Keep me posted</a>.`;
 
 /** The HUD of a visit: `close` takes it away and gives focus back. */
 export interface VisitHud {
@@ -54,16 +44,15 @@ export interface VisitHud {
 }
 
 /**
- * The HUD inside a square the player has entered, beside the room the map
- * draws: its name, who made it and who improved it, Remix this booth and Build
- * your own, its description, Share and See it on the map, a link for its owner
- * to ask for a change and one to their season card, for someone who came by a
- * shared link the invitation to claim the plot next door, and how to leave.
- * Focus moves into it, and back out when it closes. Every name and
+ * The panel inside a square the player has entered, beside the room the map
+ * draws. The room's own sign already shows the square's name and maker, so the
+ * panel leads with what the room can't show: how the square was built, from the
+ * first request to the map (build-story.ts). Then one row of actions, and a
+ * quiet footer. Focus moves into it, and back out when it closes. Every name and
  * description is only ever set as text.
  */
 export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): VisitHud {
-  const { kind, square } = options;
+  const { kind, square, level } = options;
   const before = document.activeElement as HTMLElement | null;
   const card = document.createElement('section');
   card.className = 'hud visit';
@@ -71,63 +60,9 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   card.setAttribute('aria-describedby', 'visit-description');
   card.dataset.kind = kind;
   card.dataset.id = square.id;
-  card.innerHTML = `
-    <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>
-    <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
-    <p class="visit-owner"></p>
-    <p class="visit-craft" hidden></p>
-    <p class="visit-remix">
-      <a class="visit-remix-link" target="_blank" rel="noopener">Remix this booth</a>
-      <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Build your own</a>
-    </p>
-    <p class="visit-factory" hidden><a target="_blank" rel="noopener"></a></p>
-    <p class="visit-vote" hidden><a target="_blank" rel="noopener">Vote for this booth</a> in People's Choice</p>
-    <p class="visit-description" id="visit-description"></p>
-    <div class="visit-actions">
-      <button class="visit-copy" type="button">Share</button>
-      <a class="visit-map">See it on the map</a>
-    </div>
-    <details class="visit-edit">
-      <summary>Edit the message</summary>
-      <label class="visit-label" for="visit-share-text">Share text</label>
-      <textarea id="visit-share-text" class="visit-share-text" rows="4"></textarea>
-    </details>
-    <div class="visit-invite" hidden>
-      <p class="visit-invite-text"></p>
-      <button class="visit-claim" type="button">Claim the plot next door</button>
-      <a class="visit-how" href="${HOW_IT_WORKS_URL}" target="_blank" rel="noopener">How was this built?</a>
-    </div>
-    <details class="visit-history">
-      <summary>How was this built?</summary>
-      <ol class="history-list"></ol>
-      <p class="history-empty" hidden></p>
-      <p class="history-factory"><a class="history-factory-link" href="#/factory">See the factory's numbers</a></p>
-      <p class="history-own"><a class="history-own-link" href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run this on your own repo</a>: set up a Tessl factory on a repository of yours.</p>
-      ${SIGNUP_OFFER}
-    </details>
-    <div class="visit-help"></div>
-    <p class="visit-foot">Next North Pole event? ${KEEP_POSTED_LINK}</p>`;
+  card.innerHTML = VISIT_PANEL;
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
-
-  const { level } = options;
-  const login = level ?? square.id;
-  const owner = kind === 'attraction' && !level ? '' : `@${login}`;
-  // Who made it and who improved it, from the build's history: a booth without any credits its owner,
-  // and a level's square credits the level's owner. The owner's portrait leads the line when the build has it.
-  const credits = level
-    ? { maker: level, improvers: [] }
-    : creditsFor(SQUARE_HISTORY, kind, square.id);
-  const ownerLine = $<HTMLElement>('.visit-owner');
-  if (credits) renderCredits(ownerLine, credits);
-  if (credits && options.avatar) {
-    const picture = document.createElement('img');
-    picture.className = 'visit-avatar';
-    picture.src = options.avatar;
-    picture.alt = '';
-    picture.width = picture.height = 32;
-    ownerLine.prepend(picture);
-  }
-  ownerLine.hidden = !credits;
+  const owner = kind === 'attraction' && !level ? '' : `@${level ?? square.id}`;
   const remix = $<HTMLAnchorElement>('.visit-remix-link');
   remix.hidden = kind !== 'booth' || !!level;
   const map = $<HTMLAnchorElement>('.visit-map');
@@ -146,78 +81,71 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   // A booth's place on the People's Choice ballot, where a 👍 on its comment is a vote.
   const vote = kind === 'booth' ? voteUrl(square.id, PEOPLES_CHOICE) : undefined;
   if (vote) {
-    $<HTMLAnchorElement>('.visit-vote a').href = vote;
+    $<HTMLAnchorElement>('.visit-vote').href = vote;
     $<HTMLElement>('.visit-vote').hidden = false;
   }
 
-  // How was this built: open beside the room, collapsed on a phone, where it sits below it.
-  const entries = level ? [] : historyOf(SQUARE_HISTORY, kind, square.id);
-  renderHistory($('.history-list'), entries);
-  const empty = $<HTMLElement>('.history-empty');
-  empty.textContent = emptyHistoryText(SQUARE_HISTORY);
-  empty.hidden = entries.length > 0;
-  $<HTMLDetailsElement>('.visit-history').open = !matchMedia('(max-width: 719px)').matches;
-  showSignupOffer(card);
-
-  fillVisitHelp($('.visit-help'), kind, square.id, level);
+  // How it was built: a level's square credits the level's owner, with no history of its own.
+  const tellStory = (data: SquareHistory | undefined) => {
+    const steps = level
+      ? storySteps([], { maker: level, improvers: [] })
+      : storySteps(historyOf(data, kind, square.id), creditsFor(data, kind, square.id));
+    renderStory($('.story-list'), steps);
+    const empty = $<HTMLElement>('.history-empty');
+    empty.textContent = emptyHistoryText(data);
+    empty.hidden = steps.length > 0;
+  };
+  tellStory(SQUARE_HISTORY);
+  // A preview has no history baked in: the deploy puts the live site's beside it.
+  if (!SQUARE_HISTORY && !level)
+    void loadHistoryFile().then((data) => {
+      if (card.isConnected && data) tellStory(data);
+    });
   renderCraft(
     $('.visit-craft'),
     earnedBadges(SQUARE_CRAFT, craftKey(kind, square.id, level)),
     (tag) => document.createElement(tag),
   );
+  showSignupOffer(card);
+  fillVisitHelp($('.visit-help'), kind, square.id, level);
 
   // A level's square has no share page of its own: its link opens the level in front of it.
   const link = level
     ? new URL(levelLink(level, square.id), document.baseURI).href
     : shareLink(kind, square.id, document.baseURI);
-  const text = $<HTMLTextAreaElement>('.visit-share-text');
-  let mine = false;
-  let edited = false;
-  text.addEventListener('input', () => (edited = true));
-  const showText = () => {
-    if (!edited) text.value = shareText({ kind, id: square.id, name: square.name }, link, mine);
-  };
+  const share = wireShare(
+    { copy: $('.visit-copy'), text: $('.visit-share-text'), options: $('.visit-more') },
+    { kind, id: square.id, name: () => square.name },
+    link,
+  );
 
   const show = () => {
     $('.visit-title').textContent = square.name;
     $('.visit-description').textContent = square.description;
     remix.href = remixUrl(square.id, square.name);
-    $('.visit-invite-text').textContent =
-      `${owner} built this by describing it in an issue. An agent built it, checked it and put it on the map. Want one of your own?`;
-    showText();
+    share.refresh();
   };
   show();
-  if ('onReady' in square) (square as SandboxedSquare).onReady(() => card.isConnected && show());
+  if ('onReady' in square)
+    (square as SandboxedSquare).onReady(() => {
+      if (card.isConnected) show();
+    });
 
   card.querySelector('.visit-mine')?.addEventListener('click', () => {
-    mine = true;
     options.onMine?.();
-    edited = false;
-    showText();
-    $<HTMLDetailsElement>('.visit-edit').open = true;
-    text.focus();
+    share.shareAsMine();
   });
 
-  const copy = $<HTMLButtonElement>('.visit-copy');
-  let reset = 0;
-  copy.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(text.value);
-      copy.textContent = 'Copied!';
-      window.clearTimeout(reset);
-      reset = window.setTimeout(() => (copy.textContent = 'Share'), 2000);
-    } catch {
-      // No clipboard: the line is shown and selected, to copy by hand.
-      $<HTMLDetailsElement>('.visit-edit').open = true;
-      text.focus();
-      text.select();
-    }
+  // Someone who came by a shared link to a booth can claim the plot next door instead.
+  const claim = options.invite && kind === 'booth';
+  $<HTMLElement>('.visit-claim').hidden = !claim;
+  $<HTMLElement>('.visit-build').hidden = claim;
+  $('.visit-claim').addEventListener('click', () => {
+    options.onClaim();
   });
-
-  const invite = $<HTMLElement>('.visit-invite');
-  invite.hidden = !(options.invite && kind === 'booth');
-  $('.visit-claim').addEventListener('click', () => options.onClaim());
-  $('.visit-close').addEventListener('click', () => options.onClose());
+  $('.visit-close').addEventListener('click', () => {
+    options.onClose();
+  });
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
       event.preventDefault();
@@ -231,7 +159,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
 
   return {
     close() {
-      window.clearTimeout(reset);
+      share.stop();
       document.removeEventListener('keydown', onKeyDown);
       const hadFocus = card.contains(document.activeElement);
       card.remove();
