@@ -3,11 +3,11 @@
  * named by its argument, for the build to bake into the page
  * (PEOPLES_CHOICE_FILE in vite.config.ts).
  *
- * It finds the discussion a maintainer started with the title in
- * DISCUSSION_TITLE, adds a comment for every booth and Elf Engineer's factory
- * that has none yet, while voting is open, and reads every comment's 👍. The
- * page never reaches the network. Without the discussion it writes nothing,
- * and the map shows no standings.
+ * It finds the ballot, the issue a maintainer opened with the title in
+ * BALLOT_TITLE (docs/adr/0030-peoples-choice-on-an-issue.md), adds a comment for
+ * every booth and Elf Engineer's factory that has none yet, while voting is
+ * open, and reads every comment's 👍. The page never reaches the network.
+ * Without the ballot it writes nothing, and the map shows no standings.
  *
  * Run by "Deploy to GitHub Pages", which only runs main's own code, with
  * GITHUB_TOKEN and GITHUB_REPOSITORY set. The badge holders come from
@@ -16,19 +16,21 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanHolders } from '../src/northpole/badges.ts';
-import { DISCUSSION_TITLE, VOTING_CLOSES, votingClosed } from '../src/northpole/peoples-choice.ts';
+import { BALLOT_TITLE, VOTING_CLOSES, votingClosed } from '../src/northpole/peoples-choice.ts';
 import { get } from './github-api.ts';
 import { MAINTAINERS } from './ownership.ts';
-import { entryBody, missingEntries, standings, type RawChoiceComment } from './peoples-choice.ts';
+import { addBallotComment, findBallot, readBallotComments } from './ballot.ts';
+import { entryBody, missingEntries, standings } from './peoples-choice.ts';
 import { siteUrl } from './share-pages.ts';
 
+/* v8 ignore start -- the deploy's entry point: its logic is in ballot.ts and peoples-choice.ts */
 const token = process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY;
 const out = process.argv[2];
 if (!token || !repository || !out) {
   throw new Error('Set GITHUB_TOKEN and GITHUB_REPOSITORY, and name the file to write');
 }
-const [owner, name] = repository.split('/');
+const [owner = '', name = ''] = repository.split('/');
 const api = process.env.GITHUB_API_URL ?? 'https://api.github.com';
 
 async function graphql<T>(query: string, variables: Record<string, unknown>): Promise<T> {
@@ -46,135 +48,11 @@ async function graphql<T>(query: string, variables: Record<string, unknown>): Pr
   return result.data;
 }
 
-interface Page<T> {
-  nodes: T[];
-  pageInfo: { hasNextPage: boolean; endCursor: string | null };
-}
-
-interface Reaction {
-  createdAt: string;
-  user: { databaseId: number } | null;
-}
-
-interface Comment {
-  id: string;
-  url: string;
-  body: string;
-  createdAt: string;
-  viewerDidAuthor: boolean;
-  reactions: Page<Reaction>;
-}
-
-const REACTION_FIELDS =
-  'nodes { createdAt user { databaseId } } pageInfo { hasNextPage endCursor }';
-
-// The discussion: the oldest one with the title that a maintainer started, by user id.
 const maintainers = new Set(MAINTAINERS.map((maintainer) => maintainer.id));
-type DiscussionNode = {
-  id: string;
-  number: number;
-  title: string;
-  url: string;
-  author: { databaseId?: number } | null;
-};
-let discussion: DiscussionNode | undefined;
-let afterDiscussion: string | null = null;
-do {
-  const found: {
-    repository: { hasDiscussionsEnabled: boolean; discussions: Page<DiscussionNode> };
-  } = await graphql(
-    `
-      query ($owner: String!, $name: String!, $after: String) {
-        repository(owner: $owner, name: $name) {
-          hasDiscussionsEnabled
-          discussions(first: 100, after: $after, orderBy: { field: CREATED_AT, direction: ASC }) {
-            nodes {
-              id
-              number
-              title
-              url
-              author {
-                ... on User {
-                  databaseId
-                }
-              }
-            }
-            pageInfo {
-              hasNextPage
-              endCursor
-            }
-          }
-        }
-      }
-    `,
-    { owner, name, after: afterDiscussion },
-  );
-  if (!found.repository.hasDiscussionsEnabled) break;
-  discussion = found.repository.discussions.nodes.find(
-    (node) =>
-      node.title.trim() === DISCUSSION_TITLE && maintainers.has(node.author?.databaseId ?? -1),
-  );
-  const info = found.repository.discussions.pageInfo;
-  afterDiscussion = !discussion && info.hasNextPage ? info.endCursor : null;
-} while (afterDiscussion);
-if (!discussion) {
-  console.log(`No "${DISCUSSION_TITLE}" discussion started by a maintainer: no standings.`);
+const ballot = await findBallot(graphql, owner, name, maintainers, BALLOT_TITLE);
+if (!ballot) {
+  console.log(`No "${BALLOT_TITLE}" issue opened by a maintainer: no standings.`);
   process.exit(0);
-}
-
-/** Every comment in the discussion, with all of its 👍. */
-async function readComments(): Promise<RawChoiceComment[]> {
-  const comments: Comment[] = [];
-  let after: string | null = null;
-  do {
-    const data: { node: { comments: Page<Comment> } } = await graphql(
-      `query($id: ID!, $after: String) {
-        node(id: $id) {
-          ... on Discussion {
-            comments(first: 50, after: $after) {
-              nodes {
-                id url body createdAt viewerDidAuthor
-                reactions(content: THUMBS_UP, first: 100) { ${REACTION_FIELDS} }
-              }
-              pageInfo { hasNextPage endCursor }
-            }
-          }
-        }
-      }`,
-      { id: discussion!.id, after },
-    );
-    comments.push(...data.node.comments.nodes);
-    const info = data.node.comments.pageInfo;
-    after = info.hasNextPage ? info.endCursor : null;
-  } while (after);
-
-  for (const comment of comments) {
-    let page = comment.reactions;
-    while (page.pageInfo.hasNextPage && page.pageInfo.endCursor) {
-      const data: { node: { reactions: Page<Reaction> } } = await graphql(
-        `query($id: ID!, $after: String) {
-          node(id: $id) {
-            ... on DiscussionComment {
-              reactions(content: THUMBS_UP, first: 100, after: $after) { ${REACTION_FIELDS} }
-            }
-          }
-        }`,
-        { id: comment.id, after: page.pageInfo.endCursor },
-      );
-      page = data.node.reactions;
-      comment.reactions.nodes.push(...page.nodes);
-    }
-  }
-  return comments.map((comment) => ({
-    url: comment.url,
-    body: comment.body,
-    createdAt: comment.createdAt,
-    viewerDidAuthor: comment.viewerDidAuthor,
-    votes: comment.reactions.nodes.map((reaction) => ({
-      createdAt: reaction.createdAt,
-      userId: reaction.user?.databaseId ?? null,
-    })),
-  }));
 }
 
 const root = join(import.meta.dirname, '..');
@@ -192,7 +70,7 @@ const disabled = (
   }
 ).booths;
 
-let comments = await readComments();
+let comments = await readBallotComments(graphql, ballot.id);
 
 // A comment for every new entry, while voting is open, with its owner's user id
 // in the marker, so their own vote stays out even if the login changes hands.
@@ -204,27 +82,17 @@ for (const entry of missing) {
     console.log(`No GitHub account is ${entry.login} now: no entry for it yet.`);
     continue;
   }
-  await graphql(
-    `
-      mutation ($id: ID!, $body: String!) {
-        addDiscussionComment(input: { discussionId: $id, body: $body }) {
-          comment {
-            id
-          }
-        }
-      }
-    `,
-    {
-      id: discussion.id,
-      body: entryBody(entry.category, entry.login, user.id, entry.repo, siteUrl(process.env)),
-    },
+  await addBallotComment(
+    graphql,
+    ballot.id,
+    entryBody(entry.category, entry.login, user.id, entry.repo, siteUrl(process.env)),
   );
   added += 1;
 }
-if (added) comments = await readComments();
+if (added) comments = await readBallotComments(graphql, ballot.id);
 
 const result = standings({
-  discussion: discussion.url,
+  ballot: ballot.url,
   comments,
   booths,
   holders,
@@ -235,3 +103,4 @@ writeFileSync(out, JSON.stringify(result, null, 2) + '\n');
 console.log(
   `Wrote ${out}: ${result.booths.length} booths and ${result.factories.length} home factories, ${added} new entries.`,
 );
+/* v8 ignore stop */

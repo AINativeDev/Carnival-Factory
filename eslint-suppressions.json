@@ -142,11 +142,6 @@
       "count": 1
     }
   },
-  "scripts/write-peoples-choice.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    }
-  },
   "smoke/flashing.spec.ts": {
     "@typescript-eslint/no-non-null-assertion": {
       "count": 3

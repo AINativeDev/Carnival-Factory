@@ -1,11 +1,12 @@
 /**
  * People's Choice: visitors vote for their favourite booth, and for the best
- * home factory, with a 👍 on its comment in one GitHub Discussion. The site has
+ * home factory, with a 👍 on its comment in one pinned GitHub issue, the ballot
+ * (docs/adr/0030-peoples-choice-on-an-issue.md). The site has
  * no server, so the deploy reads the votes (scripts/write-peoples-choice.ts)
  * and the build bakes the standings into the page, which never asks the network.
  */
-/** The discussion's title: a maintainer starts it once, with exactly this title. */
-export const DISCUSSION_TITLE = "People's Choice";
+/** The ballot's title: a maintainer opens the issue once, with exactly this title. */
+export const BALLOT_TITLE = "People's Choice";
 
 /** When voting closes. A 👍 given after it doesn't count. Maintainers can change it. */
 export const VOTING_CLOSES = '2026-12-31T23:59:59Z';
@@ -25,8 +26,8 @@ export interface ChoiceEntry {
 
 /** The standings, each category most votes first. */
 export interface PeoplesChoice {
-  /** The discussion's address. */
-  discussion: string;
+  /** The ballot's address: the issue where people vote. */
+  ballot: string;
   booths: ChoiceEntry[];
   factories: ChoiceEntry[];
 }
@@ -36,13 +37,14 @@ const LOGIN = /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/;
 /** A repository as `owner/name`. */
 const REPO = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}\/[A-Za-z0-9._-]{1,100}$/;
 
-/** Whether `url` is a discussion, or a comment in one, in this repository. */
-export function isDiscussionUrl(url: unknown, repoUrl: string): url is string {
+/**
+ * Whether `url` is an issue, or a comment on one, in this repository: the only
+ * links the standings may carry, since they come from JSON the deploy wrote.
+ */
+export function isBallotUrl(url: unknown, repoUrl: string): url is string {
   if (typeof url !== 'string' || url.length > 300) return false;
-  const prefix = `${repoUrl}/discussions/`;
-  return (
-    url.startsWith(prefix) && /^\d+(?:#discussioncomment-\d+)?$/.test(url.slice(prefix.length))
-  );
+  const prefix = `${repoUrl}/issues/`;
+  return url.startsWith(prefix) && /^\d+(?:#issuecomment-\d+)?$/.test(url.slice(prefix.length));
 }
 
 function cleanEntries(data: unknown, repoUrl: string, off: ReadonlySet<string>): ChoiceEntry[] {
@@ -54,7 +56,7 @@ function cleanEntries(data: unknown, repoUrl: string, off: ReadonlySet<string>):
     const { login, url, votes, repo } = item as Record<string, unknown>;
     if (typeof login !== 'string' || !LOGIN.test(login) || seen.has(login) || off.has(login))
       continue;
-    if (!isDiscussionUrl(url, repoUrl)) continue;
+    if (!isBallotUrl(url, repoUrl)) continue;
     if (typeof votes !== 'number' || !Number.isInteger(votes) || votes < 0) continue;
     const entry: ChoiceEntry = { login, url, votes };
     if (typeof repo === 'string' && REPO.test(repo) && !/\/\.\.?$/.test(repo)) entry.repo = repo;
@@ -65,8 +67,8 @@ function cleanEntries(data: unknown, repoUrl: string, off: ReadonlySet<string>):
 }
 
 /**
- * The standings from untrusted JSON, or undefined without a discussion: only
- * well-formed entries with links into this repository's discussions, and no
+ * The standings from untrusted JSON, or undefined without a ballot: only
+ * well-formed entries with links into this repository's issues, and no
  * booth in `disabled`, the kill switch's list.
  */
 export function cleanChoice(
@@ -75,11 +77,11 @@ export function cleanChoice(
   repoUrl: string,
 ): PeoplesChoice | undefined {
   if (!data || typeof data !== 'object') return undefined;
-  const { discussion, booths, factories } = data as Record<string, unknown>;
-  if (!isDiscussionUrl(discussion, repoUrl) || discussion.includes('#')) return undefined;
+  const { ballot, booths, factories } = data as Record<string, unknown>;
+  if (!isBallotUrl(ballot, repoUrl) || ballot.includes('#')) return undefined;
   const off = new Set(disabled.map((login) => login.toLowerCase()));
   return {
-    discussion,
+    ballot,
     booths: cleanEntries(booths, repoUrl, off),
     factories: cleanEntries(factories, repoUrl, new Set()),
   };

@@ -1,0 +1,53 @@
+import { describe, expect, it } from 'vitest';
+import { installDrift, installFeedback, parseLockfile } from './install-drift';
+
+const lock = {
+  packages: {
+    '': { name: 'carnival' },
+    'node_modules/happy-dom': { version: '21.0.4' },
+    'node_modules/knip': { version: '6.48.0' },
+    'node_modules/@esbuild/win32-x64': { version: '0.25.0', optional: true },
+  },
+};
+
+describe('installDrift: whether node_modules matches package-lock.json', () => {
+  it('finds nothing when every package the lockfile needs is installed at its version', () => {
+    const installed = {
+      packages: {
+        'node_modules/happy-dom': { version: '21.0.4' },
+        'node_modules/knip': { version: '6.48.0' },
+      },
+    };
+    expect(installDrift(lock, installed)).toEqual([]);
+  });
+
+  it('names a missing package and one at another version, and ignores optional ones for other platforms', () => {
+    const installed = { packages: { 'node_modules/knip': { version: '6.0.0' } } };
+    expect(installDrift(lock, installed)).toEqual([
+      'happy-dom (not installed)',
+      'knip (6.0.0, needs 6.48.0)',
+    ]);
+  });
+
+  it('treats a missing install record as everything missing', () => {
+    expect(installDrift(lock, undefined)).toHaveLength(2);
+  });
+});
+
+describe('installFeedback', () => {
+  it('tells the agent to run npm install, rather than chase failures a stale install causes', () => {
+    expect(installFeedback(['happy-dom (not installed)'])).toMatch(/npm install[\s\S]*happy-dom/);
+    expect(installFeedback([])).toBeUndefined();
+  });
+});
+
+describe('parseLockfile', () => {
+  it('reads a lockfile, and anything else as no lockfile', () => {
+    expect(parseLockfile('{"packages": {}}')).toEqual({ packages: {} });
+    expect(parseLockfile(undefined)).toBeUndefined();
+    expect(parseLockfile('not json')).toBeUndefined();
+    expect(parseLockfile('{"name": "x"}')).toBeUndefined();
+    expect(parseLockfile('{"packages": null}')).toBeUndefined();
+    expect(parseLockfile('null')).toBeUndefined();
+  });
+});

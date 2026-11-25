@@ -1,5 +1,5 @@
 /**
- * The People's Choice standings, from the comments in its discussion (plain
+ * The People's Choice standings, from the comments on its ballot issue (plain
  * functions). Each booth and each home factory has one comment, which the
  * deploy's own token wrote with a marker, and a vote is a 👍 on it: one per
  * GitHub account, because a reaction is. An owner's own vote doesn't count,
@@ -13,7 +13,7 @@ import type {
 } from '../src/northpole/peoples-choice.ts';
 import { safeInline } from './safe-text.ts';
 
-/** A comment in the discussion, as the GraphQL API gives it. */
+/** A comment on the ballot, as the GraphQL API gives it. */
 export interface RawChoiceComment {
   url: string;
   body: string;
@@ -75,7 +75,7 @@ export function entryBody(
   );
 }
 
-/** The entries the discussion should have: every booth, and every Elf Engineer's factory. */
+/** The entries the ballot should have: every booth, and every Elf Engineer's factory. */
 export interface ChoiceEntrants {
   booths: readonly string[];
   holders: readonly BadgeHolder[];
@@ -105,7 +105,7 @@ export function missingEntries(
 }
 
 export interface StandingsInput extends ChoiceEntrants {
-  discussion: string;
+  ballot: string;
   comments: readonly RawChoiceComment[];
   /** The kill switch's booths. */
   disabled: readonly string[];
@@ -160,7 +160,7 @@ export function standings(input: StandingsInput): PeoplesChoice {
       .map(([, entry]) => entry)
       .sort((a, b) => b.votes - a.votes || a.login.localeCompare(b.login));
   return {
-    discussion: input.discussion,
+    ballot: input.ballot,
     booths: category('booth'),
     factories: category('factory'),
   };
