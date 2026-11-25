@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BOOTH_REQUEST_URL, FEEDBACK_URL } from './northpole/links';
 import { MENU_ITEMS, currentPlace, menuMarkup } from './top-menu-items';
+import { switchFlags } from './test-support/feature-flags';
 
 describe('the top bar menu', () => {
   it('lists the places in order, each with a short label', () => {
@@ -33,8 +34,19 @@ describe('the top bar menu', () => {
     expect(currentPlace('#/factory')).toBeUndefined();
     expect(currentPlace('#/level/the-academy')).toBeUndefined();
     expect(currentPlace('#/booth/ana')).toBeUndefined();
-    expect(currentPlace('#/advent')).toBeUndefined();
     expect(currentPlace('#/keep-posted')).toBeUndefined();
+  });
+
+  it("marks the map at the advent calendar's address while its flag is off, since the map is what shows", () => {
+    expect(currentPlace('#/advent')).toBe('map');
+  });
+
+  describe('with the advent calendar on', () => {
+    switchFlags({ advent: true });
+
+    it('marks nothing at the advent calendar, a page of its own', () => {
+      expect(currentPlace('#/advent')).toBeUndefined();
+    });
   });
 
   it('writes links for places, buttons for actions, and every icon hidden from screen readers', () => {

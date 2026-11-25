@@ -4,11 +4,11 @@ import type { NorthPoleLevel } from '../../../src/northpole/level';
  * The Recording Studio: one room inside, where the podcast is recorded and
  * the videos are made (ADR 0040). The sound booth's corner, carpeted and lined
  * with foam panels, has the microphone and the headphones; the mixing desk
- * sits under the window to the booth; the video set has the camera between
- * two spotlights before a backdrop; the guests' sofa is on a carpet by the
- * front; and the ON AIR light glows by the doors to the sleigh home. Each item
- * is a display to walk up to. Plain data: the engine checks it and draws it
- * (ADR 0035).
+ * stands out in the room, facing the window to the booth; the video set has
+ * the camera between two spotlights before a backdrop; the guests' sofa is on
+ * a carpet by the front; and the ON AIR light glows by the doors to the sleigh
+ * home. Each item is a display to walk up to. Plain data: the engine checks
+ * it and draws it (ADR 0035).
  */
 const level: NorthPoleLevel = {
   id: 'the-studio',
@@ -36,7 +36,7 @@ const level: NorthPoleLevel = {
     { kind: 'acoustic-panel', x: 0, y: 5 },
     { kind: 'acoustic-panel', x: 0, y: 6 },
     { kind: 'acoustic-panel', x: 0, y: 7 },
-    // The window to the booth over the mixing desk, the doors home and the ON AIR light by them.
+    // The window to the booth, the doors home and the ON AIR light by them.
     { kind: 'wall-window', x: 5, y: 0, variant: 0.2 },
     { kind: 'wall-window', x: 6, y: 0, variant: 0.6 },
     { kind: 'wall-door', x: 11, y: 0 },
@@ -60,11 +60,12 @@ const level: NorthPoleLevel = {
   arrival: { x: 7, y: 14 },
   exits: [{ x: 11, y: 1 }],
   // The gear in the order a show is made: recorded, mixed, filmed, put on air, with the guests and the episodes.
-  // Each one's door has a clear tile on its east, where no other display stands in front of it on screen.
+  // Each one's door has a clear tile on its east, where no other display, nor the sign of the sleigh
+  // home, stands in front of it on screen: under the window, the mixing desk's was behind that sign.
   squares: [
     { id: 'microphone', x: 1, y: 3 },
     { id: 'headphones', x: 1, y: 7 },
-    { id: 'mixing-desk', x: 5, y: 1 },
+    { id: 'mixing-desk', x: 10, y: 3 },
     { id: 'camera', x: 3, y: 10 },
     { id: 'on-air', x: 11, y: 6 },
     { id: 'guest-sofa', x: 9, y: 9 },

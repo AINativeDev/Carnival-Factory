@@ -10,8 +10,8 @@ sleigh station like every level.
 
 Visitors arrive at the front of the room. The sound booth's corner, at the
 back, is carpeted and lined with foam panels on both walls. The mixing desk
-sits under the window to the booth. The video set, down the left wall, has a
-backdrop and two spotlights. The guests' sofa is on a carpet by the front,
+stands out in the room, facing the window to the booth. The video set, down
+the left wall, has a backdrop and two spotlights. The guests' sofa is on a carpet by the front,
 with plants about, cables run across the floor, and the ON AIR light glows by
 the doors to the sleigh home, in the right wall.
 
