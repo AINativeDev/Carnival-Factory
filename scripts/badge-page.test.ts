@@ -16,4 +16,10 @@ describe('badgePage', () => {
     expect(page).not.toMatch(/<script/i);
     expect(page).not.toMatch(/\.svg\?/);
   });
+
+  it('links relative to the page when the site has no address', () => {
+    const relative = badgePage('', 'https://github.com/x/y/issues/new');
+    expect(relative).toContain('(../badges/elf-engineer.svg)](../)');
+    expect(relative).toContain('<a href="../">Visit the North Pole Carnival</a>');
+  });
 });
