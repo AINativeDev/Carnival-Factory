@@ -54,8 +54,11 @@ the page never calls GitHub.
   scripts/share-pages.test.ts).
 - A data step that fails or times out publishes the map without that data
   (enforced by: .github/workflows/pages.yml).
-- One deploy at a time, and none is dropped (enforced by: the `pages`
-  concurrency group in .github/workflows/pages.yml).
+- One deploy at a time, and none is dropped: runs queue at the `update` and
+  `deploy` jobs, not the workflow, so a run the `check` job turns away, such as
+  an issue event that changes nothing, never takes a merge's place in the queue
+  (enforced by: the `pages-update` and `pages-deploy` concurrency groups in
+  .github/workflows/pages.yml).
 - Asset paths are relative, so the build works on any fork's Pages address
   (not enforced yet).
 
