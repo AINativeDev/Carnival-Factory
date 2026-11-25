@@ -6,7 +6,10 @@ import {
   pinchCentre,
   pinchZoom,
   screenToWorld,
+  wheelZoom,
   worldToScreen,
+  ZOOM_STEP,
+  zoomBy,
 } from './camera-view';
 import { buildWorld } from './world-build';
 import { ATTRACTIONS, booths } from '../test-support/sample-squares';
@@ -73,5 +76,37 @@ describe('pinching the map', () => {
     const after = worldToScreen(held, 390, 844, moved, next);
     expect(after.x).toBeCloseTo(to.x);
     expect(after.y).toBeCloseTo(to.y);
+  });
+});
+
+describe('zooming with the buttons, the keys and the wheel', () => {
+  const fit = 0.3;
+
+  it('steps nearer and farther', () => {
+    expect(zoomBy(0.8, ZOOM_STEP, fit)).toBeCloseTo(0.8 * ZOOM_STEP);
+    expect(zoomBy(0.8, 1 / ZOOM_STEP, fit)).toBeCloseTo(0.8 / ZOOM_STEP);
+  });
+
+  it('stops at the whole island and at the nearest the camera comes', () => {
+    expect(zoomBy(0.32, 0.5, fit)).toBe(fit);
+    expect(zoomBy(1.4, 2, fit)).toBe(MAX_PINCH_ZOOM);
+  });
+
+  it('never moves the wrong way from past a limit, as a walk can take the camera', () => {
+    expect(zoomBy(1.7, ZOOM_STEP, fit)).toBe(1.7);
+    expect(zoomBy(0.2, 1 / ZOOM_STEP, fit)).toBe(0.2);
+  });
+
+  it('turns the wheel down to farther, and up to nearer, a pinch on a trackpad faster', () => {
+    expect(wheelZoom(100, 0, false, 800)).toBeLessThan(1);
+    expect(wheelZoom(-100, 0, false, 800)).toBeGreaterThan(1);
+    expect(wheelZoom(-10, 0, true, 800)).toBeLessThan(wheelZoom(-100, 0, false, 800));
+    expect(wheelZoom(-10, 0, true, 800)).toBeGreaterThan(wheelZoom(-10, 0, false, 800));
+  });
+
+  it('reads the wheel in lines or pages as so many pixels, and never jumps more than double', () => {
+    expect(wheelZoom(3, 1, false, 800)).toBeCloseTo(wheelZoom(48, 0, false, 800));
+    expect(wheelZoom(1, 2, false, 800)).toBe(0.5);
+    expect(wheelZoom(-9999, 0, false, 800)).toBe(2);
   });
 });

@@ -11,6 +11,6 @@ interface LevelMap {
 export function labelLevel(map: LevelMap, level: { name: string }, owner: string): void {
   map.setAttribute(
     'aria-label',
-    `${level.name}, a level by ${owner}. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a square to go inside, or at the sleigh to go back to the North Pole.`,
+    `${level.name}, a level by ${owner}. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a square to go inside, or at the sleigh to go back to the North Pole. Plus and minus, or the wheel, zoom.`,
   );
 }

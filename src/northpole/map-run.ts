@@ -13,6 +13,7 @@ import { islandBox, layoutOf, layWorld } from './map-plan';
 import { trackPointer } from './map-pointer';
 import { remembered, type MapRun } from './map-state';
 import { makeTag } from './map-tag';
+import { makeZoomButtons } from './map-zoom-buttons';
 import { landedBooths } from './plots';
 
 /** A new running map for these options: the world laid out, the player placed, nothing drawn yet. */
@@ -69,7 +70,7 @@ export function openRun(
     dragging: undefined,
     fingers: new Map(),
     pinching: undefined,
-    closer: 1,
+    chosen: undefined,
     near: undefined,
     scale: 1,
     last: undefined,
@@ -84,6 +85,7 @@ export function openRun(
     hovered: undefined,
     tagged: undefined,
     tag: makeTag(frame),
+    zoomButtons: makeZoomButtons(frame),
     frameId: 0,
     frames: 0,
     slowest: 0,

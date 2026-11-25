@@ -17,7 +17,7 @@ import { toScreen, toTile, type Tile } from './world';
 import { tileOf } from './walking';
 
 /** Whether a key press belongs to a text field. */
-const typing = (target: EventTarget | null) =>
+export const typing = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
 
