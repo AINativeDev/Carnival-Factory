@@ -85,6 +85,11 @@ describe('decideBadge', () => {
       grant: true,
       repo: 'octocat/workshop',
     });
+    // No count at all, as when the search never ran, is none merged.
+    const uncounted = Object.fromEntries(
+      Object.entries(working).filter(([key]) => key !== 'merged'),
+    ) as BadgeFacts;
+    expect(decideBadge(uncounted)).toEqual({ grant: true, repo: 'octocat/workshop' });
   });
 
   it("grants an organisation's repository to a public member", () => {

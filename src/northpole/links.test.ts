@@ -40,7 +40,7 @@ describe('remixUrl', () => {
 
   it("keeps the booth's name to one encoded line of a set length", () => {
     const url = new URL(remixUrl('ana', `a&b=c#\n${'x'.repeat(80)}`));
-    const what = url.searchParams.get('what')!;
+    const what = url.searchParams.get('what') ?? '';
     expect(what.startsWith("Start from @ana's a&b=c# xxx")).toBe(true);
     expect(what).toContain('…,');
     expect(url.hash).toBe('');
@@ -49,6 +49,11 @@ describe('remixUrl', () => {
   it('survives a name with a lone surrogate', () => {
     const url = new URL(remixUrl('ana', 'Pond \uD800 \uDC00'));
     expect(url.searchParams.get('what')).toMatch(/^Start from @ana's Pond \uFFFD \uFFFD, /);
+  });
+
+  it('calls a booth with a blank name just a booth', () => {
+    const url = new URL(remixUrl('ana', ' \n '));
+    expect(url.searchParams.get('what')).toMatch(/^Start from @ana's booth, /);
   });
 });
 

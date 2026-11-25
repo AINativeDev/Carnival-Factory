@@ -159,6 +159,22 @@
         ],
         "debounce": "2m"
       }
+    },
+    "welcome-feedback": {
+      "tags": [
+        "Ticket to PR"
+      ],
+      "agent": "claude",
+      "model": "claude-sonnet-5-5",
+      "skill": "file:plugins/north-pole#welcome-feedback",
+      "concurrency": {
+        "keys": [
+          {
+            "key": "welcome-feedback:github-issue:{{ inputs.GITHUB_ISSUE_NUMBER }}",
+            "limit": 1
+          }
+        ]
+      }
     }
   },
   "triggers": {
@@ -705,6 +721,44 @@
       },
       "action": {
         "use": "assess-booth-request",
+        "inputs": {
+          "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
+        }
+      }
+    },
+    "welcome-feedback-opened": {
+      "on": [
+        "github:issues.opened"
+      ],
+      "when": {
+        "event.issue.labels.*.name": {
+          "any": {
+            "equals": "feedback"
+          }
+        },
+        "event.sender.type": "User"
+      },
+      "action": {
+        "use": "welcome-feedback",
+        "inputs": {
+          "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
+        }
+      }
+    },
+    "welcome-idea-opened": {
+      "on": [
+        "github:issues.opened"
+      ],
+      "when": {
+        "event.issue.labels.*.name": {
+          "any": {
+            "equals": "idea"
+          }
+        },
+        "event.sender.type": "User"
+      },
+      "action": {
+        "use": "welcome-feedback",
         "inputs": {
           "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
         }

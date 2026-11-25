@@ -40,9 +40,10 @@ runs `npm run check` and `npm run build`. `npm run check` is:
 - `npm run format:check`: Prettier;
 - `npm run typecheck`: TypeScript, and the strict flags against their baseline
   (`node scripts/strict-types.ts`);
-- `npm test`: the unit tests with coverage, held to the floor in
-  `vitest.config.ts`. Don't raise the floor in a pull request: maintainers raise
-  it on `main` with `npm run coverage:ratchet`.
+- `npm test`: the unit tests with coverage. Every file in `src/`, `scripts/`
+  and `lint/` needs 99% of its lines, branches, functions and statements
+  covered, file by file, with no exceptions
+  ([ADR 0044](docs/adr/0044-coverage-per-file.md)).
 
 On a pull request, CI also runs `npm run test:changed` (99% of the lines it adds
 to `src/`, `scripts/` and `lint/`, and of the branches on them, must run under
@@ -254,7 +255,8 @@ carnival/                   everything on the map that people make, kept apart f
   challenges/
     advent.json             the advent calendar's 24 challenges, one a day
 plugins/north-pole/         the factory's own skills: assessing booth and badge
-                            requests and advent challenges, and the house-rules
+                            requests and advent challenges, welcoming feedback
+                            and ideas, and the house-rules
                             review lens
 plugins/north-pole-gifts/   the gift shelf: small factory loops anyone can install
                             on their own repository, shown at the Gift shop

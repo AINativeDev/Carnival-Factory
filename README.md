@@ -124,32 +124,51 @@ repository, voted on the same way.
 
 ## Try it on your own
 
-Run the whole thing on a fork, with you as the maintainer and the factory
-yours to change.
+Run your own copy, with you as the maintainer.
 
-1. **Fork it**, then in your fork go to **Settings → Pages** and set **Source**
-   to **GitHub Actions**, so every merge publishes your map.
-2. **Make yourself the maintainer.** Put your login in `.github/CODEOWNERS` and
-   in `MAINTAINERS` in `scripts/ownership.ts`. In `tessl.json`, put your
-   numeric GitHub user id (`gh api users/<login> -q .id`) in each
-   `event.sender.id` list, and your fork's repository id
-   (`gh api repos/<you>/<fork> -q .id`) in each
-   `event.pull_request.head.repo.id`, so reviews on your fork reach the
-   shepherd.
-3. **Set up your factory.** Install the [Tessl CLI](https://tessl.io), run
-   `tessl init` in your clone to register the repository, and install the Tessl
-   GitHub App on your fork. Create an environment with GitHub write access,
-   for example `tessl environment create my-carnival-env --github-access write`,
-   and a read-only one for the merge-conflict sweep. Put their names in
-   `tessl.json` (the top-level `environment`, and `merge-conflict-sweep`'s
-   `environment`). Then run `tessl doctor --automations` and fix what it
-   reports.
-4. **Create the labels** the loops use: `tessl`, `booth-request`,
-   `badge-request`, `badge-granted`, `needs-info` and `declined`.
-5. **File your first issue** and watch it come back as a pull request. Then go
-   further: ask for a new attraction, tighten the assessment rules in
-   `plugins/north-pole/skills/assess-booth-request/`, or add a loop of your own
-   to `tessl.json`.
+1. **Sign up and log in.** Create an account at [tessl.io](https://tessl.io),
+   install the Tessl CLI ([setup guide](https://docs.tessl.io/introduction-to-tessl/set-up-tessl)),
+   then:
+
+   ```sh
+   tessl login
+   ```
+
+2. **Fork and clone** this repository. In your fork, set **Settings → Pages →
+   Source** to **GitHub Actions**.
+3. **Install the Tessl GitHub App** on your fork, from the Tessl web app (see
+   the setup guide).
+4. **Turn on Tessl Code Review** for your fork
+   ([guide](https://docs.tessl.io/tutorials/setting-up-agentic-code-review)).
+   Its lenses are in `.tessl-code-review.yml`.
+5. **Make yourself the maintainer.** Put your login in `.github/CODEOWNERS` and
+   in `MAINTAINERS` in `scripts/ownership.ts`. In `tessl.json`, replace the
+   ids in each `event.sender.id` and `event.pull_request.head.repo.id` with
+   yours:
+
+   ```sh
+   gh api users/<you> -q .id          # your user id
+   gh api repos/<you>/<fork> -q .id   # your fork's id
+   ```
+
+6. **Set up the factory** in your clone, and put the two environment names in
+   `tessl.json` (the top-level `environment`, and `merge-conflict-sweep`'s):
+
+   ```sh
+   tessl init
+   tessl environment create my-carnival --github-access write
+   tessl environment create my-carnival-sweep --github-access read
+   tessl doctor --automations
+   ```
+
+7. **Create the labels** the loops use:
+
+   ```sh
+   for l in tessl booth-request level-request badge-request badge-granted needs-info declined; do gh label create "$l"; done
+   ```
+
+8. **File your first issue** with the **Your booth** form, and watch it come
+   back as a pull request.
 
 ## The rules of the map
 

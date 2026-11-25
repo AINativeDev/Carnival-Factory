@@ -96,10 +96,12 @@ What runs on every pull request, and what each check guarantees.
   by: scripts/baselines-shrink.ts, the "Baselines only shrink" step in
   .github/workflows/ci.yml).
 - Coverage: 99% of added lines, and of the branch arms on them, in `src/`,
-  `scripts/` and `lint/` ([ADR 0031](../adr/0031-changed-branches-too.md)), and the
-  whole-repository thresholds only rise, raised on main with
-  `npm run coverage:ratchet` ([ADR 0034](../adr/0034-ratchet-on-main.md)) (enforced by: scripts/diff-coverage.ts,
-  the thresholds in vitest.config.ts).
+  `scripts/` and `lint/` ([ADR 0031](../adr/0031-changed-branches-too.md)), and
+  every file there holds 99% of its lines, branches, functions and statements,
+  file by file, with no exceptions and no floor to raise; squares in
+  `carnival/` count in the combined browser and unit coverage instead
+  ([ADR 0044](../adr/0044-coverage-per-file.md)) (enforced by:
+  scripts/diff-coverage.ts, the per-file thresholds in vitest.config.ts).
 - The docs name only files that exist, and the ADR index lists every record
   (enforced by: scripts/docs-paths.test.ts). Whether the prose is still true,
   names say why, and changes are tested first and end to end (enforced by:

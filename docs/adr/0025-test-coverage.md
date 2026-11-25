@@ -1,6 +1,6 @@
 # 0025. 99% test coverage: new lines now, the whole codebase over time
 
-- Status: Accepted
+- Status: Accepted, superseded in part by [0044](0044-coverage-per-file.md)
 - Date: 2026-11-25
 - Spec: [checks-and-tests.md](../specs/checks-and-tests.md)
 

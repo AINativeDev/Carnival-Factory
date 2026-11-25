@@ -34,8 +34,9 @@ export const KEYS: Partial<Record<string, [number, number]>> = {
 
 /** Moves the player on for `dt` seconds, with the keys held or along their path. */
 export function walk(m: MapRun, dt: number) {
-  // In a ride level the car carries the player instead, until they go inside a square.
-  if (m.ride && rideAlong(m, m.ride, dt)) return;
+  // In a ride level the car carries the player instead, until they go inside a
+  // square. A ride level always has its button (map-run.ts), so both are there.
+  if (m.ride && m.rideButton && rideAlong(m, m.ride, m.rideButton, dt)) return;
   let right = 0;
   let down = 0;
   for (const [x, y] of m.held.values()) {
