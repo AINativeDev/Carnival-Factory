@@ -43,11 +43,6 @@
       "count": 1
     }
   },
-  "carnival/booths/sjmaple/booth.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 1
-    }
-  },
   "scripts/auto-merge-booths.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 3
