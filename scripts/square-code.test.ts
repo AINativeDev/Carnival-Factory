@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { checkSquareCode, isPlotFile, plotFileProblems } from './square-code.ts';
 
 const root = join(import.meta.dirname, '..');
-const FOLDER = 'booths/grinch/';
+const FOLDER = 'carnival/booths/grinch/';
 
 /** The rules a booth breaks when its booth.ts is `code`. */
 const rules = (code: string, extra: Record<string, string> = {}) =>
@@ -13,8 +13,8 @@ const rules = (code: string, extra: Record<string, string> = {}) =>
     ...Object.entries(extra).map(([name, text]) => ({ path: `${FOLDER}${name}`, text })),
   ]).map((problem) => problem.rule);
 
-const fine = `import type { NorthPoleSquare } from '../../northpole/square';
-import { theme } from '../../northpole/theme';
+const fine = `import type { NorthPoleSquare } from '../../../northpole/square';
+import { theme } from '../../../northpole/theme';
 const stars = [1, 2, 3];
 function wave(time: number) { return Math.sin(time / 300); }
 const booth: NorthPoleSquare = {
@@ -76,7 +76,9 @@ describe('checkSquareCode', () => {
   });
 
   it('catches imports outside the map and the square', () => {
-    expect(rules(`import x from '../../northpole/booths';\nexport default x;`)).toContain('import');
+    expect(rules(`import x from '../../../northpole/booths';\nexport default x;`)).toContain(
+      'import',
+    );
     expect(rules(`import x from '../jedi4ever/booth';\nexport default x;`)).toContain('import');
     expect(rules(`import x from 'some-package';\nexport default x;`)).toContain('import');
     expect(rules(`export const x = () => import('./other');`)).toContain('import');
@@ -102,20 +104,23 @@ describe('checkSquareCode', () => {
     expect(
       rules(
         main,
-        lib(`import { theme } from '../../../northpole/theme';\nexport const a = theme;`),
+        lib(`import { theme } from '../../../../northpole/theme';\nexport const a = theme;`),
       ),
     ).toEqual([]);
     expect(
       rules(
         main,
-        lib(`import { scene } from '../../../northpole/diorama';\nexport const a = scene;`),
+        lib(`import { scene } from '../../../../northpole/diorama';\nexport const a = scene;`),
       ),
     ).toEqual([]);
     expect(
-      rules(main, lib(`import { theme } from '../../northpole/theme';\nexport const a = theme;`)),
+      rules(
+        main,
+        lib(`import { theme } from '../../../northpole/theme';\nexport const a = theme;`),
+      ),
     ).toContain('import');
     expect(
-      rules(main, lib(`import { x } from '../../../northpole/map';\nexport const a = x;`)),
+      rules(main, lib(`import { x } from '../../../../northpole/map';\nexport const a = x;`)),
     ).toContain('import');
   });
 
@@ -154,10 +159,10 @@ describe('every real booth and attraction', () => {
       statSync(join(dir, name)).isDirectory() ? walk(join(dir, name)) : [join(dir, name)],
     );
   for (const kind of ['booths', 'attractions']) {
-    for (const name of readdirSync(join(root, kind))) {
-      if (!statSync(join(root, kind, name)).isDirectory()) continue;
-      it(`${kind}/${name}/ passes the code check`, () => {
-        const folder = `${kind}/${name}/`;
+    for (const name of readdirSync(join(root, 'carnival', kind))) {
+      if (!statSync(join(root, 'carnival', kind, name)).isDirectory()) continue;
+      it(`carnival/${kind}/${name}/ passes the code check`, () => {
+        const folder = `carnival/${kind}/${name}/`;
         const files = walk(join(root, folder)).map((path) => ({
           path: path.slice(root.length + 1),
           text: readFileSync(path, 'utf8'),
@@ -191,7 +196,7 @@ describe("a booth's plot.json", () => {
 });
 
 describe('plotFileProblems', () => {
-  const folder = 'booths/elf/';
+  const folder = 'carnival/booths/elf/';
   const file = (name: string, status: string, previous_filename?: string) => ({
     filename: `${folder}${name}`,
     status,

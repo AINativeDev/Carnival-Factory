@@ -5,16 +5,19 @@ import { attractionRegistry } from './attractions';
 import disabled from './disabled.json';
 import { fromFolders, isAttractionId, type NorthPoleSquare } from './square';
 
-const attractionsDir = join(import.meta.dirname, '../attractions');
+const attractionsDir = join(import.meta.dirname, '../carnival/attractions');
 const folders = readdirSync(attractionsDir).filter((name) =>
   statSync(join(attractionsDir, name)).isDirectory(),
 );
 
 // The attractions' own code, which the page never runs: only their frames do.
-const modules = import.meta.glob<NorthPoleSquare | undefined>('../attractions/*/attraction.ts', {
-  eager: true,
-  import: 'default',
-});
+const modules = import.meta.glob<NorthPoleSquare | undefined>(
+  '../carnival/attractions/*/attraction.ts',
+  {
+    eager: true,
+    import: 'default',
+  },
+);
 const squares = fromFolders(modules);
 
 describe('attraction registry', () => {

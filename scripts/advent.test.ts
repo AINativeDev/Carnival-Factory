@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import calendar from '../challenges/advent.json';
+import calendar from '../carnival/challenges/advent.json';
 import {
   acceptMarker,
   ADVENT_FIELDS,

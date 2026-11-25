@@ -44,7 +44,7 @@ const disabled = JSON.parse(readFileSync(join(root, 'northpole/disabled.json'), 
   levels: string[];
 };
 const squares = (['booth', 'attraction'] as const).flatMap((kind) => {
-  const dir = join(root, `${kind}s`);
+  const dir = join(root, 'carnival', `${kind}s`);
   const off = new Set(disabled[`${kind}s`].map((id) => id.toLowerCase()));
   return readdirSync(dir)
     .filter((name) => statSync(join(dir, name)).isDirectory() && !off.has(name))
@@ -411,8 +411,8 @@ const booths = squares.filter((square) => square.kind === 'booth').map((square) 
 const attractions = squares.filter((s) => s.kind === 'attraction').map((s) => s.id);
 const pinned = JSON.parse(readFileSync(join(root, 'northpole/plots.json'), 'utf8')) as PinnedPlots;
 /** Every level, each with its platform at the sleigh station, as the map lays them out. */
-const levelLogins = readdirSync(join(root, 'levels'))
-  .filter((name) => existsSync(join(root, 'levels', name, 'level.ts')))
+const levelLogins = readdirSync(join(root, 'carnival', 'levels'))
+  .filter((name) => existsSync(join(root, 'carnival', 'levels', name, 'level.ts')))
   .sort();
 
 test('the player walks the world with the keyboard, and it stays quiet', async ({ page }) => {

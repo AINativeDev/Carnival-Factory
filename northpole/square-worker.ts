@@ -10,15 +10,15 @@ import type { NorthPoleSquare } from './square';
 type Loader = () => Promise<NorthPoleSquare | undefined>;
 
 // Not eager: each square is its own chunk, loaded only by its own worker.
-const booths = import.meta.glob<NorthPoleSquare | undefined>('../booths/*/booth.ts', {
+const booths = import.meta.glob<NorthPoleSquare | undefined>('../carnival/booths/*/booth.ts', {
   import: 'default',
 });
 const attractions = import.meta.glob<NorthPoleSquare | undefined>(
-  '../attractions/*/attraction.ts',
+  '../carnival/attractions/*/attraction.ts',
   { import: 'default' },
 );
 const levelSquares = import.meta.glob<NorthPoleSquare | undefined>(
-  '../levels/*/squares/*/square.ts',
+  '../carnival/levels/*/squares/*/square.ts',
   { import: 'default' },
 );
 
@@ -31,10 +31,10 @@ async function load(hash: string): Promise<NorthPoleSquare> {
   if (!address) throw new Error(`Not a square: ${hash}`);
   const loader: Loader | undefined =
     address.kind === 'booth'
-      ? booths[`../booths/${address.id}/booth.ts`]
+      ? booths[`../carnival/booths/${address.id}/booth.ts`]
       : address.kind === 'level'
-        ? levelSquares[`../levels/${address.level}/squares/${address.id}/square.ts`]
-        : attractions[`../attractions/${address.id}/attraction.ts`];
+        ? levelSquares[`../carnival/levels/${address.level}/squares/${address.id}/square.ts`]
+        : attractions[`../carnival/attractions/${address.id}/attraction.ts`];
   if (!loader) throw new Error(`No ${address.kind} called ${address.id}`);
   const square = await loader();
   if (!square || square.id !== address.id || typeof square.draw !== 'function') {

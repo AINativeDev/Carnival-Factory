@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Your level is yours alone: it lives in `levels/<your GitHub login>/`,
+        Your level is yours alone: it lives in `carnival/levels/<your GitHub login>/`,
         and a check stops any change for you from touching anything else. It's
         a whole patch of the North Pole of your own, laid out how you like,
         with up to 8 squares of its own, that visitors reach by sleigh from the
@@ -111,7 +111,7 @@ body:
       value: |
         - [ ] My level has a platform at the sleigh station, and opens at `#/level/<my login>`
         - [ ] Every square can be walked to, and the sleigh takes me back to the North Pole
-        - [ ] Every change is inside `levels/<my login>/`
+        - [ ] Every change is inside `carnival/levels/<my login>/`
         - [ ] `npm run check` passes
     validations:
       required: true

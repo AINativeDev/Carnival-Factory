@@ -178,8 +178,8 @@ async function readComments(): Promise<RawChoiceComment[]> {
 }
 
 const root = join(import.meta.dirname, '..');
-const booths = readdirSync(join(root, 'booths')).filter((id) =>
-  existsSync(join(root, 'booths', id, 'booth.ts')),
+const booths = readdirSync(join(root, 'carnival', 'booths')).filter((id) =>
+  existsSync(join(root, 'carnival', 'booths', id, 'booth.ts')),
 );
 const holdersFile = process.env.BADGE_HOLDERS_FILE;
 const holders =

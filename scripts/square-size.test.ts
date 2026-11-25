@@ -51,10 +51,10 @@ describe('overBudget', () => {
 
 describe('every booth, attraction and level', () => {
   for (const kind of ['booths', 'attractions', 'levels']) {
-    for (const name of readdirSync(join(root, kind))) {
-      const dir = join(root, kind, name);
+    for (const name of readdirSync(join(root, 'carnival', kind))) {
+      const dir = join(root, 'carnival', kind, name);
       if (!statSync(dir).isDirectory()) continue;
-      it(`${kind}/${name}/ fits the size budget`, () => {
+      it(`carnival/${kind}/${name}/ fits the size budget`, () => {
         expect(overBudget(measureSquare(dir))).toEqual([]);
       });
     }

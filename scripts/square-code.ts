@@ -106,11 +106,13 @@ export const BANNED_PROPERTIES = new Set([
 /**
  * The only files outside its own folder a square may import: the map's theme,
  * square shape and diorama helpers, by the right number of `../` for where the importing file
- * sits (two from the square's folder, one more per nested folder).
+ * sits: one per folder in the square's own path (three from `carnival/booths/<login>/`),
+ * one more per nested folder.
  */
 function isMapImport(folder: string, from: string, specifier: string): boolean {
+  const up = folder.split('/').filter(Boolean).length;
   const depth = from.slice(folder.length).split('/').length - 1;
-  return new RegExp(`^(\\.\\./){${depth + 2}}northpole/(theme|square|diorama)$`).test(specifier);
+  return new RegExp(`^(\\.\\./){${depth + up}}northpole/(theme|square|diorama)$`).test(specifier);
 }
 const NOT_A_GLOBAL = new Set([...BANNED_GLOBALS, ...BANNED_PROPERTIES]);
 
@@ -122,7 +124,7 @@ export interface CodeProblem {
 }
 
 export interface SourceFile {
-  /** The path inside the repository, e.g. booths/elf/booth.ts. */
+  /** The path inside the repository, e.g. carnival/booths/elf/booth.ts. */
   path: string;
   text: string;
 }
@@ -207,7 +209,7 @@ export function plotFileProblems(
 
 /**
  * Checks every source file of one square (a booth's folder, given as
- * `folder`, e.g. `booths/elf/`). Returns every problem found; empty means the
+ * `folder`, e.g. `carnival/booths/elf/`). Returns every problem found; empty means the
  * code keeps to its square as far as a static check can tell.
  */
 export function checkSquareCode(folder: string, files: readonly SourceFile[]): CodeProblem[] {
@@ -351,7 +353,7 @@ export function checkSquareCode(folder: string, files: readonly SourceFile[]): C
             report(
               node,
               'import',
-              `Imports "${target}": only ../../northpole/theme, ../../northpole/square, ../../northpole/diorama and its own folder.`,
+              `Imports "${target}": only northpole/theme, northpole/square, northpole/diorama and its own folder.`,
             );
         }
       }

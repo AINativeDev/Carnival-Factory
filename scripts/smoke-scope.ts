@@ -18,8 +18,15 @@ export function smokeScope(files: readonly string[]): string | undefined {
   if (changed.length === 0) return undefined;
   const owners = new Set<string>();
   for (const file of changed) {
-    const [top, owner, ...rest] = file.split('/');
-    if (top !== 'booths' || !owner || rest.length === 0 || !LOGIN.test(owner)) return undefined;
+    const [top, kind, owner, ...rest] = file.split('/');
+    if (
+      top !== 'carnival' ||
+      kind !== 'booths' ||
+      !owner ||
+      rest.length === 0 ||
+      !LOGIN.test(owner)
+    )
+      return undefined;
     owners.add(owner);
   }
   return owners.size === 1 ? `booth/${[...owners][0]}` : undefined;

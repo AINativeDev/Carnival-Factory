@@ -28,7 +28,7 @@ if (!repository || !number || !/^\d+$/.test(number)) {
 }
 
 const calendar = cleanCalendar(
-  JSON.parse(readFileSync(new URL('../challenges/advent.json', import.meta.url), 'utf8')),
+  JSON.parse(readFileSync(new URL('../carnival/challenges/advent.json', import.meta.url), 'utf8')),
 );
 
 const issue = await get<{

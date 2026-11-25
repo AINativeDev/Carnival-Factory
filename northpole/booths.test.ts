@@ -5,12 +5,12 @@ import { boothRegistry as registry } from './booths';
 import disabled from './disabled.json';
 import { fromFolders, type NorthPoleSquare } from './square';
 
-const boothsDir = join(import.meta.dirname, '../booths');
+const boothsDir = join(import.meta.dirname, '../carnival/booths');
 const folders = readdirSync(boothsDir).filter((name) =>
   statSync(join(boothsDir, name)).isDirectory(),
 );
 // The booths' own code, which the page never runs: only their frames do.
-const modules = import.meta.glob<NorthPoleSquare | undefined>('../booths/*/booth.ts', {
+const modules = import.meta.glob<NorthPoleSquare | undefined>('../carnival/booths/*/booth.ts', {
   eager: true,
   import: 'default',
 });

@@ -118,7 +118,7 @@ export function createAttractionRegistry(attractions: readonly NorthPoleSquare[]
 }
 
 /**
- * The squares in a folder of folders, from `import.meta.glob('../booths/*\/booth.ts')`,
+ * The squares in a folder of folders, from `import.meta.glob('../carnival/booths/*\/booth.ts')`,
  * sorted by folder. Each folder's `booth.ts` must have a default export whose
  * `id` is the folder's name.
  */
@@ -140,7 +140,7 @@ export function fromFolders(
 
 /**
  * The ids of the squares in a folder of folders, from the keys of
- * `import.meta.glob('../booths/*\/booth.ts')`: each file's folder name, sorted.
+ * `import.meta.glob('../carnival/booths/*\/booth.ts')`: each file's folder name, sorted.
  */
 export function idsFromFolders(paths: readonly string[]): string[] {
   return paths.map((path) => path.split('/').at(-2)!).sort();

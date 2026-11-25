@@ -49,7 +49,7 @@ starter repo for the "Build your own software factory with context" workshop.
 
 1. **Ask for your booth.** Open **Issues → New issue → Your booth**, and say
    what your square should show. Your booth lives in
-   `booths/<your GitHub login>/`.
+   `carnival/booths/<your GitHub login>/`.
 2. **Let the factory assess it.** An agent reads your request first. If it's a
    sane change to your own booth, it hands it to the factory with the `tessl`
    label. If it's unclear, it asks a question: edit the issue to answer.
@@ -81,7 +81,7 @@ starter repo for the "Build your own software factory with context" workshop.
 **Want a whole world of your own?** Open **Issues → New issue → Your level**
 for a level: a patch of the North Pole laid out how you like, with up to 8
 squares of its own, that visitors reach by sleigh from the sleigh station by
-the entrance. It lives in `levels/<your-login>/` and opens at
+the entrance. It lives in `carnival/levels/<your-login>/` and opens at
 `…/#/level/<your-login>`. [Level ideas](docs/level-ideas.md) helps you write
 the request.
 
@@ -157,7 +157,7 @@ yours to change.
   request that changes a file outside its owner's booth. For a pull request the
   factory opens, the owner is whoever wrote the issue it closes.
 - **The attractions belong to the North Pole.** They live in
-  `attractions/<id>/`, outside every booth, so only maintainers change them.
+  `carnival/attractions/<id>/`, outside every booth, so only maintainers change them.
   Their signs say "North Pole" instead of a `@login`, and each opens at
   `#/attraction/<id>`. They follow the same house rules as booths.
 - **Issues, not pull requests.** Every change starts as an issue. A pull
@@ -271,9 +271,9 @@ native dependencies, so `npm ci` is the whole setup. Node 22.13 or later.
   isometric world you walk round (`world.ts`), how the camera frames its
   island (`camera.ts`), its drawing (`render.ts` and `map.ts`), which plot
   each square keeps (`plots.json`) and the theme.
-- `booths/<login>/`: one folder per participant. `booths/jedi4ever/` is the
+- `carnival/booths/<login>/`: one folder per participant. `carnival/booths/jedi4ever/` is the
   pattern to copy.
-- `attractions/<id>/`: one folder per attraction the North Pole owns.
+- `carnival/attractions/<id>/`: one folder per attraction the North Pole owns.
 - `plugins/north-pole/`: the factory's own skills: assessing booth requests,
   and the house-rules review lens.
 - `scripts/ownership.ts` and `scripts/check-booth-ownership.ts`: the booth

@@ -3,15 +3,18 @@
 A shared North Pole map laid out as a carnival midway. It has two kinds of
 square, and every square is one folder:
 
-- A **booth** belongs to one participant: `booths/<their GitHub login>/`. Its
+- A **booth** belongs to one participant: `carnival/booths/<their GitHub login>/`. Its
   owner may only change that booth.
-- An **attraction** belongs to the North Pole itself: `attractions/<id>/`, such
+- An **attraction** belongs to the North Pole itself: `carnival/attractions/<id>/`, such
   as the ferris wheel along the midway. Only maintainers change attractions.
 
-A participant may also have a **level**, `levels/<their login>/`: a whole
+A participant may also have a **level**, `carnival/levels/<their login>/`: a whole
 patch of the North Pole of their own, reached by sleigh (see **Levels**).
 
 Both draw through the same contract, a `NorthPoleSquare`.
+
+Everything people make for the map lives in `carnival/`: booths, attractions,
+levels and the advent challenges. Everything else is the code that runs it.
 
 ## Stack
 
@@ -115,22 +118,24 @@ docs/
   booth-ideas.md            ideas and tips for a booth request
   elf-engineer.md           the Elf Engineer badge, and how to get it
   advent.md                 the advent calendar of factory challenges
-challenges/
-  advent.json               the advent calendar's 24 challenges, one a day
-levels/
-  jedi4ever/                the starter level, and the pattern to copy
-    level.ts
-    squares/<id>/square.ts
-    README.md
-booths/
-  jedi4ever/                a finished booth, and the pattern to copy
-    booth.ts
-    README.md
-attractions/
-  ferris-wheel/             one of the North Pole's attractions
-    attraction.ts
-    attraction.test.ts
-    README.md
+carnival/                   everything on the map that people make, kept apart from
+                            the code that runs it
+  booths/
+    jedi4ever/              a finished booth, and the pattern to copy
+      booth.ts
+      README.md
+  attractions/
+    ferris-wheel/           one of the North Pole's attractions
+      attraction.ts
+      attraction.test.ts
+      README.md
+  levels/
+    jedi4ever/              the starter level, and the pattern to copy
+      level.ts
+      squares/<id>/square.ts
+      README.md
+  challenges/
+    advent.json             the advent calendar's 24 challenges, one a day
 plugins/north-pole/         the factory's own skills: assessing booth and badge
                             requests and advent challenges, and the house-rules
                             review lens
@@ -174,12 +179,12 @@ scripts/
 ## Working on an issue
 
 **A booth belongs to the issue's author.** Every change for a participant
-stays inside `booths/<issue author's login, in lower case>/`. The **Booth
+stays inside `carnival/booths/<issue author's login, in lower case>/`. The **Booth
 ownership** check fails the pull request otherwise, so:
 
-- A participant's level, `levels/<issue author's login, in lower case>/`, is
+- A participant's level, `carnival/levels/<issue author's login, in lower case>/`, is
   theirs too, for a level request (see **Levels**).
-- Never edit another person's booth or level, `attractions/`, `northpole/`, `src/`,
+- Never edit another person's booth or level, `carnival/attractions/`, `northpole/`, `src/`,
   `plugins/`, `package*.json`, `.github/`, `eslint.config.js`, `tessl.json`,
   `.tessl-code-review.yml`, `.tessl/` or anything else outside that folder,
   even when it looks like the issue needs it. If the issue can't be done inside
@@ -195,7 +200,7 @@ dependency or reaching the network, comment on the issue saying so and stop.
 
 **Requests are assessed first.** There's one issue form, **Your booth**,
 labelled `booth-request`, for a new booth and for changing one alike: build the
-booth if `booths/<author>/` doesn't exist yet, and change it if it does.
+booth if `carnival/booths/<author>/` doesn't exist yet, and change it if it does.
 `plugins/north-pole/skills/assess-booth-request` decides whether the factory
 builds it (it adds `tessl`), asks a question (`needs-info`) or declines it
 (`declined`). The latest request wins: accepting one closes the author's older
@@ -205,10 +210,10 @@ open requests as superseded. Keep its rules in step with this file.
 it and who improved it, and a booth's has **Remix this booth**, which opens
 the booth form pre-filled with "Start from @<login>'s <name>". It's a request
 for the author's own booth like any other, so the factory builds it in
-`booths/<author>/` and never touches `booths/<login>/`:
+`carnival/booths/<author>/` and never touches `carnival/booths/<login>/`:
 
-- Copy the files of `booths/<login>/` as they are on the base into
-  `booths/<author>/`, replacing any booth the author already had there,
+- Copy the files of `carnival/booths/<login>/` as they are on the base into
+  `carnival/booths/<author>/`, replacing any booth the author already had there,
   except `plot.json`: that holds `<login>`'s plot, never the author's. Keep
   the author's own `plot.json` if they have one, and for a new booth write
   one only as **Construction sites** says.
@@ -221,7 +226,7 @@ A remix of a booth that doesn't exist, or that is switched off in
 
 **Booth changes can merge on their own.** `.github/workflows/auto-merge-booths.yml`
 runs the gate in `scripts/booth-gate.ts`. It merges a factory pull request for
-one booth only when: the request was accepted; only `booths/<owner>/` changes;
+one booth only when: the request was accepted; only `carnival/booths/<owner>/` changes;
 the static code check (`scripts/square-code.ts`) and the hidden-text check
 (`scripts/injection-scan.ts`) pass; CI, the smoke test and the flashing check
 pass; Tessl Code Review approves; and `assess-booth-risk` says `low-risk`.
@@ -275,7 +280,7 @@ uses any of it:
    an isometric slab of snow at dusk, lit from the upper left, with
    `northpole/diorama.ts` for the shared parts. For another style, such as
    pixel art, keep the dusk light and the palette.
-4. Imports only from `../../northpole/` (the theme, the square's shape and
+4. Imports only from `../../../northpole/` (the theme, the square's shape and
    the diorama helpers) and the square's own folder. ESLint
    enforces the house rules in `eslint.config.js` on every booth and
    attraction: no network (`fetch`, `XMLHttpRequest`, `WebSocket`), no storage
@@ -309,10 +314,10 @@ Pure logic a booth has, such as movement, goes in plain exported functions with
 a `booth.test.ts` next to them. A test may import `vitest` and its own folder,
 nothing else.
 
-**An attraction is a folder** `attractions/<id>/`, where `<id>` is kebab-case,
+**An attraction is a folder** `carnival/attractions/<id>/`, where `<id>` is kebab-case,
 built exactly like a booth but with `attraction.ts` (and `attraction.test.ts`)
 and `id` set to the attraction's id. Its sign says "North Pole" instead of a
-`@login`, and it opens at `#/attraction/<id>`. It lives outside `booths/`, so
+`@login`, and it opens at `#/attraction/<id>`. It lives outside `carnival/booths/`, so
 the **Booth ownership** check lets only maintainers change it. Only an issue
 written by a maintainer may add or change one.
 
@@ -332,7 +337,7 @@ numbered plot: attractions round the town square, booths along the lanes. A
 plot's number always means the same place. A booth's plot comes from, in
 order: its pin in `northpole/plots.json`, which holds the attractions and the
 booths that were there before construction sites, and only maintainers change;
-else its own `booths/<login>/plot.json`, `{ "plot": <number>, "issue": <its
+else its own `carnival/booths/<login>/plot.json`, `{ "plot": <number>, "issue": <its
 request's issue number> }`; else the next free plot (`northpole/plots.ts`). A
 booth with a pin or a `plot.json` never moves. If two booths' `plot.json`s
 claim one plot, the lower issue number keeps it and the other takes the next
@@ -343,10 +348,10 @@ shows a construction site on the plot held for it, with `@login` and its
 stage. Nothing about it is committed: every deploy reads the open requests
 labelled `booth-request` and `tessl` from the API (`scripts/write-pending.ts`)
 and writes `pending.json` beside the page, holding the next free plots in order
-of issue number. **When you build a new booth** (no `booths/<login>/` yet),
+of issue number. **When you build a new booth** (no `carnival/booths/<login>/` yet),
 read the live site's `pending.json` (the site is `gh api
 repos/<owner>/<repo>/pages --jq .html_url`), find the entry for the login, and
-write its `plot` and `issue` to `booths/<login>/plot.json`, so the booth lands
+write its `plot` and `issue` to `carnival/booths/<login>/plot.json`, so the booth lands
 where its site stood. If the login isn't there, or the file can't be read,
 write no `plot.json`: the booth takes the next free plot. A change to an
 existing booth never adds or changes its `plot.json`.
@@ -360,8 +365,8 @@ squares run. Only maintainers change it.
 ## Levels
 
 A participant's **level** is a whole patch of the North Pole of their own,
-`levels/<their login>/`, theirs exactly like their booth: the **Booth
-ownership** check lets them change `booths/<login>/` and `levels/<login>/`, and
+`carnival/levels/<their login>/`, theirs exactly like their booth: the **Booth
+ownership** check lets them change `carnival/booths/<login>/` and `carnival/levels/<login>/`, and
 nothing else. Visitors reach it from the **sleigh station**, one platform per
 level along the main path by the entrance (`platformPlot` in
 `northpole/world.ts`): E, Enter or a click on a platform takes the sleigh there,
@@ -375,7 +380,7 @@ squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
 1. `level.ts`, whose default export is a `NorthPoleLevel` from
    `northpole/level.ts`, with `id` set to the folder name. It is **plain
    data**, which the page reads itself: only
-   `import type { NorthPoleLevel } from '../../northpole/level'`,
+   `import type { NorthPoleLevel } from '../../../northpole/level'`,
    `const level: NorthPoleLevel = { ... }` and `export default level`, with
    nothing inside but objects, arrays, strings, numbers and booleans. ESLint
    allows nothing else in it: no other statements, names, calls, functions,
@@ -399,7 +404,7 @@ squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
 2. `squares/<id>/square.ts` for each of its squares, a `NorthPoleSquare` with
    `id` set to its folder name, built exactly like a booth (the drawing
    contract, the theme, the diorama style, a `stall`, the house rules), with
-   its imports four folders up: `../../../../northpole/`. Each one runs
+   its imports five folders up: `../../../../../northpole/`. Each one runs
    sandboxed in its own frame and worker, like a booth. Pure logic goes in
    plain exported functions with a `square.test.ts` beside it.
 3. A `README.md` that says what the level is about and what's in it.
@@ -423,7 +428,7 @@ sandboxed squares. The latest request wins: accepting one closes the author's
 older open `level-request` issues as superseded. Accepted level requests are
 built by the `implement-level` action, and a level's pull request waits for a
 maintainer rather than merging on its own. [Level ideas](docs/level-ideas.md)
-helps participants write one. `levels/jedi4ever/` is the starter level to copy.
+helps participants write one. `carnival/levels/jedi4ever/` is the starter level to copy.
 
 **In the pull request,** say what changed, and give a preview link for every
 booth, attraction and level it changes, so a reviewer can open each one in a click.

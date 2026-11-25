@@ -76,39 +76,48 @@ const jedi4ever = { login: 'jedi4ever', id: 70908, isBot: false };
 
 describe('filesOutsideBooth', () => {
   it("allows changes inside the owner's booth", () => {
-    expect(filesOutsideBooth(comet, ['booths/comet/booth.ts', 'booths/comet/README.md'])).toEqual(
-      [],
-    );
+    expect(
+      filesOutsideBooth(comet, [
+        'carnival/booths/comet/booth.ts',
+        'carnival/booths/comet/README.md',
+      ]),
+    ).toEqual([]);
   });
 
   it("allows changes inside the owner's level, and no one else's", () => {
     expect(
       filesOutsideBooth(comet, [
-        'levels/comet/level.ts',
-        'levels/comet/squares/hut/square.ts',
-        'levels/cupid/level.ts',
-        'levels/comet-two/level.ts',
+        'carnival/levels/comet/level.ts',
+        'carnival/levels/comet/squares/hut/square.ts',
+        'carnival/levels/cupid/level.ts',
+        'carnival/levels/comet-two/level.ts',
       ]),
-    ).toEqual(['levels/cupid/level.ts', 'levels/comet-two/level.ts']);
+    ).toEqual(['carnival/levels/cupid/level.ts', 'carnival/levels/comet-two/level.ts']);
   });
 
   it("flags everything else, a neighbour's booth included", () => {
     expect(
       filesOutsideBooth(comet, [
-        'booths/comet/booth.ts',
-        'booths/cupid/booth.ts',
-        'booths/comet-two/booth.ts',
+        'carnival/booths/comet/booth.ts',
+        'carnival/booths/cupid/booth.ts',
+        'carnival/booths/comet-two/booth.ts',
         'northpole/map.ts',
       ]),
-    ).toEqual(['booths/cupid/booth.ts', 'booths/comet-two/booth.ts', 'northpole/map.ts']);
+    ).toEqual([
+      'carnival/booths/cupid/booth.ts',
+      'carnival/booths/comet-two/booth.ts',
+      'northpole/map.ts',
+    ]);
   });
 
   it('lets maintainers change anything', () => {
-    expect(filesOutsideBooth(jedi4ever, ['package.json', 'booths/cupid/booth.ts'])).toEqual([]);
+    expect(
+      filesOutsideBooth(jedi4ever, ['package.json', 'carnival/booths/cupid/booth.ts']),
+    ).toEqual([]);
   });
 
   it('uses the lower-case login as the folder', () => {
-    expect(boothFolder('Comet')).toBe('booths/comet/');
+    expect(boothFolder('Comet')).toBe('carnival/booths/comet/');
   });
 });
 
@@ -123,7 +132,7 @@ describe('maintainers', () => {
 
 describe('escapeCommand', () => {
   it('keeps a file name from starting a log command of its own', () => {
-    const escaped = escapeCommand('booths/elf/a.ts\n::warning::fake');
+    const escaped = escapeCommand('carnival/booths/elf/a.ts\n::warning::fake');
     expect(escaped).not.toContain('\n');
     expect(escaped).not.toContain('::');
   });

@@ -7,7 +7,7 @@ looking pasted on. This is the default look. Ask for another style in the
 **Your booth** form, such as pixel art or papercut, and the factory adapts it to
 the dusk light and the palette below.
 
-The attractions in `attractions/` are all drawn this way, and are the examples
+The attractions in `carnival/attractions/` are all drawn this way, and are the examples
 to copy.
 
 ## The rules
@@ -45,7 +45,7 @@ to copy.
 ## Helpers
 
 `northpole/diorama.ts` draws the shared parts, so a square only draws its own
-scene. Import it as `../../northpole/diorama`, like the theme.
+scene. Import it as `../../../northpole/diorama`, like the theme.
 
 - `scene(ctx, size, time, paint)` scales the context to the square's 0 to 100
   units, paints the dusk sky, the far mountains and the slab of snow, then

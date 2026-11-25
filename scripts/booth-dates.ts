@@ -17,7 +17,7 @@ export function boothAddedDates(log: string): Record<string, string> {
     const [date, ...files] = commit.split('\n').map((line) => line.trim());
     if (!date || Number.isNaN(Date.parse(date))) continue;
     for (const file of files) {
-      const booth = file.match(/^booths\/([a-z0-9-]+)\/booth\.ts$/i);
+      const booth = file.match(/^(?:carnival\/)?booths\/([a-z0-9-]+)\/booth\.ts$/i);
       if (booth) added[booth[1].toLowerCase()] = date;
     }
   }
@@ -29,7 +29,15 @@ export function readBoothAddedDates(root: string): Record<string, string> {
   try {
     const log = execFileSync(
       'git',
-      ['log', '--diff-filter=A', '--format=%x00%aI', '--name-only', '--', 'booths/*/booth.ts'],
+      [
+        'log',
+        '--diff-filter=A',
+        '--format=%x00%aI',
+        '--name-only',
+        '--',
+        'carnival/booths/*/booth.ts',
+        'booths/*/booth.ts',
+      ],
       { cwd: root, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 16 * 1024 * 1024 },
     ).toString();
     return boothAddedDates(log);

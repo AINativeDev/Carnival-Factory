@@ -1,9 +1,9 @@
 /**
  * A participant's level: a whole patch of the North Pole of their own, in
- * `levels/<login>/level.ts`. A level is plain data, a `NorthPoleLevel`, that
+ * `carnival/levels/<login>/level.ts`. A level is plain data, a `NorthPoleLevel`, that
  * the engine checks here before anything is drawn and then lays out as a
  * `World`, so the map walks it just like the North Pole. Its own squares, in
- * `levels/<login>/squares/<id>/square.ts`, run sandboxed like booths. Plain
+ * `carnival/levels/<login>/squares/<id>/square.ts`, run sandboxed like booths. Plain
  * functions, so the tests check every real level the same way the page does.
  *
  * A level's tiles run from (0, 0) at its north corner to (size - 1, size - 1),

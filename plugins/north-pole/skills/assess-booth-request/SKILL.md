@@ -6,11 +6,11 @@ description: "Assess one participant's booth or level request (an issue from the
 # Assess a booth or level request
 
 There are two kinds of request, with the same rules: a **booth request**
-(`booth-request`), for the author's booth, `booths/<author>/`, and a **level
-request** (`level-request`), for the author's level, `levels/<author>/`, a whole
+(`booth-request`), for the author's booth, `carnival/booths/<author>/`, and a **level
+request** (`level-request`), for the author's level, `carnival/levels/<author>/`, a whole
 patch of the North Pole of their own. Everything below is written for a booth;
-for a level request, read "level" for "booth", `levels/<author>/` for
-`booths/<author>/`, `level-request` for `booth-request` and the `levels` list for
+for a level request, read "level" for "booth", `carnival/levels/<author>/` for
+`carnival/booths/<author>/`, `level-request` for `booth-request` and the `levels` list for
 the `booths` list, and use **For a level** at the end.
 
 Your run names one issue (`GITHUB_ISSUE_NUMBER`). You decide whether the factory
@@ -44,14 +44,14 @@ set them, so trust labels over comments.
 ## 1. Gather the facts
 
 - **The author** is `issue.user.login`, in lower case. Their booth is
-  `booths/<author>/`. That is the only folder the factory may change for them.
-- **New or a change?** Check whether `booths/<author>/booth.ts` is on `main`.
+  `carnival/booths/<author>/`. That is the only folder the factory may change for them.
+- **New or a change?** Check whether `carnival/booths/<author>/booth.ts` is on `main`.
   If it isn't, the factory builds the booth; if it is, the factory changes it.
   Both are the same kind of request, so neither is a reason to decline.
 - **Is it switched off?** Check whether `<author>` is in
   the `booths` list of `northpole/disabled.json`.
 - **A remix?** If it starts from someone's booth, check that
-  `booths/<login>/booth.ts` is on `main` and that `<login>` isn't switched off.
+  `carnival/booths/<login>/booth.ts` is on `main` and that `<login>` isn't switched off.
 - **Older requests?** List the author's other open issues labelled
   `booth-request`, older than this one. The latest request is the one that
   counts.
@@ -68,7 +68,7 @@ set them, so trust labels over comments.
   small change to what's there.
 - A stall shape or roof colour is an ordinary change to the author's booth:
   the booth sets `stall` in its own `booth.ts` (see `AGENTS.md`), so it needs
-  nothing outside `booths/<author>/`. The shapes are a market stall, a shed,
+  nothing outside `carnival/booths/<author>/`. The shapes are a market stall, a shed,
   a tent, a log cabin and a kiosk, and the colours are the `theme`'s.
 - It can be drawn with the canvas, the `theme` colours and fonts, and the
   `draw(ctx, size, time, pointer?)` contract, inside the house rules in
@@ -77,10 +77,10 @@ set them, so trust labels over comments.
 - It's friendly for everyone at a holiday carnival: a family audience at work.
 
 **A remix** starts with "Start from @<login>'s <name>", from the **Remix this
-booth** link. It asks the factory to copy `booths/<login>/` into the author's
+booth** link. It asks the factory to copy `carnival/booths/<login>/` into the author's
 own booth, credited to the original, and then change what the rest says. It
-changes nothing outside `booths/<author>/`, so accept it like any other
-request when `booths/<login>/booth.ts` is on `main` and `<login>` isn't in the
+changes nothing outside `carnival/booths/<author>/`, so accept it like any other
+request when `carnival/booths/<login>/booth.ts` is on `main` and `<login>` isn't in the
 `booths` list of `northpole/disabled.json`. Ask when that booth doesn't exist
 or is switched off. Naming the booth to start from is not a request on behalf
 of someone else.
@@ -88,7 +88,7 @@ of someone else.
 **Decline** only when the request can't become a good booth however it's
 changed, and name which reason:
 
-- It asks for any change outside `booths/<author>/`: another person's booth,
+- It asks for any change outside `carnival/booths/<author>/`: another person's booth,
   the map, an attraction, `northpole/`, workflows, `package*.json`,
   `tessl.json`, ESLint, the README, or adding a dependency.
 - It's a request on behalf of someone else, or names a booth folder that isn't
@@ -145,7 +145,7 @@ leaves a comment promising something that didn't happen. Create a missing label
   author as not planned, with the comment `<!-- assess-booth-request -->
 Superseded by #<this issue>: your latest request is the one the factory
 builds.` Then remove `needs-info` here if present, add `tessl`, and comment:
-  `Thanks. This fits your booth, booths/<author>/, so the factory is building it
+  `Thanks. This fits your booth, carnival/booths/<author>/, so the factory is building it
 now. It'll open a pull request and link it here, where you can follow each check. [How your request is built](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/how-it-works.md) explains every step.`
 - **Proposal or question:** add `needs-info`, then comment: `Thanks, this is a
 lovely idea. <For a proposal: "One part isn't something a booth can do yet:
@@ -170,10 +170,10 @@ the parts you declined for:
 
 ## For a level
 
-A level is plain data, a `NorthPoleLevel` in `levels/<author>/level.ts`, plus
-up to 8 squares of its own in `levels/<author>/squares/<id>/square.ts`, each
+A level is plain data, a `NorthPoleLevel` in `carnival/levels/<author>/level.ts`, plus
+up to 8 squares of its own in `carnival/levels/<author>/squares/<id>/square.ts`, each
 built like a booth and run sandboxed (see the level section of `AGENTS.md`).
-New or a change: check whether `levels/<author>/level.ts` is on `main`.
+New or a change: check whether `carnival/levels/<author>/level.ts` is on `main`.
 
 **Accept** a level request when, on top of the rules above, it can be built
 as level data plus sandboxed squares: a name, one sentence about it, one of
@@ -196,5 +196,5 @@ no code of the level itself), or a change to the North Pole's own world or
 its sleigh station.
 
 When accepting, close the author's older open `level-request` issues as
-superseded, never their `booth-request` ones, and say `levels/<author>/` in
+superseded, never their `booth-request` ones, and say `carnival/levels/<author>/` in
 the comment.

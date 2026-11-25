@@ -1,4 +1,4 @@
-import calendarData from '../challenges/advent.json';
+import calendarData from '../carnival/challenges/advent.json';
 import {
   cleanCalendar,
   isDoorOpen,
@@ -12,7 +12,7 @@ import type { VisitHud } from './visit-hud';
 /**
  * The advent calendar, `#/advent`: 24 small challenges to do with a Tessl
  * factory on your own repository, one a day from 1 to 24 December, from
- * challenges/advent.json, baked into the page. Each door opens at midnight on
+ * carnival/challenges/advent.json, baked into the page. Each door opens at midnight on
  * its day, by the visitor's own clock. Marking one done is an issue form, and
  * nothing here is tracked or sent anywhere.
  */

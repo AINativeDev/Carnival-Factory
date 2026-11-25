@@ -4,7 +4,7 @@
  * the same way.
  *
  * A booth's plot comes from, in order: its pin in `plots.json`; else its own
- * `booths/<login>/plot.json`, which the factory writes when it builds a new
+ * `carnival/booths/<login>/plot.json`, which the factory writes when it builds a new
  * booth on the plot its construction site held; else the next free plot. A
  * booth with a pin or a `plot.json` never moves, whatever else changes.
  *

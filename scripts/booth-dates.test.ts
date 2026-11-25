@@ -14,6 +14,18 @@ describe("when each booth's folder first appeared", () => {
     });
   });
 
+  it('reads booths in carnival/ and before they moved there alike', () => {
+    const log = [
+      '',
+      '2026-11-25T10:00:00+00:00\n\ncarnival/booths/new/booth.ts\n',
+      '2026-11-10T10:00:00+00:00\n\nbooths/old/booth.ts\n',
+    ].join('\0');
+    expect(boothAddedDates(log)).toEqual({
+      new: '2026-11-25T10:00:00+00:00',
+      old: '2026-11-10T10:00:00+00:00',
+    });
+  });
+
   it('ignores other files and malformed commits', () => {
     const log = '\0not a date\nbooths/x/booth.ts\0' + '2026-11-01T00:00:00Z\nbooths/y/README.md\n';
     expect(boothAddedDates(log)).toEqual({});

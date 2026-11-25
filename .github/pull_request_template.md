@@ -10,6 +10,6 @@ comment lists them once the build passes.
 
 ## Whose booth
 
-This changes `booths/<login>/` only.
+This changes `carnival/booths/<login>/` only.
 
 Closes #

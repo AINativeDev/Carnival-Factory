@@ -1,13 +1,15 @@
 import { ESLint } from 'eslint';
+import { readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
  * The house rules in eslint.config.js, tried on red-team booths. Each snippet is
- * linted as if it were booths/grinch/booth.ts.
+ * linted as if it were carnival/booths/grinch/booth.ts.
  */
 const eslint = new ESLint({ cwd: `${import.meta.dirname}/..` });
 
-async function problems(code: string, filePath = 'booths/grinch/booth.ts') {
+async function problems(code: string, filePath = 'carnival/booths/grinch/booth.ts') {
   const [result] = await eslint.lintText(code, { filePath });
   return result.messages.map((message) => message.ruleId);
 }
@@ -16,9 +18,9 @@ describe('booth house rules', () => {
   it('pass a booth that only draws with the map', async () => {
     expect(
       await problems(`
-        import type { NorthPoleSquare } from '../../northpole/square';
-        import { theme } from '../../northpole/theme';
-        import { scene } from '../../northpole/diorama';
+        import type { NorthPoleSquare } from '../../../northpole/square';
+        import { theme } from '../../../northpole/theme';
+        import { scene } from '../../../northpole/diorama';
         import { wobble } from './wobble';
         export const booth: NorthPoleSquare = {
           owner: 'grinch',
@@ -49,12 +51,12 @@ describe('booth house rules', () => {
     expect(
       await problems(
         `
-          import { theme } from '../../../northpole/theme';
+          import { theme } from '../../../../northpole/theme';
           import { wobble } from '../wobble';
           import { star } from './star';
           export const colour = wobble(star(theme.colors.snow.length));
         `,
-        'booths/grinch/lib/draw.ts',
+        'carnival/booths/grinch/lib/draw.ts',
       ),
     ).toEqual([]);
   });
@@ -62,9 +64,11 @@ describe('booth house rules', () => {
   it.each([
     ['another booth', `import other from '../../jedi4ever/booth';`],
     ['a way out of its folder', `import x from '../../../main';`],
-    ['the map at the wrong depth', `import x from '../../northpole/theme';`],
+    ['the map at the wrong depth', `import x from '../../../northpole/theme';`],
   ])('stop a nested helper importing %s', async (_, code) => {
-    expect(await problems(code, 'booths/grinch/lib/draw.ts')).toContain('no-restricted-imports');
+    expect(await problems(code, 'carnival/booths/grinch/lib/draw.ts')).toContain(
+      'no-restricted-imports',
+    );
   });
 
   it.each([
@@ -110,7 +114,7 @@ describe('booth house rules', () => {
   });
 
   it('let a test beside a booth import vitest, and nothing more', async () => {
-    const file = 'booths/grinch/booth.test.ts';
+    const file = 'carnival/booths/grinch/booth.test.ts';
     expect(
       await problems(
         `import { expect } from 'vitest'; import booth from './booth'; expect(booth).toBeDefined();`,
@@ -124,13 +128,13 @@ describe('booth house rules', () => {
   });
 
   it.each([
-    ['the booth registry', `import { boothRegistry } from '../../northpole/booths';`],
+    ['the booth registry', `import { boothRegistry } from '../../../northpole/booths';`],
     [
       'the attraction registry',
-      `import { attractionRegistry } from '../../northpole/attractions';`,
+      `import { attractionRegistry } from '../../../northpole/attractions';`,
     ],
-    ['the kill switch', `import off from '../../northpole/disabled.json';`],
-    ['the map', `import { startMap } from '../../northpole/map';`],
+    ['the kill switch', `import off from '../../../northpole/disabled.json';`],
+    ['the map', `import { startMap } from '../../../northpole/map';`],
   ])('stop a booth from importing %s', async (_, code) => {
     expect(await problems(code)).toContain('no-restricted-imports');
   });
@@ -142,7 +146,7 @@ describe('booth house rules', () => {
     expect(
       await problems(
         `import { table } from './palette.test'; export const t = table;`,
-        'booths/grinch/booth.test.ts',
+        'carnival/booths/grinch/booth.test.ts',
       ),
     ).toEqual([]);
   });
@@ -153,16 +157,18 @@ describe('booth house rules', () => {
     ['global', `global.fetch('https://example.com');`],
     ['Buffer', `export const b = Buffer.from('x');`],
   ])("stop a booth's test from reaching Node through %s", async (_, code) => {
-    expect(await problems(code, 'booths/grinch/booth.test.ts')).toContain('no-restricted-globals');
+    expect(await problems(code, 'carnival/booths/grinch/booth.test.ts')).toContain(
+      'no-restricted-globals',
+    );
   });
 
   it('hold an attraction to the same rules', async () => {
-    const file = 'attractions/big-top/attraction.ts';
+    const file = 'carnival/attractions/big-top/attraction.ts';
     expect(
       await problems(
         `
-          import type { NorthPoleSquare } from '../../northpole/square';
-          import { theme } from '../../northpole/theme';
+          import type { NorthPoleSquare } from '../../../northpole/square';
+          import { theme } from '../../../northpole/theme';
           import { wobble } from './wobble';
           export const colour = wobble(theme.colors.snow.length) as unknown as NorthPoleSquare;
         `,
@@ -178,11 +184,50 @@ describe('booth house rules', () => {
       'no-restricted-imports',
     );
     expect(
-      await problems(`import x from '../../main';`, 'attractions/big-top/lib/draw.ts'),
+      await problems(`import x from '../../main';`, 'carnival/attractions/big-top/lib/draw.ts'),
     ).toContain('no-restricted-imports');
   });
 
   it('leave the map itself alone', async () => {
     expect(await problems(`localStorage.getItem('x');`, 'northpole/map.ts')).toEqual([]);
+  });
+});
+
+/** Every file under a folder, as repository paths. */
+function filesIn(folder: string): string[] {
+  const root = join(import.meta.dirname, '..');
+  return readdirSync(join(root, folder), { recursive: true, encoding: 'utf8' })
+    .map((name) => `${folder}/${name}`)
+    .filter((path) => statSync(join(root, path)).isFile() && /\.(ts|js)$/.test(path));
+}
+
+// The house rules find squares by their folder. If the squares move and the
+// rules don't, every square would lint clean and the gate would still pass, so
+// every real square's code must come out with the rules switched on.
+describe('the house rules reach every square', () => {
+  const squareFiles = [
+    ...filesIn('carnival/booths'),
+    ...filesIn('carnival/attractions'),
+    ...filesIn('carnival/levels').filter((path) => path.includes('/squares/')),
+  ];
+
+  it('finds the squares', () => {
+    expect(squareFiles.length).toBeGreaterThan(10);
+  });
+
+  it.each(squareFiles)('%s runs under the house rules', async (file) => {
+    const config = await eslint.calculateConfigForFile(file);
+    for (const rule of ['no-restricted-globals', 'no-restricted-imports', 'no-eval']) {
+      const setting = config.rules?.[rule];
+      const severity = Array.isArray(setting) ? setting[0] : setting;
+      expect(String(severity), `${file}: ${rule}`).toMatch(/^(error|2)$/);
+    }
+    expect(await problems('export const x = fetch;', file)).toContain('no-restricted-globals');
+  });
+
+  it.each(
+    filesIn('carnival/levels').filter((path) => /^carnival\/levels\/[^/]+\/level\.ts$/.test(path)),
+  )('%s is held to plain data', async (file) => {
+    expect(await problems('export default 1;', file)).toContain('no-restricted-syntax');
   });
 });

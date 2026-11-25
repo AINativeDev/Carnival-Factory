@@ -10,7 +10,7 @@
 /** How many doors the calendar has. */
 export const ADVENT_DAYS = 24;
 
-/** One day's challenge, as challenges/advent.json lists it. */
+/** One day's challenge, as carnival/challenges/advent.json lists it. */
 export interface AdventChallenge {
   day: number;
   title: string;

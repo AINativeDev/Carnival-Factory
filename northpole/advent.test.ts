@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import calendar from '../challenges/advent.json';
+import calendar from '../carnival/challenges/advent.json';
 import {
   ADVENT_DAYS,
   adventCountFor,
@@ -10,7 +10,7 @@ import {
   isDoorOpenAnywhere,
 } from './advent';
 
-describe('challenges/advent.json', () => {
+describe('carnival/challenges/advent.json', () => {
   it('has a well-formed challenge for every day from 1 to 24', () => {
     const clean = cleanCalendar(calendar);
     expect(clean.challenges.map((challenge) => challenge.day)).toEqual(

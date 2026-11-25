@@ -125,7 +125,7 @@ async function boothFiles(
   sha: string,
   owner: string,
 ): Promise<{ files: SourceFile[]; problems: CodeProblem[] }> {
-  const folder = `booths/${owner}/`;
+  const folder = `carnival/booths/${owner}/`;
   const tree = await get<{
     tree: { path: string; type: string; sha: string; mode: string; size?: number }[];
     truncated: boolean;
@@ -274,7 +274,7 @@ async function gate(pull: Pull) {
   // Only an open request counts: accepting a newer one closes the older, so a
   // superseded request's pull request never merges on its own.
   const accepted = issue.state === 'open' && names(issue.labels).includes('tessl');
-  const inScope = files.length > 0 && files.every((f) => f.startsWith(`booths/${owner}/`));
+  const inScope = files.length > 0 && files.every((f) => f.startsWith(`carnival/booths/${owner}/`));
   // Only read and compile the booth when the cheap checks already pass.
   const booth = accepted && inScope ? await boothFiles(sha, owner) : { files: [], problems: [] };
   const [checks, review, all] = await Promise.all([
@@ -288,8 +288,8 @@ async function gate(pull: Pull) {
     changedFiles: files,
     codeProblems: [
       ...booth.problems,
-      ...plotFileProblems(`booths/${owner}/`, changed),
-      ...checkSquareCode(`booths/${owner}/`, booth.files),
+      ...plotFileProblems(`carnival/booths/${owner}/`, changed),
+      ...checkSquareCode(`carnival/booths/${owner}/`, booth.files),
     ],
     textFindings: [
       ...scanParticipantText(`${issue.title}\n${issue.body ?? ''}`),

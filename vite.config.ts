@@ -95,7 +95,7 @@ const sharePages: Plugin = {
       source: factorySharePage(image),
     });
     for (const kind of ['booth', 'attraction'] as ShareKind[]) {
-      const dir = join(root, `${kind}s`);
+      const dir = join(root, 'carnival', `${kind}s`);
       const off = new Set(disabled[`${kind}s`].map((id) => id.toLowerCase()));
       for (const id of readdirSync(dir)) {
         const file = join(dir, id, `${kind}.ts`);
@@ -170,7 +170,7 @@ function squareNames(): Record<string, string> {
   const root = import.meta.dirname;
   const names: Record<string, string> = {};
   for (const kind of ['booth', 'attraction'] as ShareKind[]) {
-    const dir = join(root, `${kind}s`);
+    const dir = join(root, 'carnival', `${kind}s`);
     for (const id of readdirSync(dir)) {
       const file = join(dir, id, `${kind}.ts`);
       if (!existsSync(file)) continue;
@@ -221,6 +221,6 @@ export default defineConfig(({ command }) => ({
   preview: { cors: { origin: 'null' } },
   test: {
     environment: 'node',
-    include: ['{src,northpole,booths,attractions,levels,scripts}/**/*.test.ts'],
+    include: ['{src,northpole,carnival,scripts}/**/*.test.ts'],
   },
 }));

@@ -144,7 +144,11 @@ describe('the registries', () => {
 describe('idsFromFolders', () => {
   it("gives each square's folder name, sorted", () => {
     expect(
-      idsFromFolders(['../booths/zed/booth.ts', '../booths/elf/booth.ts', './a-b/attraction.ts']),
+      idsFromFolders([
+        '../carnival/booths/zed/booth.ts',
+        '../carnival/booths/elf/booth.ts',
+        './a-b/attraction.ts',
+      ]),
     ).toEqual(['a-b', 'elf', 'zed']);
   });
 });

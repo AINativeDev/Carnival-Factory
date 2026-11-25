@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GIFTS } from '../attractions/gift-shop/attraction';
+import { GIFTS } from '../carnival/attractions/gift-shop/attraction';
 
 const plugin = join(import.meta.dirname, '../plugins/north-pole-gifts');
 const skills: string[] = JSON.parse(

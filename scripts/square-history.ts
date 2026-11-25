@@ -106,7 +106,7 @@ export const MAX_TITLE = 120;
 export function squaresTouched(paths: string[]): string[] {
   const squares = new Set<string>();
   for (const path of paths) {
-    const match = path.match(/^(booth|attraction)s\/([a-z0-9]+(?:-[a-z0-9]+)*)\//i);
+    const match = path.match(/^(?:carnival\/)?(booth|attraction)s\/([a-z0-9]+(?:-[a-z0-9]+)*)\//i);
     if (match) squares.add(`${match[1]}/${match[2].toLowerCase()}`);
   }
   return [...squares].sort();
