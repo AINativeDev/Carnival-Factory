@@ -97,13 +97,12 @@ jobs:
       contents: write
       actions: read
       # The squares' histories, the accepted Elf Engineer badge requests for
-      # the badge holders, and the accepted advent challenges.
-      issues: read
+      # the badge holders, the accepted advent challenges, and the People's
+      # Choice ballot: its votes, and a comment on it for each new entry.
+      issues: write
       pull-requests: read
       # The checks on the booth requests' pull requests, for their stage.
       checks: read
-      # The People's Choice votes, and a comment in its discussion for each new entry.
-      discussions: write
     outputs:
       placed: ${{ steps.files.outputs.placed }}
     steps:
@@ -212,9 +211,9 @@ jobs:
             echo '{}' > "$RUNNER_TEMP/advent.json"
           }
 
-      # The People's Choice standings, from the 👍 in its discussion, for the
+      # The People's Choice standings, from the 👍 on its ballot issue, for the
       # build to bake into the page. It also adds a comment for every new booth
-      # and home factory. Without the discussion, the map shows no standings.
+      # and home factory. Without the ballot, the map shows no standings.
       - name: Count the People's Choice votes
         working-directory: main
         env:
