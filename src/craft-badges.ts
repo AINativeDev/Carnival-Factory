@@ -54,10 +54,17 @@ export const earnedBadges = (craft: Craft, key: string): CraftBadge[] =>
 /** Makes an element, as document.createElement does. */
 export type Maker = (tag: string) => HTMLElement;
 
-/** Fills `line` with the earned badges as text and a link to what they mean; hides it when there are none. */
+/**
+ * Fills `line` with one quiet line of the earned badges, "Code: small files · tested",
+ * and a link to what they mean; hides it when there are none.
+ */
 export function renderCraft(line: HTMLElement, badges: CraftBadge[], make: Maker) {
   line.hidden = badges.length === 0;
   if (line.hidden) return;
+  const label = make('span');
+  label.className = 'visit-craft-label';
+  label.textContent = 'Code:';
+  line.append(label);
   for (const badge of badges) {
     const tag = make('span');
     tag.className = 'visit-craft-badge';

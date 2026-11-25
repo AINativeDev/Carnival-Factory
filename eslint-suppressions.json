@@ -436,11 +436,8 @@
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 3
     },
-    "@typescript-eslint/no-misused-promises": {
-      "count": 1
-    },
     "@typescript-eslint/no-non-null-assertion": {
-      "count": 2
+      "count": 1
     },
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
