@@ -90,7 +90,7 @@ function cog(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, tim
 const theFactory: NorthPoleSquare = {
   id: 'the-factory',
   name: 'The Factory',
-  description: 'Take the sleigh inside and walk how a booth gets built, one stall at a time.',
+  description: 'Take the sleigh inside and ride how a booth gets built, one stall at a time.',
   stall: { shape: 'shed', roof: 'gold', trim: 'cocoa', tower: 'TESSL' },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {

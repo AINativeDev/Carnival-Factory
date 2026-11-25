@@ -14,7 +14,7 @@ interface TourStop {
 
 const FILE = `${REPO_URL}/blob/main`;
 
-/** Each stall of The Factory, in the order the path passes them, by its square's id. */
+/** Each stall of The Factory, in the order the ride stops at them, by its square's id. */
 export const FACTORY_TOUR: Readonly<Record<string, TourStop>> = {
   'letter-box': {
     story:

@@ -13,6 +13,7 @@ import type { MapControls } from './map-options';
 import { islandBox, replan } from './map-plan';
 import type { MapRun } from './map-state';
 import { walkToward } from './map-walk';
+import { boardAt } from './ride-map';
 import { faceOf } from './faces';
 import { nearYou, nearestOpenPlot } from './visit';
 import { type Plot } from './world';
@@ -41,6 +42,7 @@ export function mapControls(m: MapRun, stop: () => void): MapControls {
       if (!plot) return;
       leaveFirst();
       m.player = { ...plot.door };
+      boardAt(m, plot.door);
       m.path = [];
       backToCarnival(m);
       // The camera comes in on the square, and eases back out a little later, as after a walk.
@@ -135,6 +137,8 @@ function visit(m: MapRun, kind: string, id: string) {
   if (m.visiting === plot) return true;
   // The player goes in at the door, and whatever walk they were on ends there.
   if (plotAtDoor(m.world, m.player) !== plot) m.player = { ...plot.door };
+  // In a ride level the car takes them to the square's station, where they come out again.
+  boardAt(m, plot.door);
   m.path = [];
   m.claiming = undefined;
   m.held.clear();
@@ -175,7 +179,7 @@ function keepHold(m: MapRun) {
   if (goal) walkToward(m, [goal]);
   m.island = islandCorners(m.world);
   m.bounds = islandBounds(m.world);
-  m.groundBox = islandBox(m.island);
+  m.groundBox = islandBox(m.island, m.world.indoor);
   m.targets = [];
   resize(m);
 }

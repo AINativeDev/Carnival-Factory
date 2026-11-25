@@ -35,7 +35,7 @@ const reference: NorthPoleSquare = {
   name: 'Reference',
   description:
     'The words to know, what goes in a skill file and how a coding agent works, for whenever you need to look something up.',
-  stall: { shape: 'cabin', roof: 'berry', trim: 'gold' },
+  stall: { shape: 'kiosk', roof: 'berry', display: true },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
       const foot = iso(0, 0);

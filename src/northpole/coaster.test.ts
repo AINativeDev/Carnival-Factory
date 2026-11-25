@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { drawingOf, fingerprint } from '../test-support/recording-canvas';
 import { drawCoaster, drawCoasterLoop } from './coaster';
-import { LOOP_TIME, STRAIGHT_TIME, rideCoaster } from './coaster-ride';
+import { LOOP_TIME, STRAIGHT_TIME } from './coaster-pieces';
+import { rideCoaster } from './coaster-ride';
 import { levelWorld, type NorthPoleLevel } from './level';
 import { validateLevel } from './level-check';
 import { theme } from './theme';

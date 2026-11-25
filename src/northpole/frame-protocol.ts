@@ -84,12 +84,13 @@ const isThemeColor = (value: unknown): value is ThemeColor =>
 /**
  * Checks a square's stall option: a `shape` from `STALL_SHAPES`, a `roof`
  * that names a `theme` colour, a `trim` that is missing or names one too, and
- * a `tower` that is missing or one to six capitals. Anything else gives
+ * a `tower` that is missing or one to six capitals, and a `display` that is
+ * missing or a boolean, kept only when it's true. Anything else gives
  * undefined, and the map draws the usual stall. Only those fields are kept.
  */
 export function readStall(value: unknown): StallStyle | undefined {
   if (typeof value !== 'object' || value === null) return undefined;
-  const { shape, roof, trim, tower } = value as Record<string, unknown>;
+  const { shape, roof, trim, tower, display } = value as Record<string, unknown>;
   if (typeof shape !== 'string' || !(STALL_SHAPES as readonly string[]).includes(shape)) {
     return undefined;
   }
@@ -97,11 +98,13 @@ export function readStall(value: unknown): StallStyle | undefined {
   if (trim !== undefined && !isThemeColor(trim)) return undefined;
   if (tower !== undefined && (typeof tower !== 'string' || !TOWER_LETTERS.test(tower)))
     return undefined;
+  if (display !== undefined && typeof display !== 'boolean') return undefined;
   return {
     shape: shape as StallStyle['shape'],
     roof,
     ...(trim === undefined ? {} : { trim }),
     ...(tower === undefined ? {} : { tower }),
+    ...(display ? { display } : {}),
   };
 }
 

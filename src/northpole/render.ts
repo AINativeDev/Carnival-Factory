@@ -7,6 +7,7 @@
  */
 import { drawBillboard } from './billboard';
 import { middle } from './brushes';
+import { drawDisplay } from './display';
 import { drawArch, drawBanner, drawBunting } from './entrance';
 import { drawCabin, drawStable } from './houses';
 import { drawTent, drawWheel } from './midway';
@@ -78,6 +79,7 @@ export function drawPlot(
   const attraction = plot.kind === 'attraction';
   const tower = attraction ? square.stall?.tower : undefined;
   if (tower) return drawTower(ctx, plot, square, paint, time, tower);
+  if (attraction && square.stall?.display) return drawDisplay(ctx, plot, square, paint);
   // An attraction is a pavilion, unless it chose a stall, as a level's squares do: then it's that stall, signed by nobody.
   if (attraction && !square.stall) return drawAttraction(ctx, plot, square, paint, time);
   const nobody: Owner = { color: colors.gold, you: false, ...(attraction ? { by: '' } : {}) };

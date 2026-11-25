@@ -22,8 +22,11 @@ export interface Box extends Tile {
   h: number;
 }
 
-/** What the ground is made of. Water is the only ground you can't walk on. */
-export type Ground = 'snow' | 'path' | 'plaza' | 'ice' | 'water' | 'bridge';
+/** What the ground is made of. Water is the only ground you can't walk on. Floor and carpet are an indoor level's. */
+export type Ground = 'snow' | 'path' | 'plaza' | 'ice' | 'water' | 'bridge' | 'floor' | 'carpet';
+
+/** Which back wall of an indoor level a wall-mounted thing hangs on: the upper left one, or the upper right. */
+export type WallSide = 'left' | 'right';
 
 export type ThingKind =
   | 'tree'
@@ -53,6 +56,8 @@ export interface Thing extends Box {
   blocks: boolean;
   /** A coaster piece's part of its level's ride (`coaster-ride.ts`). */
   ride?: CoasterLeg;
+  /** The back wall it hangs on, for a wall-mounted prop in an indoor level (ADR 0040). */
+  wall?: WallSide;
 }
 
 /**
@@ -96,6 +101,8 @@ export interface World {
   extent: number;
   /** Where a visitor starts: just inside the entrance arch, at the front of the island. */
   start: Tile;
+  /** A room with walls along its back edges, rather than an island under the sky (ADR 0040). */
+  indoor?: boolean;
 }
 
 /** A tile's width and height on screen, in CSS pixels, before zooming. */

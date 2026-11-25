@@ -25,7 +25,7 @@ const skillFoundations: NorthPoleSquare = {
   name: 'Skill Foundations',
   description:
     'What a skill is, how to write your first one, and how your agent reaches for it when it needs it.',
-  stall: { shape: 'cabin', roof: 'gold', trim: 'cocoa' },
+  stall: { shape: 'kiosk', roof: 'gold', display: true },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
       const foot = iso(0, 0);

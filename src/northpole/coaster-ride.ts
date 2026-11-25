@@ -1,20 +1,16 @@
 /**
- * A level's roller coaster as a ride: the `coaster` and `coaster-loop` props
- * it's laid from, ridden by one golden ticket in the order the level lists
- * them. Each piece learns where the ticket comes onto it and leaves it, and
+ * A level's roller coaster as a ride: the coaster pieces it's laid from
+ * (`coaster-pieces.ts`), ridden by one golden ticket in the order the level
+ * lists them. Each piece learns where the ticket comes onto it and leaves it, and
  * when, so the map draws the ticket on whichever piece it's riding at its
  * depth, and the ride stays plain data (ADR 0035). Plain functions, so the
  * tests check the ride the way the map draws it.
  */
+import { heightOf, isTrack, RAIL, timeOn } from './coaster-pieces';
 import { phase } from './elf';
-import type { LevelProp } from './level';
 import { toScreen, type Thing, type Tile } from './world';
 
-/** How long the ticket takes over a tile of straight track, and round a loop, in milliseconds. */
-export const STRAIGHT_TIME = 400;
-export const LOOP_TIME = 1800;
-/** How high the rail runs over the snow, and a loop's radius, in pixels. */
-export const RAIL = 24;
+/** A loop's radius, in pixels. */
 export const LOOP_SIZE = 26;
 /** How much of a loop's time the ticket spends on the rail either side of it. */
 const RUN_IN = 0.15;
@@ -29,15 +25,14 @@ export interface CoasterLeg {
   to: number;
   /** How long the whole ride takes, from the first piece to the last. */
   ride: number;
+  /** How high the rail runs where the ticket comes on, over the piece's middle, and where it leaves, in pixels. */
+  heights: { enter: number; middle: number; leave: number };
 }
 
 /** Where the ticket is on screen, and which way it faces along the rail, in radians. */
 interface Ticket extends Tile {
   angle: number;
 }
-
-const isPiece = (kind: string) => kind === 'coaster' || kind === 'coaster-loop';
-const timeOn = (kind: string) => (kind === 'coaster-loop' ? LOOP_TIME : STRAIGHT_TIME);
 
 /** Where the ticket comes on and goes off: halfway to each neighbour, or half a tile on at either end of the ride. */
 function ends(before: Tile | undefined, here: Tile, after: Tile | undefined) {
@@ -51,16 +46,36 @@ function ends(before: Tile | undefined, here: Tile, after: Tile | undefined) {
   };
 }
 
-/** The level's things with every coaster piece given its leg of the ride, in the order they're listed. */
+/** Whether two pieces stand side by side. */
+const joins = (a: Tile, b: Tile) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
+
+/** The rail's height where two pieces meet: halfway between theirs, or the piece's own at an end of the ride. */
+const meet = (here: Thing, other: Thing | undefined) =>
+  other ? (heightOf(here.seed) + heightOf(other.seed)) / 2 : heightOf(here.seed);
+
+/**
+ * The level's things with every coaster piece given its leg of the ride, in
+ * the order they're listed. A track whose last piece joins its first is a
+ * circuit, so the ride runs on round from the last piece into the first.
+ */
 export function rideCoaster(things: readonly Thing[]): Thing[] {
-  const pieces = things.filter((thing) => isPiece(thing.kind));
+  const pieces = things.filter((thing) => isTrack(thing.kind));
   const ride = pieces.reduce((sum, piece) => sum + timeOn(piece.kind), 0);
+  const first = pieces.at(0);
+  const last = pieces.at(-1);
+  const circuit = pieces.length > 2 && !!first && !!last && joins(first, last);
   const legs = new Map<Thing, CoasterLeg>();
   let from = 0;
   pieces.forEach((piece, n) => {
     const to = from + timeOn(piece.kind);
-    const before = n > 0 ? pieces.at(n - 1) : undefined;
-    legs.set(piece, { ...ends(before, piece, pieces.at(n + 1)), from, to, ride });
+    const before = n > 0 ? pieces.at(n - 1) : circuit ? last : undefined;
+    const after = pieces.at(n + 1) ?? (circuit ? first : undefined);
+    const heights = {
+      enter: meet(piece, before),
+      middle: heightOf(piece.seed),
+      leave: meet(piece, after),
+    };
+    legs.set(piece, { ...ends(before, piece, after), from, to, ride, heights });
     from = to;
   });
   return things.map((thing) => {
@@ -76,13 +91,28 @@ export const legOf = (piece: Thing): CoasterLeg =>
     from: 0,
     to: timeOn(piece.kind),
     ride: timeOn(piece.kind),
+    heights: {
+      enter: heightOf(piece.seed),
+      middle: heightOf(piece.seed),
+      leave: heightOf(piece.seed),
+    },
   };
 
-/** Where the rail is on screen over a point of the ground, in tiles. */
-export const railAt = (at: Tile): Tile => {
+/** Where the rail is on screen over a point of the ground, in tiles, `height` pixels up. */
+export const railAt = (at: Tile, height = RAIL): Tile => {
   const { x, y } = toScreen(at);
-  return { x, y: y - RAIL };
+  return { x, y: y - height };
 };
+
+/** Where a piece's rail comes on, runs over its middle, and leaves, on screen. */
+export function railOf(piece: Thing) {
+  const { enter, leave, heights } = legOf(piece);
+  return {
+    enter: railAt(enter, heights.enter),
+    middle: railAt(piece, heights.middle),
+    leave: railAt(leave, heights.leave),
+  };
+}
 
 /** Which way a loop's piece runs on screen, as a step of one pixel. */
 export function loopHeading(piece: Thing): Tile {
@@ -116,35 +146,11 @@ export function ticketAt(piece: Thing, time: number): Ticket | undefined {
   const at = phase(time, leg.ride, 0) * leg.ride;
   if (at < leg.from || at >= leg.to) return undefined;
   const f = (at - leg.from) / (leg.to - leg.from);
-  const enter = railAt(leg.enter);
-  const middle = railAt(piece);
-  const leave = railAt(leg.leave);
+  const { enter, middle, leave } = railOf(piece);
   if (piece.kind !== 'coaster-loop')
     return f < 0.5 ? along(enter, middle, f * 2) : along(middle, leave, f * 2 - 1);
   if (f < RUN_IN) return along(enter, middle, f / RUN_IN);
   if (f >= 1 - RUN_IN) return along(middle, leave, (f - 1 + RUN_IN) / RUN_IN);
   const turn = ((f - RUN_IN) / (1 - 2 * RUN_IN)) * Math.PI * 2;
   return loopPoint(middle, loopHeading(piece), turn);
-}
-
-/**
- * What's wrong with a level's coaster: each piece must join the one listed
- * before it, side by side, and a loop must stand on a straight run, so the
- * ticket goes in one side and out the other.
- */
-export function rideProblems(props: readonly LevelProp[]): string[] {
-  const pieces = props.flatMap((prop, n) => (isPiece(prop.kind) ? [{ ...prop, n }] : []));
-  const problems: string[] = [];
-  pieces.forEach((piece, i) => {
-    const before = i > 0 ? pieces.at(i - 1) : undefined;
-    const after = pieces.at(i + 1);
-    if (before && Math.abs(before.x - piece.x) + Math.abs(before.y - piece.y) !== 1)
-      problems.push(
-        `prop ${piece.n}, a ${piece.kind}, doesn't join prop ${before.n}, the coaster piece before it`,
-      );
-    if (piece.kind === 'coaster-loop' && before && after)
-      if (before.x !== after.x && before.y !== after.y)
-        problems.push(`prop ${piece.n}, a coaster-loop, must stand on a straight run of track`);
-  });
-  return problems;
 }

@@ -7,7 +7,7 @@
  * the ticket moves, from `time`, and nothing flashes.
  */
 import { glow, shadow } from './brushes';
-import { legOf, loopHeading, loopPoint, LOOP_SIZE, railAt, ticketAt } from './coaster-ride';
+import { loopHeading, loopPoint, LOOP_SIZE, railOf, ticketAt } from './coaster-ride';
 import { signFont, theme } from './theme';
 import { toScreen, type Thing, type Tile } from './world';
 
@@ -45,7 +45,7 @@ const run = (a: Tile, b: Tile, pieces: number): Tile[] =>
   }));
 
 /** A dark post from the snow up to `top`. */
-function post(ctx: CanvasRenderingContext2D, foot: Tile, top: Tile) {
+export function post(ctx: CanvasRenderingContext2D, foot: Tile, top: Tile) {
   ctx.strokeStyle = colors.night;
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -57,25 +57,35 @@ function post(ctx: CanvasRenderingContext2D, foot: Tile, top: Tile) {
 
 /** The rail into a piece and out of it again, through its middle. */
 function railThrough(piece: Thing): { into: Tile[]; out: Tile[] } {
-  const { enter, leave } = legOf(piece);
-  const middle = railAt(piece);
-  return { into: run(railAt(enter), middle, 2), out: run(middle, railAt(leave), 2) };
+  const { enter, middle, leave } = railOf(piece);
+  return { into: run(enter, middle, 2), out: run(middle, leave, 2) };
 }
 
-/** A tile of track on its post, with the ticket on it when it's riding by. */
-export function drawCoaster(ctx: CanvasRenderingContext2D, piece: Thing, time: number) {
+/**
+ * A tile of track on its post, as high as its piece runs, with the ticket on
+ * it when it's riding by. `fitting` draws what a lift hill, a drop or a
+ * station adds (`coaster-fittings.ts`): behind the rail, or, with `front`, before the ticket.
+ */
+export function drawCoaster(
+  ctx: CanvasRenderingContext2D,
+  piece: Thing,
+  time: number,
+  fitting?: (ctx: CanvasRenderingContext2D, piece: Thing, front: boolean) => void,
+) {
   const foot = toScreen(piece);
   shadow(ctx, foot.x, foot.y + 2, 10);
-  post(ctx, foot, railAt(piece));
+  fitting?.(ctx, piece, false);
+  post(ctx, foot, railOf(piece).middle);
   const { into, out } = railThrough(piece);
   stripedRail(ctx, [...into, ...out.slice(1)]);
+  fitting?.(ctx, piece, true);
   drawTicket(ctx, piece, time);
 }
 
 /** A loop-the-loop on an A-frame over its tile, with the ticket going round it. */
 export function drawCoasterLoop(ctx: CanvasRenderingContext2D, piece: Thing, time: number) {
   const foot = toScreen(piece);
-  const middle = railAt(piece);
+  const { middle } = railOf(piece);
   const heading = loopHeading(piece);
   shadow(ctx, foot.x, foot.y + 2, 26);
   // The A-frame: a leg from the snow to each side of the loop, and a post under its foot.

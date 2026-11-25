@@ -27,7 +27,7 @@ const tuningYourAgent: NorthPoleSquare = {
   name: 'Tuning Your Agent',
   description:
     'Measure how well your agent does with evals, then improve your skills on purpose rather than by guesswork.',
-  stall: { shape: 'shed', roof: 'violet', trim: 'snow' },
+  stall: { shape: 'kiosk', roof: 'violet', display: true },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
       const foot = iso(0, 0);
