@@ -1,0 +1,49 @@
+name: Year in review
+description: Answer one of the Year in Review's questions about AI, or ask and answer your own. Fitting answers hang in the gallery.
+title: 'Year in review: '
+labels: [year-in-review]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The Year in Review is a gallery room at the North Pole. Each of its
+        questions hangs on a card, looking back on '26 or looking ahead to '27.
+        Pick one, or ask your own, and give a short answer. A friendly answer
+        about the year in AI and coding is shown in the room with your GitHub
+        name, on the next update of the map. Please don't name or describe other
+        people.
+  - type: dropdown
+    id: question
+    attributes:
+      label: Which question?
+      options:
+        - "What's the dumbest thing an AI confidently told you this year?"
+        - Worst AI coding disaster you lived through?
+        - When did it actually feel like magic?
+        - "What's something you just stopped doing because AI does it now?"
+        - What did you vibe code that you regret?
+        - Which hyped thing turned out to be overrated?
+        - What do you still refuse to let AI touch?
+        - What will your day look like a year from now?
+        - "What's the thing that finally gets fixed?"
+        - What gets worse before it gets better?
+        - Will we still be reviewing every line of code?
+        - What buzzword dies next year?
+        - "One hot take you'd bet on?"
+        - My own question
+    validations:
+      required: true
+  - type: input
+    id: own-question
+    attributes:
+      label: Your own question
+      description: Only if you chose "My own question". One short question, up to 140 characters.
+      placeholder: Which tool surprised you most this year?
+  - type: textarea
+    id: answer
+    attributes:
+      label: Your answer
+      description: Short and plain, up to 280 characters. Longer answers are cut.
+      placeholder: It told me with great confidence that December has 32 days.
+    validations:
+      required: true

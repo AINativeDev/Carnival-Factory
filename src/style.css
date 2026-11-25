@@ -752,6 +752,42 @@ body[data-view='map'] .map:has(> .hud-level) {
   content: ' ↗';
 }
 
+/* The Year in Review's answers under a question: each visitor's own words, newest first (ADR 0047). */
+.year-answers {
+  margin: 8px 0 4px;
+}
+
+.year-answer-list {
+  display: grid;
+  gap: 8px;
+  max-height: 40vh;
+  margin: 6px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.year-answer {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--color-snow);
+}
+
+.year-answer p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.year-answer-question {
+  font-weight: 700;
+}
+
+.year-answer-by,
+.year-answers-empty {
+  font-size: 13px;
+  font-style: italic;
+}
+
 .hud-group {
   margin: 8px 0 0;
   color: var(--color-slabShade);
@@ -1389,13 +1425,16 @@ kbd {
   font-size: 14px;
 }
 
-/* The one ask: a booth of your own, or the spot next door for someone who came by a shared link. */
-.visit-want {
+/* The one ask: a booth of your own, the spot next door for someone who came by a shared link,
+   or, for the booth's owner, a level of their own next (ADR 0048). */
+.visit-want,
+.visit-next {
   margin: 12px 0 4px;
   font-size: 14px;
 }
 
-.visit-want a {
+.visit-want a,
+.visit-next a {
   font-weight: 600;
 }
 

@@ -67,6 +67,18 @@ export const LEVEL_PROPS = {
   'projector-screen': { thing: 'projector-screen', w: 2, h: 1, blocks: true, wall: true },
   'on-air-light': { thing: 'on-air-light', w: 1, h: 1, blocks: true, wall: true },
   'wall-door': { thing: 'wall-door', w: 2, h: 1, blocks: true, wall: true },
+  // A gallery's art and its dressing (ADR 0047). The mobile and the mirrorball hang overhead, and confetti lies flat.
+  'framed-picture': { thing: 'framed-picture', w: 1, h: 1, blocks: true, wall: true },
+  'neon-art': { thing: 'neon-art', w: 3, h: 1, blocks: true, wall: true },
+  'wall-sign': { thing: 'wall-sign', w: 3, h: 1, blocks: true, wall: true },
+  statue: { thing: 'statue', w: 1, h: 1, blocks: true },
+  mobile: { thing: 'mobile', w: 1, h: 1, blocks: false },
+  'velvet-rope': { thing: 'velvet-rope', w: 1, h: 1, blocks: true },
+  'art-sign': { thing: 'art-sign', w: 1, h: 1, blocks: true },
+  'gallery-elf': { thing: 'gallery-elf', w: 1, h: 1, blocks: true },
+  balloons: { thing: 'balloons', w: 1, h: 1, blocks: true },
+  confetti: { thing: 'confetti', w: 1, h: 1, blocks: false },
+  mirrorball: { thing: 'mirrorball', w: 1, h: 1, blocks: false },
 } as const satisfies Record<
   string,
   { thing: ThingKind | undefined; w: number; h: number; blocks: boolean; wall?: true }

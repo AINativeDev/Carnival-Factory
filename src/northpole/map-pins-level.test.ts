@@ -51,7 +51,7 @@ describe('walking a level', () => {
       point(map, 'pointerleave', screenAt(map, { x: -3, y: -3 }));
       frame(3700);
     });
-    expect(pin).toMatchInlineSnapshot(`"7a030328ee96663d (61471 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"bc12a427fb885168 (61471 calls)"`);
   });
 
   it('clicks the ground to walk, and a square to open it', () => {
@@ -67,7 +67,7 @@ describe('walking a level', () => {
       map.prompt.click();
       frame(2200);
     });
-    expect(pin).toMatchInlineSnapshot(`"aa34de5b0fc2aa5d (70236 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"9c7e9e1fb23eafa6 (70236 calls)"`);
   });
 
   it('walks to a square on a trail, then goes inside and out', () => {
@@ -85,7 +85,7 @@ describe('walking a level', () => {
       map.controls.leave();
       for (let t = 6000; t < 7000; t += 200) frame(t);
     });
-    expect(pin).toMatchInlineSnapshot(`"6570b48808d3e1bf (122173 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"6602d2eab304efa8 (122173 calls)"`);
   });
 
   it('keeps still for reduced motion, on a phone with a touch screen', () => {

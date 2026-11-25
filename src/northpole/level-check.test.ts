@@ -95,6 +95,25 @@ describe('checking where everything stands', () => {
     ]);
   });
 
+  it("lets only the North Pole's own levels have more than eight squares, up to sixteen", () => {
+    const many = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        id: `s${String(i)}`,
+        x: 1 + (i % 4) * 9,
+        y: 1 + Math.floor(i / 4) * 9,
+      }));
+    const level = (id: string, n: number) => ({ ...small(), id, size: 41, squares: many(n) });
+    const ids = (n: number) => many(n).map(({ id }) => id);
+    expect(validateLevel(level('someone', 9), 'someone', ids(9))).toContain(
+      'it has over 8 squares',
+    );
+    const own = validateLevel(level('the-year-in-review', 9), 'the-year-in-review', ids(9));
+    expect(own.join()).not.toContain('squares');
+    expect(validateLevel(level('the-year-in-review', 17), 'the-year-in-review', ids(17))).toContain(
+      'it has over 16 squares',
+    );
+  });
+
   it('wants every square and its door inside the level', () => {
     expect(problemsWith({ squares: [{ id: 'hut', x: 9, y: 2 }] })).toEqual([
       'square "hut" and its door must be inside the level',

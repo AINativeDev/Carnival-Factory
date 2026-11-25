@@ -21,10 +21,11 @@ import { showSignupOffer } from './offer';
 import { VISIT_PANEL } from './visit-template';
 import { deepLink, levelLink } from './route';
 import { SQUARE_CRAFT, craftKey, earnedBadges, renderCraft } from './craft-badges';
-import { fillVisitHelp } from './visit-help';
+import { fillVisitHelp, offerLevelNext } from './visit-help';
 import { squareOwner } from './northpole/north-pole-levels';
 import { linksHome } from './northpole/north-pole-links';
 import { showLevelLinks } from './level-links';
+import { showYearAnswers } from './year-in-review-panel';
 import { focusBack } from './focus-back';
 import { isOn } from './feature-flags';
 
@@ -40,6 +41,8 @@ export interface VisitHudOptions {
   onClaim(): void;
   /** Says the visitor shared this booth as theirs, so the map knows who they are. */
   onMine?(): void;
+  /** Whether the visitor said this booth is theirs, so the panel offers them a level next. */
+  mine?: boolean;
   /** The owner of the level this square is in, for one of a level's own squares. */
   level?: string;
 }
@@ -145,6 +148,8 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     share.refresh();
   };
   show();
+  // A Year in Review item's answers, under its question and the link to add yours.
+  showYearAnswers($('.visit-description'), square.id, level);
   // The North Pole's own levels link out, to the Academy or the podcast, right under what they are.
   showLevelLinks($('.visit-description'), linksHome(kind, square.id, level));
   if ('onReady' in square)
@@ -155,12 +160,14 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   card.querySelector('.visit-mine')?.addEventListener('click', () => {
     options.onMine?.();
     share.shareAsMine();
+    offerLevelNext(card);
   });
 
   // Someone who came by a shared link to a booth can claim the plot next door instead.
   const claim = options.invite && kind === 'booth';
   $<HTMLElement>('.visit-claim').hidden = !claim;
   $<HTMLElement>('.visit-build').hidden = claim;
+  if (options.mine) offerLevelNext(card);
   $('.visit-claim').addEventListener('click', () => {
     options.onClaim();
   });

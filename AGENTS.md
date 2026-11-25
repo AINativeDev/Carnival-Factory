@@ -173,6 +173,7 @@ src/
   factory-figures.ts        its counts and figures (plain functions)
   peoples-choice-hud.ts     the People's Choice list below the map: the top three, the
                             Home factory's leader and every entry's votes
+  year-in-review-panel.ts   a Year in Review item's answers on its panel, as text
   style.css
   northpole/                the map itself, and the parts every square imports
     square.ts               the NorthPoleSquare shape, the registries and the kill switch
@@ -234,6 +235,11 @@ src/
     peoples-choice.ts       People's Choice: the closing date, cleaning the baked standings,
                             places and trophies (plain functions)
     peoples-choice-standings.ts the standings the build baked into the page
+    year-in-review.ts       the Year in Review's questions, and cleaning its baked
+                            answers (plain functions)
+    year-in-review-answers.ts the answers the build baked into the page
+    landmark-gallery.ts     the Year in Review's gallery on the map
+    gallery-*.ts            the gallery room's art, signs, statues, people and party
     links.ts                links to the repository's issue forms
 docs/
   glossary.md               the words: booth, plot and free spot, being built, and more
@@ -302,6 +308,10 @@ scripts/
                             one vote per account, not the owner's (plain functions)
   write-peoples-choice.ts   adds a comment for each new entry, reads the votes and writes
                             the standings before the deploy's build (previews have none)
+  year-in-review.ts         the Year in Review's accepted answers from its issues, cleaned
+                            (plain functions)
+  write-year-in-review.ts   reads the accepted answers from the GitHub API and writes them
+                            before the deploy's build (previews have none)
 ```
 
 ## Working on an issue
@@ -588,7 +598,13 @@ repairs" on its platform, and the reason goes in the console once.
 `level-request`, for a new level and for changing one alike, assessed by
 `plugins/north-pole/skills/assess-booth-request` with the booth rules: the
 author's own folder only, family-friendly, and buildable as level data plus
-sandboxed squares. The latest request wins: accepting one closes the author's
+sandboxed squares. A level unlocks once you have a booth: a `level-request`
+from an author with no `carnival/booths/<author>/` on `main` and no accepted
+booth request being built (open, labelled `booth-request` and `tessl`) gets a
+kind reply with the **Your booth** form and `needs-info`, never `declined`,
+and stays open until their booth lands
+([ADR 0048](docs/adr/0048-a-level-unlocks-after-a-booth.md)). The latest
+request wins: accepting one closes the author's
 older open `level-request` issues as superseded. Accepted level requests are
 built by the `implement-level` action, and a level's pull request waits for a
 maintainer rather than merging on its own. [Level ideas](docs/level-ideas.md)

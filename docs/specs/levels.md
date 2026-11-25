@@ -4,7 +4,8 @@ A level is a whole patch of the North Pole of a participant's own,
 `carnival/levels/<login>/`, reached by sleigh from the sleigh station. The
 North Pole has levels of its own too: The Factory,
 `carnival/levels/the-factory/`, The Academy, `carnival/levels/the-academy/`,
-and The Recording Studio, `carnival/levels/the-studio/`
+The Recording Studio, `carnival/levels/the-studio/`, and The Year in Review,
+`carnival/levels/the-year-in-review/`
 ([ADR 0035](../adr/0035-north-pole-levels.md)).
 
 ## Behaviour
@@ -27,8 +28,9 @@ and The Recording Studio, `carnival/levels/the-studio/`
   and the way home stays clear. It shows the level's name (the map has no
   sign for it), "A level by @<login>" and its description, then **How it was
   built** from the level's own requests, then Share (the level's link,
-  `#/level/<login>`), "Want one too? Get a level" (the
-  level form) and **More**. A level has no Remix, no People's Choice vote and
+  `#/level/<login>`), "Want one too? Get a booth first, then a level" (the
+  booth form, then the level form: a level unlocks once you have a booth,
+  [ADR 0048](../adr/0048-a-level-unlocks-after-a-booth.md)) and **More**. A level has no Remix, no People's Choice vote and
   no Leave: the player walks on with the keys while it shows. Inside one of
   the level's squares, that square's panel takes its place, and it comes back
   on leaving.
@@ -157,14 +159,35 @@ and The Recording Studio, `carnival/levels/the-studio/`
   the Microphone and the Headphones in the sound booth's corner, the Mixing
   desk, the Camera on the video set, the ON AIR light by the doors, the Guest
   sofa and the Episode wall.
+- The Year in Review, `#/level/the-year-in-review`, is a gallery room indoors,
+  19 tiles each way, with a question about the year in AI on each of 14
+  displays ([year-in-review.md](year-in-review.md),
+  [ADR 0047](../adr/0047-year-in-review-answers.md)): the old masters' wing on
+  the upper left wall looks back on '26, the modern wing on the upper right
+  wall, painted white, looks ahead to '27, and the guestbook of visitors' own
+  questions stands at the reception. Its gallery props are `framed-picture`
+  (a picture of an attraction, its style picked by the variant: gilded and
+  old, or thin, black and modern, each under a track light), `neon-art`,
+  `wall-sign` (back under 0.5, ahead from 0.5), `statue` (a marble elf, stacked
+  spheres or a twisted ribbon by thirds), `mobile`, `velvet-rope`, `art-sign`
+  (WET PAINT under 0.5, DO NOT TOUCH from 0.5), `gallery-elf` (a guard under
+  0.5, a visitor with an audio guide from 0.5), `balloons`, `confetti` (flat)
+  and `mirrorball`, any level may place (`src/northpole/gallery-*.ts`).
 - A North Pole level may link out: its links, from `NORTH_POLE_LINKS` in
   `src/northpole/north-pole-links.ts`, show as buttons under the description
   on the level's panel, its landmark's room and each of its squares' panels,
   and open in a new tab. The Academy has "Start the Academy"; The Recording
-  Studio has "Listen to the podcast" and "Watch on YouTube"
+  Studio has "Listen to the podcast" and "Watch on YouTube"; The Year in
+  Review has "Add your answer", to its issue form
   ([ADR 0038](../adr/0038-north-pole-links.md)).
 
 ## Rules
+
+- A level unlocks once its author has a booth: a level request from someone
+  with no booth on `main` and no accepted booth request being built waits as
+  a question (`needs-info`) with a link to **Your booth**, and the site asks
+  for a booth first (enforced by: assess-booth-request skill,
+  src/level-panel.test.ts, src/visit-hud-actions.test.ts).
 
 - `level.ts` is plain data, read by the page: `import type` of
   `NorthPoleLevel`, one `const level: NorthPoleLevel = { ... }` holding only
@@ -181,7 +204,8 @@ and The Recording Studio, `carnival/levels/the-studio/`
   areas and 400 props; only known ground (`snow`, `ice`, `path`, `water`,
   `bridge`, `floor`, `carpet`) and catalogue props (`LEVEL_PROPS`), inside
   the level, prop variants 0 to 1, at most one pond; props that hang on a
-  wall only in an indoor level, on row 0 or column 0; at most 8 squares, kebab-case ids, no
+  wall only in an indoor level, on row 0 or column 0; at most 8 squares, or
+  16 in one of the North Pole's own levels (`NORTH_POLE_LEVELS`), kebab-case ids, no
   duplicates, every placed square with a folder and every folder placed; at
   least one exit; nothing on water or ice or on top of anything else; each
   coaster piece joining the one listed before it, and each loop on a straight

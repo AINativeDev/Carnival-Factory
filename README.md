@@ -51,9 +51,9 @@ something people play with, not just watch.
 6. **Change it** whenever you like: open **Your booth** again. Your latest
    request is the one that counts.
 
-**Want a whole place of your own?** Open **Your level** for a level: a patch of
-the North Pole laid out how you like, with up to 8 squares, that visitors reach
-by sleigh. [Level ideas](docs/level-ideas.md) and
+**Want a whole place of your own?** Once you have a booth, open **Your level**
+for a level: a patch of the North Pole laid out how you like, with up to 8
+squares, that visitors reach by sleigh. Levels unlock after a booth. [Level ideas](docs/level-ideas.md) and
 [booth ideas](docs/booth-ideas.md) help you write the request.
 [How your request is built](docs/how-it-works.md) explains every step.
 
@@ -69,6 +69,11 @@ their sign.
 
 We love kudos and ideas. Open **Issues → New issue → Feedback on the factory**
 or **An idea**: they stay open, and the maintainers read every one.
+
+Looking back on the year? The **Year in Review** gallery at the North Pole asks
+13 questions about AI in '26 and '27: answer one, or ask your own, with
+**Issues → New issue → Year in review**. Friendly answers hang in the room
+after the next update of the map.
 
 ## The rules of the map
 

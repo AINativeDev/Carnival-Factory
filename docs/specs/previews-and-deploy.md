@@ -17,11 +17,12 @@ the page never calls GitHub.
   factory's numbers; list the booths being built (`pending.json`); download
   the booth owners' avatars; list the Elf Engineer badge holders; count the
   season; count the accepted advent challenges; count the People's Choice
-  votes; build main into the root; reconcile the previews; push `gh-pages`;
+  votes; read the Year in Review's accepted answers; build main into the root;
+  reconcile the previews; push `gh-pages`;
   deploy; comment on each pull request whose preview was placed.
 - Each data step that fails or times out (2 minutes) warns and publishes
   without that data: no timelines, no sites, the elf fallback, no pins, an
-  empty season, no decorations, no standings.
+  empty season, no decorations, no standings, no Year in Review answers.
 - Built files are kept for a week after they were last part of a build, so a
   cached page still finds its files.
 - An open pull request's preview is the successful Preview build of its head
@@ -69,7 +70,8 @@ the page never calls GitHub.
 `vite.config.ts`, `scripts/write-square-history.ts`, `scripts/write-pending.ts`,
 `scripts/download-avatars.ts`, `scripts/badge-holders.ts`,
 `scripts/season-data.ts`, `scripts/write-advent.ts`,
-`scripts/write-peoples-choice.ts`, `scripts/share-pages.ts`, `src/updates.ts`.
+`scripts/write-peoples-choice.ts`, `scripts/write-year-in-review.ts`,
+`scripts/share-pages.ts`, `src/updates.ts`.
 
 ## Tested by
 

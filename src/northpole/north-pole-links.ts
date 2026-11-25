@@ -5,6 +5,7 @@
  * live here, in maintainer code, keyed by a North Pole level's id: no
  * participant's level can ever carry one (ADR 0038).
  */
+import { YEAR_IN_REVIEW_URL } from './links';
 import { isNorthPoleLevel, landmarkLevel } from './north-pole-levels';
 
 /** One link out: what its button says, and where it goes. */
@@ -20,6 +21,8 @@ export const NORTH_POLE_LINKS: Readonly<Record<string, readonly OutboundLink[]>>
     { label: 'Listen to the podcast', href: 'https://tessl.io/podcast/' },
     { label: 'Watch on YouTube', href: 'https://www.youtube.com/@tessl-ai' },
   ],
+  // The Year in Review's form, where a visitor's answer starts (ADR 0047).
+  'the-year-in-review': [{ label: 'Add your answer', href: YEAR_IN_REVIEW_URL }],
 };
 
 /** Whether a link is an https address: anything else, such as `javascript:`, never reaches the page. */

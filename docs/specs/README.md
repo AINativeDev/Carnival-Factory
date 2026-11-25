@@ -39,6 +39,7 @@ the [glossary](../glossary.md).
 - [Analytics](analytics.md): cookieless PostHog events from the map page, off until configured.
 - [Advent calendar](advent-calendar.md): the doors, the challenge issues and booth decorations.
 - [People's Choice](peoples-choice.md): votes, standings and trophies.
+- [The Year in Review](year-in-review.md): the gallery room of questions, and visitors' moderated answers baked in at build.
 - [Elf Engineer badge and season card](elf-engineer-and-season-card.md): the badge and `#/season/<login>`.
 - [Mobile](mobile.md): phone framing, drag and pinch, taps, the phone layout and the iPhone smoke test.
 - [Previews and deploy](previews-and-deploy.md): the Pages workflow, previews and build-time data.

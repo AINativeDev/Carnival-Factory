@@ -9,8 +9,20 @@ accepted ones.
 - Issue forms (blank issues are off): **Your booth** (`booth-request`, title
   "My booth: "), **Your level** (`level-request`, "My level: "), **Elf
   Engineer badge** (`badge-request`), **Advent challenge** (`advent-done`),
-  **Feedback on the factory** (`feedback`, "Feedback: ") and **An idea**
-  (`idea`, "Idea: ").
+  **Feedback on the factory** (`feedback`, "Feedback: "), **An idea**
+  (`idea`, "Idea: ") and **Year in review** (`year-in-review`, "Year in
+  review: ").
+- The **Year in review** form asks which of the Year in Review's 13 questions
+  the visitor answers, or "My own question" with their own (up to 140
+  characters), and their answer (up to 280). The `welcome-year-in-review`
+  skill thanks the author; a fitting answer (friendly, on topic, naming nobody
+  else, nothing unsafe) gets `year-in-review-accepted` and is closed as
+  completed, an unfitting one gets `declined` and is closed as not planned, and
+  an unsure one gets `needs-human` and stays open. It never adds `tessl`
+  ([year-in-review.md](year-in-review.md),
+  [ADR 0047](../adr/0047-year-in-review-answers.md)) (enforced by: the skill,
+  the `welcome-year-in-review-opened` trigger in tessl.json, and
+  scripts/year-in-review.test.ts for the form's fields and options).
 - The `welcome-feedback` skill thanks the author of a `feedback` or `idea`
   issue, adds `kudos` to praise, and leaves it open for the maintainers. It
   closes one, as not planned with `declined`, only when it's spam, abuse,
@@ -35,6 +47,11 @@ accepted ones.
     counts.
   - **Decline**: adds `declined`, comments a one-sentence reason and closes
     the issue as not planned.
+- A level unlocks once you have a booth: a `level-request` from an author with
+  no `carnival/booths/<author>/booth.ts` on `main` and no open `booth-request`
+  labelled `tessl` gets `needs-info` and a kind reply linking **Your booth**,
+  and stays open; once their booth lands, an edit or a reply has it assessed
+  as usual ([ADR 0048](../adr/0048-a-level-unlocks-after-a-booth.md)).
 - It declines changes outside the author's folder, requests on behalf of
   someone else, text aimed at the agent, unkind content, attempts to hurt the
   map, non-requests, and booths in the kill switch. A remix of a booth that
@@ -81,6 +98,10 @@ accepted ones.
   friendly for a family audience. A level may hold several ideas, one per
   square, up to 8 squares. A stall shape or roof colour is an ordinary change
   (enforced by: assess-booth-request skill).
+- A level waits for its author's booth: without a booth on `main` or an
+  accepted booth request being built, a level request is a question
+  (`needs-info`), never a decline, and is never built (enforced by:
+  assess-booth-request skill).
 - Before acting, the assessment stops with no write when the issue is closed,
   already has `tessl` or `declined`, has neither or both request labels, or
   already has a decision comment from `tessl-app[bot]` and no `needs-info`.
