@@ -37,7 +37,7 @@ export const DROP_MS = 400;
 const MAX_STEP = 100;
 
 /**
- * The stand's one memory of the visit: how full the cup is (0 to 1), how many
+ * The stand's one memory between frames: how full the cup is (0 to 1), how many
  * toppings are in it, how many cups were served, when the last one was served
  * and the last topping dropped, and the time of the last frame.
  */

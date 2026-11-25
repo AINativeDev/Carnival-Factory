@@ -7,7 +7,12 @@ import { drawBoard, drawHint } from './sign';
 
 const { colors } = theme;
 
-/** The visitor's cup this visit: the stand's one memory of the pointer. */
+/**
+ * The visitor's cup, the stand's one memory of the pointer. It lives as long as
+ * the stand's sandboxed frame, which the map shares with the room inside and
+ * restarts only on a reload or once nobody has drawn the stand for a while, so
+ * stepping out and back in finds the same cup and count.
+ */
 let cup: Cocoa = FRESH;
 
 /** Where the cup stands on the counter, in front of the hatch, and how far it slides once served. */
@@ -30,7 +35,7 @@ function front(
 
 /**
  * A hot cocoa stand where the visitor makes their own cup: hold to pour, tap
- * for the toppings, and the chalkboard counts the cups served this visit.
+ * for the toppings, and the chalkboard counts the cups served since it opened.
  */
 const attraction: NorthPoleSquare = {
   id: 'cocoa-stand',

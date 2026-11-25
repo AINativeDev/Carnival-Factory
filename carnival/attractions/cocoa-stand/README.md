@@ -20,7 +20,10 @@ Step inside the stand and make your own cocoa, with a mouse or a finger:
    fresh one takes its place.
 
 A line over the stand says what to do next, and the chalkboard on the snow
-counts the cups served this visit. Nothing is kept once you leave.
+counts the cups served since the stand opened on your page. Stepping out and
+back in keeps your cup and the count; they start again when the page reloads,
+or once the stand has been out of sight for a while. Nothing is kept anywhere
+else.
 
 The game's rules are plain functions in `cocoa.ts`, tested in
 `attraction.test.ts`; `cup.ts` draws the cup and the urn, and `sign.ts` the

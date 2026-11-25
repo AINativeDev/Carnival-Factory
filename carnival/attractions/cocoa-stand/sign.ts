@@ -1,6 +1,6 @@
 /**
  * The Hot Cocoa Stand's words: a chalkboard on the snow counting the cups
- * served this visit, and a line over the stand saying what to do next.
+ * served since the stand opened, and a line over the stand saying what to do next.
  */
 import { box, iso } from '../../../src/northpole/diorama';
 import { canvasFont, theme } from '../../../src/northpole/theme';
@@ -33,7 +33,7 @@ function write(
 /** Where the chalkboard stands on the snow: `w` along gx, its face at gy, `h` high from `lift`. */
 const BOARD = { gx: -21, gy: 15, w: 14, h: 10, lift: 3 };
 
-/** The chalkboard on two legs in front of the stand, counting the cups served this visit. */
+/** The chalkboard on two legs in front of the stand, counting the cups served since the stand opened. */
 export function drawBoard(ctx: CanvasRenderingContext2D, served: number) {
   const { gx, gy, w, h, lift } = BOARD;
   for (const leg of [gx + 1, gx + w - 2]) {
