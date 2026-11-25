@@ -12,7 +12,7 @@ import {
   type AdventCalendar,
 } from '../src/northpole/advent.ts';
 import { isRepo } from '../src/northpole/badges.ts';
-import { formField } from './elf-engineer.ts';
+import { formField } from './issue-form.ts';
 import { FACTORY_BOTS } from './ownership.ts';
 
 /** The issue form's labels for its two fields, as the issue's body shows them. */
