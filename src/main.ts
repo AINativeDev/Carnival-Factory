@@ -17,7 +17,7 @@ import { openAdventHud } from './advent';
 import { openFactoryHud, readFactoryStats, squareCounts } from './factory';
 import { CHOICE_PANEL, renderChoice } from './peoples-choice-hud';
 import { SQUARE_HISTORY } from './history';
-import { levelLink, parseHash } from './route';
+import { levelLink, parseHash, squareLink } from './route';
 import { renderSeason } from './season-card';
 import { openVisitHud, type VisitHud } from './visit-hud';
 import { followPending, knownPending, loadSites, saveSites } from './pending';
@@ -56,7 +56,7 @@ function renderGuide(
   for (const square of squares) {
     const item = document.createElement('li');
     item.innerHTML = `<a><span class="name"></span> <span class="owner"></span></a>`;
-    item.querySelector('a')!.href = `#/${href}/${square.id}`;
+    item.querySelector('a')!.href = squareLink(href as SquareKind, square.id);
     whenNamed(square, () => (item.querySelector('.name')!.textContent = square.name));
     item.querySelector('.owner')!.textContent = by(square.id);
     list.append(item);
@@ -142,7 +142,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
     {
       attractions: attractionRegistry.all(),
       booths: boothRegistry.all(),
-      onOpen: (kind, id) => (location.hash = `#/${kind}/${id}`),
+      onOpen: (kind, id) => (location.hash = squareLink(kind, id)),
       onLeave: () => closeCard(true),
       onSelect: (selected) => panel?.showSelected(selected),
       avatars: AVATARS,
@@ -260,10 +260,10 @@ function renderLevel(login: string, focus?: string) {
   const canvas = app.querySelector('canvas')!;
   canvas.setAttribute(
     'aria-label',
-    `${level.name}, @${login}'s level. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a square to go inside, or at the sleigh to go back to the North Pole.`,
+    `${level.name}, a level by ${entry.owner}. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a square to go inside, or at the sleigh to go back to the North Pole.`,
   );
   app.querySelector('.level-name')!.textContent = level.name;
-  app.querySelector('.level-owner')!.textContent = `A level by @${login}`;
+  app.querySelector('.level-owner')!.textContent = `A level by ${entry.owner}`;
   app.querySelector('.level-description')!.textContent = level.description;
   const known = focus && entry.squares.some((square) => square.id === focus);
   if (focus && !known) renderUnknownInLevel(login, focus);

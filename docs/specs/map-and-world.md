@@ -27,7 +27,8 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 - The Booths and Controls panels start open on a wide map and folded on a phone.
 - Routes (`src/route.ts`): `#/` the map; `#/?booth=<login>` or
   `#/?attraction=<id>` the map showing that square; `#/booth/<login>` and
-  `#/attraction/<id>` the map with the player inside it; `#/level/<login>`,
+  `#/attraction/<id>` the map with the player inside it (opening a landmark
+  from the map goes to its level instead, ADR 0035); `#/level/<login>`,
   `#/level/<login>?square=<id>` and `#/level/<login>/<id>` a level;
   `#/factory`; `#/advent`; `#/season/<login>` a season card; `#/keep-posted`
   a placeholder page; `#/plot/<id>`, a link from before booths were called

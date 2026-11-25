@@ -95,6 +95,16 @@ describe('filesOutsideBooth', () => {
     ).toEqual(['carnival/levels/cupid/level.ts', 'carnival/levels/comet-two/level.ts']);
   });
 
+  it('keeps a North Pole level for maintainers, even from someone whose login is its name', () => {
+    const namesake = { login: 'The-Factory', id: 4242, isBot: false };
+    expect(
+      filesOutsideBooth(namesake, [
+        'carnival/booths/the-factory/booth.ts',
+        'carnival/levels/the-factory/level.ts',
+      ]),
+    ).toEqual(['carnival/levels/the-factory/level.ts']);
+  });
+
   it("flags everything else, a neighbour's booth included", () => {
     expect(
       filesOutsideBooth(comet, [

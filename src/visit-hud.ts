@@ -25,6 +25,7 @@ import { SIGNUP_OFFER, showSignupOffer } from './offer';
 import { deepLink, levelLink } from './route';
 import { SQUARE_CRAFT, craftKey, earnedBadges, renderCraft } from './craft-badges';
 import { fillVisitHelp } from './visit-help';
+import { squareOwner } from './northpole/north-pole-levels';
 
 export interface VisitHudOptions {
   kind: SquareKind;
@@ -110,12 +111,11 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
 
   const { level } = options;
-  const login = level ?? square.id;
-  const owner = kind === 'attraction' && !level ? '' : `@${login}`;
-  // Who made it and who improved it, from the build's history: a booth without any credits its owner,
-  // and a level's square credits the level's owner. The owner's portrait leads the line when the build has it.
+  // Credits from the build's history; a level's square credits its owner, and the North Pole's own nobody.
+  const login = squareOwner(kind, square.id, level);
+  const owner = login ? `@${login}` : '';
   const credits = level
-    ? { maker: level, improvers: [] }
+    ? login && { maker: login, improvers: [] }
     : creditsFor(SQUARE_HISTORY, kind, square.id);
   const ownerLine = $<HTMLElement>('.visit-owner');
   if (credits) renderCredits(ownerLine, credits);

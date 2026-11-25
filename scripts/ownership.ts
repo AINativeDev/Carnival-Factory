@@ -6,6 +6,7 @@
  * These are plain functions so they can be tested without GitHub.
  * `check-booth-ownership.ts` fetches the pull request and calls them.
  */
+import { isNorthPoleLevel } from '../src/northpole/north-pole-levels.ts';
 
 /**
  * The people who may change any file, and who merge every pull request. They
@@ -86,7 +87,9 @@ export function boothOwner(author: Author, issueAuthor: Author | undefined): Aut
 /** The files a pull request touches outside its owner's booth and level. Empty means it may merge. */
 export function filesOutsideBooth(owner: Author, files: readonly string[]): string[] {
   if (isMaintainer(owner)) return [];
-  const folders = [boothFolder(owner.login), levelFolder(owner.login)];
+  // A North Pole level is the maintainers', even for someone whose login is its name (ADR 0035).
+  const level = isNorthPoleLevel(owner.login.toLowerCase()) ? [] : [levelFolder(owner.login)];
+  const folders = [boothFolder(owner.login), ...level];
   return files.filter((file) => !folders.some((folder) => file.startsWith(folder)));
 }
 

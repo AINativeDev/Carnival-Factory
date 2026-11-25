@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deepLink, levelLink, parseHash, seasonLink } from './route';
+import { deepLink, levelLink, parseHash, seasonLink, squareLink } from './route';
 
 describe('parseHash', () => {
   it('reads the plain map', () => {
@@ -124,5 +124,13 @@ describe('a level’s links', () => {
       login: 'jedi4ever',
       focus: 'ice-fishing',
     });
+  });
+});
+
+describe('squareLink', () => {
+  it("opens a square's room, or a landmark's level", () => {
+    expect(squareLink('booth', 'jedi4ever')).toBe('#/booth/jedi4ever');
+    expect(squareLink('attraction', 'ferris-wheel')).toBe('#/attraction/ferris-wheel');
+    expect(squareLink('attraction', 'the-factory')).toBe('#/level/the-factory');
   });
 });

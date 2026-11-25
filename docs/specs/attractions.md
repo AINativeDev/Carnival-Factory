@@ -15,6 +15,11 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 - Inside, the visit panel has no Remix link. It says attractions belong to the
   North Pole and offers to claim a booth beside it.
 - The ferris wheel is the Booths panel's Featured square.
+- The Factory is a landmark: opening it from the map, by a click, E or Enter,
+  or from the guide's list, takes the sleigh into the North Pole's level of
+  the same id rather than into a room. `#/attraction/the-factory` still shows
+  its room, whose panel has a link to take the sleigh inside
+  ([ADR 0035](../adr/0035-north-pole-levels.md)).
 - The Gift shop shows the gifts of `plugins/north-pole-gifts/`: small factory
   loops anyone can install on their own repository.
 
@@ -47,4 +52,5 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 
 `src/northpole/attractions.test.ts`, `scripts/gift-shelf.test.ts`, each
 attraction's own `attraction.test.ts`, `smoke/squares.spec.ts`,
-`smoke/flashing.spec.ts`.
+`smoke/flashing.spec.ts`, `smoke/the-factory.spec.ts`, `src/route.test.ts`
+(a landmark opens its level), `src/visit-help.test.ts`.

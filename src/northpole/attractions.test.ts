@@ -30,9 +30,9 @@ describe('attraction registry', () => {
     ).toEqual([...folders].sort());
   });
 
-  it('seeds the midway with six to nine attractions', () => {
+  it('seeds the midway with six to ten attractions', () => {
     expect(attractionRegistry.all().length).toBeGreaterThanOrEqual(6);
-    expect(attractionRegistry.all().length).toBeLessThanOrEqual(9);
+    expect(attractionRegistry.all().length).toBeLessThanOrEqual(10);
   });
 
   it('names every attraction folder in kebab-case', () => {
