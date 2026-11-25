@@ -71,6 +71,15 @@ jobs:
       - run: npm run smoke
         env:
           CI: 'true'
+          # Record what the page's code runs, for the combined line coverage below.
+          COVERAGE: '1'
+      # The unit tests and the browser tests together, line by line, held to the
+      # floor in lint/combined-coverage-floor.json (docs/adr/0032). A booth-only
+      # run (SMOKE_ONLY) is reported but not held to it.
+      - name: Combined line coverage
+        run: |
+          npx vitest run --coverage --coverage.thresholds.autoUpdate=false > /dev/null
+          npm run coverage:combined
       - if: always()
         uses: actions/upload-artifact@v7
         with:
