@@ -49,6 +49,15 @@ describe('craftOf: the badges a square earns', () => {
     expect(craftOf(bare).problems).toContain(
       'scene.ts: export sky has no doc comment saying what it is for.',
     );
+    const undocumented = {
+      ...good(),
+      'scene.ts':
+        'export function drawSky() {}\nexport class Sleigh {}\nexport type Sky = string;\n',
+    };
+    expect(craftOf(undocumented).problems).toEqual([
+      'scene.ts: export drawSky has no doc comment saying what it is for.',
+      'scene.ts: export Sleigh has no doc comment saying what it is for.',
+    ]);
   });
 
   it('withholds clear-names for generic names and file names that are not kebab-case', () => {
