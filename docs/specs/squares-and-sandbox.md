@@ -44,17 +44,27 @@ base-uri 'none'`. No network, storage or access to the page (enforced by:
 - The frame checks every draw request (size up to 2048) and pointer: finite
   `x`, `y` within `0..size`, boolean `down`, `presses` a whole number from 0
   to 20. Only those four fields reach the square (enforced by:
-  src/northpole/frame-protocol.test.ts).
+  src/northpole/frame-protocol-draw.test.ts).
 - `readStall` keeps only a known shape and theme colour names; anything else
-  draws the usual stall (enforced by: src/northpole/frame-protocol.test.ts,
+  draws the usual stall (enforced by: src/northpole/frame-protocol-stall.test.ts,
   the stall tests in smoke/squares.spec.ts).
-- Messages from any window but the frame's own, and worker messages the frame
-  isn't waiting for, are ignored (not enforced yet: no test).
-- A square that hangs is stopped: 1000 ms to load or draw a frame in the
-  worker, 10 seconds to open, 3 errors in a row and it shows "Under
-  construction" (not enforced yet: no test).
-- At most 24 frames run at once, and one not drawn for 20 seconds is
-  released (enforced by: src/northpole/sandbox.test.ts).
+- Messages from any window but the frame's own, or of the wrong shape, are
+  ignored by the map (enforced by: src/northpole/sandbox-messages.test.ts);
+  worker messages the frame isn't waiting for are ignored too (not enforced
+  yet: no test).
+- A square that hangs is stopped: 10 seconds to open, 2 seconds to answer a
+  draw request, and 3 errors in a row (a good frame forgives them), or one
+  before it opens, and it shows "Under construction" (enforced by:
+  src/northpole/sandbox-frames.test.ts, src/northpole/sandbox-messages.test.ts);
+  1000 ms to load or draw a frame in the worker (not enforced yet: no test).
+- A square's frame starts only when the map draws it, so only squares in view
+  wake. At most 24 frames run at once, and one not drawn for 20 seconds is
+  released; a released square keeps its name and last picture, and a broken
+  one stays broken (enforced by: src/northpole/sandbox.test.ts,
+  src/northpole/sandbox-frames.test.ts).
+- A tap made while a frame is busy drawing is kept for its next draw request,
+  at most 20 presses at a time (enforced by:
+  src/northpole/sandbox-messages.test.ts).
 - Registries freeze each square, refuse an id that isn't a lower-case login
   (booths) or kebab-case (attractions), and refuse duplicates (enforced by:
   src/northpole/square.test.ts).
@@ -73,7 +83,12 @@ base-uri 'none'`. No network, storage or access to the page (enforced by:
 
 ## Where it lives
 
-`src/northpole/square.ts`, `src/northpole/sandbox.ts`, `src/northpole/frame.ts`,
+`src/northpole/square.ts`, `src/northpole/sandbox.ts` (the stand-in square and
+its frame's lifecycle), `src/northpole/sandbox-schedule.ts` (which frames run),
+`src/northpole/sandbox-frame.ts` (the frame element and the placeholders),
+`src/northpole/sandbox-messages.ts` (what passes between the map and a frame),
+`src/northpole/sandbox-run.ts` (what the map knows of a running square),
+`src/northpole/frame.ts`,
 `src/northpole/square-worker.ts`, `src/northpole/frame-protocol.ts`,
 `src/northpole/pointer.ts`, `square.html`, `scripts/square-size.ts`,
 `src/northpole/disabled.json`.
@@ -81,7 +96,12 @@ base-uri 'none'`. No network, storage or access to the page (enforced by:
 ## Tested by
 
 `src/northpole/square.test.ts`, `src/northpole/sandbox.test.ts`,
-`src/northpole/frame-protocol.test.ts`, `src/northpole/pointer.test.ts`,
+`src/northpole/sandbox-frames.test.ts` and `src/northpole/sandbox-messages.test.ts`
+(in happy-dom, with the fake frames in `src/northpole/sandbox-fakes.ts`),
+`src/northpole/frame-protocol.test.ts` (a frame's messages),
+`src/northpole/frame-protocol-draw.test.ts` (draw requests and the pointer),
+`src/northpole/frame-protocol-address.test.ts`,
+`src/northpole/frame-protocol-stall.test.ts`, `src/northpole/pointer.test.ts`,
 `scripts/square-size.test.ts`, `smoke/squares.spec.ts` (the sandbox keeps a
 square from the network, storage and the page; every square opens and draws
 within budget), `smoke/safari.spec.ts`.
