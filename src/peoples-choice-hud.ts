@@ -14,7 +14,7 @@ export const CHOICE_PANEL = `
   <details class="choice" hidden>
     <summary><span class="choice-title">People's Choice</span> <span class="choice-top"></span></summary>
     <div class="choice-body">
-      <p class="choice-note"><span class="choice-when"></span> <a class="choice-discussion" target="_blank" rel="noopener">Vote in the discussion</a></p>
+      <p class="choice-note"><span class="choice-when"></span> <a class="choice-ballot" target="_blank" rel="noopener">Vote on GitHub</a></p>
       <div class="choice-lists">
         <section>
           <h2 class="choice-group">Booths</h2>
@@ -77,14 +77,14 @@ function fill(list: HTMLElement, entries: ChoiceEntry[], href: (entry: ChoiceEnt
 /**
  * The People's Choice list below the map: the top three booths and the home
  * factory leader on one line, unfolding to every entry's votes, with a link to
- * vote in the discussion. Hidden when the build has no standings.
+ * vote on the ballot issue. Hidden when the build has no standings.
  */
 export function renderChoice(panel: HTMLDetailsElement, choice: PeoplesChoice | undefined) {
   if (!choice) return;
   const $ = <T extends Element>(selector: string) => panel.querySelector<T>(selector)!;
   $('.choice-top').textContent = topLine(choice);
   $('.choice-when').textContent = closingLine(new Date());
-  $<HTMLAnchorElement>('.choice-discussion').href = choice.discussion;
+  $<HTMLAnchorElement>('.choice-ballot').href = choice.ballot;
   fill(
     $('.choice-booths'),
     choice.booths,

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { closingLine, topLine } from './peoples-choice-hud';
 
-const DISCUSSION = 'https://github.com/AINativeDev/Northpole-Carnival-Factory/discussions/7';
-const entry = (login: string, votes: number) => ({ login, url: DISCUSSION, votes });
+const BALLOT = 'https://github.com/AINativeDev/Northpole-Carnival-Factory/issues/7';
+const entry = (login: string, votes: number) => ({ login, url: BALLOT, votes });
 
 describe('topLine', () => {
   it('names the top three booths and the home factory leader', () => {
     expect(
       topLine({
-        discussion: DISCUSSION,
+        ballot: BALLOT,
         booths: [entry('a', 3), entry('b', 2), entry('c', 1), entry('d', 1)],
         factories: [entry('f', 2), entry('g', 0)],
       }),
@@ -16,7 +16,7 @@ describe('topLine', () => {
   });
 
   it('says when nobody has voted yet', () => {
-    expect(topLine({ discussion: DISCUSSION, booths: [entry('a', 0)], factories: [] })).toBe(
+    expect(topLine({ ballot: BALLOT, booths: [entry('a', 0)], factories: [] })).toBe(
       'No votes yet',
     );
   });

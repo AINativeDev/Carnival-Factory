@@ -1,4 +1,6 @@
 {
+  "carnival/booths/fernandezbaptiste/booth.test.ts": 376,
+  "carnival/booths/fernandezbaptiste/booth.ts": 943,
   "scripts/advent.test.ts": 225,
   "scripts/auto-merge-booths.ts": 400,
   "scripts/elf-engineer.test.ts": 288,
@@ -7,7 +9,6 @@
   "scripts/square-code.ts": 426,
   "scripts/square-history.test.ts": 293,
   "scripts/square-history.ts": 249,
-  "scripts/write-peoples-choice.ts": 237,
   "smoke/squares.spec.ts": 890,
   "src/booths-hud.ts": 399,
   "src/factory.ts": 227,

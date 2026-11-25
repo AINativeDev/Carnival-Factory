@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   cleanChoice,
-  isDiscussionUrl,
+  isBallotUrl,
   leaders,
   places,
   trophyFor,
@@ -11,17 +11,19 @@ import {
 } from './peoples-choice';
 
 const REPO = 'https://github.com/AINativeDev/Northpole-Carnival-Factory';
-const DISCUSSION = `${REPO}/discussions/7`;
-const at = (n: number) => `${DISCUSSION}#discussioncomment-${n}`;
+const BALLOT = `${REPO}/issues/7`;
+const at = (n: number) => `${BALLOT}#issuecomment-${n}`;
 const entry = (login: string, votes: number): ChoiceEntry => ({ login, url: at(votes), votes });
 
-describe('isDiscussionUrl', () => {
-  it("takes only this repository's discussions and their comments", () => {
-    expect(isDiscussionUrl(DISCUSSION, REPO)).toBe(true);
-    expect(isDiscussionUrl(at(3), REPO)).toBe(true);
-    expect(isDiscussionUrl('https://evil.example/discussions/7', REPO)).toBe(false);
-    expect(isDiscussionUrl(`${DISCUSSION}/../../issues`, REPO)).toBe(false);
-    expect(isDiscussionUrl(`javascript:alert(1)//${DISCUSSION}`, REPO)).toBe(false);
+describe('isBallotUrl', () => {
+  it("takes only this repository's issues and their comments", () => {
+    expect(isBallotUrl(BALLOT, REPO)).toBe(true);
+    expect(isBallotUrl(at(3), REPO)).toBe(true);
+    expect(isBallotUrl('https://evil.example/issues/7', REPO)).toBe(false);
+    expect(isBallotUrl(`${BALLOT}/../../pulls`, REPO)).toBe(false);
+    expect(isBallotUrl(`javascript:alert(1)//${BALLOT}`, REPO)).toBe(false);
+    expect(isBallotUrl(`${REPO}/discussions/7`, REPO)).toBe(false);
+    expect(isBallotUrl(`${BALLOT}#discussioncomment-3`, REPO)).toBe(false);
   });
 });
 
@@ -29,7 +31,7 @@ describe('cleanChoice', () => {
   it('keeps well-formed entries, most votes first, without closed booths', () => {
     const choice = cleanChoice(
       {
-        discussion: DISCUSSION,
+        ballot: BALLOT,
         booths: [
           entry('sjmaple', 1),
           entry('jedi4ever', 4),
@@ -47,10 +49,10 @@ describe('cleanChoice', () => {
     expect(choice?.factories[0]).toEqual({ ...entry('pstember', 2), repo: 'pstember/factory' });
   });
 
-  it('gives nothing without a discussion', () => {
+  it('gives nothing without a ballot', () => {
     expect(cleanChoice(null, [], REPO)).toBeUndefined();
     expect(cleanChoice({ booths: [] }, [], REPO)).toBeUndefined();
-    expect(cleanChoice({ discussion: at(1), booths: [] }, [], REPO)).toBeUndefined();
+    expect(cleanChoice({ ballot: at(1), booths: [] }, [], REPO)).toBeUndefined();
   });
 });
 
@@ -67,7 +69,7 @@ describe('places', () => {
 
 describe('trophies and leaders', () => {
   const choice = {
-    discussion: DISCUSSION,
+    ballot: BALLOT,
     booths: [entry('a', 9), entry('b', 7), entry('c', 5), entry('d', 2), entry('e', 0)],
     factories: [entry('f', 3), entry('g', 1)],
   };
