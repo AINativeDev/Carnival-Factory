@@ -80,22 +80,24 @@ const level: NorthPoleLevel = {
   arrival: { x: 9, y: 18 },
   exits: [{ x: 1, y: 10 }],
   // Looking back on '26 in the old wing, ahead to '27 in the modern one, and the guestbook at the reception.
-  // Each one's door has a clear tile on its east, where no other display stands in front of it on screen.
+  // Each wing's displays step away from its wall on a slant, never in a straight row: in a row, the
+  // next display stands in front of the tile east of a door on screen, and the walk can't click it.
+  // So each one's door has a clear tile on its east, where no other display stands in front of it on screen.
   squares: [
-    { id: 'dumbest-ai-moment', x: 3, y: 3 },
-    { id: 'coding-disaster', x: 3, y: 7 },
-    { id: 'felt-like-magic', x: 7, y: 9 },
-    { id: 'stopped-doing', x: 3, y: 13 },
-    { id: 'vibe-code-regret', x: 7, y: 13 },
-    { id: 'most-overrated', x: 3, y: 16 },
-    { id: 'hands-off', x: 7, y: 16 },
-    { id: 'my-day-in-27', x: 8, y: 3 },
-    { id: 'finally-fixed', x: 12, y: 3 },
-    { id: 'worse-before-better', x: 16, y: 3 },
-    { id: 'still-reviewing', x: 10, y: 6 },
-    { id: 'buzzword-dies', x: 14, y: 6 },
-    { id: 'hot-take', x: 13, y: 9 },
-    { id: 'your-questions', x: 12, y: 13 },
+    { id: 'dumbest-ai-moment', x: 2, y: 2 },
+    { id: 'coding-disaster', x: 3, y: 4 },
+    { id: 'felt-like-magic', x: 5, y: 6 },
+    { id: 'stopped-doing', x: 3, y: 12 },
+    { id: 'vibe-code-regret', x: 5, y: 14 },
+    { id: 'most-overrated', x: 5, y: 8 },
+    { id: 'hands-off', x: 7, y: 10 },
+    { id: 'my-day-in-27', x: 12, y: 5 },
+    { id: 'finally-fixed', x: 10, y: 3 },
+    { id: 'worse-before-better', x: 8, y: 1 },
+    { id: 'still-reviewing', x: 12, y: 7 },
+    { id: 'buzzword-dies', x: 13, y: 10 },
+    { id: 'hot-take', x: 15, y: 2 },
+    { id: 'your-questions', x: 14, y: 14 },
   ],
 };
 

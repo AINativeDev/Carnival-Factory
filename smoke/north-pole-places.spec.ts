@@ -77,9 +77,13 @@ for (const { level, name } of PLACES)
       });
 
       const world = levelWorld(level);
-      // On a phone the Controls panel covers the map's lower corner, where the walk clicks; fold it, as a visitor would.
+      // An open Controls panel covers the map's lower corner, where the walk clicks; fold it, as a visitor would.
+      // A phone's level hides it altogether (src/style.css), and a hidden panel can't be clicked: leave it be.
       const controls = page.locator('.hud-controls');
-      if (await controls.evaluate((panel) => (panel as HTMLDetailsElement).open))
+      if (
+        (await controls.isVisible()) &&
+        (await controls.evaluate((panel) => (panel as HTMLDetailsElement).open))
+      )
         await controls.locator('summary').click();
       await expect(canvas).toHaveAttribute('data-player', `${world.start.x},${world.start.y}`);
       await stillCamera(page);

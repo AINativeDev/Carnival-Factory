@@ -42,8 +42,10 @@ What runs on every pull request, and what each check guarantees.
   square, inside each one, and to the sleigh home. `smoke/level-walk.ts`
   walks to each door in steps, each a click on the furthest tile of the way
   that is on the canvas and not under a structure (where the map shows the
-  pointer cursor, since a click there opens it), so a door the camera doesn't
-  show yet is still reached.
+  pointer cursor, since a click there opens it) nor under anything over the
+  map, such as the call to action or the Controls panel, so a door the camera
+  doesn't show yet is still reached. Its time limit grows with the level's
+  squares: a minute, plus 20 seconds a stop.
 - `smoke/flashing.spec.ts` plays every booth and attraction on the back wall
   of its room and measures flashes.
 - Feature flags ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)): the unit tests build with every flag off, as the live

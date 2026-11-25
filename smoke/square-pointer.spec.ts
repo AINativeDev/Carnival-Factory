@@ -1,8 +1,9 @@
 import { expect, test, type Page } from './coverage';
 import { worldToScreen } from '../src/northpole/camera-view';
 import { faceOf, onFace } from '../src/northpole/faces';
-import { carnivalWorld, frameOf, present, watch } from './support/carnival';
+import { booths, carnivalWorld, frameOf, present, watch } from './support/carnival';
 import { boxOf, cameraFrom, stageOf } from './support/map-canvas';
+import { STALL } from '../src/northpole/stall-plan';
 
 /**
  * Hover and taps reaching a square: on the map through its stall's front,
@@ -12,58 +13,100 @@ import { boxOf, cameraFrom, stageOf } from './support/map-canvas';
  * aim the pointer at a square's drawing rather than walk the player.
  */
 
+/** Where across a stall's front, and how far up its drawing, the pointer is tried: the middle first. */
+const ALONG = [0.5, 0.3, 0.7];
+const UP = [0.5, 0.25, 0.75];
+
 /**
- * Moves the mouse up the middle of a square's stall's front until the map gives
- * that square the pointer, and says where on the page that was.
+ * Moves the mouse over a booth's drawing on its stall's front, the middle
+ * first, until the map gives that booth the pointer, and says where on the
+ * page that was, or undefined when it never did: another stall standing in
+ * front of it on screen takes the pointer there, as it should. Every stall
+ * shape hangs the drawing the same way (`stallFront` in
+ * src/northpole/stall-front.ts): `STALL.art` up its front and as tall as 84%
+ * of the front is wide. A point under a panel over the map, such as the Booths
+ * panel, never reaches the canvas, so it's passed over without a try.
  */
-async function pointAtSquare(page: Page, kind: 'booth' | 'attraction', id: string) {
+async function pointAtSquare(page: Page, id: string) {
   const canvas = page.locator('.map-canvas');
   const plot = present(
-    carnivalWorld().plots.find((p) => p.kind === kind && p.id === id),
-    `plot of the ${kind} ${id}`,
+    carnivalWorld().plots.find((p) => p.kind === 'booth' && p.id === id),
+    `plot of the booth ${id}`,
   );
   const box = await boxOf(canvas);
   const face = faceOf(plot);
+  const tall = Math.abs(face.b.x - face.a.x) * 0.84;
   // The camera eases out a while after the player stops: wait until it stands still.
   let camera = '';
   while (camera !== (camera = present(await canvas.getAttribute('data-camera'), 'camera'))) {
     await page.waitForTimeout(500);
   }
   const { x, y, zoom } = cameraFrom(camera);
-  for (let lift = 10; lift <= 160; lift += 6) {
-    const at = worldToScreen(onFace(face, 0.5, lift), box.width, box.height, { x, y }, zoom);
-    const point = { x: box.x + at.x, y: box.y + at.y };
+  const points = ALONG.flatMap((along) =>
+    UP.map((up) => {
+      const lift = STALL.art + tall * up;
+      const at = worldToScreen(onFace(face, along, lift), box.width, box.height, { x, y }, zoom);
+      return { x: box.x + at.x, y: box.y + at.y };
+    }),
+  );
+  const open = await canvas.evaluate(
+    (element, all) => all.map(({ x: px, y: py }) => document.elementFromPoint(px, py) === element),
+    points,
+  );
+  for (const [n, point] of points.entries()) {
+    if (!open[n]) continue;
     await page.mouse.move(point.x, point.y);
-    await page.waitForTimeout(50);
-    if ((await canvas.getAttribute('data-pointer')) === `${kind}:${id}`) return point;
+    await page.waitForTimeout(100);
+    if ((await canvas.getAttribute('data-pointer')) === `booth:${id}`) return point;
   }
-  throw new Error(`The pointer never reached the ${kind} ${id}`);
+  return undefined;
+}
+
+/**
+ * Shows booths on the map one by one, jedi4ever's first, until one's drawing
+ * takes the pointer, and says which and where. A booth added later can stand
+ * in front of another on screen and hide its whole front, as Penguin Slide's
+ * kiosk did jedi4ever's cabin, so the test doesn't hang on any one booth.
+ */
+async function aimAtSomeBooth(page: Page) {
+  const tried = ['jedi4ever', ...booths.filter((id) => id !== 'jedi4ever')].slice(0, 6);
+  for (const id of tried) {
+    await page.goto(`#/?booth=${id}`);
+    await expect(frameOf(page, 'booth', id)).toHaveAttribute('data-state', 'ready');
+    await page.waitForTimeout(1000);
+    const at = await pointAtSquare(page, id);
+    if (at) return { id, at };
+  }
+  throw new Error(`The pointer never reached any of the booths ${tried.join(', ')}`);
 }
 
 test('the map gives the pointer to the square under it, and a click still opens it', async ({
   page,
 }) => {
+  // Each booth tried is a page load, its frame opening and a handful of moves:
+  // a slow runner's software drawing takes several seconds a booth.
+  test.setTimeout(150_000);
   const problems = watch(page);
-  await page.goto('#/?booth=jedi4ever');
   const canvas = page.locator('.map-canvas');
-  await expect(frameOf(page, 'booth', 'jedi4ever')).toHaveAttribute('data-state', 'ready');
-  await page.waitForTimeout(1000);
-  const at = await pointAtSquare(page, 'booth', 'jedi4ever');
+  const { id, at } = await aimAtSomeBooth(page);
   await page.waitForTimeout(500);
-  await expect(frameOf(page, 'booth', 'jedi4ever')).toHaveAttribute('data-state', 'ready');
-  // A drag plays with the square instead of opening it.
+  await expect(frameOf(page, 'booth', id)).toHaveAttribute('data-state', 'ready');
+  // A drag plays with the square instead of opening it. It pans the map too, so
+  // it drags toward the middle, keeping the square clear of the panels at the sides.
+  const box = await boxOf(canvas);
+  const toward = at.x > box.x + box.width / 2 ? -40 : 40;
   await page.mouse.down();
-  await page.mouse.move(at.x + 40, at.y, { steps: 4 });
+  await page.mouse.move(at.x + toward, at.y, { steps: 4 });
   await page.mouse.up();
   await page.waitForTimeout(200);
-  await expect(page).toHaveURL(/#\/\?booth=jedi4ever$/);
+  await expect(page).toHaveURL(new RegExp(`#/\\?booth=${id}$`));
   // Off the square, it has no pointer.
   await page.mouse.move(2, 2);
   await expect(canvas).toHaveAttribute('data-pointer', '');
-  await pointAtSquare(page, 'booth', 'jedi4ever');
+  expect(await pointAtSquare(page, id), `the pointer back on ${id}`).toBeDefined();
   await page.mouse.down();
   await page.mouse.up();
-  await expect(page).toHaveURL(/#\/booth\/jedi4ever$/);
+  await expect(page).toHaveURL(new RegExp(`#/booth/${id}$`));
   expect(problems).toEqual([]);
 });
 
