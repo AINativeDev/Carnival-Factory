@@ -51,7 +51,11 @@ for (const viewport of VIEWPORTS) {
     const world = levelWorld(theFactory);
     // On a phone the Controls panel covers the map's lower corner, where the walk clicks; fold it, as a visitor would.
     const controls = page.locator('.hud-controls');
-    if (await controls.evaluate((panel) => (panel as HTMLDetailsElement).open))
+    // A level hides the panel on a phone altogether; fold it only where it shows.
+    if (
+      (await controls.isVisible()) &&
+      (await controls.evaluate((panel) => (panel as HTMLDetailsElement).open))
+    )
       await controls.locator('summary').click();
     await expect(canvas).toHaveAttribute('data-player', `${world.start.x},${world.start.y}`);
     await stillCamera(page);
