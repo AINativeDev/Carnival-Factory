@@ -63,7 +63,9 @@ they are, so people find you in the same place.
 ## What a booth can't do
 
 A booth only draws on its own square, so it can't play sound, load pictures or
-fonts from the internet, link anywhere, or store anything. It only knows
+fonts while it runs, link anywhere, or store anything. You **can** attach a
+picture to your request, such as your logo, a sketch or your pet: the factory
+looks at it and redraws it in shapes and the North Pole's colours. It only knows
 where the pointer is over its own square, never the rest of the page. It also
 can't flash fast, which isn't safe for everyone. Keep it friendly
 for a family audience at work, and make it your own: no logos or characters

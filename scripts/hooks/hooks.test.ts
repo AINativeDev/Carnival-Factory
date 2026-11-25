@@ -65,6 +65,16 @@ describe('turnFeedback', () => {
     expect(turnFeedback(false, () => failed)).toMatch(/Types:[\s\S]*Knip[\s\S]*Tests:/);
   });
 
+  it('says only that the install is stale when it is, without running the checks', () => {
+    const ran: string[] = [];
+    const run = (command: string): Ran => {
+      ran.push(command);
+      return failed;
+    };
+    expect(turnFeedback(false, run, 'Run npm install')).toBe('Run npm install');
+    expect(ran).toEqual([]);
+  });
+
   it('lets the agent stop when everything passes, or when it was already sent back once', () => {
     expect(turnFeedback(false, () => ok)).toBeUndefined();
     expect(turnFeedback(true, () => failed)).toBeUndefined();
