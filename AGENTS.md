@@ -141,6 +141,10 @@ src/
   level-page.ts             a participant's level page
   route.ts                  reading the hash (plain functions)
   edition.ts                the site's name and this edition's, in one place
+  top-menu.ts               the top bar's menu: building it into the banner, the phone's
+                            Menu button, Escape and focus, opening the Booths panel
+  top-menu-items.ts         the menu's places, their icons and which one is current
+                            (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
   visit-help.ts             the next steps at the foot of a square's panel, by whose square it is
   craft-badges.ts           a square's craft badges on its panel, baked in by the build

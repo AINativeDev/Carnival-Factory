@@ -24,6 +24,12 @@ export const BADGE_REQUEST_URL = `${REPO_URL}/issues/new?template=03-elf-enginee
  */
 export const ADVENT_REQUEST_URL = `${REPO_URL}/issues/new?template=04-advent-challenge.yml`;
 
+/**
+ * The feedback form: what a visitor thinks of the site or the factory, kept
+ * open and welcomed (docs/specs/booth-requests.md).
+ */
+export const FEEDBACK_URL = `${REPO_URL}/issues/new?template=05-feedback.yml`;
+
 /** Where "claim a booth" links go: the same form, for someone without a booth.
  * @alias the same form under the name its links use
  */
