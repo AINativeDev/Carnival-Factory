@@ -29,6 +29,8 @@ squares and play with them, and the panels move out of the way.
   seeing the pointer for 150 ms.
 - Layout at `max-width: 719px`:
   - the banner's GitHub link shows only its mark, without the word "GitHub";
+  - the top bar's menu folds into one menu button at the bar's left, which
+    opens its list below the bar ([Top bar](top-bar.md));
   - the visit panel sits below the room, across the bottom, at most 43% high;
   - "How was this built?" starts folded (by `matchMedia`).
 - The Booths and Controls panels start folded when the map frame is phone width.

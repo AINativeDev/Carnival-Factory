@@ -22,7 +22,7 @@ import { renderSeason } from './season-card';
 import { openVisitHud, type VisitHud } from './visit-hud';
 import { followPending, knownPending, loadSites, saveSites } from './pending';
 import { keepUpToDate } from './updates';
-import { startIntro } from './intro';
+import { startTopMenu } from './top-menu';
 import { renderKeepPosted } from './keep-posted';
 
 applyTheme();
@@ -509,4 +509,4 @@ function route(event?: HashChangeEvent) {
 
 window.addEventListener('hashchange', route);
 route();
-startIntro(location.hash);
+startTopMenu(location.hash);

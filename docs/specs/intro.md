@@ -15,9 +15,8 @@ easy to skip.
   `north-pole-intro-seen` in `localStorage`, read and written inside
   `try`/`catch`, so a browser without storage shows it on every first load of
   `#/`.
-- "What is this?" at the left of the banner opens it again at any time, on
-  any page. On a phone it shows just a question mark, with the same name for
-  screen readers.
+- **About** in the top bar's menu ([Top bar](top-bar.md)) opens it again at
+  any time, on any page. On a phone it is in the menu's list.
 - It is a dialog (`role="dialog"`, `aria-modal`, labelled by its title).
   Focus moves to **Explore the North Pole** as it opens, Tab and Shift+Tab go
   round its buttons and links, and when it closes focus goes back where it
@@ -72,8 +71,9 @@ easy to skip.
 
 `src/intro.ts` (when it opens, and opening and closing it),
 `src/intro-dialog.ts` (the dialog's elements), `src/intro-scene.ts` (the
-three scenes and their lines), `src/style.css`, the banner in `index.html`, and its
-one call in `src/main.ts`.
+three scenes and their lines), `src/style.css`, and `src/top-menu.ts`, which
+starts it once the top bar's About is in place, from its one call in
+`src/main.ts`.
 
 ## Tested by
 

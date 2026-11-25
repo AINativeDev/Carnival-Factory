@@ -137,8 +137,12 @@ src/
                             requests, bundled from square-history.json at build time
   advent.ts                 the advent calendar page, #/advent: its doors by date
                             (plain functions), over the map like the factory's numbers
+  top-menu.ts               the top bar's menu: its links and buttons, the phone's menu
+                            button, the current page's mark, and starting the intro
+  top-menu-items.ts         the menu's items, their icons and which one the address is on
+                            (plain functions)
   intro.ts                  the first-visit intro on #/: when it opens, opening and closing
-                            it, and "What is this?" in the banner to open it again
+                            it, and About in the top bar's menu to open it again
   intro-dialog.ts           the intro's dialog: Skip, its title, the beats and the two ways on
   intro-scene.ts            the intro's three little dioramas and their lines
   keep-posted.ts            the "keep me posted" page, #/keep-posted, until its form is set

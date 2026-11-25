@@ -81,10 +81,10 @@ test('keyboard focus stays inside the intro while it is open', async ({ page }) 
   }
 });
 
-test('"What is this?" opens the intro again, and gives focus back to it', async ({ page }) => {
+test('About in the top bar opens the intro again, and gives focus back to it', async ({ page }) => {
   await page.goto('#/');
   await page.keyboard.press('Escape');
-  const reopen = page.getByRole('button', { name: 'What is this?' });
+  const reopen = page.getByRole('button', { name: 'About' });
   await reopen.click();
   await expect(dialog(page)).toBeVisible();
   await page.keyboard.press('Escape');
@@ -121,16 +121,12 @@ test('the intro fits a phone 390 pixels wide without scrolling sideways', async 
   }
 });
 
-test('on a phone, "What is this?" is just a question mark with the same name', async ({ page }) => {
+test("on a phone, About is in the top bar's menu", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('#/');
   await page.keyboard.press('Escape');
-  const reopen = page.getByRole('button', { name: 'What is this?' });
-  await expect(reopen).toBeVisible();
-  await expect(reopen.locator('.intro-open-mark')).toHaveText('?');
-  await expect(reopen.locator('.intro-open-mark')).toBeVisible();
-  await expect(reopen.locator('.intro-open-text')).toBeHidden();
-  await reopen.click();
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await page.getByRole('button', { name: 'About' }).click();
   await expect(dialog(page)).toBeVisible();
 });
 
