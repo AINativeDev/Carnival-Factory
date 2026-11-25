@@ -42,7 +42,7 @@ squares and play with them, and the panels move out of the way.
 
 - Squares never see the page's touch or pointer events, only the checked
   `{ x, y, down, presses }`, with `presses` capped at 20 a frame (enforced by:
-  src/northpole/frame-protocol.test.ts, the pointer tests in
+  src/northpole/frame-protocol-draw.test.ts, the pointer tests in
   smoke/squares.spec.ts).
 - Pinch zoom stays between the whole island and 1.5, and a drag never shows
   past the island (enforced by: src/northpole/camera.test.ts).
