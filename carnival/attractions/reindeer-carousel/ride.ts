@@ -85,16 +85,32 @@ export function riderSpot({ across, depth, lift }: Rider) {
   return { x: 50 + across * 26, y: foot - 12 - lift * 6, foot };
 }
 
+/** The canopy's hem, its half-width and height, and the centre column's half-width, as the scene draws them. */
+const HEM = 40;
+const CANOPY = 35;
+const PEAK = 24;
+const COLUMN = 4;
+
+/** Whether `x`, `y` is under the canopy: its striped cone and the half-ellipse of its hem, drawn over every reindeer. */
+function underCanopy(x: number, y: number): boolean {
+  const off = Math.abs(x - 50) / CANOPY;
+  if (y <= HEM) return off <= (y - (HEM - PEAK)) / PEAK;
+  return off <= 1 && y <= HEM + (CANOPY / 2) * Math.sqrt(1 - off * off);
+}
+
 /**
  * Which reindeer a tap at `x`, `y` (0 to 100 units) lands on, or -1 for none.
- * The nearest the front wins, since it's drawn over the ones behind it.
+ * The nearest the front wins, since it's drawn over the ones behind it, and
+ * one hidden by the canopy or, at the back, by the centre column is never picked.
  */
 export function reindeerAt(riders: readonly Rider[], x: number, y: number): number {
+  if (underCanopy(x, y)) return -1;
   let picked = -1;
   let nearest = -Infinity;
   riders.forEach((rider, index) => {
     const spot = riderSpot(rider);
-    const on = Math.abs(x - spot.x) <= 8 && y >= spot.y - 14 && y <= spot.y + 6;
+    const hidden = rider.depth < 0 && Math.abs(x - 50) <= COLUMN;
+    const on = !hidden && Math.abs(x - spot.x) <= 8 && y >= spot.y - 14 && y <= spot.y + 6;
     if (on && rider.depth > nearest) {
       picked = index;
       nearest = rider.depth;
@@ -107,6 +123,13 @@ export function reindeerAt(riders: readonly Rider[], x: number, y: number): numb
 export function seatAfterTap(seated: number, tapped: number): number {
   if (tapped < 0) return seated;
   return tapped === seated ? -1 : tapped;
+}
+
+/** Who rides after `presses` taps on reindeer `tapped` since the last frame, each one counted. */
+export function seatAfterTaps(seated: number, tapped: number, presses: number): number {
+  let now = seated;
+  for (let n = 0; n < presses; n++) now = seatAfterTap(now, tapped);
+  return now;
 }
 
 /**

@@ -9,7 +9,7 @@ import {
   paceOf,
   reindeerAt,
   riderSpot,
-  seatAfterTap,
+  seatAfterTaps,
   stepRide,
   turnOf,
   type Ride,
@@ -63,7 +63,7 @@ const attraction: NorthPoleSquare = {
     const riders = carouselRiders(6, turn);
     if (pointer && pointer.presses > 0) {
       const tapped = reindeerAt(riders, (pointer.x * 100) / size, (pointer.y * 100) / size);
-      seated = seatAfterTap(seated, tapped);
+      seated = seatAfterTaps(seated, tapped, pointer.presses);
     }
 
     scene(ctx, size, time, () => {

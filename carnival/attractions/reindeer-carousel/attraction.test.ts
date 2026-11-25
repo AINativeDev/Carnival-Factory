@@ -8,6 +8,7 @@ import {
   reindeerAt,
   riderSpot,
   seatAfterTap,
+  seatAfterTaps,
   stepRide,
   turnOf,
   TURN,
@@ -108,6 +109,31 @@ describe('picking a reindeer', () => {
     expect(seatAfterTap(2, 4)).toBe(4);
     expect(seatAfterTap(4, 4)).toBe(-1);
     expect(seatAfterTap(4, -1)).toBe(4);
+  });
+
+  it('counts every tap that came since the last frame', () => {
+    expect(seatAfterTaps(-1, 2, 1)).toBe(2);
+    expect(seatAfterTaps(-1, 2, 2)).toBe(-1);
+    expect(seatAfterTaps(4, 2, 3)).toBe(2);
+    expect(seatAfterTaps(4, -1, 2)).toBe(4);
+    expect(seatAfterTaps(4, 2, 0)).toBe(4);
+  });
+
+  it('picks no reindeer hidden under the canopy', () => {
+    // The back reindeer's body at the first turn sits behind the canopy's hem.
+    const back = riderSpot(riders[3] ?? { across: 0, depth: -1, lift: 0 });
+    expect(reindeerAt(riders, back.x, back.y + 3)).toBe(-1);
+    // Nor up on the striped cone, though the sky beside it still shows antlers.
+    const high = [{ across: 1, depth: -1, lift: 1 }];
+    expect(reindeerAt([{ across: 0, depth: -1, lift: 1 }], 50, 32)).toBe(-1);
+    expect(reindeerAt(high, 82, 35)).toBe(0);
+  });
+
+  it('picks no reindeer at the back hidden by the centre column', () => {
+    const behind = [{ across: 0, depth: -0.3, lift: 0 }];
+    const spot = riderSpot({ across: 0, depth: -0.3, lift: 0 });
+    expect(reindeerAt(behind, spot.x, spot.y + 4)).toBe(-1);
+    expect(reindeerAt(behind, spot.x + 6, spot.y + 4)).toBe(0);
   });
 });
 
