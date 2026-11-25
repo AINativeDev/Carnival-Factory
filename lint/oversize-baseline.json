@@ -1,11 +1,7 @@
 {
   "carnival/attractions/gift-shop/attraction.ts": 213,
-  "carnival/booths/chandler767/booth.ts": 318,
   "carnival/booths/fernandezbaptiste/booth.test.ts": 376,
   "carnival/booths/fernandezbaptiste/booth.ts": 943,
-  "carnival/booths/hamzaoza/booth.test.ts": 265,
-  "carnival/booths/hamzaoza/booth.ts": 622,
-  "carnival/booths/pstember/booth.ts": 640,
   "carnival/booths/sjmaple/booth.test.ts": 225,
   "carnival/booths/sjmaple/booth.ts": 589,
   "scripts/advent.test.ts": 225,
@@ -34,6 +30,5 @@
   "src/northpole/world.test.ts": 407,
   "src/northpole/world.ts": 717,
   "src/season-card.ts": 256,
-  "src/visit-hud.ts": 252,
-  "vite.config.ts": 224
+  "src/visit-hud.ts": 247
 }

@@ -57,7 +57,7 @@ was built, and how to share it or leave.
 
 ## Where it lives
 
-`src/visit-hud.ts`, `src/history.ts`, `scripts/square-history.ts`,
+`src/visit-hud.ts`, `src/visit-help.ts`, `src/craft-badges.ts`, `src/history.ts`, `scripts/square-history.ts`,
 `scripts/write-square-history.ts`, `scripts/share-pages.ts`,
 `src/northpole/visit.ts`, `src/northpole/links.ts`, `src/northpole/interior.ts`,
 `index.html`.
