@@ -50,6 +50,7 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0029](0029-booth-craft.md)                | Squares meet the code conventions too, and show it                 | Accepted |
 | [0030](0030-peoples-choice-on-an-issue.md) | People's Choice votes on a pinned issue, not a discussion          | Accepted |
 | [0033](0033-attached-pictures.md)          | Participants can attach a picture for the factory to draw from     | Accepted |
+| [0034](0034-ratchet-on-main.md)            | The coverage floor is raised on main, not in pull requests         | Accepted |
 
 ## Template
 

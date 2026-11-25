@@ -38,7 +38,9 @@ runs `npm run check` and `npm run build`. `npm run check` is:
 - `npm run format:check`: Prettier;
 - `npm run typecheck`: TypeScript, and the strict flags against their baseline
   (`node scripts/strict-types.ts`);
-- `npm test`: the unit tests with coverage, whose thresholds only rise.
+- `npm test`: the unit tests with coverage, held to the floor in
+  `vitest.config.ts`. Don't raise the floor in a pull request: maintainers raise
+  it on `main` with `npm run coverage:ratchet`.
 
 On a pull request, CI also runs `npm run test:changed` (99% of the lines it adds
 to `src/`, `scripts/` and `lint/` must run under the tests) and checks shell

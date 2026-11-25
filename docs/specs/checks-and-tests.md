@@ -85,7 +85,8 @@ What runs on every pull request, and what each check guarantees.
   files only have to stay within theirs (enforced by: tsconfig.strict.json,
   scripts/strict-types.ts, `strictTypeChecked` with eslint-suppressions.json).
 - Coverage: 99% of added lines in `src/`, `scripts/` and `lint/`, and the
-  whole-repository thresholds only rise (enforced by: scripts/diff-coverage.ts,
+  whole-repository thresholds only rise, raised on main with
+  `npm run coverage:ratchet` ([ADR 0034](../adr/0034-ratchet-on-main.md)) (enforced by: scripts/diff-coverage.ts,
   the thresholds in vitest.config.ts).
 - The docs name only files that exist, and the ADR index lists every record
   (enforced by: scripts/docs-paths.test.ts). Whether the prose is still true,
