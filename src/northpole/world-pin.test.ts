@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import pinned from './plots.json';
 import { levelWorld } from './level';
-import { buildWorld, type World } from './world';
+import { buildWorld, findPath, type World } from './world';
 
 const ATTRACTIONS = ['big-top', 'cocoa-stand', 'ferris-wheel', 'frozen-pond', 'sleigh-coaster'];
 const booths = (count: number) => Array.from({ length: count }, (_, n) => `elf-${n}`);
@@ -48,6 +48,16 @@ describe('the worlds the map lays out', () => {
         "20701b0aab3da7a5",
       ]
     `);
+  });
+
+  it('finds the same ways round it as before', () => {
+    const world = buildWorld(ATTRACTIONS.concat(booths(11)), booths(70), pinned);
+    const ways = world.plots.map((plot) => findPath(world, world.start, plot.door));
+    const back = world.plots.map((plot) => findPath(world, plot.door, { x: 0, y: 2 }));
+    const digest = createHash('sha256')
+      .update(JSON.stringify([ways, back]))
+      .digest('hex');
+    expect(digest.slice(0, 16)).toMatchInlineSnapshot(`"2ce76c29e3ab81d8"`);
   });
 
   it('lays out every level as before', () => {
