@@ -5,14 +5,11 @@
  * again at any time.
  */
 import { INTRO_EVENT, type IntroClose } from './analytics-events';
-import { BOOTH_REQUEST_URL } from './northpole/links';
-import { drawBeat, INTRO_BEATS, STILL } from './intro-scene';
+import { buildDialog, SCENE_SIZE } from './intro-dialog';
+import { drawBeat, STILL } from './intro-scene';
 
 /** Where this browser remembers that the intro was closed. */
 export const INTRO_SEEN_KEY = 'north-pole-intro-seen';
-
-/** Pixels each beat's scene is drawn at, before CSS fits it to the dialog. */
-const SCENE_SIZE = 240;
 
 /**
  * Whether the intro opens as the page loads: only on the map itself, never on
@@ -53,50 +50,6 @@ export interface Intro {
   stop(): void;
 }
 
-/** A new element of the dialog, with its class and perhaps its words, set as text. */
-function make<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = '') {
-  const element = document.createElement(tag);
-  element.className = className;
-  element.textContent = text;
-  return element;
-}
-
-/** One beat: its scene, which only decorates, then its title and line. */
-function beat({ title, line }: { title: string; line: string }) {
-  const canvas = make('canvas', 'intro-scene');
-  canvas.width = canvas.height = SCENE_SIZE;
-  canvas.setAttribute('aria-hidden', 'true');
-  const words = make('p', 'intro-line', ` ${line}`);
-  words.prepend(make('strong', '', title));
-  const item = make('li', 'intro-beat');
-  item.append(canvas, words);
-  return { item, ctx: canvas.getContext('2d') };
-}
-
-/** The dialog over its backdrop: Skip, the title, the three beats and the two ways on. */
-function buildDialog() {
-  const backdrop = make('div', 'intro-backdrop');
-  const dialog = make('section', 'intro');
-  dialog.setAttribute('role', 'dialog');
-  dialog.setAttribute('aria-modal', 'true');
-  dialog.setAttribute('aria-labelledby', 'intro-title');
-  const skip = make('button', 'intro-skip', 'Skip');
-  const title = make('h2', 'intro-title', 'Welcome to the North Pole Carnival');
-  title.id = 'intro-title';
-  const lead = make('p', 'intro-lead', 'Every stall here was asked for by someone. Here is how.');
-  const beats = INTRO_BEATS.map(beat);
-  const list = make('ol', 'intro-beats');
-  list.append(...beats.map(({ item }) => item));
-  const explore = make('button', 'intro-explore', 'Explore the North Pole');
-  const build = make('a', 'intro-build', 'Build your own booth');
-  Object.assign(build, { href: BOOTH_REQUEST_URL, target: '_blank', rel: 'noopener' });
-  const actions = make('div', 'intro-actions');
-  actions.append(explore, build);
-  dialog.append(skip, title, lead, list, actions);
-  backdrop.append(dialog);
-  return { backdrop, dialog, skip, explore, build, scenes: beats.map(({ ctx }) => ctx) };
-}
-
 /**
  * Opens the intro now if `hash` is a first visit to the map, and wires the
  * banner's "What is this?" to open it again.
@@ -112,7 +65,6 @@ export function startIntro(hash: string): Intro {
     const parts = buildDialog();
     backdrop = parts.backdrop;
     document.body.append(backdrop);
-    animate(parts.scenes);
     backdrop.addEventListener('click', (event) => {
       if (event.target === backdrop) close('skip');
     });
@@ -128,17 +80,28 @@ export function startIntro(hash: string): Intro {
     parts.dialog.addEventListener('keydown', (event) => {
       onKey(parts.dialog, event);
     });
+    // A route change behind it (Back, say) moves focus to the new page, so the intro gives way.
+    window.addEventListener('hashchange', onRoute);
+    // The map lets go of a walking key on blur (src/northpole/map.ts), so nobody walks behind it.
+    window.dispatchEvent(new Event('blur'));
     parts.explore.focus();
     tell('opened');
+    // Last, with every way out wired: the scenes only decorate, so one that can't draw stops.
+    animate(parts.scenes);
   };
 
   /** Draws each beat's scene: still with reduced motion, else every frame while open. */
   const animate = (scenes: (CanvasRenderingContext2D | null)[]) => {
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const paint = (now: number) => {
-      scenes.forEach((ctx, beat) => {
-        if (ctx) drawBeat(ctx, beat, SCENE_SIZE, still ? STILL : now / 1000);
-      });
+      try {
+        scenes.forEach((ctx, beat) => {
+          if (ctx) drawBeat(ctx, beat, SCENE_SIZE, still ? STILL : now / 1000);
+        });
+      } catch {
+        // A context the browser couldn't give: the scenes stay blank, and the intro works on.
+        return;
+      }
       if (!still) frame = requestAnimationFrame(paint);
     };
     paint(0);
@@ -163,17 +126,23 @@ export function startIntro(hash: string): Intro {
     wrapTo.focus();
   };
 
+  const onRoute = () => {
+    close('skip', false);
+  };
+
   const dismiss = () => {
     cancelAnimationFrame(frame);
+    window.removeEventListener('hashchange', onRoute);
     backdrop?.remove();
     backdrop = undefined;
   };
 
-  const close = (how: IntroClose) => {
+  const close = (how: IntroClose, refocus = true) => {
     if (!backdrop) return;
     dismiss();
     markSeen();
     tell(how);
+    if (!refocus) return;
     // Focus goes back where it was, or to the map when that has gone.
     const back =
       returnTo instanceof HTMLElement && returnTo.isConnected && returnTo !== document.body

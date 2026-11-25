@@ -22,7 +22,12 @@ easy to skip.
   Focus moves to **Explore the North Pole** as it opens, Tab and Shift+Tab go
   round its buttons and links, and when it closes focus goes back where it
   was, or to the map's canvas when that was nowhere. While it is open the map
-  behind hears no keys.
+  behind hears no keys, and as it opens the map lets go of any key it was
+  walking with, so nobody walks on behind it.
+- If the route changes while it is open, as with the browser's Back, it
+  closes as a skip and leaves focus where the new page put it.
+- Its scenes only decorate: it wires every way of closing before it draws
+  them, and a scene that can't draw leaves them blank and the intro working.
 - Three beats, each a small diorama drawn on a canvas in the dusk palette
   from `theme`, nothing loaded from the network, with one short line:
   **Write an issue** (an elf holds up a letter that writes itself),
@@ -43,8 +48,11 @@ easy to skip.
 
 - The intro opens on its own only on `#/` (or no hash), and only until it has
   been closed once (enforced by: src/intro.test.ts, smoke/intro.spec.ts).
-- Every way of closing it marks it seen and gives focus back (enforced by:
-  src/intro.test.ts, smoke/intro.spec.ts).
+- Every way of closing it marks it seen and gives focus back, except a route
+  change, which leaves focus with the new page (enforced by:
+  src/intro.test.ts, src/intro-modal.test.ts, smoke/intro.spec.ts).
+- It stays a modal: the map stops walking as it opens, and a scene that can't
+  draw never keeps it open (enforced by: src/intro-modal.test.ts).
 - It tells analytics `intro_opened` and `intro_closed` with `how`: `skip`
   (Skip, Esc or a click outside), `explore` or `build`, through the page
   event `north-pole-intro`, and nothing else
@@ -62,10 +70,12 @@ easy to skip.
 
 ## Where it lives
 
-`src/intro.ts` (when it opens, the dialog), `src/intro-scene.ts` (the three
-scenes and their lines), `src/style.css`, the banner in `index.html`, and its
+`src/intro.ts` (when it opens, and opening and closing it),
+`src/intro-dialog.ts` (the dialog's elements), `src/intro-scene.ts` (the
+three scenes and their lines), `src/style.css`, the banner in `index.html`, and its
 one call in `src/main.ts`.
 
 ## Tested by
 
-`src/intro.test.ts`, `src/intro-scene.test.ts`, `smoke/intro.spec.ts`.
+`src/intro.test.ts`, `src/intro-modal.test.ts`, `src/intro-scene.test.ts`,
+`smoke/intro.spec.ts`.
