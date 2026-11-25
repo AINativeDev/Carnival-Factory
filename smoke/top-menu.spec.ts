@@ -7,6 +7,8 @@ import { CLAIM_URL } from '../src/northpole/links';
  */
 const VIEWPORTS = [
   { name: 'desktop', width: 1200, height: 1000 },
+  // From 720 to 1179 the items show their icons alone.
+  { name: 'tablet', width: 900, height: 1000 },
   { name: 'phone', width: 390, height: 844 },
 ];
 
@@ -34,10 +36,15 @@ for (const viewport of VIEWPORTS) {
       }));
       expect(widths.page).toBeLessThanOrEqual(viewport.width);
       expect(widths.bar).toBeLessThanOrEqual(viewport.width);
-      // A wide screen shows every label; a phone shows one menu button until it opens.
+      // A wide screen shows every label, a tablet the icons alone, and a phone
+      // one menu button until it opens.
       const map = bar(page).getByRole('link', { name: 'Map' });
       if (phone) await expect(map).toBeHidden();
-      else await expect(map.locator('.top-menu-label')).toBeVisible();
+      else if (viewport.name === 'tablet') {
+        await expect(map.locator('svg')).toBeVisible();
+        await expect(map.locator('.top-menu-label')).toBeHidden();
+        await expect(map).toHaveAttribute('title', /\S/);
+      } else await expect(map.locator('.top-menu-label')).toBeVisible();
     });
 
     test('Map, Factory stats and Advent go to their pages, and the current one is marked', async ({
@@ -95,13 +102,19 @@ for (const viewport of VIEWPORTS) {
       expect(form.url()).toBe(CLAIM_URL);
     });
 
-    test('About opens the intro', async ({ page }) => {
+    test('About opens the intro, and closing it gives focus back to the bar', async ({ page }) => {
       await page.goto('#/');
-      if (phone) await bar(page).getByRole('button', { name: 'Menu' }).click();
-      await bar(page).getByRole('button', { name: 'About' }).click();
-      await expect(
-        page.getByRole('dialog', { name: 'Welcome to the North Pole Carnival' }),
-      ).toBeVisible();
+      const menu = bar(page).getByRole('button', { name: 'Menu' });
+      if (phone) await menu.click();
+      const about = bar(page).getByRole('button', { name: 'About' });
+      await about.focus();
+      await page.keyboard.press('Enter');
+      const intro = page.getByRole('dialog', { name: 'Welcome to the North Pole Carnival' });
+      await expect(intro).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(intro).toBeHidden();
+      // On a phone the list has folded, so focus goes to the Menu button it folded into.
+      await expect(phone ? menu : about).toBeFocused();
     });
   });
 }
@@ -122,6 +135,12 @@ test('on a phone, the menu opens with Enter or Space and closes with Escape', as
     await expect(list).toBeHidden();
     await expect(toggle).toBeFocused();
   }
+  // Escape still folds it once Tab has gone past the list to the GitHub link.
+  await toggle.click();
+  await page.locator('.repo-link').focus();
+  await page.keyboard.press('Escape');
+  await expect(list).toBeHidden();
+  await expect(toggle).toBeFocused();
 });
 
 test('on a laptop, Tab reaches every item in the bar', async ({ page }) => {

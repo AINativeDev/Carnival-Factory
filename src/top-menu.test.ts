@@ -1,51 +1,15 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { CLAIM_URL } from './northpole/links';
-import { startTopMenu, type TopMenu } from './top-menu';
-
-/** The one element a selector must find, or a failed test saying which. */
-function the(selector: string): HTMLElement {
-  const found = document.querySelector<HTMLElement>(selector);
-  if (!found) throw new Error(`Nothing matches ${selector}`);
-  return found;
-}
-
-const item = (id: string) => the(`.top-menu-item[data-item="${id}"]`);
-
-let menu: TopMenu | undefined;
-
-/** A page like the real one: the banner's menu, the map's Booths panel and People's Choice list. */
-function page(hash = '#/', choice = true) {
-  history.replaceState(null, '', hash);
-  document.body.innerHTML = `
-    <header class="banner"><a class="brand" href="#/">North Pole Carnival</a><nav class="top-menu"></nav></header>
-    <main id="app">
-      <details class="hud-booths"><summary>Booths</summary><input class="hud-search-input" /></details>
-      <details class="choice"><summary>People's Choice</summary></details>
-    </main>`;
-  menu = startTopMenu(hash, { choice });
-  return menu;
-}
-
-const key = (target: Element, name: string) => {
-  const event = new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true });
-  target.dispatchEvent(event);
-  return event;
-};
-
-/** Changes the address as a link would, and tells the page as the browser would. */
-const go = (hash: string) => {
-  history.replaceState(null, '', hash);
-  window.dispatchEvent(new HashChangeEvent('hashchange'));
-};
+import { go, item, keep, page, stopMenu, the } from './test-support/top-menu-page';
+import { startTopMenu } from './top-menu';
 
 beforeEach(() => {
   localStorage.setItem('north-pole-intro-seen', '1');
 });
 
 afterEach(() => {
-  menu?.stop();
-  menu = undefined;
+  stopMenu();
   localStorage.clear();
 });
 
@@ -56,6 +20,17 @@ describe('the current item', () => {
     expect(item('map').hasAttribute('aria-current')).toBe(false);
     go('#/advent');
     expect(item('advent').getAttribute('aria-current')).toBe('page');
+    expect(item('factory').hasAttribute('aria-current')).toBe(false);
+  });
+
+  it('follows a page closed over the map, which takes its address off without a hashchange', async () => {
+    page('#/factory');
+    const card = document.createElement('section');
+    the('#app').append(card);
+    history.replaceState(null, '', '#/');
+    card.remove();
+    await Promise.resolve();
+    expect(item('map').getAttribute('aria-current')).toBe('page');
     expect(item('factory').hasAttribute('aria-current')).toBe(false);
   });
 });
@@ -122,60 +97,11 @@ describe('the menu in the bar', () => {
   });
 });
 
-describe("the phone's menu button", () => {
-  it('opens and folds the list, and says so', () => {
-    const running = page();
-    const toggle = the('.top-menu-toggle');
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    toggle.click();
-    expect(running.isOpen).toBe(true);
-    expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    toggle.click();
-    expect(running.isOpen).toBe(false);
-  });
-
-  it('folds with Escape, gives focus back to the button, and keeps the key from the map', () => {
-    const running = page();
-    let heard = false;
-    document.addEventListener('keydown', () => (heard = true), { once: true });
-    the('.top-menu-toggle').click();
-    const event = key(item('map'), 'Escape');
-    expect(running.isOpen).toBe(false);
-    expect(document.activeElement).toBe(the('.top-menu-toggle'));
-    expect(heard).toBe(false);
-    expect(event.defaultPrevented).toBe(false);
-  });
-
-  it('lets other keys, and Escape while folded, pass', () => {
-    page();
-    let heard = 0;
-    const listen = () => heard++;
-    document.addEventListener('keydown', listen);
-    key(item('map'), 'Escape');
-    the('.top-menu-toggle').click();
-    key(item('map'), 'Enter');
-    document.removeEventListener('keydown', listen);
-    expect(heard).toBe(2);
-  });
-
-  it('folds when an item is chosen or the page is clicked outside it', () => {
-    const running = page();
-    the('.top-menu-toggle').click();
-    item('map').click();
-    expect(running.isOpen).toBe(false);
-    the('.top-menu-toggle').click();
-    the('.top-menu-list').click();
-    expect(running.isOpen).toBe(true);
-    the('#app').click();
-    expect(running.isOpen).toBe(false);
-  });
-});
-
 describe('starting the menu', () => {
   it('reads whether there are standings from the build when not told', () => {
     history.replaceState(null, '', '#/');
     document.body.innerHTML = '<nav class="top-menu"></nav>';
-    menu = startTopMenu('#/');
+    keep(startTopMenu('#/'));
     expect(document.querySelector('[data-item="choice"]')).toBeNull();
   });
 
@@ -183,16 +109,23 @@ describe('starting the menu', () => {
     localStorage.clear();
     history.replaceState(null, '', '#/');
     document.body.innerHTML = '<main id="app"></main>';
-    menu = startTopMenu('#/');
+    keep(startTopMenu('#/'));
     expect(document.querySelector('.intro-backdrop')).not.toBeNull();
   });
 
   it('stops listening, and empties the bar, when stopped', () => {
-    const running = page();
-    running.stop();
-    menu = undefined;
+    page();
+    stopMenu();
     expect(document.querySelector('.top-menu')?.children).toHaveLength(0);
     go('#/factory');
     document.body.click();
+  });
+
+  it('never opens a panel that was waiting for the map once stopped', () => {
+    page('#/booth/jedi4ever');
+    item('booths').click();
+    stopMenu();
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    expect(the('.hud-booths').hasAttribute('open')).toBe(false);
   });
 });

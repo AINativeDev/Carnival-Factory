@@ -86,7 +86,12 @@ export function startTopMenu(hash: string, options: TopMenuOptions = {}): TopMen
   };
   const isOpen = () => nav.dataset.open !== undefined;
 
+  // The address the marks were last set for: a page closed over the map takes
+  // its address off with history.replaceState (src/main.ts), which no event tells.
+  let marked: string | undefined;
   const markCurrent = () => {
+    if (location.hash === marked) return;
+    marked = location.hash;
     const current = currentItem(location.hash);
     for (const item of list.querySelectorAll<HTMLElement>('.top-menu-item')) {
       if (item.dataset.item === current) item.setAttribute('aria-current', 'page');
@@ -94,14 +99,20 @@ export function startTopMenu(hash: string, options: TopMenuOptions = {}): TopMen
     }
   };
 
+  // The panel waiting for the map to come back, so stopping the menu cancels it too.
+  let pending: (() => void) | undefined;
   /** Runs `show` on the North Pole's map: now when it's on screen, else once the map's route has opened it. */
   const onMap = (show: () => void) => {
     if (onTheMap(location.hash)) {
       show();
       return;
     }
+    pending = () => {
+      pending = undefined;
+      show();
+    };
     // Added after the page's own router (src/main.ts), so it runs once the map is back.
-    window.addEventListener('hashchange', show, { once: true });
+    window.addEventListener('hashchange', pending, { once: true });
     location.hash = '#/';
   };
 
@@ -133,10 +144,18 @@ export function startTopMenu(hash: string, options: TopMenuOptions = {}): TopMen
     }
     const item = target.closest<HTMLElement>('.top-menu-item');
     if (!item) return;
+    // Folding the phone's list hides the item focus is on, so focus goes back to
+    // the Menu button first. Heard before the item's own listeners, so About's
+    // intro returns focus there when it closes.
+    if (isOpen() && list.contains(document.activeElement)) toggle.focus();
     setOpen(false);
     actions[item.dataset.item as MenuItemId]?.();
   };
-  /** Esc folds the phone's list and gives focus back to its button; the map behind never hears it. */
+  /**
+   * Esc folds the phone's list and gives focus back to its button, wherever
+   * focus has gone, and the map behind never hears it: heard on the document
+   * before anything else.
+   */
   const onKey = (event: KeyboardEvent) => {
     if (event.key !== 'Escape' || !isOpen()) return;
     event.stopPropagation();
@@ -149,10 +168,12 @@ export function startTopMenu(hash: string, options: TopMenuOptions = {}): TopMen
     setOpen(false);
   };
 
-  nav.addEventListener('click', onClick);
-  nav.addEventListener('keydown', onKey);
+  nav.addEventListener('click', onClick, true);
+  document.addEventListener('keydown', onKey, true);
   document.addEventListener('click', onOutside);
   window.addEventListener('hashchange', markCurrent);
+  const pages = new MutationObserver(markCurrent);
+  pages.observe(document.body, { childList: true, subtree: true });
   markCurrent();
   const intro = startIntro(hash);
 
@@ -162,10 +183,12 @@ export function startTopMenu(hash: string, options: TopMenuOptions = {}): TopMen
     },
     stop: () => {
       intro.stop();
-      nav.removeEventListener('click', onClick);
-      nav.removeEventListener('keydown', onKey);
+      nav.removeEventListener('click', onClick, true);
+      document.removeEventListener('keydown', onKey, true);
       document.removeEventListener('click', onOutside);
       window.removeEventListener('hashchange', markCurrent);
+      if (pending) window.removeEventListener('hashchange', pending);
+      pages.disconnect();
       nav.replaceChildren();
     },
   };

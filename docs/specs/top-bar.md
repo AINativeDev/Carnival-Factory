@@ -27,14 +27,20 @@ places a visitor goes, and the way to the repository on GitHub.
   `aria-current="page"`: Map on the map (`#/`, with or without a `?booth=`
   or `?attraction=` focus), Factory stats on `#/factory` and Advent on
   `#/advent`. Inside a square, on a level, a season card or `#/keep-posted`,
-  none is.
+  none is. Closing the factory's numbers or the advent calendar takes the
+  address back to `#/` without a hashchange, so the mark follows the page's
+  changes as well as the address's.
 - Wide screens, from 1180 CSS pixels, show each item's icon and label. From
   720 to 1179 the items show their icons alone, each still named for screen
   readers and with its tooltip.
 - At phone width, under 720, the items fold into one **Menu** button at the
   bar's left, with `aria-expanded`, which opens them as a list below the bar.
   Choosing an item, a click outside the menu, or Escape folds it; Escape gives
-  focus back to the button, and the map behind never hears it.
+  focus back to the button, and the map behind never hears it, wherever in
+  the page focus has gone. Choosing an item from the list gives focus back to
+  the button too, so the intro About opens returns focus there when it closes.
+- Booths or People's Choice chosen off the map wait for it to come back; a
+  menu that is stopped first never opens them.
 
 ## Rules
 
@@ -61,7 +67,9 @@ icons and the current item), `src/style.css`, and its one call in
 
 ## Tested by
 
-`src/top-menu.test.ts`, `src/top-menu-items.test.ts`, and
-`smoke/top-menu.spec.ts` at 1200 by 1000 and 390 by 844: every item opened
-from the bar, the current item marked, the phone's menu by keyboard, and no
-sideways scroll. `smoke/intro.spec.ts` opens the intro again from About.
+`src/top-menu.test.ts`, `src/top-menu-phone.test.ts`,
+`src/top-menu-items.test.ts`, and `smoke/top-menu.spec.ts` at 1200 by 1000,
+900 by 1000 (icons alone) and 390 by 844: every item opened from the bar, the
+current item marked, the phone's menu by keyboard, focus back after About,
+and no sideways scroll. The smoke build has no People's Choice standings, so
+the browser test sees the item left out, and the unit tests open the list. `smoke/intro.spec.ts` opens the intro again from About.
