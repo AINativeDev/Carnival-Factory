@@ -46,7 +46,7 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0025](0025-test-coverage.md)             | 99% test coverage: new lines now, the whole codebase over time     | Accepted |
 | [0026](0026-end-to-end-tests.md)          | What people see is tested end to end                               | Accepted |
 | [0027](0027-strict-typescript.md)         | Strict TypeScript, held by a baseline that only shrinks            | Accepted |
-| [0028](0028-analytics.md)                 | Analytics with PostHog                                             | Proposed |
+| [0028](0028-analytics.md)                 | Cookieless analytics with PostHog                                  | Accepted |
 
 ## Template
 
