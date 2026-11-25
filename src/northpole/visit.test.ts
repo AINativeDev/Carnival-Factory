@@ -123,6 +123,8 @@ describe('hovering', () => {
       line: 'Booth for @amy: Checks running',
       hint: 'E or click to see the request',
     });
+    // A site always has its owner's login; without one the tag still reads, with no name.
+    expect(tagText({ kind: 'site' }, undefined, 'Planned').line).toBe('Booth for @: Planned');
   });
 
   it('puts the tag above the structure, inside the viewport', () => {

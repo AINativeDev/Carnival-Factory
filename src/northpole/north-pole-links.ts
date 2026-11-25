@@ -37,8 +37,9 @@ export const httpsOnly = (links: readonly OutboundLink[]) =>
 
 /** A level's links out: its own when it's one of the North Pole's, and none for anyone else's. */
 export function northPoleLinks(level: string): readonly OutboundLink[] {
-  if (!isNorthPoleLevel(level) || !Object.hasOwn(NORTH_POLE_LINKS, level)) return [];
-  return httpsOnly(NORTH_POLE_LINKS[level] ?? []);
+  // Only the North Pole's own ids are looked up, so a name like "constructor" never reaches the object.
+  const links = isNorthPoleLevel(level) ? NORTH_POLE_LINKS[level] : undefined;
+  return links ? httpsOnly(links) : [];
 }
 
 /**
