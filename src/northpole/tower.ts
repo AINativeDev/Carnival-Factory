@@ -8,21 +8,15 @@
  * smoke and flashing checks see it. Booths never get one: the map keeps them
  * to their stalls.
  */
+import { block, bulb, corners, glow, middle, shadow, twinkle } from './brushes';
 import {
   band,
-  block,
-  corners,
-  bulb,
   faceOf,
   faceSign,
-  glow,
-  middle,
   onFace,
   PAVILION,
   paintOnFace,
-  shadow,
   standing,
-  twinkle,
   type Face,
   type PaintSquare,
 } from './render';

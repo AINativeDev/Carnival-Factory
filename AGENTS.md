@@ -151,8 +151,13 @@ src/
   style.css
   northpole/                the map itself, and the parts every square imports
     square.ts               the NorthPoleSquare shape, the registries and the kill switch
-    level.ts                the NorthPoleLevel shape, its catalogue and themes, checking
-                            a level and laying it out as a world (plain functions)
+    level.ts                the NorthPoleLevel shape and its themes, checking a level
+                            and laying it out as a world (plain functions)
+    level-props.ts          the catalogue of props a level may place, with their footprints
+    show.ts                 drawing a level's performers, rides and factory dressing
+                            (with performers.ts, troupe.ts, rides.ts, carousel.ts,
+                            workshop.ts, and elf.ts for the elves)
+    brushes.ts              the map's shared brushes: blocks, shadows, glows, bulbs
     levels.ts               finds every level folder, checks it and sandboxes its squares
     diorama.ts              the diorama style's shared parts: the dusk backdrop, the
                             snow slab, lit volumes, glows (plain functions)
@@ -484,7 +489,9 @@ squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
    - `ground`, areas of `snow`, `ice`, `path`, `water` or `bridge`, laid in
      order (ice and water can't be walked on, bridges can), and `blocked`,
      areas nobody can walk on;
-   - `props`, each a `kind` from the catalogue `LEVEL_PROPS` with its north
+   - `props`, each a `kind` from the catalogue `LEVEL_PROPS`
+     (`src/northpole/level-props.ts`: scenery, performers, rides and factory
+     dressing) with its north
      corner `x`, `y` and an optional `variant` from 0 to 1. `pond` is the one
      prop that's ground: a 5 by 4 sheet of ice that skaters go round;
    - `arrival`, the tile visitors arrive on, and `exits`, at least one sleigh

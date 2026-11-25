@@ -10,6 +10,10 @@ Visitors arrive by sleigh at the front, by the sleigh home.
   crosses it, and pines along the edge.
 - **A log cabin** and **a striped tent** at the back, a cocoa cart, a parked
   sleigh, a banner over the path and a few snowdrifts.
+- **The show** about the paths: a ferris wheel and a carousel by the front, a
+  tethered balloon by the ice-fishing hole, two jugglers, a stilt-walker, a
+  fire-breather by the big tree, acrobats by the stream, a band and a
+  strongman.
 
 Its three squares, each on a stall of its own:
 

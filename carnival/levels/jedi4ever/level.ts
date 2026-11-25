@@ -2,8 +2,8 @@ import type { NorthPoleLevel } from '../../../src/northpole/level';
 
 /**
  * The Frozen Lake Fair: a small fair round a frozen lake, with skaters going
- * round, a skate rental, a cocoa hut and an ice-fishing hole, and the sleigh
- * home by the arrival point. Plain data: the engine checks it and draws it.
+ * round, a skate rental, a cocoa hut and an ice-fishing hole, performers and
+ * rides about the paths, and the sleigh home by the arrival point. Plain data: the engine checks it and draws it.
  */
 const level: NorthPoleLevel = {
   id: 'jedi4ever',
@@ -53,6 +53,16 @@ const level: NorthPoleLevel = {
     { kind: 'drift', x: 13, y: 14 },
     { kind: 'drift', x: 2, y: 15 },
     { kind: 'drift', x: 17, y: 2 },
+    { kind: 'ferris-wheel', x: 14, y: 13, variant: 0.3 },
+    { kind: 'carousel', x: 6, y: 14, variant: 0.7 },
+    { kind: 'balloon', x: 1, y: 12, variant: 0.2 },
+    { kind: 'fire-breather', x: 9, y: 2, variant: 0.1 },
+    { kind: 'juggler', x: 12, y: 12, variant: 0.3 },
+    { kind: 'juggler', x: 11, y: 13, variant: 0.8 },
+    { kind: 'stilt-walker', x: 7, y: 8, variant: 0.5 },
+    { kind: 'acrobats', x: 17, y: 13, variant: 0.6 },
+    { kind: 'band', x: 3, y: 9, variant: 0.4 },
+    { kind: 'strongman', x: 13, y: 3, variant: 0.9 },
   ],
   arrival: { x: 10, y: 17 },
   exits: [{ x: 12, y: 17 }],

@@ -24,6 +24,25 @@ North Pole has levels of its own too, such as The Factory,
   open the level in front of the square.
 - The theme (`dusk`, `aurora-night`, `candy-cane`, `frozen-lake`,
   `gingerbread`) tints the sky and colours the signs.
+- Besides the scenery, the catalogue (`LEVEL_PROPS` in
+  `src/northpole/level-props.ts`) has a show the map animates. Performers:
+  `fire-breather` (1 by 1, an elf on a crate whose flame swells and dies
+  away every 4 seconds or so), `juggler` (1 by 1, three balls, or four when
+  its variant is over 0.5), `stilt-walker` (2 by 1, striding from one tile to
+  the other and back), `acrobats` (1 by 1, the top elf swaying), `band` (1 by
+  1, a drummer and a horn, notes rising and fading) and `strongman` (1 by 1,
+  lifting a candy-cane barbell). Rides: `ferris-wheel` (3 by 3, about 40
+  seconds a turn, its cars lit), `carousel` (3 by 3, six reindeer rising and
+  falling, 12 seconds a turn) and `balloon` (2 by 2, tethered, bobbing).
+  Factory dressing: `conveyor` (1 by 3, parcels sliding along), `cog` (1 by
+  1, turning), `candy-pipe` (2 by 1, a striped arch puffing steam) and
+  `lantern` (1 by 1, floating; the only one people walk under). Each blocks
+  its tiles, but the lantern, and each moves only from the time and its
+  `variant`, which also picks its colours and offsets its loop, so two of a
+  kind move out of step. Nothing flashes: lights shimmer and glows swell over
+  seconds. They're drawn in `src/northpole/show.ts` and the files it calls
+  (`performers.ts`, `troupe.ts`, `rides.ts`, `carousel.ts`, `workshop.ts`),
+  with `brushes.ts` and `elf.ts`. The starter level places a few of each.
 - A level's pull request waits for a maintainer: the auto-merge gate only
   takes booth requests.
 - A North Pole level (`NORTH_POLE_LEVELS` in
@@ -85,7 +104,8 @@ North Pole has levels of its own too, such as The Factory,
 
 ## Where it lives
 
-`carnival/levels/`, `src/northpole/level.ts`, `src/northpole/levels.ts`,
+`carnival/levels/`, `src/northpole/level.ts`, `src/northpole/level-props.ts`,
+`src/northpole/show.ts` (and the files it draws with), `src/northpole/levels.ts`,
 `src/northpole/north-pole-levels.ts`, `src/factory-tour.ts`, `src/level-hud.ts`,
 `src/northpole/world.ts` (`platformPlot`), `src/main.ts` (`renderLevel`),
 `eslint.config.js`.
@@ -93,6 +113,8 @@ North Pole has levels of its own too, such as The Factory,
 ## Tested by
 
 `src/northpole/level.test.ts` (runs `validateLevel` on every real level),
+`src/northpole/level-props.test.ts` (the show's footprints and placement),
+`src/northpole/show.test.ts` (each one pinned, moving, varied and in the theme),
 `scripts/square-lint.test.ts` (level data held to plain data),
 `smoke/levels.spec.ts` (walks every open level to each square and home),
 `smoke/the-factory.spec.ts` (from the landmark into The Factory and past each
