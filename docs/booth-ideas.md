@@ -53,8 +53,8 @@ North Pole's colours:
 - **Cabin**: a log cabin with a snowy pitched roof.
 - **Kiosk**: a small hexagonal kiosk with a pointed roof.
 
-Pick one under **Stall shape** in the form, and name a roof colour, and a
-second colour for the stripes or the awning if you like, in your request: "a
+Ask for one in your request, and name a roof colour, and a
+second colour for the stripes or the awning if you like: "a
 shed with a gold roof", "a tent in pine green and cream". The colours are the
 palette's: snow, ice, pine, berry, gold, wood, cocoa, gingerbread, cream,
 violet, mint, aurora and the rest of the `theme`. Your sign and door stay where
