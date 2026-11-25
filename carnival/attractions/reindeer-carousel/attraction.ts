@@ -1,104 +1,102 @@
-import type { NorthPoleSquare } from '../../../src/northpole/square';
-import { cone, drum, glow, scene, shadow, stringLights } from '../../../src/northpole/diorama';
+import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
+import { cone, drum, glow, scene, shadow } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
+import { reindeer, ridingElf } from './figures';
+import {
+  AT_PACE,
+  carouselRiders,
+  chaseBrightness,
+  paceOf,
+  reindeerAt,
+  riderSpot,
+  seatAfterTap,
+  stepRide,
+  turnOf,
+  type Ride,
+  type Rider,
+} from './ride';
 
 const { colors } = theme;
 
-/** One full turn of the carousel, in milliseconds. */
-export const TURN = 9_000;
-
-export interface Rider {
-  /** Across the carousel, from -1 (left edge) to 1 (right edge). */
-  across: number;
-  /** 1 at the front, nearest the viewer, -1 at the back. */
-  depth: number;
-  /** How far the reindeer has risen on its pole, from 0 to 1. */
-  lift: number;
-}
+/** How many lantern bulbs hang round the canopy's rim. */
+const BULBS = 13;
 
 /**
- * Where each of `count` reindeer is at `time`, going round once every `TURN`
- * and rising and falling on its pole twice a turn.
+ * The carousel's one memory of the pointer: how far a held ride has got ahead
+ * of its own pace, and which reindeer the elf rides (-1 for none).
  */
-export function carouselRiders(count: number, time: number): Rider[] {
-  const turn = ((time % TURN) / TURN) * Math.PI * 2;
-  return Array.from({ length: count }, (_, i) => {
-    const angle = turn + (i / count) * Math.PI * 2;
-    return {
-      across: Math.sin(angle),
-      depth: Math.cos(angle),
-      lift: (1 + Math.sin(angle * 2 + i)) / 2,
-    };
-  });
+let ride: Ride = AT_PACE;
+let seated = -1;
+
+/** The lantern lights round the rim, a bright spot chasing round as the ride turns. */
+function chaseLights(ctx: CanvasRenderingContext2D, x: number, hem: number, turn: number) {
+  for (let n = 0; n < BULBS; n++) {
+    const a = 0.1 + (n / (BULBS - 1)) * (Math.PI - 0.2);
+    const bx = x + Math.cos(a) * 33;
+    const by = hem + 2 + Math.sin(a) * 16.5;
+    const strength = chaseBrightness(turn, n, BULBS);
+    ctx.fillStyle = colors.glow;
+    ctx.globalAlpha = 0.35 * strength;
+    ctx.beginPath();
+    ctx.arc(bx, by, 1.9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = strength;
+    ctx.fillStyle = n % 2 ? colors.gold : colors.lantern;
+    ctx.beginPath();
+    ctx.arc(bx, by, 0.9, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 }
 
-function reindeer(ctx: CanvasRenderingContext2D, x: number, y: number, u: number, facing: number) {
-  ctx.fillStyle = colors.wood;
-  ctx.beginPath();
-  ctx.ellipse(x, y, 6 * u, 3.5 * u, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillRect(x + facing * 4 * u - 1.2 * u, y - 6 * u, 2.4 * u, 5 * u);
-  ctx.beginPath();
-  ctx.arc(x + facing * 5 * u, y - 7 * u, 2.4 * u, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillRect(x - 5 * u, y + 2 * u, 1.4 * u, 4 * u);
-  ctx.fillRect(x + 3.6 * u, y + 2 * u, 1.4 * u, 4 * u);
-  // Antlers and a red nose.
-  ctx.strokeStyle = colors.gold;
-  ctx.lineWidth = 0.8 * u;
-  ctx.beginPath();
-  ctx.moveTo(x + facing * 4.5 * u, y - 9 * u);
-  ctx.lineTo(x + facing * 3 * u, y - 13 * u);
-  ctx.moveTo(x + facing * 5.5 * u, y - 9 * u);
-  ctx.lineTo(x + facing * 7 * u, y - 13 * u);
-  ctx.stroke();
-  ctx.fillStyle = colors.berry;
-  ctx.beginPath();
-  ctx.arc(x + facing * 7.4 * u, y - 7 * u, 1 * u, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-/** A reindeer carousel going round under a striped candy-cane canopy. */
+/** A reindeer carousel going round under a striped candy-cane canopy, to ride and speed up. */
 const attraction: NorthPoleSquare = {
   id: 'reindeer-carousel',
   name: 'Reindeer Carousel',
-  description: 'Reindeer bobbing round under a candy-cane canopy.',
+  description: 'Pick a reindeer to ride, and hold on to speed the carousel up.',
   // How it stands on the home map: what it is, not a pavilion (ADR 0042).
   stall: { shape: 'carousel', roof: 'berry', trim: 'snow', landmark: 'merry-go-round' },
-  draw(ctx, size, time) {
+  draw(ctx, size, time, pointer?: SquarePointer) {
+    ride = stepRide(ride, pointer?.down === true, time);
+    const turn = turnOf(ride, time);
+    const pace = paceOf(ride);
+    const riders = carouselRiders(6, turn);
+    if (pointer && pointer.presses > 0) {
+      const tapped = reindeerAt(riders, (pointer.x * 100) / size, (pointer.y * 100) / size);
+      seated = seatAfterTap(seated, tapped);
+    }
+
     scene(ctx, size, time, () => {
       const x = 50;
       const floor = 76;
       const deck = floor - 4;
       const hem = 40;
-      const turn = ((time % TURN) / TURN) * Math.PI * 2;
 
-      // The platform, lit warm by the lights under the canopy.
+      // The platform, lit warm by the lights under the canopy, brighter as it speeds up.
       shadow(ctx, x, floor + 2, 76);
       drum(ctx, x, floor, 34, 4, [colors.surface, colors.dusk], 12, turn, colors.slab);
-      glow(ctx, x, deck - 6, 30, 0.6);
+      glow(ctx, x, deck - 6, 30, 0.5 + pace * 0.1);
 
-      const riders = carouselRiders(6, time);
-      const ride = (rider: Rider) => {
-        const { across, depth, lift } = rider;
-        const rx = x + across * 26;
-        const foot = deck + depth * 12;
-        const ry = foot - 12 - lift * 6;
-        ctx.globalAlpha = depth < 0 ? 0.75 : 1;
+      const draw = (rider: Rider, index: number) => {
+        const spot = riderSpot(rider);
+        const facing = rider.depth >= 0 ? 1 : -1;
+        ctx.globalAlpha = rider.depth < 0 ? 0.75 : 1;
         ctx.strokeStyle = colors.gold;
         ctx.lineWidth = 0.8;
         ctx.beginPath();
-        ctx.moveTo(rx, hem + 2 + depth * 14);
-        ctx.lineTo(rx, foot);
+        ctx.moveTo(spot.x, hem + 2 + rider.depth * 14);
+        ctx.lineTo(spot.x, spot.foot);
         ctx.stroke();
-        reindeer(ctx, rx, ry, 0.85, depth >= 0 ? 1 : -1);
+        reindeer(ctx, spot.x, spot.y, 0.85, facing);
+        if (index === seated) ridingElf(ctx, spot.x, spot.y, 0.85, facing, pace);
         ctx.globalAlpha = 1;
       };
       // Reindeer at the back first, then the centre column, then the front ones.
-      const order = [...riders].sort((a, b) => a.depth - b.depth);
-      for (const rider of order) if (rider.depth < 0) ride(rider);
+      const order = riders.map((rider, index) => ({ rider, index }));
+      order.sort((a, b) => a.rider.depth - b.rider.depth);
+      for (const { rider, index } of order) if (rider.depth < 0) draw(rider, index);
       drum(ctx, x, deck, 4, deck - hem, [colors.gold, colors.lantern], 2, 0, colors.gold);
-      for (const rider of order) if (rider.depth >= 0) ride(rider);
+      for (const { rider, index } of order) if (rider.depth >= 0) draw(rider, index);
 
       // The candy-cane canopy, turning with the ride, with a gold trim and a gold ball on top.
       cone(ctx, x, hem, 35, 24, [colors.berry, colors.snow], 10, turn);
@@ -107,15 +105,7 @@ const attraction: NorthPoleSquare = {
       ctx.beginPath();
       ctx.ellipse(x, hem, 35, 17.5, 0, 0, Math.PI);
       ctx.stroke();
-      stringLights(
-        ctx,
-        Array.from({ length: 13 }, (_, i) => {
-          const a = 0.1 + (i / 12) * (Math.PI - 0.2);
-          return { x: x + Math.cos(a) * 33, y: hem + 2 + Math.sin(a) * 16.5 };
-        }),
-        [colors.lantern, colors.gold],
-        time,
-      );
+      chaseLights(ctx, x, hem, turn);
       ctx.fillStyle = colors.gold;
       ctx.beginPath();
       ctx.arc(x, hem - 25, 2.2, 0, Math.PI * 2);
