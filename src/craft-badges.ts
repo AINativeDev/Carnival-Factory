@@ -44,7 +44,7 @@ export const SQUARE_CRAFT = cleanCraft(
 );
 
 /** A square's key, as the build writes it: a level's own squares under the level. */
-export const craftKey = (kind: SquareKind, id: string, level?: string) =>
+export const craftKey = (kind: SquareKind | 'level', id: string, level?: string) =>
   level ? `level/${level.toLowerCase()}/${id}` : `${kind}/${id.toLowerCase()}`;
 
 /** The badges a square earned, with their labels and meanings. */

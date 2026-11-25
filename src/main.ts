@@ -17,7 +17,7 @@ import { openFactoryHud, readFactoryStats, squareCounts } from './factory';
 import { CHOICE_PANEL, renderChoice } from './peoples-choice-hud';
 import { SQUARE_HISTORY } from './history';
 import { levelLink, parseHash, squareLink } from './route';
-import { labelLevel } from './level-hud';
+import { openLevelPanel } from './level-panel';
 import { renderSeason } from './season-card';
 import { openVisitHud, type VisitHud } from './visit-hud';
 import { followPending, knownPending, loadSites, saveSites } from './pending';
@@ -247,11 +247,6 @@ function renderLevel(login: string, focus?: string) {
         <button class="map-prompt" type="button" hidden></button>
         <button class="hud hud-back" type="button"><span aria-hidden="true">←</span> Back to the map</button>
         <a class="hud hud-home" href="#/"><span aria-hidden="true">←</span> Back to the North Pole</a>
-        <section class="hud hud-level">
-          <h1 class="level-name"></h1>
-          <p class="level-owner"></p>
-          <p class="level-description"></p>
-        </section>
         <details class="hud hud-controls" open>
           <summary>Controls</summary>
           <p>Walk with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys, <kbd>E</kbd> to visit a square or ride the sleigh home</p>
@@ -259,8 +254,10 @@ function renderLevel(login: string, focus?: string) {
       </div>
     </section>`;
   const canvas = app.querySelector('canvas')!;
-  /* v8 ignore next -- the page's wiring: labelLevel is unit tested, and smoke/the-factory.spec.ts reads it */
-  labelLevel(app, canvas, level, entry.owner);
+  // The panel beside the map, and the map's label. Its id is the owner's login (validateLevel
+  // checks it), and the panel goes with the frame when the next page replaces it.
+  /* v8 ignore next -- the page's wiring: openLevelPanel is unit tested, and smoke/levels.spec.ts reads it */
+  openLevelPanel(app.querySelector<HTMLElement>('.map-frame')!, level);
   const known = focus && entry.squares.some((square) => square.id === focus);
   if (focus && !known) renderUnknownInLevel(login, focus);
   const started = startMap(

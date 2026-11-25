@@ -25,7 +25,7 @@
   "scripts/season.ts": 4,
   "scripts/share-pages.ts": 3,
   "scripts/square-history.test.ts": 14,
-  "scripts/square-history.ts": 4,
+  "scripts/square-history.ts": 1,
   "scripts/square-lint.test.ts": 1,
   "scripts/strict-types.ts": 2,
   "scripts/write-square-history.ts": 1,

@@ -41,6 +41,11 @@ describe('creditsFor', () => {
     expect(creditsFor(undefined, 'booth', 'carol')).toEqual({ maker: 'carol', improvers: [] });
     expect(creditsFor(undefined, 'attraction', 'ferris-wheel')).toBeUndefined();
   });
+
+  it("credits a participant's level to its owner, and the North Pole's own to nobody, without any", () => {
+    expect(creditsFor(data, 'level', 'jedi4ever')).toEqual({ maker: 'jedi4ever', improvers: [] });
+    expect(creditsFor(undefined, 'level', 'the-factory')).toBeUndefined();
+  });
 });
 
 describe('historyOf', () => {

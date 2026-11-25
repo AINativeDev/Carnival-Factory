@@ -5,6 +5,7 @@ import type {
   HistoryPull,
   SquareHistory,
 } from '../scripts/square-history';
+import { squareOwner } from './northpole/north-pole-levels';
 
 /**
  * Every square's history, read from the repository when the site was built
@@ -24,8 +25,9 @@ export const historyOf = (data: SquareHistory | undefined, kind: HistoryKind, id
 
 /**
  * Who made a square and who improved it since, from the build's history. A
- * booth the factory never built into, or a build without the file, credits
- * its owner; an attraction then credits nobody.
+ * booth or a participant's level the factory never built into, or a build
+ * without the file, credits its owner; an attraction or one of the North
+ * Pole's own levels then credits nobody.
  */
 export function creditsFor(
   data: SquareHistory | undefined,
@@ -34,7 +36,8 @@ export function creditsFor(
 ): Credits | undefined {
   const credits = data?.credits?.[`${kind}/${id.toLowerCase()}`];
   if (credits) return credits;
-  return kind === 'booth' ? { maker: id, improvers: [] } : undefined;
+  const maker = squareOwner(kind, id);
+  return maker ? { maker, improvers: [] } : undefined;
 }
 
 /** What the panel says when a square has no requests to show. */

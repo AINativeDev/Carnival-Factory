@@ -1,5 +1,5 @@
 /**
- * How every booth and attraction came to be: the requests that shaped it and
+ * How every booth, attraction and level came to be: the requests that shaped it and
  * the factory's pull requests that built them, read from the repository's
  * issues and pull requests when the site is built. Plain functions, so the
  * shaping is tested; scripts/write-square-history.ts does the reading.
@@ -11,8 +11,9 @@
  */
 
 import type { FactoryStats } from './factory-stats.ts';
+import { creditsOf } from './square-credits.ts';
 
-export type HistoryKind = 'booth' | 'attraction';
+export type HistoryKind = 'booth' | 'attraction' | 'level';
 
 /** What the assessment decided about a request. */
 export type Decision = 'accepted' | 'question' | 'declined' | 'waiting';
@@ -97,6 +98,11 @@ export interface RawPull {
 
 /** The issue label of a booth request, and the logins whose review threads are findings. */
 export const REQUEST_LABEL = 'booth-request';
+/** Each request form's label, and the kind of square it asks for: the author's own. */
+const REQUEST_KINDS: Record<string, HistoryKind> = {
+  [REQUEST_LABEL]: 'booth',
+  'level-request': 'level',
+};
 export const REVIEWERS = ['tessl-reviewer'];
 
 /** The longest title kept. */
@@ -106,7 +112,9 @@ export const MAX_TITLE = 120;
 export function squaresTouched(paths: string[]): string[] {
   const squares = new Set<string>();
   for (const path of paths) {
-    const match = path.match(/^(?:carnival\/)?(booth|attraction)s\/([a-z0-9]+(?:-[a-z0-9]+)*)\//i);
+    const match = path.match(
+      /^(?:carnival\/)?(booth|attraction|level)s\/([a-z0-9]+(?:-[a-z0-9]+)*)\//i,
+    );
     if (match) squares.add(`${match[1]}/${match[2].toLowerCase()}`);
   }
   return [...squares].sort();
@@ -147,32 +155,6 @@ export function cap(text: string, max = MAX_TITLE): string {
   return chars.length > max ? `${chars.slice(0, max - 1).join('')}…` : chars.join('');
 }
 
-/**
- * A square's credits, from its history: the authors of the requests whose
- * pull requests merged into its folder, each once, in the order they merged.
- * The history shows who changed a square, not who made it, so only a booth
- * has a maker: its owner, whose login names its folder. Everyone else
- * improved it. Nothing for an attraction the factory never built into.
- */
-export function creditsOf(square: string, entries: HistoryEntry[]): Credits | undefined {
-  const merged = entries
-    .flatMap((entry) => {
-      const times = entry.pulls.flatMap((pull) =>
-        pull.state === 'merged' && pull.mergedAt ? [pull.mergedAt] : [],
-      );
-      return times.length ? [{ author: entry.author, at: times.sort()[0] }] : [];
-    })
-    .sort((a, b) => a.at.localeCompare(b.at));
-  const people: string[] = [];
-  for (const { author } of merged) {
-    if (!people.some((login) => login.toLowerCase() === author.toLowerCase())) people.push(author);
-  }
-  const [kind, id] = square.split('/');
-  if (kind !== 'booth') return people.length ? { improvers: people } : undefined;
-  const maker = people.find((login) => login.toLowerCase() === id) ?? id;
-  return { maker, improvers: people.filter((login) => login !== maker) };
-}
-
 export interface ShapeOptions {
   /** The squares on the map, as `<kind>/<id>`. Nothing else gets a history. */
   squares: string[];
@@ -185,7 +167,7 @@ export interface ShapeOptions {
 
 /**
  * Every square's history. A request belongs to the squares its factory pull
- * requests change, and a booth request also to its author's booth, so one
+ * requests change, and a booth or level request also to its author's own, so one
  * that was declined or asked a question still shows there. Each square lists
  * only the pull requests that changed it. Newest first.
  */
@@ -209,7 +191,8 @@ export function shapeHistory(options: ShapeOptions): SquareHistory {
     const pulls = (pullsFor.get(issue.number) ?? []).sort((a, b) => b.pull.number - a.pull.number);
     const author = issue.author?.login ?? 'ghost';
     const where = new Set(pulls.flatMap((p) => p.squares));
-    if (labels.includes(REQUEST_LABEL)) where.add(`booth/${author.toLowerCase()}`);
+    for (const label of labels.filter((name) => Object.hasOwn(REQUEST_KINDS, name)))
+      where.add(`${REQUEST_KINDS[label]}/${author.toLowerCase()}`);
     for (const square of [...where].filter((s) => known.has(s)).sort()) {
       (squares[square] ??= []).push({
         issue: issue.number,

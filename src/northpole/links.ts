@@ -7,6 +7,12 @@ export const REPO_URL = 'https://github.com/AINativeDev/Northpole-Carnival-Facto
 export const BOOTH_REQUEST_URL = `${REPO_URL}/issues/new?template=01-your-booth.yml`;
 
 /**
+ * The one issue form for a level: it builds your level if you don't have one
+ * yet, and changes it if you do.
+ */
+export const LEVEL_REQUEST_URL = `${REPO_URL}/issues/new?template=02-your-level.yml`;
+
+/**
  * The Elf Engineer form: asks for the badge, for someone who set up a Tessl
  * factory on a repository of their own.
  */
