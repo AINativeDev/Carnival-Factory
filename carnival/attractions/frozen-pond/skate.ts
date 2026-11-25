@@ -18,10 +18,10 @@ export const SPIN = 1_200;
 export const SPARKLE = 1_600;
 /** How far the skater turns one way, in radians, to have made one loop of an eight. */
 const LOOP = Math.PI * 1.2;
-/** The most points of trail the rink keeps. */
-const TRAIL = 60;
 /** How far the skater goes before the trail gets its next point. */
 const STEP = 1.5;
+/** The most points of trail the rink keeps: a full speed's worth, so the cap never cuts a line before it has faded. */
+export const TRAIL = Math.ceil((SPEED * FADE) / 1000 / STEP) + 1;
 /** The longest frame the skater moves for at once, so a hidden tab doesn't jump it. */
 const LONGEST_FRAME = 100;
 
@@ -60,7 +60,7 @@ export function startRink(): Rink {
   };
 }
 
-/** The nearest point on the ice to (x, y): a point on it stays where it is. */
+/** The point on the ice's edge straight toward its middle from (x, y): a point on the ice stays where it is. */
 export function onIce(x: number, y: number): { x: number; y: number } {
   const dx = (x - ICE.x) / ICE.across;
   const dy = (y - ICE.y) / ICE.down;
@@ -95,7 +95,8 @@ function countTurn(rink: Rink, turn: number, time: number): Rink {
 
 /**
  * The rink at `time`, with the skater glided toward `target` (kept on the ice),
- * a spin begun for any `presses`, and the trail's faded points dropped.
+ * a spin begun for any `presses`, and the trail's faded points dropped. A
+ * spinning skater turns on the spot: it glides on once the spin is over.
  */
 export function skate(
   rink: Rink,
@@ -106,8 +107,9 @@ export function skate(
   const frame = Math.min(Math.max(time - (rink.then ?? time), 0), LONGEST_FRAME);
   const goal = onIce(target.x, target.y);
   const away = Math.hypot(goal.x - rink.x, goal.y - rink.y);
-  const glide = Math.min(away, (SPEED * frame) / 1000);
-  let next: Rink = { ...rink, then: time, spunAt: presses > 0 ? time : rink.spunAt };
+  const spunAt = presses > 0 ? time : rink.spunAt;
+  const glide = time - spunAt < SPIN ? 0 : Math.min(away, (SPEED * frame) / 1000);
+  let next: Rink = { ...rink, then: time, spunAt };
   if (glide > 0) {
     next = {
       ...next,
@@ -121,7 +123,23 @@ export function skate(
     if (last) next = countTurn(next, turnBetween(next.heading, heading), time);
     next = { ...next, heading, trail: [...next.trail, { x: next.x, y: next.y, at: time }] };
   }
-  return { ...next, trail: next.trail.filter((mark) => time - mark.at < FADE).slice(-TRAIL) };
+  return { ...next, trail: unfaded(next.trail, time) };
+}
+
+/** The trail's points that haven't faded yet, at most `TRAIL` of them. */
+function unfaded(trail: readonly Mark[], time: number): Mark[] {
+  return trail.filter((mark) => time - mark.at < FADE).slice(-TRAIL);
+}
+
+/**
+ * The rink while nobody steers. Until a visitor first steers it, the skater
+ * stands at `lane`, where the lane puts it from `time` alone; after, it waits
+ * where it was left while its trail fades. Either way it counts no turns, so a
+ * figure eight only ever sparkles for the visitor's own skating.
+ */
+export function rest(rink: Rink, lane: { x: number; y: number }, time: number): Rink {
+  if (rink.then === undefined) return { ...rink, x: lane.x, y: lane.y };
+  return { ...rink, then: time, trail: unfaded(rink.trail, time) };
 }
 
 /** How far into its spin the skater is, from 0 to 1, or undefined when it isn't spinning. */

@@ -21,6 +21,8 @@ Step inside, and a fourth skater in a gold scarf is yours:
 - **Skate a figure eight**, a loop one way and then a loop the other, and a
   ring of little gold stars sparkles over the skater.
 
-When nobody is steering, the gold skater skates the figure eight with the others.
+Until a visitor steers it, the gold skater skates the figure eight with the
+others. Once steered, it waits on the ice where it was left, and its trail
+fades. Only the visitor's own figure eights sparkle.
 
 Preview it at `#/attraction/frozen-pond`.

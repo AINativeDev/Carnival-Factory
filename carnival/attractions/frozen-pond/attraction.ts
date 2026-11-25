@@ -2,7 +2,7 @@ import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/squa
 import { glow, iso, pine, scene } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
 import { drawSkater, drawSparkle, drawTrail } from './rink-drawing';
-import { ICE, skate, sparkle, spinning, startRink } from './skate';
+import { ICE, rest, skate, sparkle, spinning, startRink } from './skate';
 
 const { colors } = theme;
 
@@ -107,10 +107,11 @@ const attraction: NorthPoleSquare = {
       ctx.stroke();
       ctx.globalAlpha = 1;
 
-      // The visitor's skater glides after the pointer, or skates the lane between the others.
+      // The visitor's skater glides after the pointer, and skates the lane between the others until first steered.
       const u = size / 100;
-      const target = pointer ? { x: pointer.x / u, y: pointer.y / u } : onLane(time, 1 / 6);
-      rink = skate(rink, target, time, pointer?.presses ?? 0);
+      rink = pointer
+        ? skate(rink, { x: pointer.x / u, y: pointer.y / u }, time, pointer.presses)
+        : rest(rink, onLane(time, 1 / 6), time);
       drawTrail(ctx, rink.trail, time);
 
       // Four skaters, the nearer ones drawn last.

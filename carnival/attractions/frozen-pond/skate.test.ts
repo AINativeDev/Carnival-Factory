@@ -6,7 +6,9 @@ import {
   SPARKLE,
   SPEED,
   SPIN,
+  TRAIL,
   onIce,
+  rest,
   skate,
   sparkle,
   spinning,
@@ -89,11 +91,27 @@ describe('skate', () => {
   });
 
   it('keeps its trail short', () => {
-    expect(skateAlong(startRink(), circle, 20_000).trail.length).toBeLessThanOrEqual(60);
+    expect(skateAlong(startRink(), circle, 20_000).trail.length).toBeLessThanOrEqual(TRAIL);
+  });
+
+  it('keeps every line at full speed until it has faded', () => {
+    const across = (time: number) => ({ x: Math.floor(time / 1_500) % 2 ? 0 : 100, y: ICE.y });
+    const carved = skateAlong(startRink(), across, 10_000);
+    const oldest = carved.trail.at(0)?.at ?? Infinity;
+    expect(10_000 - oldest).toBeGreaterThan(FADE - 100);
   });
 });
 
 describe('spinning', () => {
+  it('spins on the spot, then glides on', () => {
+    const start = skate(startRink(), { x: ICE.x, y: ICE.y }, 0, 0);
+    const far = { x: ICE.x + 20, y: ICE.y };
+    const tapped = skate(start, far, 16, 1);
+    const spun = skateAlong(tapped, () => far, SPIN - 50, 32);
+    expect(spun.x).toBe(ICE.x);
+    expect(skate(spun, far, SPIN + 66, 0).x).toBeGreaterThan(ICE.x);
+  });
+
   it('spins for a while after a tap', () => {
     const tapped = skate(startRink(), { x: ICE.x, y: ICE.y }, 500, 1);
     expect(spinning(tapped, 500)).toBe(0);
@@ -116,5 +134,29 @@ describe('sparkle', () => {
     const skated = skateAlong(startRink(), circle, 20_000);
     expect(skated.sparkledAt).toBe(-Infinity);
     expect(sparkle(skated, 20_000)).toBe(0);
+  });
+});
+
+describe('rest', () => {
+  const lane = { x: ICE.x + 10, y: ICE.y + 3 };
+
+  it('stands on the lane, from time alone, until first steered', () => {
+    expect(rest(startRink(), lane, 5_000)).toMatchObject(lane);
+    expect(rest(rest(startRink(), eight(0), 0), lane, 5_000)).toMatchObject(lane);
+  });
+
+  it('waits where it was left once steered, while its trail fades', () => {
+    const steered = skateAlong(startRink(), circle, 2_000);
+    const left = rest(steered, lane, 2_100);
+    expect(left).toMatchObject({ x: steered.x, y: steered.y, then: 2_100 });
+    expect(left.trail.length).toBeGreaterThan(0);
+    expect(rest(steered, lane, 2_000 + FADE + 16).trail).toEqual([]);
+  });
+
+  it('never sparkles while nobody steers', () => {
+    let rink = startRink();
+    for (let time = 0; time <= 20_000; time += 16) rink = rest(rink, eight(time), time);
+    expect(rink.sparkledAt).toBe(-Infinity);
+    expect(rink.turn).toBe(0);
   });
 });
