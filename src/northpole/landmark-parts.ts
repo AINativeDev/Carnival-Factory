@@ -44,12 +44,16 @@ export function stage(ctx: CanvasRenderingContext2D, plot: Plot, spread = 80): T
   return { x, y };
 }
 
-/** Where the drawing goes on a face: from `from` to `to` across it, `low` up it and `outward` tiles out. */
+/**
+ * Where the drawing goes on a face: from `from` to `to` across it, `low` up it
+ * and `outward` tiles out, under a name board `board` high.
+ */
 export interface ArtPlace {
   from: number;
   to: number;
   low: number;
   outward?: number;
+  board?: number;
 }
 
 /**
@@ -64,13 +68,13 @@ export function framedArt(
   place: ArtPlace,
   style: SignStyle = SIGN_STYLES.pavilion,
 ): number {
-  const { from, to, low, outward = 0 } = place;
+  const { from, to, low, outward = 0, board = 24 } = place;
   const tall = Math.abs(face.b.x - face.a.x) * (to - from - 0.04);
   ctx.fillStyle = colors.gold;
   band(ctx, face, from, to, low - 4, low + tall + 4, outward);
   ctx.fill();
   paintOnFace(paint, square, face, from + 0.02, to - 0.02, low, outward);
-  const top = low + tall + 30;
+  const top = low + tall + 6 + board;
   faceSign(ctx, face, low + tall + 6, top, square.name, '', outward, undefined, style);
   return top;
 }
