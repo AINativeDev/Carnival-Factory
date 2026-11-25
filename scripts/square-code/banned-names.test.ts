@@ -83,6 +83,12 @@ describe('a banned name that is only a name', () => {
     expect(rules(`import { close } from './parts';\nexport { close };`, extra)).toEqual([]);
   });
 
+  it('catches a global passed on as a shorthand property', () => {
+    expect(rules(`export const x = { fetch };`)).toContain('global');
+    expect(rules(`export const x = () => ({ self, postMessage });`)).toEqual(['global', 'global']);
+    expect(rules(`const close = 1;\nexport const x = { close };`)).toEqual([]);
+  });
+
   it("lets the square's own names shadow a global", () => {
     expect(rules(`const close = () => 1;\nexport const x = () => close();`)).toEqual([]);
     expect(rules(`export const x = (self: number) => self + 1;`)).toEqual([]);
