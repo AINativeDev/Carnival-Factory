@@ -13,7 +13,7 @@ agents follow.
 
 ## Decision
 
-- Code is linted by Oxlint ([0020](0020-oxlint.md)), Markdown by markdownlint,
+- Code is linted by ESLint ([0020](0020-keep-eslint.md)), Markdown by markdownlint,
   and every JSON file must parse and be formatted.
 - Claude Code hooks in `.claude/settings.json` run the same checks on each file
   an agent writes or edits, and report problems back to the agent at once. A

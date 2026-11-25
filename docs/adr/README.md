@@ -38,7 +38,7 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0017](0017-reporting-a-booth.md)        | How visitors report a problem with a booth                    | Proposed |
 | [0018](0018-community-made-notice.md)    | How the map says booths are community-made                    | Proposed |
 | [0019](0019-small-files.md)              | Code files stay under 200 lines                               | Accepted |
-| [0020](0020-oxlint.md)                   | Oxlint replaces ESLint                                        | Accepted |
+| [0020](0020-keep-eslint.md)              | Keep ESLint for code, rather than move to Oxlint              | Accepted |
 | [0021](0021-knip.md)                     | Knip finds unused code, exports and dependencies              | Accepted |
 | [0022](0022-lint-everything-on-edit.md)  | Lint code, JSON and Markdown, and check on every agent edit   | Accepted |
 
