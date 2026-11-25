@@ -1,7 +1,7 @@
 import { readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { ESLint } from 'eslint';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 // The real config, type-aware rules and all, on the real files.
 const eslint = new ESLint({ cwd: `${import.meta.dirname}/..` });
@@ -23,6 +23,12 @@ function filesIn(folder: string): string[] {
 // rules don't, every square would lint clean and the gate would still pass, so
 // every real square's code must come out with the rules switched on.
 describe('the house rules reach every square', () => {
+  // The type-aware rules build the TypeScript project on first use, which takes
+  // longer than a test's default 5 s on CI, so that happens once, up front.
+  beforeAll(async () => {
+    await eslint.lintText('', { filePath: 'src/route.ts' });
+  }, 120_000);
+
   const squareFiles = [
     ...filesIn('carnival/booths'),
     ...filesIn('carnival/attractions'),
