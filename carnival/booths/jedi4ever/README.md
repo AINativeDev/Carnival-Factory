@@ -30,10 +30,26 @@ repeats every 12 seconds:
 - **On the map**: the stall is a log cabin with a berry red roof and gold trim.
 
 Everything is drawn from `time`. The one thing the booth remembers is when
-each penguin and the snow globe were last tapped, so they can react. The timing and movement of the
-loop (`letterAt`, `placeOf`, `buildOf`, `lampAt`, `jingleAt`, `sacksFilled`)
-and of the penguins (`shuffleOf`, `blinking`, `hopHeight`, `penguinAt`) are
-plain functions in `booth.ts`, tested in `booth.test.ts`.
+each penguin and the snow globe were last tapped, so they can react.
+
+The code is split by what each part is in the scene, each with its tests
+beside it:
+
+- `booth.ts` puts the workshop together, back to front, and keeps the taps.
+- `letters.ts` is the loop itself: each letter's trip (`letterAt`,
+  `lettersAt`, `placeOf`, `buildOf`).
+- `tallies.ts` is the check lamp and the "toys today" sign (`lampAt`,
+  `toysMade`, `bounceOf`); `sleigh.ts` is the sleigh, its bells and the sacks
+  counter (`jingleAt`, `sacksFilled`).
+- `room.ts` is the room behind it all, with the window's snow and the lights
+  (`snowflake`, `twinkle`).
+- `elves.ts`, `belt.ts` and `toys.ts` draw the elves, the belt with
+  everything on it, and the letters and toys.
+- `penguins.ts` is the penguins (`shuffleOf`, `blinking`, `hopHeight`,
+  `penguinAt`), and `snow-globe.ts` the globe (`swirlOf`, `onGlobe`,
+  `globeFlake`).
+- `motion.ts` and `brushes.ts` are the easing and the shapes and words they
+  all share.
 
 Preview it at `#/booth/jedi4ever`.
 
