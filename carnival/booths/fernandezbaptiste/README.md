@@ -35,12 +35,20 @@ table shows "Tap to play Snap".
 
 ## The rules
 
-The game's rules are plain functions in `booth.ts`, tested in `booth.test.ts`:
-the deck (`makeDeck`, `shuffle`, `deal`), turns and matching (`flip`, `isSnap`,
-`playUntilSnap`), slapping and scoring (`slap`, `elfDelay`, `press`,
-`advance`), winning and the visitor's game from frame to frame (`newGame`,
-`play`), and the elves' own rounds (`roundAt`, `tally`, `momentAt`, `flipsAt`,
-`stacksAt`). The elf's delay is a seeded function of the time, so the tests
-stay deterministic. Everything moves from `time`.
+The game's rules are plain functions, each file tested beside it: the deck
+(`makeDeck`, `shuffle`, `deal`, `isSnap`) in `deck.ts`; the elves' own rounds
+(`playUntilSnap`, `roundAt`, `tally`) in `rounds.ts`, and where a round stands
+at any time (`momentAt`, `flipsAt`, `stacksAt`) in `round-clock.ts`; and the
+visitor's game (`newGame`, `flip`, `elfDelay`, `press`, `advance`, `play`) in
+`visitor-game.ts`. The elf's delay is a seeded function of the time, so the
+tests stay deterministic. Everything moves from `time`.
+
+## The drawing
+
+`booth.ts` joins the parts for the map. `table-view.ts` turns either game into
+what the table shows at one moment, `poses.ts` works out the elves' hands and
+the card in the air, both plain functions tested beside them, and `table-scene.ts` paints it all back to front, from the
+table and lantern in `card-table.ts`, the cards in `cards.ts`, the elves in
+`elves.ts` and the strokes in `brush.ts`.
 
 Preview it at `#/booth/fernandezbaptiste`.
