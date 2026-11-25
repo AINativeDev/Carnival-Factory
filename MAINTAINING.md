@@ -1,56 +1,9 @@
 # Maintaining Carnival Factory
 
-For the people who run a Carnival Factory: setting one up, the settings and
-rules that live outside the code, and how it's built. Participants start at the
-[README](README.md); agents start at [`AGENTS.md`](AGENTS.md).
-
-## Run your own Carnival Factory
-
-Run your own copy, with you as the maintainer.
-
-1. **Sign up and log in.** Create an account at [tessl.io](https://tessl.io),
-   install the Tessl CLI ([setup guide](https://docs.tessl.io/introduction-to-tessl/set-up-tessl)),
-   then:
-
-   ```sh
-   tessl login
-   ```
-
-2. **Fork and clone** this repository. In your fork, set **Settings → Pages →
-   Source** to **GitHub Actions**.
-3. **Install the Tessl GitHub App** on your fork, from the Tessl web app (see
-   the setup guide).
-4. **Turn on Tessl Code Review** for your fork
-   ([guide](https://docs.tessl.io/tutorials/setting-up-agentic-code-review)).
-   Its lenses are in `.tessl-code-review.yml`.
-5. **Make yourself the maintainer.** Put your login in `.github/CODEOWNERS` and
-   in `MAINTAINERS` in `scripts/ownership.ts`. In `tessl.json`, replace the
-   ids in each `event.sender.id` and `event.pull_request.head.repo.id` with
-   yours:
-
-   ```sh
-   gh api users/<you> -q .id          # your user id
-   gh api repos/<you>/<fork> -q .id   # your fork's id
-   ```
-
-6. **Set up the factory** in your clone, and put the two environment names in
-   `tessl.json` (the top-level `environment`, and `merge-conflict-sweep`'s):
-
-   ```sh
-   tessl init
-   tessl environment create my-carnival --github-access write
-   tessl environment create my-carnival-sweep --github-access read
-   tessl doctor --automations
-   ```
-
-7. **Create the labels** the loops use:
-
-   ```sh
-   for l in tessl booth-request level-request badge-request badge-granted needs-info declined; do gh label create "$l"; done
-   ```
-
-8. **File your first issue** with the **Your booth** form, and watch it come
-   back as a pull request.
+For this project's maintainers: the settings and rules that live outside the
+code, how the factory is steered, and how it's built. People using the map
+start at the [README](README.md); people forking it to run their own start at
+[RUN-YOUR-OWN.md](RUN-YOUR-OWN.md); agents start at [`AGENTS.md`](AGENTS.md).
 
 ## Settings and rules
 
@@ -102,9 +55,7 @@ without write access can't react, so they couldn't vote. Every deploy then adds 
 Elf Engineer while voting is open (`scripts/write-peoples-choice.ts`, with the
 deploy's own token), and counts the 👍. Until the issue exists, the map
 shows no standings. To move the closing date, change `VOTING_CLOSES` in
-`src/northpole/peoples-choice.ts`. On a fork, set `REPO_URL` in
-`src/northpole/links.ts` to your fork's address too: the build keeps only
-standings whose links are into that repository's issues.
+`src/northpole/peoples-choice.ts`.
 
 Every pull request from this repository gets a **Preview** link to its build,
 published next to the live map under `previews/pr-<number>/` and removed when

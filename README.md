@@ -86,8 +86,7 @@ or **An idea**: they stay open, and the maintainers read every one.
 ## Run your own
 
 Want a Carnival Factory of your own, with you as the maintainer?
-[MAINTAINING.md](MAINTAINING.md) has the install steps, and everything else a
-maintainer needs.
+[RUN-YOUR-OWN.md](RUN-YOUR-OWN.md) has the steps to fork and set it up.
 
 It's based on [Tessl Carnival](https://github.com/tesslio/tessl-carnival), the
 starter repo for the "Build your own software factory with context" workshop.
