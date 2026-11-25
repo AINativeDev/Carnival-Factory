@@ -34,7 +34,7 @@ A level is a whole patch of the North Pole of a participant's own,
 - Each square is `squares/<id>/square.ts`, built like a booth and run
   sandboxed like one, with the frame address `level/<login>/<id>` (enforced
   by: ESLint house rules, scripts/square-lint.test.ts,
-  src/northpole/frame-protocol.test.ts, the CSP in square.html).
+  src/northpole/frame-protocol-address.test.ts, the CSP in square.html).
 - `validateLevel` checks, before anything is drawn: the folder is a login and
   `id` matches it; name (up to 40 characters) and description (up to 160);
   a known theme; `size` odd, 9 to 41; at most 200 ground areas, 200 blocked
