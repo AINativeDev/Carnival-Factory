@@ -48,7 +48,8 @@ async function gate(round: Round, pull: Pull) {
 
 /**
  * Gates every open factory pull request in `repository` through `github`.
- * Returns false when any of them failed; the others are still gated.
+ * Returns false when any of them failed; the others are still gated, and the
+ * map still published.
  */
 export async function runMergeGate(
   github: GitHub,
@@ -76,6 +77,6 @@ export async function runMergeGate(
       ok = false;
     }
   }
-  await publishIfBehind(github, round);
-  return ok;
+  const published = await publishIfBehind(github, round);
+  return ok && published;
 }
