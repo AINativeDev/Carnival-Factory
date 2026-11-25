@@ -9,6 +9,7 @@ import { platformLabel, siteLabel, squareOf } from './map-labels';
 import type { MapRun } from './map-state';
 import { inviteFor, inviteOpacity } from './owners';
 import { middle } from './brushes';
+import { cornerLinks, promptSpot } from './prompt-spot';
 import type { Plot, Tile } from './world';
 
 /** What the call to action says for a plot. Its words follow the square's name, which arrives once its frame has opened. */
@@ -68,10 +69,8 @@ function placePrompt(m: MapRun, plot: Plot, time: number, zoom: number, centre: 
   const height = frame.clientHeight;
   const top = target.box.y - 40;
   const anchor = worldToScreen({ x: middle(plot).x, y: top }, width, height, centre, zoom);
-  const w = prompt.offsetWidth;
-  const h = prompt.offsetHeight;
-  const x = Math.max(8, Math.min(width - w - 8, anchor.x - w / 2));
-  const y = Math.max(8, Math.min(height - h - 8, anchor.y - h));
+  const size = { w: prompt.offsetWidth, h: prompt.offsetHeight };
+  const { x, y } = promptSpot(anchor, size, { width, height }, cornerLinks(frame));
   prompt.style.translate = `${Math.round(x)}px ${Math.round(y)}px`;
   prompt.style.opacity = `${inviteOpacity(time - m.invitedAt)}`;
 }

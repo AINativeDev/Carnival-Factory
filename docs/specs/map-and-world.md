@@ -26,6 +26,10 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   pathfinding finds the way. Walkers step diagonally only where no corner is cut.
 - E, Enter or a click at a square goes inside it. From afar, the player is put
   at its door first. Esc on the map lets go of the picked square.
+- The call to action over a door sits above its square, kept on the map, and
+  steps below "Back to the North Pole" or "Built with Tessl" in the top-left
+  corner rather than cover it, so the way home can always be clicked
+  (`src/northpole/prompt-spot.ts`).
 - On a touch screen the first tap on a structure shows its tag, the second
   opens it. One finger drags the map, two fingers pinch the zoom.
 - With a mouse, a press of the primary button that moves past a tap's slop

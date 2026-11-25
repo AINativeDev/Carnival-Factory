@@ -63,10 +63,18 @@ const APPROACHES: { dx: number; dy: number; keys: [string, string] }[] = [
  * than walk: the map opens whatever structure is under a click before it walks
  * (`onClick` in src/northpole/map.ts), and a structure stands taller than its
  * own tiles, so ground just behind it can be under it on screen. The map shows
- * the pointer cursor over exactly those, so hovering there first tells.
+ * the pointer cursor over exactly those, so hovering there first tells. A
+ * point under something over the map, such as the call to action bobbing over
+ * the door the player stands at, can't be hovered or clicked at all, so it
+ * counts as taken too: on a slow machine the walk otherwise waits there.
  */
 async function opensSomething(page: Page, position: { x: number; y: number }) {
   const canvas = page.locator('.map-canvas');
+  const covered = await canvas.evaluate((element, { x, y }) => {
+    const box = element.getBoundingClientRect();
+    return document.elementFromPoint(box.left + x, box.top + y) !== element;
+  }, position);
+  if (covered) return true;
   await canvas.hover({ position, timeout: 10_000 });
   return (await canvas.evaluate((element) => element.style.cursor)) === 'pointer';
 }
