@@ -40,6 +40,7 @@ export type ThingKind =
   | 'arch'
   | 'banner'
   | 'bunting'
+  | 'billboard'
   | ShowKind;
 
 /** Something the map draws standing on the ground, over the tiles of `box`. */

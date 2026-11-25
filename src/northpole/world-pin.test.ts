@@ -45,9 +45,9 @@ describe('the worlds the map lays out', () => {
     ];
     expect(worlds.map(fingerprintOf)).toMatchInlineSnapshot(`
       [
-        "ee6a6dc7173d0229",
-        "756beef445029629",
-        "20701b0aab3da7a5",
+        "918ea59e53175ab7",
+        "dddbd399533e3483",
+        "44a2980f68c8b5c2",
       ]
     `);
   });
@@ -59,7 +59,7 @@ describe('the worlds the map lays out', () => {
     const digest = createHash('sha256')
       .update(JSON.stringify([ways, back]))
       .digest('hex');
-    expect(digest.slice(0, 16)).toMatchInlineSnapshot(`"2ce76c29e3ab81d8"`);
+    expect(digest.slice(0, 16)).toMatchInlineSnapshot(`"472f45d27a6e9212"`);
   });
 
   it('lays out every level as before', () => {

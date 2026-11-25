@@ -9,7 +9,7 @@ import { dragCentre } from './camera-view';
 import { pinchZoom } from './camera-view';
 import { pinchCentre } from './camera-view';
 import { want } from './map-camera';
-import { pointAt } from './map-input';
+import { billboardUnder, pointAt } from './map-input';
 import { plotUnder } from './map-labels';
 import type { MapRun } from './map-state';
 import { isTap } from './pointer';
@@ -55,8 +55,10 @@ export function onPointerEnd(m: MapRun, event: PointerEvent) {
 /** A finger moving drags or pinches the camera; the mouse moving hovers a plot. */
 export function onPointerMove(m: MapRun, event: PointerEvent) {
   if (event.pointerType !== 'touch') {
-    m.hovered = m.visiting ? undefined : plotUnder(m, pointAt(m, event));
-    m.canvas.style.cursor = m.hovered ? 'pointer' : 'default';
+    const at = pointAt(m, event);
+    m.hovered = m.visiting ? undefined : plotUnder(m, at);
+    const link = !m.visiting && billboardUnder(m, at);
+    m.canvas.style.cursor = m.hovered || link ? 'pointer' : 'default';
     return;
   }
   if (!m.fingers.has(event.pointerId) || m.visiting || !m.camera) return;

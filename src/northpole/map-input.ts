@@ -4,6 +4,8 @@
  * ground to walk there and a structure to open it, inside a room click to walk
  * or leave. Fingers dragging and pinching the camera are map-touch.ts.
  */
+import { BILLBOARD, onBillboard } from './billboard';
+import { middle } from './brushes';
 import { screenToWorld } from './camera-view';
 import { clickInRoom, roomArea, roomLayout } from './interior';
 import { plotUnder } from './map-labels';
@@ -35,6 +37,10 @@ export function pointAt(m: MapRun, event: MouseEvent): Tile {
     m.zoom || 1,
   );
 }
+
+/** Whether `point` is on the billboard: a click there opens its tickets page in a new tab. */
+export const billboardUnder = (m: MapRun, point: Tile) =>
+  m.world.things.some((thing) => thing.kind === 'billboard' && onBillboard(middle(thing), point));
 
 /** Walk with the keys, open what's invited into with E or Enter, and let go of it with Escape. */
 export function onKeyDown(m: MapRun, event: KeyboardEvent) {
@@ -76,6 +82,10 @@ export function onClick(m: MapRun, event: MouseEvent) {
     return;
   }
   const point = pointAt(m, event);
+  if (billboardUnder(m, point)) {
+    window.open(BILLBOARD.tickets, '_blank', 'noopener');
+    return;
+  }
   const plot = plotUnder(m, point);
   const touch = (event as PointerEvent).pointerType === 'touch';
   if (plot && touch && m.hovered !== plot) {

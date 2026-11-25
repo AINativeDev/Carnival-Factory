@@ -5,6 +5,8 @@
  * map moves the camera. The drawings themselves live in small files by what
  * they are (docs/adr/0019-small-files.md), so this file only chooses.
  */
+import { drawBillboard } from './billboard';
+import { middle } from './brushes';
 import { drawArch, drawBanner, drawBunting } from './entrance';
 import { drawCabin, drawStable } from './houses';
 import { drawTent, drawWheel } from './midway';
@@ -43,6 +45,9 @@ const SCENERY: Record<
   arch: drawArch,
   banner: drawBanner,
   bunting: drawBunting,
+  billboard: (ctx, thing, time) => {
+    drawBillboard(ctx, middle(thing), time);
+  },
 };
 
 /** Whether a thing is the map's own scenery, rather than a level's performer, ride or dressing. */
