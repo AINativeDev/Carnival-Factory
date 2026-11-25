@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOOTH_REQUEST_URL, CHANGE_URL, CLAIM_URL } from './northpole/links';
+import { BOOTH_REQUEST_URL, CHANGE_URL, CLAIM_URL, LEVEL_REQUEST_URL } from './northpole/links';
 import { fillVisitHelp } from './visit-help';
 
 /** A help box that keeps its HTML and hands out one season link. */
@@ -30,6 +30,17 @@ describe('fillVisitHelp', () => {
     const level = helpBox();
     fillVisitHelp(level.element, 'attraction', 'hut', 'bo');
     expect(level.box.innerHTML).toContain("participant's own level");
+  });
+
+  it("offers a level's owner a change, and says the North Pole's own levels are its maintainers'", () => {
+    const mine = helpBox();
+    fillVisitHelp(mine.element, 'level', 'bo');
+    expect(mine.box.innerHTML).toContain(LEVEL_REQUEST_URL);
+    expect(mine.box.innerHTML).toContain('Ask for a change');
+    const northPole = helpBox();
+    fillVisitHelp(northPole.element, 'level', 'the-factory');
+    expect(northPole.box.innerHTML).toContain('only its maintainers change it');
+    expect(northPole.box.innerHTML).toContain(CLAIM_URL);
   });
 
   it("takes the sleigh in from a landmark's room", () => {

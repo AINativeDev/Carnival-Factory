@@ -11,11 +11,23 @@ North Pole has levels of its own too, such as The Factory,
   the main path by the entrance, sorted by login. E, Enter or a click on an
   open platform takes the sleigh there. A closed level's platform says
   "Closed for repairs" and has no sleigh.
-- `#/level/<login>` walks the level's own world, with its name, owner,
-  description over the map, and "Back to the North Pole" in the top-left
-  corner, where "Back to the map" stands inside one of its squares.
-  `#/level/<login>?square=<id>` puts the player in front of a square, and
-  `#/level/<login>/<id>` inside it. The sleigh home goes back to `#/`.
+- `#/level/<login>` walks the level's own world, with "Back to the North
+  Pole" in the top-left corner, where "Back to the map" stands inside one of
+  its squares. `#/level/<login>?square=<id>` puts the player in front of a
+  square, and `#/level/<login>/<id>` inside it. The sleigh home goes back to
+  `#/`.
+- Beside the map stands the level's panel: the visit panel of a square (see
+  [Visit panel and history](visit-panel-and-history.md)), on the right on a
+  laptop and below the map on a phone. It stands beside the map, not over it:
+  the map takes the space that's left, so the camera frames the level there
+  and the way home stays clear. It shows the level's name (the map has no
+  sign for it), "A level by @<login>" and its description, then **How it was
+  built** from the level's own requests, then Share (the level's link,
+  `#/level/<login>`), "Want one of your own? Ask for a level of your own" (the
+  level form) and **More**. A level has no Remix, no People's Choice vote and
+  no Leave: the player walks on with the keys while it shows. Inside one of
+  the level's squares, that square's panel takes its place, and it comes back
+  on leaving.
 - A link to a level that doesn't exist, or is closed, shows the North Pole
   with a note: "There's no level for @<login> yet." or "@<login>'s level is
   closed for repairs." A link to a square a level doesn't have says so too.
@@ -95,9 +107,13 @@ North Pole has levels of its own too, such as The Factory,
 - Every stall of The Factory has its step of the tour, in the order the path
   passes their doors from the arrival point (enforced by:
   src/factory-tour.test.ts).
-- A North Pole level's HUD and its stalls' panels credit nobody, and its
-  landmark's room takes the sleigh inside (enforced by: src/level-hud.test.ts,
-  src/visit-help.test.ts and smoke/the-factory.spec.ts).
+- A North Pole level's panel and its stalls' panels credit nobody, and its
+  landmark's room takes the sleigh inside (enforced by: src/level-panel.test.ts,
+  src/history.test.ts, src/visit-help.test.ts and smoke/the-factory.spec.ts).
+- A level's panel is the visit panel, with its name and description set only
+  as text, steps aside inside a square and never covers the way home
+  (enforced by: src/level-panel.test.ts, and the panel test at desktop and
+  phone width in smoke/levels.spec.ts).
 - A level's pull request waits for a maintainer (enforced by:
   scripts/merge-gate-requests.ts, which only takes booth requests, and
   scripts/auto-merge-booths-pulls.test.ts).
@@ -107,6 +123,7 @@ North Pole has levels of its own too, such as The Factory,
 `carnival/levels/`, `src/northpole/level.ts`, `src/northpole/level-props.ts`,
 `src/northpole/show.ts` (and the files it draws with), `src/northpole/levels.ts`,
 `src/northpole/north-pole-levels.ts`, `src/factory-tour.ts`, `src/level-hud.ts`,
+`src/level-panel.ts`,
 `src/northpole/world.ts` (`platformPlot`), `src/main.ts` (`renderLevel`),
 `eslint.config.js`.
 
@@ -119,5 +136,6 @@ North Pole has levels of its own too, such as The Factory,
 `smoke/levels.spec.ts` (walks every open level to each square and home),
 `smoke/the-factory.spec.ts` (from the landmark into The Factory and past each
 stall, at desktop and phone width, and from the landmark's room), `src/northpole/north-pole-levels.test.ts`,
-`src/factory-tour.test.ts`, `src/level-hud.test.ts`, `src/northpole/levels.test.ts`,
+`src/factory-tour.test.ts`, `src/level-hud.test.ts`, `src/level-panel.test.ts`,
+`src/northpole/levels.test.ts`,
 each level square's `square.test.ts`.

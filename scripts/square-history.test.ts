@@ -3,7 +3,6 @@ import {
   branchIssue,
   cap,
   countFindings,
-  creditsOf,
   decisionOf,
   shapeHistory,
   squaresTouched,
@@ -63,6 +62,9 @@ describe('squaresTouched', () => {
       'booth/ana',
     ]);
   });
+  it("finds a level from any file in its folder, its squares' too", () => {
+    expect(squaresTouched(['carnival/levels/Ana/squares/igloo/square.ts'])).toEqual(['level/ana']);
+  });
 });
 
 describe('branchIssue', () => {
@@ -108,7 +110,7 @@ describe('cap', () => {
 describe('shapeHistory', () => {
   const shape = (issues: RawIssue[], pulls: RawPull[], site?: string) =>
     shapeHistory({
-      squares: ['booth/ana', 'attraction/ferris-wheel'],
+      squares: ['booth/ana', 'attraction/ferris-wheel', 'level/ana'],
       issues,
       pulls,
       site,
@@ -182,6 +184,24 @@ describe('shapeHistory', () => {
     ]);
   });
 
+  it("puts a level request and its pull requests on its author's level, keyed level/<login>", () => {
+    const history = shape(
+      [
+        issue(8, 'Ana', ['level-request', 'tessl'], '2026-11-23T10:00:00Z'),
+        issue(9, 'ana', ['level-request', 'declined'], '2026-11-24T10:00:00Z'),
+      ],
+      [pull(10, 'tessl/issue-8', ['carnival/levels/ana/level.ts'])],
+    );
+    expect(history.squares).toMatchObject({
+      'level/ana': [
+        { issue: 9, pulls: [] },
+        { issue: 8, pulls: [{ number: 10 }] },
+      ],
+    });
+    expect(history.squares['booth/ana']).toBeUndefined();
+    expect(history.credits['level/ana']).toEqual({ maker: 'Ana', improvers: [] });
+  });
+
   it('leaves out squares not on the map, other branches, forks and issues that shaped no square', () => {
     const history = shape(
       [
@@ -247,47 +267,5 @@ describe('shapeHistory', () => {
       preview: 'https://o.github.io/r/previews/pr-2/#/booth/ana',
     });
     expect(history.squares['booth/ana'][0].pulls[0].mergedAt).toBeUndefined();
-  });
-});
-
-describe('creditsOf', () => {
-  const entry = (author: string, pulls: { state: 'merged' | 'open'; mergedAt?: string }[]) => ({
-    issue: 1,
-    title: 'Request',
-    url: `${REPO}/issues/1`,
-    author,
-    openedAt: '2026-11-01T10:00:00Z',
-    decision: 'accepted' as const,
-    pulls: pulls.map((p, n) => ({ number: n, url: '', findings: 0, fixed: 0, commits: 1, ...p })),
-  });
-
-  it('orders people by when their change first merged, and names each once', () => {
-    expect(
-      creditsOf('attraction/ferris-wheel', [
-        entry('bob', [{ state: 'merged', mergedAt: '2026-11-03T00:00:00Z' }]),
-        entry('ana', [{ state: 'merged', mergedAt: '2026-11-02T00:00:00Z' }]),
-        entry('Bob', [{ state: 'merged', mergedAt: '2026-11-05T00:00:00Z' }]),
-        entry('ANA', [{ state: 'merged', mergedAt: '2026-11-04T00:00:00Z' }]),
-      ]),
-    ).toEqual({ improvers: ['ana', 'bob'] });
-  });
-
-  it("makes a booth's owner its maker, even when someone else's change merged first", () => {
-    const merged = (author: string, day: number) =>
-      entry(author, [{ state: 'merged', mergedAt: `2026-11-0${day}T00:00:00Z` }]);
-    expect(creditsOf('booth/ana', [merged('maintainer', 1), merged('Ana', 2)])).toEqual({
-      maker: 'Ana',
-      improvers: ['maintainer'],
-    });
-    expect(creditsOf('booth/ana', [merged('maintainer', 1)])).toEqual({
-      maker: 'ana',
-      improvers: ['maintainer'],
-    });
-  });
-
-  it('credits nobody for requests that never merged, but a booth still has its owner', () => {
-    const none = [entry('ana', [{ state: 'open' }]), entry('bob', [])];
-    expect(creditsOf('attraction/ferris-wheel', none)).toBeUndefined();
-    expect(creditsOf('booth/bob', none)).toEqual({ maker: 'bob', improvers: [] });
   });
 });

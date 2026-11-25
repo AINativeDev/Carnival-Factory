@@ -15,7 +15,7 @@ export interface ShareParts {
 /** Wires up Share for one square; `refresh` rewrites the line unless the visitor edited it. */
 export function wireShare(
   parts: ShareParts,
-  square: { kind: SquareKind; id: string; name: () => string },
+  square: { kind: SquareKind | 'level'; id: string; name: () => string },
   link: string,
 ) {
   let mine = false;

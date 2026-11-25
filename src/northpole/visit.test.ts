@@ -57,6 +57,15 @@ describe('the share line', () => {
     );
   });
 
+  it("names a participant's level's builder, and a North Pole level as the North Pole's", () => {
+    expect(shareText({ kind: 'level', id: 'bo', name: 'Ice Maze' }, 'L')).toBe(
+      '@bo built Ice Maze, a level, at the North Pole Carnival. Come visit, and build your own: L',
+    );
+    expect(shareText({ kind: 'level', id: 'the-factory', name: 'The Factory' }, 'L')).toBe(
+      'The Factory, a level, is at the North Pole Carnival. Come visit, and build a booth of your own: L',
+    );
+  });
+
   it("links to the square's share page", () => {
     expect(sharePath('booth', 'elf')).toBe('share/booth-elf.html');
     expect(sharePath('attraction', 'ferris-wheel')).toBe('share/attraction-ferris-wheel.html');

@@ -31,5 +31,7 @@ describe('North Pole levels', () => {
     expect(squareOwner('attraction', 'ferris-wheel')).toBeUndefined();
     expect(squareOwner('attraction', 'hut', 'bo')).toBe('bo');
     expect(squareOwner('attraction', 'gate', 'the-factory')).toBeUndefined();
+    expect(squareOwner('level', 'bo')).toBe('bo');
+    expect(squareOwner('level', 'the-factory')).toBeUndefined();
   });
 });

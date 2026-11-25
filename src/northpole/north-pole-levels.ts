@@ -20,8 +20,12 @@ export function levelOwner(login: string): string {
   return isNorthPoleLevel(login) ? 'the North Pole' : `@${login}`;
 }
 
-/** Whose square this is, by login: a booth's owner, a participant's level's, or none for the North Pole's own. */
+/**
+ * Whose square this is, by login: a booth's owner, a participant's level's (the
+ * level itself, or one of its squares), or none for the North Pole's own.
+ */
 export function squareOwner(kind: string, id: string, level?: string): string | undefined {
-  if (level) return isNorthPoleLevel(level) ? undefined : level;
+  const home = kind === 'level' ? id : level;
+  if (home) return isNorthPoleLevel(home) ? undefined : home;
   return kind === 'booth' ? id : undefined;
 }

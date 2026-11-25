@@ -1,21 +1,30 @@
 /**
  * The help at the foot of a square's panel: what someone can do next, which
  * depends on whose square it is. A booth's owner can ask for a change or share
- * it as theirs; anyone can claim a booth of their own beside an attraction or
+ * it as theirs, and a level's owner can ask for a change to it; anyone can claim a booth of their own beside an attraction or
  * from a level, and a stall of The Factory tells its step of the tour. Only fixed text and the repository's own links go in as HTML;
  * the season link's login is set as a property.
  */
 import { fillTourStop } from './factory-tour';
-import { BADGE_REQUEST_URL, CHANGE_URL, CLAIM_URL } from './northpole/links';
+import { BADGE_REQUEST_URL, CHANGE_URL, CLAIM_URL, LEVEL_REQUEST_URL } from './northpole/links';
 import type { SquareKind } from './northpole/map';
 import { isNorthPoleLevel, landmarkLevel } from './northpole/north-pole-levels';
 import { levelLink, seasonLink } from './route';
 
 const CLAIM = `<a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a>`;
 
-/** Puts the next steps for this kind of square into its panel's help box. */
-export function fillVisitHelp(help: Element, kind: SquareKind, id: string, level?: string) {
-  if (level && isNorthPoleLevel(level)) {
+/** Puts the next steps for this kind of square, or for a level itself, into its panel's help box. */
+export function fillVisitHelp(
+  help: Element,
+  kind: SquareKind | 'level',
+  id: string,
+  level?: string,
+) {
+  if (kind === 'level') {
+    help.innerHTML = isNorthPoleLevel(id)
+      ? `<p>This level belongs to the North Pole, so only its maintainers change it. ${CLAIM} in the North Pole.</p>`
+      : `<p><span class="visit-ask">Is this yours?</span> <a href="${LEVEL_REQUEST_URL}" target="_blank" rel="noopener">Ask for a change</a></p>`;
+  } else if (level && isNorthPoleLevel(level)) {
     fillTourStop(help, id);
   } else if (level) {
     help.innerHTML = `<p>This square belongs to a participant's own level. ${CLAIM} in the North Pole.</p>`;

@@ -110,7 +110,7 @@ test('a level has the way back to the North Pole in its corner, until you go ins
   const home = page.locator('.hud-home');
   await expect(home).toBeVisible();
   await expect(home).toHaveText(/Back to the North Pole/);
-  // On a phone, the level's card sits under the way home, never over it.
+  // On a phone, the level's panel sits below the way home, never over it.
   await page.setViewportSize({ width: 390, height: 844 });
   const corner = await home.boundingBox();
   const card = await page.locator('.hud-level').boundingBox();
@@ -118,6 +118,45 @@ test('a level has the way back to the North Pole in its corner, until you go ins
   await home.click();
   await expect(page).toHaveURL(/#\/$/);
   await expect(page.locator('.hud-home')).toHaveCount(0);
+});
+
+test("a level's panel tells how it was built beside its map, clear of the way home", async ({
+  page,
+}) => {
+  const login = logins.find((one) => !isNorthPoleLevel(one)) ?? '';
+  test.skip(!login, 'no participant levels');
+  const problems = watch(page);
+  const square = readdirSync(join(root, 'carnival', 'levels', login, 'squares')).at(0) ?? '';
+  for (const size of [
+    { width: 1500, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(size);
+    await page.goto(`#/level/${login}`);
+    const panel = page.locator('.hud-level');
+    await expect(panel.getByRole('heading', { name: 'How it was built' })).toBeVisible();
+    await expect(panel.locator('.story-step').first()).toContainText(`@${login}`);
+    await expect(panel.locator('.visit-copy')).toBeVisible();
+    await expect(panel.locator('.visit-build')).toHaveText('Ask for a level of your own');
+    await expect(panel.locator('.visit-remix-link')).toBeHidden();
+    const home = await page.locator('.hud-home').boundingBox();
+    const box = await panel.boundingBox();
+    if (!home || !box) throw new Error('The way home or the panel has no box');
+    const apart =
+      box.x >= home.x + home.width ||
+      home.x >= box.x + box.width ||
+      box.y >= home.y + home.height ||
+      home.y >= box.y + box.height;
+    expect(apart, `the panel covers the way home at ${size.width}px`).toBe(true);
+    // Inside one of its squares, that square's panel takes its place, and it comes back after.
+    await page.goto(`#/level/${login}/${square}`);
+    await expect(page.locator('.visit')).toBeVisible();
+    await expect(panel).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.visit')).toHaveCount(0);
+    await expect(panel).toBeVisible();
+  }
+  expect(problems).toEqual([]);
 });
 
 test("a level's deep links say when a level or square isn't there", async ({ page }) => {
