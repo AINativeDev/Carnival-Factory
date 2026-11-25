@@ -12,10 +12,13 @@ import {
 } from './northpole/links';
 import { SIGNUP_OFFER } from './offer';
 
-/** The "Keep me posted" link: to the real form once it's set, or to the placeholder page. */
-const KEEP_POSTED_LINK = KEEP_POSTED_URL
-  ? `<a href="${keepPostedHref()}" target="_blank" rel="noopener">Keep me posted</a>.`
-  : `<a href="${keepPostedHref()}">Keep me posted</a>.`;
+/** The "Keep me posted" link: to the real form, in a new tab, once it's set; else to the placeholder page. */
+export const keepPostedLink = (formUrl: string, href: string) =>
+  formUrl
+    ? `<a href="${href}" target="_blank" rel="noopener">Keep me posted</a>.`
+    : `<a href="${href}">Keep me posted</a>.`;
+
+const KEEP_POSTED_LINK = keepPostedLink(KEEP_POSTED_URL, keepPostedHref());
 
 export const VISIT_PANEL = `
     <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>

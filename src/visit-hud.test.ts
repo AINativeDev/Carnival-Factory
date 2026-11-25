@@ -165,6 +165,24 @@ describe("a square's panel", () => {
     });
   });
 
+  it('fills in the name and description again once a sandboxed square says it is ready', () => {
+    let ready: (() => void) | undefined;
+    const late = {
+      ...square('ana', 'Opening…'),
+      onReady: (listener: () => void) => {
+        ready = listener;
+      },
+    };
+    const { hud, card } = open({ kind: 'booth', square: late });
+    late.name = "Ana's booth";
+    ready?.();
+    expect(card.querySelector('.visit-title')?.textContent).toBe("Ana's booth");
+    hud.close();
+    late.name = 'Changed after closing';
+    ready?.();
+    expect(card.querySelector('.visit-title')?.textContent).toBe("Ana's booth");
+  });
+
   it('closes, taking the panel away', () => {
     const { hud, card } = open({ kind: 'booth', square: square('ana', "Ana's booth") });
     hud.close();

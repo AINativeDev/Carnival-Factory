@@ -48,6 +48,17 @@ describe('renderStory', () => {
     expect(story.querySelector<HTMLAnchorElement>('.story-preview')?.href).toBe('https://p/x');
   });
 
+  it('names someone without a usable login as text, and a lone preview link without a separator', () => {
+    const story = list();
+    renderStory(story, [
+      { kind: 'made', label: 'Made by', who: 'not a login!' },
+      { kind: 'built', label: 'Being built by the factory', preview: 'https://p/x' },
+    ]);
+    expect(story.querySelector('.story-person')).toBeNull();
+    expect(story.querySelector('.story-label')?.textContent).toBe('Made by @not a login!');
+    expect([...story.querySelectorAll('.story-meta')].at(0)?.textContent).toBe('Preview it');
+  });
+
   it('replaces what was there before', () => {
     const story = list();
     renderStory(story, [{ kind: 'live', label: 'On the map' }]);
