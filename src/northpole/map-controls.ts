@@ -111,7 +111,7 @@ export function mapControls(m: MapRun, stop: () => void): MapControls {
     toggleOverview() {
       m.overview = !m.overview;
       m.panned = undefined;
-      m.closer = 1;
+      m.chosen = undefined;
       return m.overview;
     },
     get overview() {
@@ -122,8 +122,8 @@ export function mapControls(m: MapRun, stop: () => void): MapControls {
 
 /** The camera goes back to the carnival from the overview, or from where a finger left it. */
 function backToCarnival(m: MapRun) {
-  // A pinch in the overview was nearer than the overview, not than the carnival.
-  if (m.overview) m.closer = 1;
+  // A zoom chosen in the overview was nearer than the overview, not than the carnival.
+  if (m.overview) m.chosen = undefined;
   m.overview = false;
   m.panned = undefined;
 }

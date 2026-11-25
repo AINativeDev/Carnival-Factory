@@ -843,6 +843,57 @@ kbd {
   outline: 2px solid var(--color-gold);
 }
 
+/*
+ * The zoom buttons: beside "Show the whole island" on the North Pole, above
+ * "Get a booth" on a phone, and in the bottom-right corner on a level, which
+ * has no actions of its own.
+ */
+.hud-zoom {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  gap: 6px;
+}
+
+.hud-actions .hud-zoom {
+  right: calc(100% + 8px);
+  bottom: 0;
+}
+
+.hud-zoom button.hud {
+  position: static;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  font: bold 20px/1 var(--font-family);
+  cursor: pointer;
+}
+
+.hud-zoom button.hud:hover:enabled,
+.hud-zoom button.hud:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.hud-zoom button.hud:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.map-frame[data-visiting] .hud-zoom {
+  display: none;
+}
+
+@container (max-width: 719px) {
+  .hud-actions .hud-zoom {
+    right: 0;
+    bottom: calc(100% + 8px);
+    flex-direction: column;
+  }
+}
+
 /* On a phone the prompt sits above the buttons, clear of the folded panels. */
 @container (max-width: 719px) {
   .hud-controls {
