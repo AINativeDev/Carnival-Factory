@@ -1,0 +1,70 @@
+# Checks and tests
+
+What runs on every pull request, and what each check guarantees.
+
+## Behaviour
+
+- `npm run check` runs ESLint, Prettier's check, `tsc --noEmit` and Vitest.
+  CI runs it and `npm run build` on every pull request and push to main.
+- Vitest runs `{src,carnival,scripts}/**/*.test.ts` in Node.
+- **Booth ownership** runs on every pull request (see [booths](booths.md)).
+- `npm run smoke` is Playwright against the built site on port 4173, one
+  worker. Projects: `chromium` at 1200 by 1000 (or the local Chrome with
+  `PLAYWRIGHT_CHANNEL=chrome`), and `webkit` as an iPhone 13, which runs only
+  `smoke/safari.spec.ts`.
+- The smoke test plays every booth and attraction not switched off: it opens,
+  draws within budget (slowest frame after 5 warm-up frames: 16 ms on CI,
+  8 ms locally) and stays quiet (no console errors, uncaught errors or
+  requests to another origin). It also checks the sandbox keeps a square from
+  the network, storage and the page, the map's own frame budget (25 ms on CI),
+  deep links, stall shapes, Share, the season card, badges, `#/factory`,
+  walking, visiting and leaving, construction sites, the Booths panel, fitting
+  the window, the pointer, and history layout.
+- `smoke/levels.spec.ts` walks every open level from its arrival to each
+  square, inside each one, and to the sleigh home.
+- `smoke/flashing.spec.ts` plays every booth and attraction on the back wall
+  of its room and measures flashes.
+- Smoke scope: when every changed file is inside one booth's folder, CI sets
+  `SMOKE_ONLY=booth/<login>` and plays only that booth one by one; the
+  map-wide tests still run. Anything else plays every square.
+
+## Rules
+
+- Flashing (after WCAG's three flashes rule): a flash is a pair of opposite
+  changes in relative brightness of at least 0.1. The square is sampled as an
+  8 by 8 grid, and at most a quarter of its cells may flash more than 3 times
+  in any one second (enforced by: smoke/flashing.spec.ts, scripts/flashing.ts,
+  scripts/flashing.test.ts). Level squares are not in the flashing check
+  (not enforced yet).
+- Every booth and attraction opens, draws within the frame budget and stays
+  quiet, and every open level walks from arrival to each square and home
+  (enforced by: smoke/squares.spec.ts, smoke/levels.spec.ts).
+- The house rules reach every square: every `.ts` and `.js` file under
+  `carnival/booths`, `carnival/attractions` and each level's `squares/` runs
+  with `no-restricted-globals`, `no-restricted-imports` and `no-eval` at error,
+  and `fetch` is flagged in each. Every level's `level.ts` is held to plain
+  data. So if squares move and the rules don't, the check fails (enforced by:
+  scripts/square-lint.test.ts).
+- Every booth, attraction and level fits the size budget, and every real
+  level passes `validateLevel` (enforced by: scripts/square-size.test.ts,
+  src/northpole/level.test.ts).
+- The smoke test plays only the changed booth when nothing else changes, and
+  every square otherwise (enforced by: scripts/smoke-scope.ts,
+  scripts/smoke-scope.test.ts, .github/workflows/preview-build.yml).
+- The factory's sandbox can't start a browser, so agents there never run the
+  smoke test; CI runs it (enforced by: the instructions in tessl.json).
+- No native dependencies: `npm ci` is the whole setup for `npm run check`
+  (not enforced yet).
+
+## Where it lives
+
+`package.json`, `.github/workflows/ci.yml`,
+`.github/workflows/preview-build.yml`, `playwright.config.ts`, `smoke/`,
+`scripts/smoke-scope.ts`, `scripts/flashing.ts`, `eslint.config.js`,
+`vite.config.ts` (`test`).
+
+## Tested by
+
+`scripts/smoke-scope.test.ts`, `scripts/flashing.test.ts`,
+`scripts/square-lint.test.ts`, `scripts/square-size.test.ts`,
+`src/northpole/level.test.ts`.

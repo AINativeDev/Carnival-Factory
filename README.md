@@ -279,7 +279,9 @@ native dependencies, so `npm ci` is the whole setup. Node 22.13 or later.
 - `scripts/ownership.ts` and `scripts/check-booth-ownership.ts`: the booth
   ownership rule and the check that enforces it.
 
-[`AGENTS.md`](AGENTS.md) is where an agent starts.
+[`AGENTS.md`](AGENTS.md) is where an agent starts. [`docs/specs/`](docs/specs/)
+says what each part of the system does, and [`docs/adr/`](docs/adr/) records the
+decisions behind it.
 
 ## License
 
