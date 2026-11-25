@@ -11,7 +11,7 @@ import { drawElfHatPin, drawTrophy } from './stall-honours';
 import { trophyFor } from './peoples-choice';
 import { PEOPLES_CHOICE } from './peoples-choice-standings';
 import { alongEdge } from './camera';
-import { drawFactoryTower, FACTORY_ID } from './factory-tower';
+import { drawTower } from './tower';
 import { canvasFont, theme } from './theme';
 import {
   hash,
@@ -1859,8 +1859,8 @@ export function drawPlot(
 ): Box {
   if (plot.kind === 'open' || !square) return drawOpenPlot(ctx, plot, time, near);
   const attraction = plot.kind === 'attraction';
-  if (attraction && square.id === FACTORY_ID)
-    return drawFactoryTower(ctx, plot, square, paint, time);
+  const tower = attraction ? square.stall?.tower : undefined;
+  if (tower) return drawTower(ctx, plot, square, paint, time, tower);
   // An attraction is a pavilion, unless it chose a stall, as a level's squares do: then it's that stall, signed by nobody.
   if (attraction && !square.stall) return drawAttraction(ctx, plot, square, paint, time);
   const nobody: Owner = { color: colors.gold, you: false, ...(attraction ? { by: '' } : {}) };

@@ -10,7 +10,12 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   Today's plots are pinned in `src/northpole/plots.json`.
 - It opens at `#/attraction/<id>`, and the map shows it at
   `#/?attraction=<id>`. The map draws it as a pavilion with its drawing on
-  the front. Its hover tag names no owner, and inside, the North Pole's emblem
+  the front. An attraction whose `stall` sets `tower`, one to six capitals,
+  stands instead as a tall brick tower over a hall, its letters down the front
+  in gold, with lit windows, a turning cog and chimney smoke
+  (`src/northpole/tower.ts`): The Factory's says TESSL. A booth's `tower` is
+  ignored, and a level's square with a `stall` stands as that stall, signed by
+  nobody. Its hover tag names no owner, and inside, the North Pole's emblem
   (a gold star on a red disc) stands where a booth shows its owner's portrait.
 - Inside, the visit panel has no Remix link. It says attractions belong to the
   North Pole and offers to claim a booth beside it.

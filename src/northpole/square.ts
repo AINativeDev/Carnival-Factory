@@ -60,7 +60,12 @@ export interface StallStyle {
   shape: StallShape;
   roof: ThemeColor;
   trim?: ThemeColor;
+  /** For an attraction only: rise as a tower with these capital letters, up to six, down its front. */
+  tower?: string;
 }
+
+/** A tower's letters: one to six capitals. */
+export const TOWER_LETTERS = /^[A-Z]{1,6}$/;
 
 /** The most presses one frame carries. Any more wait for the next frame. */
 export const MAX_PRESSES = 20;

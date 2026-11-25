@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { drawingOf } from '../test-support/recording-canvas';
-import { cogTurn, drawFactoryTower, LETTERS, TOWER } from './factory-tower';
+import { cogTurn, drawTower, TOWER } from './tower';
 import { drawPlot, PAVILION } from './render';
 import type { NorthPoleSquare } from './square';
 import type { Plot } from './world';
@@ -15,21 +15,22 @@ const plot: Plot = {
   h: 2,
   door: { x: 4, y: 3 },
 };
-const square = (id: string): NorthPoleSquare => ({
+const square = (id: string, tower?: string): NorthPoleSquare => ({
   id,
   name: 'The Factory',
   description: '',
   draw: () => undefined,
+  ...(tower ? { stall: { shape: 'shed' as const, roof: 'gold' as const, tower } } : {}),
 });
 
-describe('the Factory tower', () => {
+describe('a tower', () => {
   it('spells TESSL down its front in gold, and still hangs its square at its foot', () => {
     let painted = 0;
     const calls = drawingOf((ctx) => {
-      drawFactoryTower(ctx, plot, square('the-factory'), () => (painted += 1), 0);
+      drawTower(ctx, plot, square('the-factory'), () => (painted += 1), 0, 'TESSL');
     });
     const texts = calls.filter(([name]) => name === 'fillText').map(([, text]) => text);
-    for (const letter of LETTERS) expect(texts).toContain(letter);
+    for (const letter of 'TESSL') expect(texts).toContain(letter);
     expect(texts.some((text) => String(text).startsWith('The'))).toBe(true);
     expect(painted).toBe(1);
   });
@@ -38,7 +39,7 @@ describe('the Factory tower', () => {
     let tower = { h: 0 };
     let pavilion = { h: 0 };
     drawingOf((ctx) => {
-      tower = drawPlot(ctx, plot, square('the-factory'), () => undefined, 0);
+      tower = drawPlot(ctx, plot, square('the-factory', 'TESSL'), () => undefined, 0);
       pavilion = drawPlot(
         ctx,
         { ...plot, id: 'ferris-wheel' },
@@ -49,6 +50,22 @@ describe('the Factory tower', () => {
     });
     expect(tower.h).toBeGreaterThan(pavilion.h);
     expect(TOWER.hall + TOWER.tower).toBeGreaterThan(PAVILION.wall + PAVILION.roof);
+  });
+
+  it("is an attraction's to ask for: a booth asking for one keeps its stall", () => {
+    let booth = { h: 0 };
+    let tower = { h: 0 };
+    drawingOf((ctx) => {
+      booth = drawPlot(
+        ctx,
+        { ...plot, kind: 'booth', id: 'ana' },
+        square('ana', 'ANA'),
+        () => undefined,
+        0,
+      );
+      tower = drawPlot(ctx, plot, square('the-factory', 'TESSL'), () => undefined, 0);
+    });
+    expect(booth.h).toBeLessThan(tower.h);
   });
 
   it('turns its cog once every twelve seconds', () => {

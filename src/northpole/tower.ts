@@ -1,10 +1,12 @@
 /**
- * The Factory's landmark on the map: a tall brick tower on the town square
- * with TESSL down its front in golden letters, lit windows up its sides, a
- * gold cog turning on top and smoke from its chimney. It rises above every
- * other attraction, so people find the way into the level that shows how the
- * whole North Pole gets built. Its square's drawing still hangs at its foot,
- * the way every attraction's does, so the smoke and flashing checks see it.
+ * An attraction that asks for a tower (`stall.tower`, its letters) stands as a
+ * tall brick tower over a hall: its letters down the front in gold, lit
+ * windows up its sides, a gold cog turning on top and smoke from its chimney.
+ * It rises above every other attraction, the way The Factory's TESSL tower
+ * marks the way into the level that shows how the North Pole gets built. Its
+ * square's drawing still hangs at its foot, as every attraction's does, so the
+ * smoke and flashing checks see it. Booths never get one: the map keeps them
+ * to their stalls.
  */
 import {
   band,
@@ -30,14 +32,8 @@ import type { Box, Plot } from './world';
 
 const { colors } = theme;
 
-/** The attraction that is drawn as the tower. */
-export const FACTORY_ID = 'the-factory';
-
 /** How tall each part is, in world pixels: the hall at its foot, the tower over it and the cog on top. */
 export const TOWER = { hall: 120, tower: 190, cog: 22 };
-
-/** The letters down the tower's front. */
-export const LETTERS = ['T', 'E', 'S', 'S', 'L'];
 
 /** How far the cog on top has turned at `time`, in radians: one slow turn every 12 seconds. */
 export const cogTurn = (time: number) => ((time / 12_000) % 1) * Math.PI * 2;
@@ -70,13 +66,20 @@ function cog(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, tim
   ctx.restore();
 }
 
-/** TESSL down the tower's front, one golden letter above another, each with a warm glow. */
-function letters(ctx: CanvasRenderingContext2D, face: Face, from: number, to: number) {
-  const step = (to - from) / LETTERS.length;
+/** The tower's letters down its front, one golden letter above another, each with a warm glow. */
+function letters(
+  ctx: CanvasRenderingContext2D,
+  word: string,
+  face: Face,
+  from: number,
+  to: number,
+) {
+  const shown = Array.from(word);
+  const step = (to - from) / shown.length;
   ctx.font = canvasFont('title', 'bold');
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  LETTERS.forEach((letter, n) => {
+  shown.forEach((letter, n) => {
     const at = onFace(face, 0.5, to - step * (n + 0.5), 0.02);
     glow(ctx, at.x, at.y, 22, 0.9);
     ctx.fillStyle = colors.cocoa;
@@ -134,12 +137,13 @@ function windows(
 }
 
 /** Draws the tower on its plot and returns where a click opens it. */
-export function drawFactoryTower(
+export function drawTower(
   ctx: CanvasRenderingContext2D,
   plot: Plot,
   square: NorthPoleSquare,
   paint: PaintSquare,
   time: number,
+  word: string,
 ): Box {
   const { x, y } = middle(plot);
   shadow(ctx, x, y + 8, 90);
@@ -168,7 +172,7 @@ export function drawFactoryTower(
       : { a: c.left, b: c.bottom, out: face.out };
   windows(ctx, face, rise, rise + TOWER.tower, time, [0.18, 0.82]);
   windows(ctx, side, rise, rise + TOWER.tower, time, [0.3, 0.7]);
-  letters(ctx, face, rise + 12, rise + TOWER.tower - 8);
+  letters(ctx, word, face, rise + 12, rise + TOWER.tower - 8);
   // Lights round the top, the chimney's smoke and the turning cog.
   const top = rise + TOWER.tower;
   for (let k = 0; k <= 6; k++) {

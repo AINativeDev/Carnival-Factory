@@ -385,7 +385,9 @@ uses any of it:
    `'shed'` (long and low, with a flat roof), `'tent'` (a round, striped
    tent), `'cabin'` (a log cabin with a snowy pitched roof) or `'kiosk'` (a
    small hexagonal kiosk). `roof` is a `theme` colour's name, and `trim`, a
-   second one for the stripes or the awning, is optional. The map draws the
+   second one for the stripes or the awning, is optional. An attraction may
+   also set `tower`, one to six capitals, to stand as a tower with them down
+   its front, as The Factory does; a booth's is ignored. The map draws the
    stall itself, with the booth's drawing on its front: the option only
    travels in the frame's `ready` message, and `readStall` in
    `src/northpole/frame-protocol.ts` drops anything else, so an invalid option
