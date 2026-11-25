@@ -18,12 +18,13 @@ function studioLight(ctx: CanvasRenderingContext2D, gx: number, gy: number) {
   glow(ctx, lamp.x, lamp.y, 12, 0.9);
 }
 
-/** The Video Set: a camera on its tripod, two studio lights, and a big screen with a play button. */
-const videoSet: NorthPoleSquare = {
-  id: 'video-set',
-  name: 'Video Set',
-  description: 'Where the videos are made: talks, demos and walkthroughs for the YouTube channel.',
-  stall: { shape: 'shed', roof: 'berry', trim: 'snow' },
+/** The Camera: on its tripod, its red light blinking, between two studio lights and a screen with a play button. */
+const camera: NorthPoleSquare = {
+  id: 'camera',
+  name: 'Camera',
+  description:
+    'The camera that films the videos: talks, demos and walkthroughs for the YouTube channel.',
+  stall: { shape: 'kiosk', roof: 'berry', display: true },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
       const foot = iso(0, 0);
@@ -65,4 +66,4 @@ const videoSet: NorthPoleSquare = {
   },
 };
 
-export default videoSet;
+export default camera;

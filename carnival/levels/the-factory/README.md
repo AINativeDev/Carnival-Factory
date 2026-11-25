@@ -1,27 +1,34 @@
 # The Factory
 
 The North Pole's own level, not a participant's: only maintainers change it
-([ADR 0035](../../../docs/adr/0035-north-pole-levels.md)). It walks visitors
+([ADR 0035](../../../docs/adr/0035-north-pole-levels.md)). It takes visitors
 through how a booth gets built, one stall per step of the loop, in the
-`aurora-night` theme, 21 tiles each way. Its landmark on the home map is the attraction
+`aurora-night` theme, 25 tiles each way. Its landmark on the home map is the attraction
 [`the-factory`](../../attractions/the-factory/), and it has a platform at the
 sleigh station like every level.
 
-Visitors arrive at the foot of the first lane. The path runs up it, across the
-top, and down the second lane to the sleigh home, past the six stalls in order.
+You don't walk The Factory: you ride it. The whole level is a roller coaster
+([ADR 0041](../../../docs/adr/0041-ride-levels.md)), and visitors sit in the
+golden ticket car, the visitor's request, from the boarding station by the
+sleigh home. The car stops at a station at each stall's door, in the order a
+booth gets built: E opens the stall, and Space, →, D, a tap or the "Ride on"
+button rides on to the next. After the map it comes round to the boarding
+station, where E takes the sleigh back to the North Pole.
 
-It's a roller coaster ride. Candy-striped track on posts runs beside the path,
-up the first lane, over the path across the top and down the second lane, with
-a loop-the-loop just past each stall's door. A golden admission ticket, the
-visitor's request, rides it from the letter box's loop to the map's, upside
-down at the top of each loop, in about 26 seconds, then boards again at the
-foot of the first lane. The track is the `coaster` and `coaster-loop` props in
-`level.ts`, listed in the order the ticket rides them.
+The ride: a lift hill climbs on its chain at the start, crests and drops to
+the letter box; a loop on the way to the assessment desk; another lift hill
+up to the high run over the stream, which drops and loops on to the
+workshop; a loop, a climb and a drop to the inspection bench; a loop to the
+gate and a dip to the map; then a last lift hill, a drop and a loop back over
+the stream to the start, about 50 seconds a lap. The track is the `coaster`,
+`coaster-lift`, `coaster-drop`, `coaster-loop` and `coaster-station` props in
+`level.ts`, listed in the order the car rides them; each one's variant lifts
+its rail.
 
-Between the lanes is the factory floor, conveyor belts, turning cogs and
-candy-striped pipes, and the fair: a carousel, a fire-breather, a juggler,
-acrobats and a band, under floating lanterns. Over the stream to the east are a
-ferris wheel and a balloon.
+Inside the track is the factory floor, conveyor belts, turning cogs and
+candy-striped pipes under floating lanterns, and the fair the coaster swoops
+round: a carousel, a ferris wheel, a band, a juggler, a fire-breather,
+acrobats and a balloon.
 
 Each stall's panel tells its step in two or three sentences, with a link to
 the real thing, from the page's own text in `src/factory-tour.ts`:

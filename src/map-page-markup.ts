@@ -65,6 +65,12 @@ export const LEVEL_MAP = `
       </div>
     </section>`;
 
+/** A ride level's map (ADR 0041): the same, with the ride's keys in its Controls. */
+export const RIDE_MAP = LEVEL_MAP.replace(
+  /<p>Walk with .*<\/p>/,
+  '<p><kbd>Space</kbd> or <kbd>→</kbd> to ride on to the next station, <kbd>E</kbd> to visit its stall or ride the sleigh home</p>',
+);
+
 /**
  * Calls `show` now, and again once a sandboxed square's frame has said its name
  * and description: until then the page only knows its id. The later call only

@@ -1,15 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  LOOP_TIME,
-  LOOP_SIZE,
-  RAIL,
-  STRAIGHT_TIME,
-  railAt,
-  rideCoaster,
-  rideProblems,
-  ticketAt,
-} from './coaster-ride';
-import type { LevelProp } from './level';
+import { heightOf, LOOP_TIME, RAIL, STRAIGHT_TIME } from './coaster-pieces';
+import { LOOP_SIZE, railAt, rideCoaster, ticketAt } from './coaster-ride';
 import { toScreen, type Thing } from './world';
 
 const piece = (kind: 'coaster' | 'coaster-loop', x: number, y: number): Thing => ({
@@ -49,6 +40,7 @@ describe('a coaster ride', () => {
       from: 0,
       to: STRAIGHT_TIME,
       ride: whole,
+      heights: { enter: RAIL, middle: RAIL, leave: RAIL },
     });
     expect(pine).toBeUndefined();
     expect(loop).toMatchObject({ from: STRAIGHT_TIME, to: STRAIGHT_TIME + LOOP_TIME });
@@ -99,35 +91,27 @@ describe('a coaster ride', () => {
     const ticket = ticketAt(there, STRAIGHT_TIME + LOOP_TIME / 4);
     expect(Number.isFinite(ticket?.x)).toBe(true);
   });
-});
 
-describe('the rules of a coaster', () => {
-  const prop = (kind: LevelProp['kind'], x: number, y: number): LevelProp => ({ kind, x, y });
-
-  it('passes a ride whose pieces join, with its loops on straight runs', () => {
-    expect(
-      rideProblems([
-        prop('coaster', 0, 0),
-        prop('pine', 9, 9),
-        prop('coaster-loop', 0, 1),
-        prop('coaster', 0, 2),
-        prop('coaster', 1, 2),
-      ]),
-    ).toEqual([]);
-    expect(rideProblems([])).toEqual([]);
+  it('runs the rail as high as each piece, meeting its neighbours halfway', () => {
+    const [low, high] = rideCoaster([
+      { ...piece('coaster', 0, 0), seed: 0 },
+      { ...piece('coaster', 1, 0), seed: 1 },
+    ]).map((thing) => thing.ride?.heights);
+    const between = (RAIL + heightOf(1)) / 2;
+    expect(low).toEqual({ enter: RAIL, middle: RAIL, leave: between });
+    expect(high).toEqual({ enter: between, middle: RAIL * 4, leave: RAIL * 4 });
+    const lifted = nth(rideCoaster([{ ...piece('coaster', 0, 0), seed: 1 }]), 0);
+    expect(ticketAt(lifted, STRAIGHT_TIME / 2)?.y).toBeCloseTo(toScreen(lifted).y - RAIL * 4);
   });
 
-  it("finds a piece that doesn't join the one before it, and a loop on a corner", () => {
-    expect(
-      rideProblems([
-        prop('coaster', 0, 0),
-        prop('coaster', 2, 0),
-        prop('coaster-loop', 3, 0),
-        prop('coaster', 3, 1),
-      ]),
-    ).toEqual([
-      "prop 1, a coaster, doesn't join prop 0, the coaster piece before it",
-      'prop 2, a coaster-loop, must stand on a straight run of track',
+  it('runs a track whose last piece joins its first round, from the last into the first', () => {
+    const square = rideCoaster([
+      piece('coaster', 0, 0),
+      piece('coaster', 1, 0),
+      piece('coaster', 1, 1),
+      piece('coaster', 0, 1),
     ]);
+    expect(nth(square, 0).ride).toMatchObject({ enter: { x: 0, y: 0.5 }, leave: { x: 0.5, y: 0 } });
+    expect(nth(square, 3).ride).toMatchObject({ enter: { x: 0.5, y: 1 }, leave: { x: 0, y: 0.5 } });
   });
 });

@@ -25,6 +25,8 @@ const GROUND: Record<Ground, string> = {
   ice: colors.ice,
   water: colors.ice,
   bridge: colors.gingerbread,
+  floor: colors.gingerbread,
+  carpet: colors.dusk,
 };
 
 /** The ground: snow, the cleared paths, the town square, the ice and the stream. The stream's ripples run in `drawRipples`. */
@@ -67,7 +69,8 @@ export function drawGround(ctx: CanvasRenderingContext2D, world: World, range: T
         ctx.lineTo(sx + 8 * hash(x, y, 11), sy + 3);
         ctx.stroke();
         ctx.globalAlpha = 1;
-      } else if (ground === 'bridge') {
+      } else if (ground === 'floor' || ground === 'carpet') indoorTile(ctx, ground, sx, sy, x, y);
+      else if (ground === 'bridge') {
         ctx.strokeStyle = colors.wood;
         for (let n = -2; n <= 2; n++) {
           ctx.beginPath();
@@ -77,6 +80,37 @@ export function drawGround(ctx: CanvasRenderingContext2D, world: World, range: T
         }
       }
     }
+}
+
+/** A room's tile: boards with a seam, or carpet with a faint weave. */
+function indoorTile(
+  ctx: CanvasRenderingContext2D,
+  ground: 'floor' | 'carpet',
+  sx: number,
+  sy: number,
+  x: number,
+  y: number,
+) {
+  ctx.globalAlpha = 0.45;
+  if (ground === 'floor') {
+    // Boards run along x, a seam each side of the middle, and a knot here and there.
+    ctx.strokeStyle = colors.wood;
+    for (const n of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(sx - 16 - 8 * n, sy - 8 + 4 * n);
+      ctx.lineTo(sx + 16 - 8 * n, sy + 8 + 4 * n);
+      ctx.stroke();
+    }
+    if (hash(x, y, 12) < 0.3) {
+      ctx.fillStyle = colors.cocoa;
+      ctx.fillRect(sx + (hash(x, y, 13) - 0.5) * 16, sy - 1, 3, 2);
+    }
+  } else {
+    ctx.strokeStyle = colors.violet;
+    ctx.globalAlpha = 0.25;
+    ctx.strokeRect(sx - 4, sy - 2, 8, 4);
+  }
+  ctx.globalAlpha = 1;
 }
 
 /** Warm pools of light on the snow round the lamps, the stalls and the attractions. */
@@ -91,7 +125,7 @@ export function drawLightPools(ctx: CanvasRenderingContext2D, world: World, time
     }
   };
   for (const thing of world.things) {
-    if (thing.kind === 'lamp' || thing.kind === 'cart') {
+    if (thing.kind === 'lamp' || thing.kind === 'cart' || thing.kind === 'spotlight') {
       const { x, y } = toScreen(thing);
       pool(x, y, 58, 0.85 + 0.15 * Math.sin(time / 900 + thing.seed * 20));
     } else if (thing.kind === 'cabin' || thing.kind === 'tent') {

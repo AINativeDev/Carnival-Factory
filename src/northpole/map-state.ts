@@ -12,6 +12,7 @@ import type { MapTag } from './map-tag';
 import type { ZoomButtons } from './map-zoom-buttons';
 import type { MapOptions, StationEntry } from './map-options';
 import { type PendingBooth } from './construction-sites';
+import type { Ride } from './ride';
 import type { NorthPoleSquare } from './square';
 import type { Box, Plot, Tile, World } from './world';
 
@@ -102,6 +103,8 @@ interface MapState {
   targets: { plot: Plot; box: Box }[];
   /** The keys held down now, by name, and which way each walks on screen. */
   held: Map<string, [number, number]>;
+  /** In a ride level, where the coaster's car is, with the player in it (ADR 0041). */
+  ride: Ride | undefined;
   /** The frame asked for next, and how long frames took, for the smoke test's budget. */
   frameId: number;
   frames: number;
@@ -123,6 +126,8 @@ export interface MapRun extends MapState {
   /** The zoom buttons over the map. */
   readonly zoomButtons: ZoomButtons;
   readonly pointer: PointerTracker;
+  /** In a ride level, the button that sends the car on from a station. */
+  readonly rideButton: HTMLButtonElement | undefined;
   readonly touchScreen: MediaQueryList;
   readonly reduced: MediaQueryList;
   /** Which world this is, for where the player stood in it: the North Pole, or a level's owner. */

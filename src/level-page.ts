@@ -7,7 +7,7 @@
 import { the } from './dom';
 import { openLevelPanel } from './level-panel';
 import { renderUnknownInLevel } from './map-notes';
-import { LEVEL_MAP } from './map-page-markup';
+import { LEVEL_MAP, RIDE_MAP } from './map-page-markup';
 import { backToTheMap, renderMap, travel } from './map-page';
 import { closeCard, type Page } from './page';
 import { LEVEL_THEMES, levelWorld } from './northpole/level';
@@ -36,7 +36,7 @@ export function renderLevel(page: Page, login: string, focus?: string) {
   const { level } = entry;
   document.body.dataset.view = 'map';
   page.shown = login;
-  app.innerHTML = LEVEL_MAP;
+  app.innerHTML = level.ride ? RIDE_MAP : LEVEL_MAP;
   const canvas = the(app, 'canvas', HTMLCanvasElement);
   // The panel beside the map, and the map's label. Its id is the owner's login (validateLevel
   // checks it), and the panel goes with the frame when the next page replaces it.
@@ -56,6 +56,7 @@ export function renderLevel(page: Page, login: string, focus?: string) {
         name: level.name,
         world: levelWorld(level),
         tint: LEVEL_THEMES[level.theme].tint,
+        ride: level.ride === true,
       },
       onOpen: (_kind, id) => {
         location.hash = `#/level/${login}/${id}`;
