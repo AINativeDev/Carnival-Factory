@@ -36,7 +36,6 @@
   "src/northpole/attractions.test.ts": 1,
   "src/northpole/frame-protocol.ts": 6,
   "src/northpole/level.test.ts": 1,
-  "src/northpole/map.ts": 14,
   "src/northpole/owners.ts": 1,
   "src/northpole/pointer.test.ts": 3,
   "src/northpole/render.test.ts": 1,

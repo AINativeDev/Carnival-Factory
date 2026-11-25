@@ -237,25 +237,6 @@
       "count": 1
     }
   },
-  "src/northpole/map.test.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 1
-    }
-  },
-  "src/northpole/map.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 11
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 35
-    },
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 2
-    }
-  },
   "src/northpole/owners.test.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 1

@@ -2,7 +2,7 @@ import { badgeFor, factoryUrl } from './northpole/badges';
 import { voteUrl } from './northpole/peoples-choice';
 import { PEOPLES_CHOICE } from './northpole/peoples-choice-standings';
 import { remixUrl } from './northpole/links';
-import type { SquareKind } from './northpole/map';
+import type { SquareKind } from './northpole/map-options';
 import type { SandboxedSquare } from './northpole/sandbox';
 import type { NorthPoleSquare } from './northpole/square';
 import { shareLink } from './northpole/visit';

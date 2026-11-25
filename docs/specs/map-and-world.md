@@ -74,7 +74,10 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 `src/northpole/groundwork.ts`, `src/northpole/walking.ts`,
 `src/northpole/pathfinding.ts`, `src/northpole/plots.ts`,
 `src/northpole/plots.json`, `src/northpole/camera.ts`, `src/northpole/camera-view.ts`,
-`src/northpole/map.ts`, `src/northpole/visit.ts`, and the drawing:
+`src/northpole/map.ts` (starting the map and wiring it to the page) with its
+parts in `src/northpole/map-*.ts`, which share one `MapRun`
+(`map-state.ts`), `src/northpole/draw-square.ts`, `src/northpole/visit.ts`,
+and the drawing:
 `src/northpole/render.ts`, which hands each thing and plot to the small file
 that draws it (`ground.ts`, `island.ts`, `sky.ts`, `pines.ts`, `houses.ts`,
 `street-things.ts`, `midway.ts`, `entrance.ts`, `people.ts`, `faces.ts`,
@@ -88,7 +91,10 @@ that draws it (`ground.ts`, `island.ts`, `sky.ts`, `pines.ts`, `houses.ts`,
 `src/northpole/world-sights.test.ts`, `src/northpole/world-pin.test.ts`,
 `src/northpole/walking.test.ts`, `src/northpole/pathfinding.test.ts`,
 `src/northpole/plots.test.ts`, `src/northpole/camera.test.ts`,
-`src/northpole/map.test.ts`, `src/northpole/visit.test.ts`,
+`src/northpole/draw-square.test.ts`, `src/northpole/map-*.test.ts` (the
+map running in happy-dom through `src/test-support/map-harness.ts`, with
+`map-pins-*.test.ts` pinning what it draws frame by frame),
+`src/northpole/visit.test.ts`,
 `src/northpole/render-pins-plots.test.ts` and
 `src/northpole/render-pins-scene.test.ts` (every drawing, pinned by its
 fingerprint), `smoke/map.spec.ts` (walking, fitting the window),
