@@ -54,6 +54,22 @@ describe('the demo', () => {
     expect(fine.throws).toEqual(coarse.throws);
   });
 
+  it('throws on the beat itself, even when a frame comes late', () => {
+    const first = advance(newGame(0), 4_100, undefined, SIZE);
+    expect(first.throws).toEqual([]);
+    expect(first.down).toEqual([3_000, null, null]);
+    const next = advance(first, 4_800, undefined, SIZE);
+    expect(next.throws.map((ball) => ball.at)).toEqual([4_800]);
+  });
+
+  it('is the same at any time whichever frames came before', () => {
+    const at = (times: number[]) =>
+      times.reduce((g, t) => advance(g, t, undefined, SIZE), newGame(0));
+    expect(at([2_400, 2_500])).toEqual(at([2_500]));
+    expect(at([4_100, 4_800, 5_000])).toEqual(at([5_000]));
+    expect(at([2_390, 2_410, 7_300])).toEqual(at([7_300]));
+  });
+
   it('waits a while after a person throws', () => {
     const game = play(
       advance(newGame(0), 100, { x: 190, y: 190, down: true, presses: 1 }, SIZE),

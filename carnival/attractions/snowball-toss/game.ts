@@ -18,8 +18,8 @@ export const DOWN = 1_800;
 export const HAND = { x: 50, y: 94 };
 /** How far in from the square's edges a snowball may land, so all of it stays in view. */
 const EDGE = 2;
-/** With nobody playing, the demo throws one each time `time` passes a multiple of this, in ms. */
-const DEMO_EVERY = 2_400;
+/** With nobody playing, the demo throws on each multiple of this, in ms: one throw has landed and its snowman stood up by the next. */
+const DEMO_EVERY = FLIGHT + DOWN;
 /** After a person's last throw, the demo waits this long before it throws again. */
 const DEMO_WAITS = 6_000;
 
@@ -156,7 +156,8 @@ export function advance(
   size: number,
 ): Game {
   if (time < game.last) return newGame(time);
-  let next = land({ ...game, last: time }, time);
+  let next = demoOnBeat({ ...game, last: time }, game.last, time);
+  next = land(next, time);
   const presses = pointer ? pointer.presses : 0;
   for (let k = 0; k < presses && pointer; k++) {
     if (next.left === 0 && next.throws.every((ball) => !ball.played)) {
@@ -171,11 +172,21 @@ export function advance(
     };
     next = { ...next, throws: [...next.throws, ball], left: next.left - 1, playedAt: time };
   }
-  // The demo's beat comes from `time` alone, so it throws at the same moments however often it's drawn.
-  const beat = Math.floor(time / DEMO_EVERY) > Math.floor(game.last / DEMO_EVERY);
-  if (time - next.playedAt > DEMO_WAITS && next.throws.length === 0 && beat) {
-    const ball = demoThrow(next, time);
-    if (ball) next = { ...next, throws: [ball] };
-  }
   return next;
+}
+
+/**
+ * The game with the demo's throw for the last beat between `from` and `to`, if
+ * one passed, thrown on the beat itself rather than at a late frame, so the
+ * demo is the same however often it's drawn. Only the last beat counts: a demo
+ * throw has landed and its snowman stood up again by the next beat, since
+ * `DEMO_EVERY` is `FLIGHT` and `DOWN` together.
+ */
+function demoOnBeat(game: Game, from: number, to: number): Game {
+  const beat = Math.floor(to / DEMO_EVERY) * DEMO_EVERY;
+  if (beat <= from) return game;
+  const next = land(game, beat);
+  if (beat - next.playedAt <= DEMO_WAITS || next.throws.length > 0) return next;
+  const ball = demoThrow(next, beat);
+  return ball ? { ...next, throws: [ball] } : next;
 }
