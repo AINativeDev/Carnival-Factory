@@ -23,6 +23,8 @@ import { deepLink, levelLink } from './route';
 import { SQUARE_CRAFT, craftKey, earnedBadges, renderCraft } from './craft-badges';
 import { fillVisitHelp } from './visit-help';
 import { squareOwner } from './northpole/north-pole-levels';
+import { linksHome } from './northpole/north-pole-links';
+import { showLevelLinks } from './level-links';
 
 export interface VisitHudOptions {
   /** A square's kind, or `level` for the panel beside a level's own map (level-panel.ts). */
@@ -140,6 +142,8 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     share.refresh();
   };
   show();
+  // The North Pole's own levels link out, to the Academy or the podcast, right under what they are.
+  showLevelLinks($('.visit-description'), linksHome(kind, square.id, level));
   if ('onReady' in square)
     (square as SandboxedSquare).onReady(() => {
       if (card.isConnected) show();

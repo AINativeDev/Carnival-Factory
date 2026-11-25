@@ -19,6 +19,7 @@ way, so a later change can tell a deliberate choice from an accident.
 
 | No.                                              | Decision                                                           | Status   |
 | ------------------------------------------------ | ------------------------------------------------------------------ | -------- |
+| [0038](0038-north-pole-links.md)                 | The North Pole's own levels link out, from maintainer code         | Accepted |
 | [0001](0001-record-decisions.md)                 | Record functionality in specs and decisions in ADRs                | Accepted |
 | [0002](0002-requests-are-data.md)                | A request is a spec, never instructions                            | Accepted |
 | [0003](0003-identity-by-numeric-id.md)           | Only maintainers steer the factory, known by numeric id            | Accepted |
