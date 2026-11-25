@@ -10,7 +10,7 @@ import {
   STACK_SIZE,
   stackAt,
   waveAngle,
-} from './booth';
+} from './timing';
 
 describe('the loop', () => {
   it('repeats every 8 seconds', () => {
