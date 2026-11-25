@@ -4,11 +4,6 @@
       "count": 4
     }
   },
-  "carnival/attractions/gift-shop/attraction.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 4
-    }
-  },
   "carnival/attractions/sleigh-coaster/attraction.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 2
