@@ -48,6 +48,8 @@ locally, if both are installed).
 **Claude Code hooks** (`.claude/settings.json`) run the same checks for you:
 each file you write or edit is checked at once, and the project checks (types,
 Knip, the tests) run before you finish. When one fails, fix it before going on.
+If it says the installed packages don't match `package-lock.json`, run
+`npm install` first: `main` gained a dependency since you last installed.
 
 **Baselines only shrink.** Code that predates a rule is frozen at its current
 debt in `lint/oversize-baseline.json` (file length),

@@ -14,7 +14,10 @@ What runs on every pull request, and what each check guarantees.
   `scripts/` and `lint/` ran under the unit tests, and runs ShellCheck and
   actionlint.
 - Claude Code hooks (`.claude/settings.json`) check each file an agent edits,
-  and run types, Knip and the tests before it finishes.
+  and run types, Knip and the tests before it finishes. When the installed packages
+  don't match `package-lock.json`, the Stop hook says only that, and asks for
+  `npm install`, since a stale install fails the checks for reasons that aren't
+  the code's (enforced by: scripts/hooks/install-drift.test.ts).
 - **Booth ownership** runs on every pull request (see [booths](booths.md)).
 - `npm run smoke` is Playwright against the built site on port 4173, one
   worker. Projects: `chromium` at 1200 by 1000 (or the local Chrome with
@@ -112,4 +115,4 @@ What runs on every pull request, and what each check guarantees.
 `scripts/file-size.test.ts`, `scripts/diff-coverage.test.ts`,
 `scripts/strict-types.test.ts`, `scripts/check-json.test.ts`,
 `scripts/docs-paths.test.ts`, `scripts/workflow-paths.test.ts`,
-`scripts/hooks/hooks.test.ts`.
+`scripts/hooks/hooks.test.ts`, `scripts/hooks/install-drift.test.ts`.
