@@ -21,7 +21,9 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   - Gingerbread Fun House: `gingerbread-house`, icing, gumdrops and a wonky roof;
   - Gift Shop: `shopfront`, a display window, an awning and presents outside;
   - Hot Cocoa Stand: `cocoa-hut`, a round hut with a giant steaming mug on its roof;
-  - Snowball Toss: `game-stall`, a counter, targets and a snowball pile;
+  - Snowball Toss: `game-stall`, a counter, targets and a snowball pile, with an
+    elf throwing at the targets, two more queueing with tickets, pennants,
+    candy-cane prizes and a lamp under the hood;
   - The Academy: `schoolhouse`, with a bell tower and lit windows;
   - The Recording Studio: `studio`, with a glowing ON AIR sign, a dish and an antenna;
   - The Factory: `tower`, a tall brick tower with its `letters`, TESSL, down
