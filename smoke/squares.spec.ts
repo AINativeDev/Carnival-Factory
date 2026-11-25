@@ -268,7 +268,7 @@ test("Share copies a friendly line with the booth's share page, which unfurls an
   expect(copied).toMatch(
     /^@jedi4ever built .+ at the North Pole Carnival\. Come visit, and build your own: http:\/\/localhost:4173\/share\/booth-jedi4ever\.html$/,
   );
-  // The owner can share it as theirs, and edit the line before copying.
+  await page.locator('.visit-more summary').click(); // the owner's links, under More
   await page.getByRole('button', { name: 'share it as yours' }).click();
   await expect(page.getByLabel('The message Share copies')).toHaveValue(/^I built /);
 
@@ -283,7 +283,7 @@ test("Share copies a friendly line with the booth's share page, which unfurls an
   await expect(page).toHaveURL(/#\/booth\/jedi4ever$/);
   await expect(page.locator('.visit').and(page.getByRole('region', { name: /.+/ }))).toBeVisible();
 
-  await page.locator('.visit-edit summary').click(); // Share options
+  await page.locator('.visit-more summary').click(); // the map link, under More
   await page.getByRole('link', { name: 'See it on the map' }).click();
   await expect(page).toHaveURL(/#\/\?booth=jedi4ever$/);
   await expect(page.locator('.visit')).toHaveCount(0);
@@ -296,7 +296,7 @@ test('a booth links to its season card, which downloads as a PNG and copies its 
 }) => {
   const problems = watch(page);
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await page.goto('#/booth/jedi4ever');
+  await page.goto('#/booth/jedi4ever').then(() => page.locator('.visit-more summary').click());
   await page.locator('.visit').getByRole('link', { name: 'Your season' }).click();
   await expect(page).toHaveURL(/#\/season\/jedi4ever$/);
   await expect(page.getByRole('heading', { name: 'Your season' })).toBeVisible();
@@ -388,8 +388,8 @@ for (const viewport of [
     await expect(panel).toHaveCount(0);
     await expect(page).toHaveURL(/#\/$/);
 
-    // The visit's footer links to it too.
-    await page.goto('#/booth/jedi4ever');
+    await page.goto('#/booth/jedi4ever'); // The visit's More links to it too.
+    await page.locator('.visit-more summary').click();
     await page
       .locator('.visit-more')
       .getByRole('link', { name: "See the factory's numbers" })
@@ -463,7 +463,7 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
     'href',
     /template=01-your-booth\.yml&title=.+&what=Start%20from%20%40jedi4ever's%20/,
   );
-  await expect(card.getByRole('link', { name: 'Build your own' })).toBeVisible();
+  await expect(card.getByRole('link', { name: 'Build your own booth' })).toBeHidden(); // a shared link: Claim instead
   await expect(card).toContainText('Esc or walk out to leave');
   await expect(page.locator('.map-frame')).toHaveAttribute('data-visiting', 'booth:jedi4ever');
   // After the fade, the room is drawn, with the player just inside its doorway.
@@ -471,7 +471,7 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
   await expect(page.locator('.hud-booths')).toBeHidden();
   await expect(frameOf(page, 'booth', 'jedi4ever')).toHaveAttribute('data-state', 'ready');
   // A link to the map counts as a shared link: the invitation shows, once a visit.
-  await expect(card.locator('.visit-invite')).toBeVisible();
+  await expect(card.locator('.visit-claim')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(card).toHaveCount(0);
   await expect(page).toHaveURL(/#\/\?booth=jedi4ever$/);
@@ -483,7 +483,7 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
   // The back button leaves too, and so does walking out through the doorway.
   await page.keyboard.press('e');
   await expect(card).toBeVisible();
-  await expect(card.locator('.visit-invite')).toBeHidden();
+  await expect(card.locator('.visit-claim')).toBeHidden();
   await page.goBack();
   await expect(card).toHaveCount(0);
   await canvas.focus();
@@ -517,13 +517,9 @@ test('a shared link starts inside the booth, and invites the visitor to claim th
   const card = page.locator('.visit');
   await expect(card).toBeVisible();
   await expect(page.locator('.map-canvas')).toHaveAttribute('data-room', '0.50,0.85');
-  const invite = card.locator('.visit-invite');
-  await expect(invite).toBeVisible();
-  await expect(invite).toContainText('Want one of your own? Describe it in an issue');
-  await expect(invite.getByRole('link', { name: 'How it works' })).toHaveAttribute(
-    'href',
-    /docs\/how-it-works\.md$/,
-  );
+  const invite = card.locator('.visit-want');
+  await expect(invite).toContainText('Want one of your own?');
+  await expect(invite.getByRole('link', { name: 'Build your own booth' })).toBeHidden();
   await invite.getByRole('button', { name: 'Claim the plot next door' }).click();
   await expect(card).toHaveCount(0);
   await expect(page).toHaveURL(/#\/$/);
@@ -536,7 +532,7 @@ test('a shared link starts inside the booth, and invites the visitor to claim th
   await page.locator('.hud-all button[data-kind="booth"][data-id="jedi4ever"]').click();
   await page.keyboard.press('e');
   await expect(card).toBeVisible();
-  await expect(card.locator('.visit-invite')).toBeHidden();
+  await expect(card.locator('.visit-claim')).toBeHidden();
   expect(problems).toEqual([]);
 });
 

@@ -951,14 +951,43 @@ kbd {
   color: var(--color-muted);
 }
 
-/* One row of actions: Share is the one button, the rest are links. */
+/* One quiet row of actions under the story. */
 .visit-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 16px;
-  margin: 18px 0 6px;
+  margin: 16px 0 6px;
   font-size: 14px;
+}
+
+.visit-actions .visit-copy {
+  padding: 3px 14px;
+  border: 1.5px solid var(--color-berry);
+  background: none;
+  color: var(--color-berry);
+  font-size: 14px;
+}
+
+/* The one ask: a booth of your own, or the plot next door for someone who came by a shared link. */
+.visit-want {
+  margin: 12px 0 4px;
+  font-size: 14px;
+}
+
+.visit-want a {
+  font-weight: 600;
+}
+
+.visit-want [hidden] {
+  display: none;
+}
+
+.visit-want .visit-claim:not([hidden]) {
+  display: block;
+  margin: 8px 0 0;
+  padding: 8px 20px;
+  font-size: 16px;
 }
 
 .visit-actions a {
@@ -994,14 +1023,9 @@ kbd {
   cursor: pointer;
 }
 
-/* Share's options, folded away until someone wants them. */
+/* The message Share copies, and the map link, under More. */
 .visit-edit {
   font-size: 12px;
-}
-
-.visit-edit summary {
-  cursor: pointer;
-  color: var(--color-muted);
 }
 
 .visit-edit .visit-map {
@@ -1026,11 +1050,15 @@ kbd {
   resize: vertical;
 }
 
-/* The footer: quiet links, the owner's next steps, and keep me posted. */
+/* Everything else, folded: the owner's links, the factory's numbers, keep me posted. */
 .visit-more {
-  margin-top: 22px;
+  margin-top: 14px;
   color: var(--color-muted);
   font-size: 12px;
+}
+
+.visit-more summary {
+  cursor: pointer;
 }
 
 .visit-more p,
@@ -1052,34 +1080,6 @@ kbd {
 
 .visit-foot {
   margin: 10px 0 0;
-}
-
-/* The invitation, for someone who came by a shared link. */
-.visit-invite {
-  margin-top: 14px;
-  padding: 12px;
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--color-berry) 8%, transparent);
-  text-align: center;
-}
-
-.visit-invite[hidden] {
-  display: none;
-}
-
-.visit-invite p {
-  margin: 0 0 10px;
-}
-
-.visit-claim {
-  display: block;
-  margin: 0 auto 8px;
-  padding: 10px 24px;
-  font-size: 18px;
-}
-
-.visit-how {
-  font-size: 13px;
 }
 
 .history-offer p {
