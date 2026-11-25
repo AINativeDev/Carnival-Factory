@@ -39,8 +39,8 @@ places a visitor goes, and the way to the repository on GitHub.
   focus back to the button, and the map behind never hears it, wherever in
   the page focus has gone. Choosing an item from the list gives focus back to
   the button too, so the intro About opens returns focus there when it closes.
-- Booths or People's Choice chosen off the map wait for it to come back; a
-  menu that is stopped first never opens them.
+- Booths or People's Choice chosen off the map wait for it to come back.
+  Only the latest choice waits, and a menu that is stopped first never opens it.
 
 ## Rules
 

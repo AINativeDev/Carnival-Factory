@@ -99,18 +99,21 @@ export function startTopMenu(hash: string, options: TopMenuOptions = {}): TopMen
     }
   };
 
-  // The panel waiting for the map to come back, so stopping the menu cancels it too.
+  // The one panel waiting for the map to come back: a later choice replaces it,
+  // so stopping the menu always cancels whatever still waits.
   let pending: (() => void) | undefined;
+  const cancelPending = () => {
+    if (pending) window.removeEventListener('hashchange', pending);
+    pending = undefined;
+  };
   /** Runs `show` on the North Pole's map: now when it's on screen, else once the map's route has opened it. */
   const onMap = (show: () => void) => {
+    cancelPending();
     if (onTheMap(location.hash)) {
       show();
       return;
     }
-    pending = () => {
-      pending = undefined;
-      show();
-    };
+    pending = show;
     // Added after the page's own router (src/main.ts), so it runs once the map is back.
     window.addEventListener('hashchange', pending, { once: true });
     location.hash = '#/';
@@ -187,7 +190,7 @@ export function startTopMenu(hash: string, options: TopMenuOptions = {}): TopMen
       document.removeEventListener('keydown', onKey, true);
       document.removeEventListener('click', onOutside);
       window.removeEventListener('hashchange', markCurrent);
-      if (pending) window.removeEventListener('hashchange', pending);
+      cancelPending();
       pages.disconnect();
       nav.replaceChildren();
     },

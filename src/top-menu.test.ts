@@ -92,6 +92,8 @@ describe('the menu in the bar', () => {
     the('.hud-booths').remove();
     the('.choice').remove();
     item('booths').click();
+    expect(() => window.dispatchEvent(new HashChangeEvent('hashchange'))).not.toThrow();
+    history.replaceState(null, '', '#/advent');
     item('choice').click();
     expect(() => window.dispatchEvent(new HashChangeEvent('hashchange'))).not.toThrow();
   });
@@ -127,5 +129,22 @@ describe('starting the menu', () => {
     stopMenu();
     window.dispatchEvent(new HashChangeEvent('hashchange'));
     expect(the('.hud-booths').hasAttribute('open')).toBe(false);
+  });
+
+  it('never opens any panel that was waiting for the map once stopped, however many were chosen', () => {
+    page('#/booth/jedi4ever');
+    item('booths').click();
+    // Off the map again before the first choice heard the map come back.
+    history.replaceState(null, '', '#/advent');
+    item('choice').click();
+    stopMenu();
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    expect(the('.hud-booths').hasAttribute('open')).toBe(false);
+    expect(the('.choice').hasAttribute('open')).toBe(false);
+  });
+
+  it('says which selector found nothing', () => {
+    page();
+    expect(() => the('.nowhere')).toThrow('Nothing matches .nowhere');
   });
 });
