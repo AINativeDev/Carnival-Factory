@@ -10,6 +10,11 @@ as badges on its panel ([ADR 0029](../adr/0029-booth-craft.md)).
 - The factory runs it before finishing a booth or level, and the Claude Code
   Stop hook runs it on every square an agent changed.
 - A level's squares share the level's README.
+- Every build works out each square's badges from its own files
+  (`squareCraft` in `scripts/build-data.ts`) and bakes them into the page. A
+  square's panel shows the badges it earned under its owner, each with what it
+  means on hover, and a link to how squares are checked. A square with none
+  shows nothing: the panel never shows a badge it missed.
 
 ## Rules
 
@@ -22,13 +27,16 @@ as badges on its panel ([ADR 0029](../adr/0029-booth-craft.md)).
 - The craft check never blocks a merge (enforced by: it isn't in
   `REQUIRED_CHECKS` in `scripts/booth-gate.ts`).
 - Each rule (enforced by: scripts/craft/craft.ts, scripts/craft/craft.test.ts).
+- The panel shows only earned badges, as text (enforced by: src/craft-badges.test.ts,
+  smoke/craft.spec.ts).
 
 ## Where it lives
 
-`scripts/craft/craft.ts`, `scripts/craft/check-square.ts`,
+`src/craft-badges.ts`, `scripts/build-data.ts`, `scripts/craft/craft.ts`, `scripts/craft/check-square.ts`,
 `scripts/hooks/check-turn.ts`, `tessl.json` (the booth and level instructions).
 
 ## Tested by
 
 `scripts/craft/craft.test.ts`, `scripts/craft/check-square.test.ts`,
-`scripts/hooks/hooks.test.ts`.
+`scripts/hooks/hooks.test.ts`, `scripts/build-data.test.ts`,
+`src/craft-badges.test.ts`, `smoke/craft.spec.ts`.

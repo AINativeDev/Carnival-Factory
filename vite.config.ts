@@ -2,11 +2,9 @@ import { execSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vitest/config';
-import { cleanCounts } from './src/northpole/advent.ts';
-import { cleanHolders } from './src/northpole/badges.ts';
-import { BADGE_REQUEST_URL, REPO_URL } from './src/northpole/links.ts';
-import { cleanChoice } from './src/northpole/peoples-choice.ts';
+import { BADGE_REQUEST_URL } from './src/northpole/links.ts';
 import { readBoothAddedDates } from './scripts/booth-dates.ts';
+import { adventCounts, badgeHolders, peoplesChoice, squareCraft } from './scripts/build-data.ts';
 import { badgePage } from './scripts/elf-engineer.ts';
 import {
   factorySharePage,
@@ -115,43 +113,9 @@ const sharePages: Plugin = {
   },
 };
 
-/**
- * The Elf Engineer badge holders, baked into the page so it never asks the
- * network: read from BADGE_HOLDERS_FILE, which the deploy writes from the
- * accepted badge requests (scripts/badge-holders.ts), or none without it.
- */
-const BADGE_HOLDERS = (() => {
-  const file = process.env.BADGE_HOLDERS_FILE;
-  return file && existsSync(file) ? cleanHolders(JSON.parse(readFileSync(file, 'utf8'))) : [];
-})();
-
-/**
- * How many advent challenges each participant has had accepted, baked into the
- * page so it never asks the network: read from ADVENT_FILE, which the deploy
- * writes from the accepted Advent challenge issues (scripts/write-advent.ts),
- * or none without it.
- */
-const ADVENT_COUNTS = (() => {
-  const file = process.env.ADVENT_FILE;
-  return file && existsSync(file) ? cleanCounts(JSON.parse(readFileSync(file, 'utf8'))) : {};
-})();
-
-/**
- * The People's Choice standings, baked into the page so it never asks the
- * network: read from PEOPLES_CHOICE_FILE, which the deploy writes from the
- * votes in its discussion (scripts/write-peoples-choice.ts), or none without it.
- */
-const PEOPLES_CHOICE = (() => {
-  const file = process.env.PEOPLES_CHOICE_FILE;
-  const disabled = JSON.parse(
-    readFileSync(join(import.meta.dirname, 'src/northpole/disabled.json'), 'utf8'),
-  ) as { booths: string[] };
-  return file && existsSync(file)
-    ? cleanChoice(JSON.parse(readFileSync(file, 'utf8')), disabled.booths, REPO_URL)
-    : undefined;
-})();
-
 /** Writes badges/index.html: the Elf Engineer badges, and the Markdown to paste for each. */
+const BADGE_HOLDERS = badgeHolders(process.env.BADGE_HOLDERS_FILE);
+
 const badgePages: Plugin = {
   name: 'badge-pages',
   apply: 'build',
@@ -189,9 +153,13 @@ export default defineConfig(({ command }) => ({
     __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev'),
     __BADGE_HOLDERS__: JSON.stringify(BADGE_HOLDERS),
     __SEASON__: JSON.stringify(SEASON),
-    __PEOPLES_CHOICE__: JSON.stringify(PEOPLES_CHOICE ?? null),
+    __PEOPLES_CHOICE__: JSON.stringify(
+      peoplesChoice(process.env.PEOPLES_CHOICE_FILE, import.meta.dirname) ?? null,
+    ),
     // How many advent challenges each booth's owner has done, for their booth's decorations.
-    __ADVENT_COUNTS__: JSON.stringify(ADVENT_COUNTS),
+    __ADVENT_COUNTS__: JSON.stringify(adventCounts(process.env.ADVENT_FILE)),
+    // Each square's craft badges, from its own files (docs/adr/0029-booth-craft.md).
+    __SQUARE_CRAFT__: JSON.stringify(squareCraft(import.meta.dirname)),
     // When each booth's folder first appeared, for the Booths panel's Recently added.
     __BOOTH_ADDED__: JSON.stringify(readBoothAddedDates(import.meta.dirname)),
     // Every square's name, for searching and sorting the Booths panel.
