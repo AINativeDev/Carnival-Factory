@@ -44,7 +44,8 @@ export function drawScene(m: MapRun, view: Box, frame: SceneFrame) {
     if (!shown(thing)) continue;
     if (thing.kind === 'drift') drawThing(ctx, thing, motion);
     else
-      add(thing.x + thing.w + thing.y + thing.h - 2, () => {
+      // The billboard is drawn last, over whatever stands near it, so it is never hidden.
+      add(thing.kind === 'billboard' ? Infinity : thing.x + thing.w + thing.y + thing.h - 2, () => {
         drawThing(ctx, thing, motion);
       });
   }
