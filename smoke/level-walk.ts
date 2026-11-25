@@ -21,10 +21,10 @@ import {
 /** How far inside the canvas's edges a step's click lands, clear of the HUD. */
 const EDGE = 40;
 
-/** How many steps a walk to one door may take before it gives up. */
-const MOST_STEPS = 12;
+/** How many steps a walk to one door may take before it gives up, counting steps planned again. */
+const MOST_STEPS = 16;
 
-/** Waits until the camera stands still, and says where it is. Gives up after 15 seconds. */
+/** Waits until the camera stands still, and says where it is, with `at` as the canvas reads it. Gives up after 15 seconds. */
 export async function stillCamera(page: Page) {
   const canvas = page.locator('.map-canvas');
   const until = Date.now() + 15_000;
@@ -36,7 +36,7 @@ export async function stillCamera(page: Page) {
     await page.waitForTimeout(400);
   }
   const [x = 0, y = 0, zoom = 1] = camera.split(',').map(Number);
-  return { x, y, zoom };
+  return { x, y, zoom, at: camera };
 }
 
 /** Waits until the player stops walking, and says which tile they stand on. */
@@ -142,6 +142,10 @@ async function stepToward(page: Page, world: World, from: Tile, beside: Tile, wh
     `a tile on the way from ${from.x}, ${from.y} to ${what} is on the canvas and clear of every structure, with the camera at ${camera.x}, ${camera.y}`,
   ).toBeDefined();
   if (!next) return;
+  // Hovering the way takes time, and the camera pulls back once it has rested
+  // (`SETTLE` in src/northpole/map.ts): a click planned on the old camera can
+  // land on a stall and open it, so a camera that moved plans the step again.
+  if ((await canvas.getAttribute('data-camera')) !== camera.at) return;
   await canvas.click({ position: screenOf(next), timeout: 10_000 });
   await page.waitForTimeout(300);
   await stillPlayer(page);
