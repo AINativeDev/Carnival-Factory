@@ -75,7 +75,7 @@ describe('when the intro shows', () => {
   it('opens on a first visit, and stays closed on the next once closed', () => {
     expect(page().isOpen).toBe(true);
     expect(told).toEqual(['opened']);
-    the('.intro-skip').click();
+    the('.intro-backdrop').click();
     expect(localStorage.getItem(INTRO_SEEN_KEY)).toBe('1');
     intro?.stop();
     expect(page().isOpen).toBe(false);
@@ -92,7 +92,7 @@ describe('when the intro shows', () => {
     };
     vi.stubGlobal('localStorage', { getItem: off, setItem: off });
     expect(page().isOpen).toBe(true);
-    the('.intro-skip').click();
+    the('.intro-backdrop').click();
     intro?.stop();
     expect(page().isOpen).toBe(true);
   });
@@ -114,10 +114,9 @@ describe('the intro as a dialog', () => {
     expect(document.activeElement).toBe(the('.intro-explore'));
   });
 
-  it('closes with Skip, Esc, a click outside, Explore and Build, saying how', () => {
+  it('closes with Esc, a click outside, Explore and Build, saying how, and has no Skip button', () => {
     // Esc is a key on the dialog; every other way is a click.
     const ways: [string, string][] = [
-      ['skip', '.intro-skip'],
       ['skip', 'Escape'],
       ['skip', '.intro-backdrop'],
       ['explore', '.intro-explore'],
@@ -133,6 +132,7 @@ describe('the intro as a dialog', () => {
       expect(intro?.isOpen).toBe(false);
       expect(document.querySelector('.intro')).toBeNull();
       expect(told).toEqual(['opened', how]);
+      expect(document.querySelector('.intro-skip')).toBeNull();
       expect(document.activeElement).toBe(the('.map-canvas'));
     }
   });
@@ -148,17 +148,17 @@ describe('the intro as a dialog', () => {
     expect(walking).not.toHaveBeenCalled();
   });
 
-  it('keeps keyboard focus inside while open', () => {
+  it('keeps keyboard focus inside while open, going round its two buttons', () => {
     page();
-    const skip = the('.intro-skip');
+    const explore = the('.intro-explore');
     const build = the('.intro-build');
     build.focus();
     expect(key(build, 'Tab').defaultPrevented).toBe(true);
-    expect(document.activeElement).toBe(skip);
-    expect(key(skip, 'Tab', true).defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(explore);
+    expect(key(explore, 'Tab', true).defaultPrevented).toBe(true);
     expect(document.activeElement).toBe(build);
-    the('.intro-explore').focus();
-    expect(key(the('.intro-explore'), 'Tab').defaultPrevented).toBe(false);
+    explore.focus();
+    expect(key(explore, 'Tab').defaultPrevented).toBe(false);
   });
 
   it('reopens from "What is this?", once, and gives focus back to it', () => {
@@ -169,7 +169,7 @@ describe('the intro as a dialog', () => {
     reopen.click();
     expect(document.querySelectorAll('.intro')).toHaveLength(1);
     expect(told).toEqual(['opened', 'skip', 'opened']);
-    the('.intro-skip').click();
+    the('.intro-backdrop').click();
     expect(document.activeElement).toBe(reopen);
   });
 

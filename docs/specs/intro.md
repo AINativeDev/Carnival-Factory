@@ -37,7 +37,8 @@ easy to skip.
 - Then **Explore the North Pole**, which closes it, and **Get a booth**,
   which opens the booth form (`BOOTH_REQUEST_URL`) in a new tab and
   closes it too.
-- It closes with Skip, Esc, a click outside it, or either button. Closing
+- It closes with Esc, a click outside it, or either button; "Explore the North
+  Pole" is the way to skip it, so there is no separate Skip button. Closing
   marks it seen.
 - On a phone each beat is a row, its scene beside its line, and nothing is
   wider than a 390-pixel screen.
@@ -55,7 +56,7 @@ easy to skip.
 - It stays a modal: the map stops walking as it opens, and a scene that can't
   draw never keeps it open (enforced by: src/intro-modal.test.ts).
 - It tells analytics `intro_opened` and `intro_closed` with `how`: `skip`
-  (Skip, Esc or a click outside), `explore` or `build`, through the page
+  (Esc or a click outside), `explore` or `build`, through the page
   event `north-pole-intro`, and nothing else
   ([analytics](analytics.md); enforced by: src/analytics-events.test.ts,
   src/analytics.test.ts).

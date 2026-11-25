@@ -1,5 +1,5 @@
 /**
- * The intro's dialog (docs/specs/intro.md), built but not yet wired: Skip, the
+ * The intro's dialog (docs/specs/intro.md), built but not yet wired: the
  * title, the three beats over their scenes and the two ways on. src/intro.ts
  * opens it, draws its scenes and closes it.
  */
@@ -30,14 +30,13 @@ function beat({ title, line }: { title: string; line: string }) {
   return { item, ctx: canvas.getContext('2d') };
 }
 
-/** The dialog over its backdrop: Skip, the title, the three beats and the two ways on. */
+/** The dialog over its backdrop: the title, the three beats and the two ways on. */
 export function buildDialog() {
   const backdrop = make('div', 'intro-backdrop');
   const dialog = make('section', 'intro');
   dialog.setAttribute('role', 'dialog');
   dialog.setAttribute('aria-modal', 'true');
   dialog.setAttribute('aria-labelledby', 'intro-title');
-  const skip = make('button', 'intro-skip', 'Skip');
   const title = make('h2', 'intro-title', `Welcome to ${SITE_TITLE}`);
   title.id = 'intro-title';
   const lead = make('p', 'intro-lead', 'Every stall here was asked for by someone. Here is how.');
@@ -49,7 +48,7 @@ export function buildDialog() {
   Object.assign(build, { href: BOOTH_REQUEST_URL, target: '_blank', rel: 'noopener' });
   const actions = make('div', 'intro-actions');
   actions.append(explore, build);
-  dialog.append(skip, title, lead, list, actions);
+  dialog.append(title, lead, list, actions);
   backdrop.append(dialog);
-  return { backdrop, dialog, skip, explore, build, scenes: beats.map(({ ctx }) => ctx) };
+  return { backdrop, dialog, explore, build, scenes: beats.map(({ ctx }) => ctx) };
 }
