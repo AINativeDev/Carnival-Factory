@@ -1,6 +1,8 @@
-import type { NorthPoleSquare } from '../../../src/northpole/square';
-import { glow, iso, pine, scene, shadow } from '../../../src/northpole/diorama';
+import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
+import { glow, iso, pine, scene } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
+import { drawSkater, drawSparkle, drawTrail } from './rink-drawing';
+import { ICE, skate, sparkle, spinning, startRink } from './skate';
 
 const { colors } = theme;
 
@@ -18,46 +20,47 @@ export function figureEight(phase: number): { x: number; y: number } {
 
 const SCARVES = [colors.berry, colors.pine, colors.violet];
 
-function skater(ctx: CanvasRenderingContext2D, x: number, y: number, u: number, scarf: string) {
-  ctx.fillStyle = colors.surface;
-  ctx.fillRect(x - 2 * u, y - 8 * u, 4 * u, 8 * u);
-  ctx.fillStyle = scarf;
-  ctx.fillRect(x - 2.5 * u, y - 8.5 * u, 5 * u, 1.6 * u);
-  ctx.fillStyle = colors.glow;
-  ctx.beginPath();
-  ctx.arc(x, y - 10.5 * u, 2.2 * u, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = scarf;
-  ctx.beginPath();
-  ctx.arc(x, y - 11.5 * u, 2.2 * u, Math.PI, 0);
-  ctx.fill();
-  ctx.fillStyle = colors.muted;
-  ctx.fillRect(x - 2.5 * u, y, 5 * u, 0.8 * u);
+/** Across and down the figure eight's lane, in the attraction's units. */
+const ACROSS = 25;
+const DOWN = 22;
+
+/** Where on the lane a skater is at `time`, `ahead`, a part of a lap, in front of the first. */
+function onLane(time: number, ahead: number) {
+  const { x, y } = figureEight((((time / LAP + ahead) % 1) + 1) % 1);
+  return { x: ICE.x + x * ACROSS, y: ICE.y + y * DOWN };
 }
 
-/** A frozen pond in the pines, where skaters trace figure eights and leave their tracks in the ice. */
+/** The visitor's skater: the attraction's one memory of the pointer. */
+let rink = startRink();
+
+/**
+ * A frozen pond in the pines, where three skaters trace figure eights and a
+ * gold-scarfed one follows the pointer, carving lines in the ice, spinning on
+ * a tap and sparkling for a figure eight of the visitor's own.
+ */
 const attraction: NorthPoleSquare = {
   id: 'frozen-pond',
   name: 'Frozen Pond',
-  description: 'Skaters tracing figure eights on the ice.',
+  description: 'Skate the ice: carve trails, spin on a tap and sparkle for a figure eight.',
   // How it stands on the home map: what it is, not a pavilion (ADR 0042).
   stall: { shape: 'igloo', roof: 'ice', trim: 'snow', landmark: 'ice-rink' },
-  draw(ctx, size, time) {
+  draw(ctx, size, time, pointer?: SquarePointer) {
     scene(ctx, size, time, () => {
       // Pines round the back of the pond.
-      for (const [gx, gy, h] of [
+      const pines: [number, number, number][] = [
         [-20, -14, 20],
         [-13, -20, 15],
         [-19, -4, 13],
         [16, -20, 17],
-      ]) {
+      ];
+      for (const [gx, gy, h] of pines) {
         const p = iso(gx, gy);
         pine(ctx, p.x, p.y, h);
       }
 
       // The ice, sunk a little into the snow, with a shine that drifts across it.
-      const cx = 52;
-      const cy = 70;
+      const cx = ICE.x;
+      const cy = ICE.y;
       ctx.fillStyle = colors.slabShade;
       ctx.beginPath();
       ctx.ellipse(cx, cy, 33, 15.5, 0, 0, Math.PI * 2);
@@ -92,29 +95,31 @@ const attraction: NorthPoleSquare = {
       ctx.fillRect(lamp.x - 1.4, lamp.y - 19, 2.8, 3);
 
       // The figure eight scratched into the ice.
-      const across = 25;
-      const down = 22;
       ctx.strokeStyle = colors.snowLit;
       ctx.globalAlpha = 0.7;
       ctx.lineWidth = 0.5;
       ctx.beginPath();
       for (let i = 0; i <= 64; i++) {
-        const { x, y } = figureEight(i / 64);
-        if (i === 0) ctx.moveTo(cx + x * across, cy + y * down);
-        else ctx.lineTo(cx + x * across, cy + y * down);
+        const { x, y } = onLane(i * (LAP / 64), 0);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       }
       ctx.stroke();
       ctx.globalAlpha = 1;
 
-      // Three skaters, a third of a lap apart, the nearer ones drawn last.
-      const skaters = SCARVES.map((scarf, i) => ({
-        scarf,
-        ...figureEight((((time / LAP + i / 3) % 1) + 1) % 1),
-      })).sort((a, b) => a.y - b.y);
-      for (const { scarf, x, y } of skaters) {
-        shadow(ctx, cx + x * across, cy + y * down, 6);
-        skater(ctx, cx + x * across, cy + y * down, 0.9, scarf);
-      }
+      // The visitor's skater glides after the pointer, or skates the lane between the others.
+      const u = size / 100;
+      const target = pointer ? { x: pointer.x / u, y: pointer.y / u } : onLane(time, 1 / 6);
+      rink = skate(rink, target, time, pointer?.presses ?? 0);
+      drawTrail(ctx, rink.trail, time);
+
+      // Four skaters, the nearer ones drawn last.
+      const skaters = [
+        ...SCARVES.map((scarf, i: number) => ({ scarf, spin: 0, ...onLane(time, i / 3) })),
+        { scarf: colors.gold, spin: spinning(rink, time) ?? 0, x: rink.x, y: rink.y },
+      ].sort((a, b) => a.y - b.y);
+      for (const { scarf, spin, x, y } of skaters) drawSkater(ctx, x, y, scarf, spin);
+      drawSparkle(ctx, rink.x, rink.y, sparkle(rink, time));
     });
   },
 };
