@@ -8,6 +8,7 @@ import {
 import { ADVENT_REQUEST_URL, OWN_REPO_URL } from './northpole/links';
 import { SIGNUP_OFFER, showSignupOffer } from './offer';
 import type { VisitHud } from './visit-hud';
+import { focusBack } from './focus-back';
 
 /**
  * The advent calendar, `#/advent`: 24 small challenges to do with a Tessl
@@ -131,13 +132,7 @@ export function openAdventHud(frame: HTMLElement, options: AdventHudOptions): Vi
       delete frame.dataset.factory;
       const hadFocus = card.contains(document.activeElement);
       card.remove();
-      if (hadFocus) {
-        const back =
-          before && before !== document.body && before.isConnected
-            ? before
-            : frame.querySelector<HTMLElement>('canvas');
-        back?.focus({ preventScroll: true });
-      }
+      if (hadFocus) focusBack(before, frame);
     },
   };
 }

@@ -38,10 +38,8 @@ export function cleanCraft(raw: unknown): Craft {
   return craft;
 }
 
-/** The badges this build baked in. */
-export const SQUARE_CRAFT = cleanCraft(
-  typeof __SQUARE_CRAFT__ === 'undefined' ? undefined : __SQUARE_CRAFT__,
-);
+/** The badges this build baked in: Vite defines them in every mode, tests included. */
+export const SQUARE_CRAFT = cleanCraft(__SQUARE_CRAFT__);
 
 /** A square's key, as the build writes it: a level's own squares under the level. */
 export const craftKey = (kind: SquareKind | 'level', id: string, level?: string) =>

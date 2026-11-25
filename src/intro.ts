@@ -1,7 +1,7 @@
 /**
  * The intro a first-time visitor sees on the map (docs/specs/intro.md): what
  * the North Pole is, and how a booth gets built, in three beats over a small
- * diorama, shown once and easy to skip. The banner's "What is this?" opens it
+ * diorama, shown once and easy to skip. The top bar's About (src/top-menu.ts) opens it
  * again at any time.
  */
 import { INTRO_EVENT, type IntroClose } from './analytics-events';
@@ -52,7 +52,7 @@ export interface Intro {
 
 /**
  * Opens the intro now if `hash` is a first visit to the map, and wires the
- * banner's "What is this?" to open it again.
+ * top bar's About to open it again.
  */
 export function startIntro(hash: string): Intro {
   let backdrop: HTMLElement | undefined;

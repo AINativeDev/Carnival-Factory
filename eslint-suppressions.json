@@ -9,11 +9,6 @@
       "count": 2
     }
   },
-  "carnival/attractions/snowball-toss/attraction.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 2
-    }
-  },
   "carnival/attractions/snowball-toss/attraction.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 2
@@ -29,11 +24,6 @@
       "count": 1
     },
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    }
-  },
-  "scripts/file-size.test.ts": {
-    "@typescript-eslint/no-unnecessary-type-assertion": {
       "count": 1
     }
   },
@@ -100,29 +90,8 @@
       "count": 1
     }
   },
-  "scripts/square-lint.test.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 1
-    }
-  },
   "scripts/strict-types.ts": {
     "@typescript-eslint/no-unsafe-argument": {
-      "count": 1
-    }
-  },
-  "scripts/write-advent.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    }
-  },
-  "scripts/write-pending.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
     }
   },
@@ -171,11 +140,6 @@
       "count": 1
     }
   },
-  "src/northpole/booths.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    }
-  },
   "src/northpole/diorama.test.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
@@ -193,19 +157,6 @@
     }
   },
   "src/northpole/level.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    }
-  },
-  "src/northpole/levels.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    }
-  },
-  "src/northpole/links.test.ts": {
     "@typescript-eslint/no-non-null-assertion": {
       "count": 1
     }

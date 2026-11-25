@@ -46,6 +46,12 @@ What runs on every pull request, and what each check guarantees.
   show yet is still reached.
 - `smoke/flashing.spec.ts` plays every booth and attraction on the back wall
   of its room and measures flashes.
+- Feature flags ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)): the unit tests build with every flag off, as the live
+  site does, and `switchFlags` in `src/test-support/feature-flags.ts` switches
+  one on for a `describe`, so each gate is tested on and off. The smoke test
+  reads the same `FEATURE_FLAGS` setting as its build (`smoke/support/feature-flags.ts`):
+  it leaves out an attraction a flag holds back, skips a check for a hidden
+  feature, and `smoke/feature-flags.spec.ts` checks each hidden feature is gone.
 - Smoke scope: when every changed file is inside one booth's folder, CI sets
   `SMOKE_ONLY=booth/<login>` and plays only that booth one by one; the
   map-wide tests still run. Anything else plays every square.
@@ -96,10 +102,12 @@ What runs on every pull request, and what each check guarantees.
   by: scripts/baselines-shrink.ts, the "Baselines only shrink" step in
   .github/workflows/ci.yml).
 - Coverage: 99% of added lines, and of the branch arms on them, in `src/`,
-  `scripts/` and `lint/` ([ADR 0031](../adr/0031-changed-branches-too.md)), and the
-  whole-repository thresholds only rise, raised on main with
-  `npm run coverage:ratchet` ([ADR 0034](../adr/0034-ratchet-on-main.md)) (enforced by: scripts/diff-coverage.ts,
-  the thresholds in vitest.config.ts).
+  `scripts/` and `lint/` ([ADR 0031](../adr/0031-changed-branches-too.md)), and
+  every file there holds 99% of its lines, branches, functions and statements,
+  file by file, with no exceptions and no floor to raise; squares in
+  `carnival/` count in the combined browser and unit coverage instead
+  ([ADR 0044](../adr/0044-coverage-per-file.md)) (enforced by:
+  scripts/diff-coverage.ts, the per-file thresholds in vitest.config.ts).
 - The docs name only files that exist, and the ADR index lists every record
   (enforced by: scripts/docs-paths.test.ts). Whether the prose is still true,
   names say why, and changes are tested first and end to end (enforced by:

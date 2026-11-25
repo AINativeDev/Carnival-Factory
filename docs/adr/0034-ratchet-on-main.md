@@ -1,6 +1,6 @@
 # 0034. The coverage floor is raised on main, not in pull requests
 
-- Status: Accepted
+- Status: Superseded by [0044](0044-coverage-per-file.md)
 - Date: 2026-11-25
 - Spec: [checks-and-tests.md](../specs/checks-and-tests.md)
 

@@ -6,11 +6,14 @@ import { entryItem, type HudEntry } from './booths-hud-markup';
 import { loadMemory, rememberFolds, startThisIsMe } from './booths-hud-memory';
 import { the } from './dom';
 
-/** When each booth's folder first appeared, and every square's name, set by Vite when it builds. */
+/**
+ * When each booth's folder first appeared, and every square's name, set by
+ * Vite in every mode, tests included (vite.config.ts): only the page loads this.
+ */
 declare const __BOOTH_ADDED__: Record<string, string>;
 declare const __SQUARE_NAMES__: Record<string, string>;
-const ADDED: Record<string, string> = typeof __BOOTH_ADDED__ === 'object' ? __BOOTH_ADDED__ : {};
-const NAMES: Record<string, string> = typeof __SQUARE_NAMES__ === 'object' ? __SQUARE_NAMES__ : {};
+const ADDED: Record<string, string> = __BOOTH_ADDED__;
+const NAMES: Record<string, string> = __SQUARE_NAMES__;
 
 export interface BoothsPanelOptions {
   attractions: readonly NorthPoleSquare[];

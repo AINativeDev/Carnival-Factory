@@ -141,6 +141,13 @@ describe('factoryStats', () => {
     });
   });
 
+  it('counts a merged pull request without labels as merged by hand', () => {
+    const unlabelled = Object.fromEntries(
+      Object.entries(pull(10, 'tessl/issue-1')).filter(([key]) => key !== 'labels'),
+    ) as RawPull;
+    expect(factoryStats(issues, [unlabelled], 'now')).toMatchObject({ merged: 1, autoMerged: 0 });
+  });
+
   it('leaves out the time to the map when no request has merged', () => {
     const stats = factoryStats([issue(1, ['booth-request', 'declined'])], [], 'now');
     expect(stats.toMap).toBeUndefined();

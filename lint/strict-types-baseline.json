@@ -1,9 +1,7 @@
 {
   "carnival/attractions/ferris-wheel/attraction.test.ts": 8,
   "carnival/attractions/ferris-wheel/attraction.ts": 1,
-  "carnival/attractions/frozen-pond/attraction.ts": 2,
   "carnival/attractions/gingerbread-fun-house/attraction.ts": 9,
-  "carnival/attractions/reindeer-carousel/attraction.test.ts": 2,
   "scripts/advent.ts": 3,
   "scripts/booth-dates.ts": 1,
   "scripts/booth-gate.ts": 1,
@@ -18,7 +16,7 @@
   "scripts/pending.test.ts": 2,
   "scripts/peoples-choice.ts": 1,
   "scripts/season.test.ts": 2,
-  "scripts/season.ts": 4,
+  "scripts/season.ts": 3,
   "scripts/share-pages.ts": 3,
   "scripts/square-lint.test.ts": 1,
   "scripts/strict-types.ts": 2,
@@ -37,6 +35,6 @@
   "src/northpole/sandbox.ts": 1,
   "src/northpole/square.test.ts": 3,
   "src/northpole/visit.test.ts": 1,
-  "src/northpole/visit.ts": 3,
+  "src/northpole/visit.ts": 2,
   "src/route.ts": 4
 }

@@ -88,5 +88,5 @@ and a maintainer can switch it off with the kill switch.
 ## Run a factory on your own repository
 
 Every loop above is a skill you can read in this repository. To build your own
-factory, start with **Try it on your own** in the [README](../README.md) and the
+factory, start with [RUN-YOUR-OWN.md](../RUN-YOUR-OWN.md) and the
 [Tessl docs](https://docs.tessl.io).

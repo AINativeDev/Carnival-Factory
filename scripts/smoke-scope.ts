@@ -32,11 +32,18 @@ export function smokeScope(files: readonly string[]): string | undefined {
   return owners.size === 1 ? `booth/${[...owners][0]}` : undefined;
 }
 
+/** What the command prints for `git diff --name-only`'s output: the scope on a line, or nothing. */
+export function scopeOutput(changedFiles: string): string {
+  const scope = smokeScope(changedFiles.split('\n'));
+  return scope ? `${scope}\n` : '';
+}
+
+/* v8 ignore start -- the command-line entry point, run by CI: reading stdin, then printing */
 if (process.argv[1]?.endsWith('smoke-scope.ts')) {
   const chunks: Buffer[] = [];
   process.stdin.on('data', (chunk: Buffer) => chunks.push(chunk));
   process.stdin.on('end', () => {
-    const scope = smokeScope(Buffer.concat(chunks).toString('utf8').split('\n'));
-    if (scope) process.stdout.write(`${scope}\n`);
+    process.stdout.write(scopeOutput(Buffer.concat(chunks).toString('utf8')));
   });
 }
+/* v8 ignore stop */

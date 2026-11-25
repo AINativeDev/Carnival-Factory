@@ -33,10 +33,10 @@ export function nearestOpenPlot(
     start,
     open.map((plot) => plot.door),
   );
-  if (!way) return undefined;
-  const end = way.at(-1) ?? start;
-  const plot = open.find((p) => p.door.x === end.x && p.door.y === end.y) ?? open[0];
-  return { plot, path: [start, ...way] };
+  const end = way?.at(-1) ?? start;
+  // A walk ends at the door it was found for, so whenever there's a walk its plot is found.
+  const plot = open.find((p) => p.door.x === end.x && p.door.y === end.y);
+  return way && plot && { plot, path: [start, ...way] };
 }
 
 /**

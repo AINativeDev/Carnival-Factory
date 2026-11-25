@@ -88,6 +88,13 @@ describe("a level's panel", () => {
     expect(frame.nextElementSibling?.classList.contains('hud-level')).toBe(true);
   });
 
+  it('stays beside the map even if its hidden Leave or claim button is pressed', () => {
+    const { card } = open();
+    the(card, '.visit-close').click();
+    the(card, '.visit-claim').click();
+    expect(card.isConnected).toBe(true);
+  });
+
   it('stands beside the map, not over it', () => {
     const { frame, card } = open();
     expect(frame.nextElementSibling).toBe(card);

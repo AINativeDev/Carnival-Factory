@@ -85,6 +85,7 @@ describe('share pages', () => {
 
   it('knows the site from SITE_URL, or from the repository on GitHub Pages', () => {
     expect(siteUrl({ SITE_URL: 'https://example.org/np' })).toBe('https://example.org/np/');
+    expect(siteUrl({ SITE_URL: 'https://example.org/np/' })).toBe('https://example.org/np/');
     expect(siteUrl({ GITHUB_REPOSITORY: 'AINativeDev/Northpole' })).toBe(
       'https://ainativedev.github.io/Northpole/',
     );

@@ -20,7 +20,8 @@ export const PROJECT_CHECKS: [string, string[]][] = [
 export function touchedSquares(porcelain: string): string[] {
   const folders = new Set<string>();
   for (const line of porcelain.split('\n')) {
-    const path = line.slice(3).split(' -> ').at(-1) ?? '';
+    // A rename reads `old -> new`, and the new path is the one in the tree.
+    const path = line.slice(3).replace(/^.* -> /, '');
     const square = path.match(
       /^carnival\/(?:booths|attractions)\/[^/]+|^carnival\/levels\/[^/]+\/squares\/[^/]+/,
     );
