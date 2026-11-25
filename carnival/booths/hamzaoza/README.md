@@ -21,10 +21,18 @@ on its belly on a red sled.
 - **On its own**: when nobody is steering, as on the map, the penguin weaves
   along the course's clear line by itself, and starts again after a while.
 
-The rules are plain functions in `booth.ts`: the seeded course (`thingAt`,
-`thingsBetween`, `pathAt`), speed (`distanceFor`, `speedFor`), steering
-(`laneOf`, `toward`), collisions and scoring (`advance`, with `laneAt` for
-where the penguin is as it passes each thing), and the view
-(`scaleAt`, `project`, `inView`). `booth.test.ts` tests each of them.
+The rules are plain functions, split by what they are in the scene:
+
+- `course.ts`: the seeded course (`thingAt`, `thingsBetween`, `pathAt`).
+- `sledding.ts`: speed (`distanceFor`, `speedFor`) and steering (`laneOf`,
+  `toward`, and `laneAt` for where the penguin is as it passes each thing).
+- `game.ts`: the game's rules, collisions and scoring (`advance`, `newRun`,
+  `newGame`).
+- `view.ts`: the view (`scaleAt`, `project`, `inView`).
+
+`scenery.ts` draws the sky and the slope, `characters.ts` the snowflakes,
+rocks, drifts and the penguin, `hud.ts` the score, and `booth.ts` puts them
+together. `course.test.ts`, `steering.test.ts`, `game.test.ts` and
+`view.test.ts` test the rules, playing frames through `test-runs.ts`.
 
 Preview it at `#/booth/hamzaoza`.
