@@ -23,7 +23,8 @@ test('a first visit to the map shows the intro, and a reload does not', async ({
   await expect(dialog(page)).toBeVisible();
   await expect(dialog(page).locator('.intro-beat')).toHaveCount(3);
   await expect(page.getByRole('button', { name: 'Explore the North Pole' })).toBeFocused();
-  await page.getByRole('button', { name: 'Skip' }).click();
+  await expect(page.getByRole('button', { name: 'Skip' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Explore the North Pole' }).click();
   await expect(dialog(page)).toHaveCount(0);
   expect(await seen(page)).toBe('1');
   await page.reload();
@@ -31,7 +32,7 @@ test('a first visit to the map shows the intro, and a reload does not', async ({
   await expect(dialog(page)).toHaveCount(0);
 });
 
-for (const way of ['Skip', 'Escape', 'Explore the North Pole']) {
+for (const way of ['Escape', 'Explore the North Pole']) {
   test(`${way} closes the intro, and focus comes back`, async ({ page }) => {
     await page.goto('#/');
     await expect(dialog(page)).toBeVisible();

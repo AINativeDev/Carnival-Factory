@@ -69,7 +69,6 @@ export function startIntro(hash: string): Intro {
       if (event.target === backdrop) close('skip');
     });
     const ways: [HTMLElement, IntroClose][] = [
-      [parts.skip, 'skip'],
       [parts.explore, 'explore'],
       [parts.build, 'build'],
     ];

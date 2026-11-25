@@ -55,7 +55,7 @@ describe('the intro as a modal', () => {
     );
     expect(page().isOpen).toBe(true);
     expect(document.activeElement).toBe(the('.intro-explore'));
-    the('.intro-skip').click();
+    the('.intro-backdrop').click();
     expect(intro?.isOpen).toBe(false);
     expect(document.querySelector('.intro-backdrop')).toBeNull();
     expect(told).toEqual(['opened', 'skip']);
