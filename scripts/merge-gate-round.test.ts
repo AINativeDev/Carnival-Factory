@@ -145,6 +145,19 @@ describe('one bad pull request among good ones', () => {
     expect(logs).toContain('published the map');
   });
 
+  it('fails the round when a held pull request’s history fails, though gating it passed', async () => {
+    const errors: string[] = [];
+    vi.spyOn(console, 'error').mockImplementation((line: string) => errors.push(line));
+    const routes = mergeableBooth();
+    routes['GET pulls?state=open'] = [boothPull({ labels: [{ name: 'needs-human' }] })];
+    routes['GET issues/7/events'] = new HttpFailure(504);
+    const run = await round(routes);
+    expect(errors).toEqual([
+      '#7: Error: GET issues/7/events?per_page=100&page=1 answered HTTP 504',
+    ]);
+    expect(run.ok).toBe(false);
+  });
+
   it('reads no held pull request’s history once a merge has made the map stale', async () => {
     const routes = mergeableBooth();
     routes['GET issues/7/events'] = new HttpFailure(504);

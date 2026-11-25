@@ -72,10 +72,12 @@ scripts/auto-merge-booths-needs-human.test.ts):
   scripts/merge-gate-actions.ts, scripts/auto-merge-booths.test.ts).
 - GitHub's passing failures don't stop a round: a request GitHub answers
   502, 503 or 504, or whose connection fails, is tried up to 3 times in all,
-  after 1 s and then 3 s; any other status fails at once. A merge is tried
+  after 1 s and then 3 s; any other status fails at once. A write that would
+  do something twice, a merge, a new comment or a workflow dispatch, is tried
   again only when its connection never reached GitHub (refused, not found or
   timed out connecting), never after an answer or a connection that broke
-  once sent, since it may have merged (enforced by:
+  once sent, since GitHub may have done it. Reads, edits, deletes and adding
+  labels are retried either way (enforced by:
   scripts/merge-gate-github.ts, scripts/merge-gate-github.test.ts).
 - A failure about one pull request, while gating it or reading its history
   to decide whether to publish the map, is logged and skips only that pull

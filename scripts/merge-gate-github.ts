@@ -29,6 +29,17 @@ const NEVER_SENT = new Set<unknown>([
   'UND_ERR_CONNECT_TIMEOUT',
 ]);
 
+/**
+ * Whether GitHub doing this request twice does no more than doing it once.
+ * A merge, a new comment and a workflow dispatch don't: a second would merge
+ * again, post the comment twice or run the deploy twice. Reads, edits,
+ * deletes and adding labels do.
+ */
+function replaySafe(method: string, path: string) {
+  if (method === 'PUT') return !/^pulls\/\d+\/merge$/.test(path);
+  return method !== 'POST' || /^issues\/\d+\/labels$/.test(path);
+}
+
 /** Waits `ms` milliseconds: the real wait between tries. */
 export const pause = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -42,8 +53,9 @@ function connectionCode(error: unknown): unknown {
  * The real GitHub, with the workflow's token. A request GitHub answers 502,
  * 503 or 504, or whose connection fails, is tried up to three times in all,
  * after `wait`s that grow, so one passing failure doesn't stop the round. A
- * merge is tried again only when it never reached GitHub: after an answer, or
- * a connection that broke once sent, it may have merged.
+ * request that isn't `replaySafe`, such as a merge, is tried again only when
+ * it never reached GitHub: after an answer, or a connection that broke once
+ * sent, GitHub may have done it.
  */
 export function githubClient(
   api: string,
@@ -52,7 +64,7 @@ export function githubClient(
   wait: (ms: number) => Promise<void> = pause,
 ): GitHub {
   async function attempt(method: string, path: string, body: unknown) {
-    const merge = method === 'PUT' && /^pulls\/\d+\/merge$/.test(path);
+    const safe = replaySafe(method, path);
     let response: Response;
     try {
       response = await fetch(`${api}/repos/${repository}/${path}`, {
@@ -65,12 +77,12 @@ export function githubClient(
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       });
     } catch (error) {
-      const retry = !merge || NEVER_SENT.has(connectionCode(error));
+      const retry = safe || NEVER_SENT.has(connectionCode(error));
       return { retry, error: new Error(`${method} ${path} failed: ${String(error)}`) };
     }
     if (response.ok) return { response };
     const error = new Error(`${method} ${path} answered HTTP ${String(response.status)}`);
-    return { retry: !merge && TEMPORARY.has(response.status), error };
+    return { retry: safe && TEMPORARY.has(response.status), error };
   }
 
   return {

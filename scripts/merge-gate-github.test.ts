@@ -1,6 +1,7 @@
 /**
  * The merge gate's GitHub client against the scripted GitHub: it retries
- * GitHub's temporary failures, and never a merge GitHub may have done
+ * GitHub's temporary failures, and never a merge, comment or dispatch GitHub
+ * may have done
  * (docs/specs/auto-merge-gate.md). The waits are handed in, so nothing sleeps.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -65,9 +66,38 @@ describe('a temporary failure', () => {
     expect(github.waits).toEqual([1000]);
   });
 
-  it('is retried for a write that is not a merge', async () => {
+  it('is retried for a write that does the same the second time', async () => {
     const github = client({ 'POST issues/7/labels': new InTurn([new HttpFailure(502), []]) });
     await expect(github.call('POST', 'issues/7/labels', { labels: ['x'] })).resolves.toEqual([]);
+    expect(github.writes()).toHaveLength(2);
+  });
+
+  it.each(['PATCH issues/comments/1', 'DELETE issues/7/labels/auto-merged'])(
+    'is retried for %s',
+    async (route) => {
+      const github = client({ [route]: new InTurn([new HttpFailure(504), {}]) });
+      const [method = '', path = ''] = route.split(' ');
+      await expect(github.call(method, path)).resolves.toEqual({});
+      expect(github.writes()).toHaveLength(2);
+    },
+  );
+});
+
+describe('a write that would make a second one', () => {
+  it.each(['issues/7/comments', 'actions/workflows/pages.yml/dispatches'])(
+    'is never tried again after GitHub answered: POST %s',
+    async (path) => {
+      const github = client({ [`POST ${path}`]: new InTurn([new HttpFailure(504), {}]) });
+      await expect(github.call('POST', path, {})).rejects.toThrow('HTTP 504');
+      expect(github.writes()).toHaveLength(1);
+    },
+  );
+
+  it('is tried again when its connection never reached GitHub', async () => {
+    const github = client({
+      'POST issues/7/comments': new InTurn([new Unreachable('ENOTFOUND'), { id: 1 }]),
+    });
+    await expect(github.call('POST', 'issues/7/comments', {})).resolves.toEqual({ id: 1 });
     expect(github.writes()).toHaveLength(2);
   });
 });
