@@ -97,6 +97,7 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
 `src/visit-share.ts`, `src/visit-template.ts`, `src/visit-help.ts`, `src/craft-badges.ts`, `src/history.ts`, `scripts/square-history.ts`,
 `scripts/square-credits.ts`, `scripts/history-squares.ts`, `scripts/write-square-history.ts`, `scripts/share-pages.ts`,
 `src/northpole/visit.ts`, `src/northpole/links.ts`, `src/northpole/interior.ts`,
+`src/northpole/interior-room.ts`, `src/northpole/interior-stage.ts`,
 `src/northpole/room-dressing.ts`, `src/northpole/room-walls.ts`,
 `src/northpole/pinboard.ts`, `src/northpole/pinboard-layout.ts`, `index.html`.
 

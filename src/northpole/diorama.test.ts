@@ -1,7 +1,8 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { arcSteps, cone, drum } from './diorama';
+import { drawingOf } from '../test-support/recording-canvas';
+import { arcSteps, cone, drum, stringLights } from './diorama';
 
 /** A context that counts its calls, and gives up if they run away. */
 function countingContext() {
@@ -49,16 +50,35 @@ describe('drum and cone', () => {
   });
 });
 
-describe('diorama.ts', () => {
-  // Every booth may import it, so it must never reach the rest of the map.
-  it('imports nothing but ./theme', () => {
-    const source = readFileSync(join(import.meta.dirname, 'diorama.ts'), 'utf8');
-    const imports = [
-      ...source.matchAll(/\b(?:import|export)\b[^'"`;]*?\bfrom\s*['"]([^'"]+)['"]/g),
-      ...source.matchAll(/\bimport\s*['"]([^'"]+)['"]/g),
-      ...source.matchAll(/\bimport\s*\(/g),
-      ...source.matchAll(/\brequire\s*\(/g),
-    ].map((match) => match[1] ?? match[0]);
-    expect(imports).toEqual(['./theme']);
+describe('the diorama files', () => {
+  // Every booth may import them, so they must never reach the rest of the map.
+  it('import nothing but ./theme and each other', () => {
+    const files = readdirSync(import.meta.dirname).filter((name) =>
+      /^diorama(-[a-z]+)?\.ts$/.test(name),
+    );
+    expect(files).toContain('diorama.ts');
+    for (const file of files) {
+      const source = readFileSync(join(import.meta.dirname, file), 'utf8');
+      const imports = [
+        ...source.matchAll(/\b(?:import|export)\b[^'"`;]*?\bfrom\s*['"]([^'"]+)['"]/g),
+        ...source.matchAll(/\bimport\s*['"]([^'"]+)['"]/g),
+        ...source.matchAll(/\bimport\s*\(/g),
+        ...source.matchAll(/\brequire\s*\(/g),
+      ].map((match) => match[1] ?? match[0]);
+      for (const target of imports) expect(target, file).toMatch(/^\.\/(theme|diorama-[a-z]+)$/);
+    }
+  });
+});
+
+describe('stripes and bulbs with no colours', () => {
+  it('keep the fill they had rather than setting none', () => {
+    const calls = drawingOf((ctx) => {
+      drum(ctx, 50, 50, 20, 6, [], 4, 0, 'top');
+      cone(ctx, 50, 40, 20, 12, [], 4, 0);
+      stringLights(ctx, [{ x: 1, y: 2 }], [], 0);
+    });
+    expect(calls.filter(([name]) => name === '=fillStyle').map(([, value]) => value)).not.toContain(
+      undefined,
+    );
   });
 });
