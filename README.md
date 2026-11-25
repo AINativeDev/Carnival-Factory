@@ -103,8 +103,8 @@ restyle, which is a request like any other through **Your booth**.
 
 ## People's Choice
 
-Vote for your favourite booth. Every booth has a comment in the **People's
-Choice** discussion, and a 👍 on it is a vote: its page links to it with **Vote
+Vote for your favourite booth. Every booth has a comment on the pinned **People's
+Choice** issue, and a 👍 on it is a vote: its page links to it with **Vote
 for this booth**. There's a second category, **Home factory**, for what people's
 own factories built on their own repositories: every
 [Elf Engineer](docs/elf-engineer.md) gets a comment there too, linking their
@@ -228,15 +228,15 @@ To switch a misbehaving square off, add its login to `booths`, or its id to
 its `draw` never runs. Its code is still loaded, so for code that misbehaves as
 soon as it loads, remove its folder instead.
 
-To open People's Choice, turn on **Settings → General → Features →
-Discussions**, then start a discussion titled exactly `People's Choice`, from a
-maintainer's account. Every deploy then adds a comment for each new booth and
+To open People's Choice, open an issue titled exactly `People's Choice` from a
+maintainer's account, pin it, and leave it unlocked: on a locked issue, people
+without write access can't react, so they couldn't vote. Every deploy then adds a comment for each new booth and
 Elf Engineer while voting is open (`scripts/write-peoples-choice.ts`, with the
-deploy's own token), and counts the 👍. Until the discussion exists, the map
+deploy's own token), and counts the 👍. Until the issue exists, the map
 shows no standings. To move the closing date, change `VOTING_CLOSES` in
 `src/northpole/peoples-choice.ts`. On a fork, set `REPO_URL` in
 `src/northpole/links.ts` to your fork's address too: the build keeps only
-standings whose links are into that repository's discussions.
+standings whose links are into that repository's issues.
 
 Every pull request from this repository gets a **Preview** link to its build,
 published next to the live map under `previews/pr-<number>/` and removed when

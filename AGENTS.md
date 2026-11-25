@@ -48,6 +48,8 @@ locally, if both are installed).
 **Claude Code hooks** (`.claude/settings.json`) run the same checks for you:
 each file you write or edit is checked at once, and the project checks (types,
 Knip, the tests) run before you finish. When one fails, fix it before going on.
+If it says the installed packages don't match `package-lock.json`, run
+`npm install` first: `main` gained a dependency since you last installed.
 
 **Baselines only shrink.** Code that predates a rule is frozen at its current
 debt in `lint/oversize-baseline.json` (file length),
@@ -239,7 +241,7 @@ scripts/
                             and writes their counts before the deploy's build
   elf-engineer.ts           the Elf Engineer badge's rules: the form, the check,
                             the tiers and the holders (plain functions)
-  peoples-choice.ts         the People's Choice standings from its discussion's comments:
+  peoples-choice.ts         the People's Choice standings from its ballot issue's comments:
                             one vote per account, not the owner's (plain functions)
   write-peoples-choice.ts   adds a comment for each new entry, reads the votes and writes
                             the standings before the deploy's build (previews have none)

@@ -143,7 +143,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     $<HTMLElement>('.visit-factory').hidden = false;
   }
 
-  // A booth's place in the People's Choice discussion, where a 👍 on its comment is a vote.
+  // A booth's place on the People's Choice ballot, where a 👍 on its comment is a vote.
   const vote = kind === 'booth' ? voteUrl(square.id, PEOPLES_CHOICE) : undefined;
   if (vote) {
     $<HTMLAnchorElement>('.visit-vote a').href = vote;
