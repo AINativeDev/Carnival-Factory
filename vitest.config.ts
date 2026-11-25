@@ -22,9 +22,9 @@ export default mergeConfig(
         thresholds: {
           // Whole points: runs differ by a fraction of a percent between machines.
           autoUpdate: (threshold: number) => Math.floor(threshold),
-          lines: 49,
-          statements: 50,
-          functions: 63,
+          lines: 50,
+          statements: 51,
+          functions: 64,
           branches: 58,
         },
       },
