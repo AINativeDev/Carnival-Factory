@@ -7,7 +7,7 @@
  * Run by .github/workflows/pages.yml with GITHUB_TOKEN and GITHUB_REPOSITORY set.
  */
 import { writeFileSync } from 'node:fs';
-import { badgeHolders, type BadgeRequestRecord } from './elf-engineer.ts';
+import { badgeHolders, type BadgeRequestRecord } from './badge-grants.ts';
 import { getAll, repoPath } from './github-api.ts';
 
 const repository = process.env.GITHUB_REPOSITORY;
