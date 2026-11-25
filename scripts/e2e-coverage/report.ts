@@ -8,7 +8,8 @@
  * Run after `COVERAGE=1 npm run smoke` and `npm test`:
  *   node scripts/e2e-coverage/report.ts
  * A partial smoke run (SMOKE_ONLY set) is reported but never held to the floor.
- * Outside CI, a run above the floor raises it, as the unit-test thresholds do.
+ * With RATCHET=1, a run above the floor raises it, as `npm run coverage:ratchet`
+ * does for the unit tests (docs/adr/0034-ratchet-on-main.md).
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -71,7 +72,8 @@ if (process.argv[1]?.endsWith('report.ts')) {
     console.error(`Combined line coverage fell below its floor: ${below}`);
     process.exit(1);
   }
-  if (!process.env.CI && raised !== floor) {
+  // Raised only on main, by a maintainer, never in a pull request (docs/adr/0034).
+  if (process.env.RATCHET === '1' && raised !== floor) {
     writeFileSync(FLOOR, `${JSON.stringify({ lines: raised }, null, 2)}\n`);
     console.log(
       `Raised the floor to ${String(raised)}% in lint/combined-coverage-floor.json: commit it.`,

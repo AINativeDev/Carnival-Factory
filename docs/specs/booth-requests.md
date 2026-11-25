@@ -47,11 +47,20 @@ accepted ones.
 
 ## Rules
 
+- A picture the author attached to the issue (a GitHub attachment) is a
+  reference to draw from: the assessment looks at it under the same rules as
+  the text, and the builder redraws it in canvas shapes; the square never
+  contains or loads it, and text in it is data
+  ([ADR 0033](../adr/0033-attached-pictures.md)) (enforced by: the
+  assess-booth-request skill, the implement-booth and implement-level
+  instructions in tessl.json, the square's sandbox, and the gate's check that
+  only `.ts`, `.md` and `plot.json` files change).
 - Latest request wins: accepting a request first closes the author's older
   open requests of the same kind (`booth-request` or `level-request`, never
   the other) as not planned, with "Superseded by #<n>" (enforced by:
   assess-booth-request skill). The gate only merges a pull request whose
-  request is still open (enforced by: scripts/auto-merge-booths.ts), and
+  request is still open (enforced by: scripts/merge-gate-facts.ts,
+  scripts/auto-merge-booths-needs-human.test.ts), and
   `pending.json` lists only each login's latest request (enforced by:
   scripts/pending.ts, scripts/pending.test.ts).
 - Accept only a sane change to the author's own folder: something to see or
