@@ -7,6 +7,12 @@ import { defineConfig, devices } from '@playwright/test';
  * `npx playwright install chromium webkit` once, or set PLAYWRIGHT_CHANNEL=chrome
  * to use the Chrome you have.
  */
+/** This browser has closed the intro before: what src/intro.ts keeps in storage. */
+const INTRO_SEEN = {
+  origin: 'http://localhost:4173',
+  localStorage: [{ name: 'north-pole-intro-seen', value: '1' }],
+};
+
 export default defineConfig({
   testDir: 'smoke',
   timeout: 60_000,
@@ -14,6 +20,9 @@ export default defineConfig({
   reporter: [['list']],
   use: {
     baseURL: 'http://localhost:4173/',
+    // Every test but the intro's own starts with the first-visit intro seen,
+    // so it never stands between a test and the map (docs/specs/intro.md).
+    storageState: { cookies: [], origins: [INTRO_SEEN] },
   },
   projects: [
     {

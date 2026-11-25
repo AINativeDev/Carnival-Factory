@@ -16,6 +16,11 @@ How the map counts its use, without tracking the people who use it
 - It also sends `request_started` (with the issue form) when someone follows a
   link to one of the repository's forms, `share_copied` for the Share button in
   a square, and `repo_opened` for the GitHub link in the banner.
+- It sends `intro_opened` when the [first-visit intro](intro.md) opens, and
+  `intro_closed` when it closes, with `how`: `skip` (Skip, Esc or a click
+  outside it), `explore` or `build`. The intro tells it through the page
+  event `north-pole-intro`, so `index.html` loads `src/analytics.ts` before
+  `src/main.ts`.
 - Events carry only public ids (a booth's login, a level's, an attraction's id)
   and the page's address, never anything a visitor typed.
 

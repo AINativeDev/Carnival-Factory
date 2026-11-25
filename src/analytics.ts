@@ -6,7 +6,14 @@
  * no cookies, no storage, no person profiles, and an id that lives only as long
  * as the page.
  */
-import { clickEvent, routeEvent, type AnalyticsEvent, type Clicked } from './analytics-events';
+import {
+  clickEvent,
+  INTRO_EVENT,
+  introEvent,
+  routeEvent,
+  type AnalyticsEvent,
+  type Clicked,
+} from './analytics-events';
 import { parseHash } from './route';
 
 export interface AnalyticsConfig {
@@ -47,12 +54,12 @@ export function capture(
 export interface Page {
   location: { hash: string; href: string };
   addEventListener(
-    type: 'hashchange' | 'click',
-    listener: (event: { target: unknown }) => void,
+    type: 'hashchange' | 'click' | typeof INTRO_EVENT,
+    listener: (event: { target: unknown; detail?: unknown }) => void,
   ): void;
 }
 
-/** Counts the first view, each change of view, and the clicks that matter. */
+/** Counts the first view, each change of view, the clicks that matter, and the intro opening and closing. */
 export function startAnalytics(
   config: AnalyticsConfig | undefined,
   page: Page,
@@ -70,6 +77,10 @@ export function startAnalytics(
   });
   page.addEventListener('click', ({ target }) => {
     const event = target ? clickEvent(target as Clicked) : undefined;
+    if (event) track(event);
+  });
+  page.addEventListener(INTRO_EVENT, ({ detail }) => {
+    const event = introEvent(detail);
     if (event) track(event);
   });
 }
