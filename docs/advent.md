@@ -6,7 +6,7 @@ a repository of your own. They light up your booth on the map.
 
 ## The calendar
 
-The challenges live in [`challenges/advent.json`](../challenges/advent.json),
+The challenges live in [`carnival/challenges/advent.json`](../carnival/challenges/advent.json),
 each with a title, what to do, how you'll know it worked, and a link to the
 Tessl docs that help. The map shows them at `#/advent`, and each door opens at
 midnight on its day, by your own clock. After the 24th they all stay open.

@@ -13,7 +13,7 @@ import {
   isRepo,
   type BadgeHolder,
   type BadgeTier,
-} from '../northpole/badges.ts';
+} from '../src/northpole/badges.ts';
 import { FACTORY_BOTS } from './ownership.ts';
 import { escapeHtml } from './share-pages.ts';
 

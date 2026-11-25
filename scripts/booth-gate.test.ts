@@ -5,7 +5,7 @@ const now = new Date('2026-12-01T12:00:00Z');
 const green: GateFacts = {
   owner: 'elf',
   accepted: true,
-  changedFiles: ['booths/elf/booth.ts', 'booths/elf/README.md'],
+  changedFiles: ['carnival/booths/elf/booth.ts', 'carnival/booths/elf/README.md'],
   codeProblems: [],
   textFindings: [],
   checks: {
@@ -28,15 +28,20 @@ describe('evaluateGate', () => {
   });
 
   it.each<[string, Partial<GateFacts>]>([
-    ['a file outside the booth', { changedFiles: ['booths/elf/booth.ts', 'northpole/map.ts'] }],
-    ["another person's booth", { changedFiles: ['booths/grinch/booth.ts'] }],
+    [
+      'a file outside the booth',
+      { changedFiles: ['carnival/booths/elf/booth.ts', 'src/northpole/map.ts'] },
+    ],
+    ["another person's booth", { changedFiles: ['carnival/booths/grinch/booth.ts'] }],
     ['no changed files', { changedFiles: [] }],
     ['no request author', { owner: undefined }],
     ['a request the assessment never accepted', { accepted: false }],
     [
       'a code problem',
       {
-        codeProblems: [{ file: 'booths/elf/booth.ts', line: 1, rule: 'global', message: 'fetch' }],
+        codeProblems: [
+          { file: 'carnival/booths/elf/booth.ts', line: 1, rule: 'global', message: 'fetch' },
+        ],
       },
     ],
     ['hidden instructions', { textFindings: [{ line: 1, what: 'addresses an AI directly' }] }],

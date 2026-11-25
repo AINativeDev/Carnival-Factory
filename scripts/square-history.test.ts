@@ -49,13 +49,19 @@ describe('squaresTouched', () => {
   it('finds the booths and attractions a change touches, once each', () => {
     expect(
       squaresTouched([
-        'booths/Ana/booth.ts',
-        'booths/ana/README.md',
-        'attractions/ferris-wheel/attraction.ts',
-        'northpole/map.ts',
-        'booths/README.md',
+        'carnival/booths/Ana/booth.ts',
+        'carnival/booths/ana/README.md',
+        'carnival/attractions/ferris-wheel/attraction.ts',
+        'src/northpole/map.ts',
+        'carnival/booths/README.md',
       ]),
     ).toEqual(['attraction/ferris-wheel', 'booth/ana']);
+  });
+  it('reads pull requests from before the squares moved into carnival/', () => {
+    expect(squaresTouched(['booths/ana/booth.ts', 'attractions/big-top/attraction.ts'])).toEqual([
+      'attraction/big-top',
+      'booth/ana',
+    ]);
   });
 });
 
@@ -116,10 +122,13 @@ describe('shapeHistory', () => {
         issue(5, 'maintainer', ['tessl'], '2026-11-22T10:00:00Z'),
       ],
       [
-        pull(2, 'tessl/issue-1', ['booths/ana/booth.ts'], {
+        pull(2, 'tessl/issue-1', ['carnival/booths/ana/booth.ts'], {
           reviewThreads: { nodes: [thread('tessl-reviewer', true)] },
         }),
-        pull(6, 'tessl/issue-5', ['attractions/ferris-wheel/attraction.ts', 'booths/ana/booth.ts']),
+        pull(6, 'tessl/issue-5', [
+          'carnival/attractions/ferris-wheel/attraction.ts',
+          'carnival/booths/ana/booth.ts',
+        ]),
       ],
     );
     expect(history.squares['booth/ana'].map((entry) => entry.issue)).toEqual([5, 1]);
@@ -149,8 +158,10 @@ describe('shapeHistory', () => {
     const history = shape(
       [issue(5, 'ana', ['booth-request', 'tessl'], '2026-11-22T10:00:00Z')],
       [
-        pull(6, 'tessl/issue-5', ['attractions/ferris-wheel/attraction.ts'], { state: 'CLOSED' }),
-        pull(7, 'tessl/issue-5', ['booths/ana/booth.ts']),
+        pull(6, 'tessl/issue-5', ['carnival/attractions/ferris-wheel/attraction.ts'], {
+          state: 'CLOSED',
+        }),
+        pull(7, 'tessl/issue-5', ['carnival/booths/ana/booth.ts']),
       ],
     );
     expect(history.squares['attraction/ferris-wheel'][0].pulls.map((p) => p.number)).toEqual([6]);
@@ -179,9 +190,9 @@ describe('shapeHistory', () => {
         issue(3, 'maintainer', [], '2026-11-20T10:00:00Z'),
       ],
       [
-        pull(10, 'tessl/issue-2', ['northpole/map.ts']),
-        pull(11, 'some-branch', ['booths/ana/booth.ts']),
-        pull(12, 'tessl/issue-3', ['booths/ana/booth.ts'], { isCrossRepository: true }),
+        pull(10, 'tessl/issue-2', ['src/northpole/map.ts']),
+        pull(11, 'some-branch', ['carnival/booths/ana/booth.ts']),
+        pull(12, 'tessl/issue-3', ['carnival/booths/ana/booth.ts'], { isCrossRepository: true }),
       ],
     );
     expect(history.squares).toEqual({});
@@ -198,12 +209,20 @@ describe('shapeHistory', () => {
         issue(7, 'carol', ['tessl'], at(13)),
       ],
       [
-        pull(2, 'tessl/issue-1', ['booths/ana/booth.ts'], { mergedAt: at(14) }),
-        pull(4, 'tessl/issue-3', ['booths/ana/booth.ts', 'attractions/ferris-wheel/a.ts'], {
-          mergedAt: at(15),
+        pull(2, 'tessl/issue-1', ['carnival/booths/ana/booth.ts'], { mergedAt: at(14) }),
+        pull(
+          4,
+          'tessl/issue-3',
+          ['carnival/booths/ana/booth.ts', 'carnival/attractions/ferris-wheel/a.ts'],
+          {
+            mergedAt: at(15),
+          },
+        ),
+        pull(6, 'tessl/issue-5', ['carnival/booths/ana/booth.ts'], { mergedAt: at(16) }),
+        pull(8, 'tessl/issue-7', ['carnival/booths/ana/booth.ts'], {
+          state: 'OPEN',
+          mergedAt: null,
         }),
-        pull(6, 'tessl/issue-5', ['booths/ana/booth.ts'], { mergedAt: at(16) }),
-        pull(8, 'tessl/issue-7', ['booths/ana/booth.ts'], { state: 'OPEN', mergedAt: null }),
       ],
     );
     expect(history.credits).toEqual({
@@ -215,7 +234,12 @@ describe('shapeHistory', () => {
   it("links an open pull request's preview of the square, when the site is known", () => {
     const history = shape(
       [issue(1, 'ana', ['booth-request', 'tessl'], '2026-11-20T10:00:00Z')],
-      [pull(2, 'tessl/issue-1', ['booths/ana/booth.ts'], { state: 'OPEN', mergedAt: null })],
+      [
+        pull(2, 'tessl/issue-1', ['carnival/booths/ana/booth.ts'], {
+          state: 'OPEN',
+          mergedAt: null,
+        }),
+      ],
       'https://o.github.io/r/',
     );
     expect(history.squares['booth/ana'][0].pulls[0]).toMatchObject({

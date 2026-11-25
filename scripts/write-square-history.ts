@@ -140,8 +140,8 @@ for (const pull of paged) {
 
 const root = join(import.meta.dirname, '..');
 const squares = (['booth', 'attraction'] as HistoryKind[]).flatMap((kind) =>
-  readdirSync(join(root, `${kind}s`))
-    .filter((id) => existsSync(join(root, `${kind}s`, id, `${kind}.ts`)))
+  readdirSync(join(root, 'carnival', `${kind}s`))
+    .filter((id) => existsSync(join(root, 'carnival', `${kind}s`, id, `${kind}.ts`)))
     .map((id) => `${kind}/${id}`),
 );
 

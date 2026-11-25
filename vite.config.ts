@@ -2,10 +2,10 @@ import { execSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vitest/config';
-import { cleanCounts } from './northpole/advent.ts';
-import { cleanHolders } from './northpole/badges.ts';
-import { BADGE_REQUEST_URL, REPO_URL } from './northpole/links.ts';
-import { cleanChoice } from './northpole/peoples-choice.ts';
+import { cleanCounts } from './src/northpole/advent.ts';
+import { cleanHolders } from './src/northpole/badges.ts';
+import { BADGE_REQUEST_URL, REPO_URL } from './src/northpole/links.ts';
+import { cleanChoice } from './src/northpole/peoples-choice.ts';
 import { readBoothAddedDates } from './scripts/booth-dates.ts';
 import { badgePage } from './scripts/elf-engineer.ts';
 import {
@@ -78,7 +78,9 @@ const sharePages: Plugin = {
   apply: 'build',
   generateBundle() {
     const root = import.meta.dirname;
-    const disabled = JSON.parse(readFileSync(join(root, 'northpole/disabled.json'), 'utf8')) as {
+    const disabled = JSON.parse(
+      readFileSync(join(root, 'src/northpole/disabled.json'), 'utf8'),
+    ) as {
       booths: string[];
       attractions: string[];
     };
@@ -95,7 +97,7 @@ const sharePages: Plugin = {
       source: factorySharePage(image),
     });
     for (const kind of ['booth', 'attraction'] as ShareKind[]) {
-      const dir = join(root, `${kind}s`);
+      const dir = join(root, 'carnival', `${kind}s`);
       const off = new Set(disabled[`${kind}s`].map((id) => id.toLowerCase()));
       for (const id of readdirSync(dir)) {
         const file = join(dir, id, `${kind}.ts`);
@@ -142,7 +144,7 @@ const ADVENT_COUNTS = (() => {
 const PEOPLES_CHOICE = (() => {
   const file = process.env.PEOPLES_CHOICE_FILE;
   const disabled = JSON.parse(
-    readFileSync(join(import.meta.dirname, 'northpole/disabled.json'), 'utf8'),
+    readFileSync(join(import.meta.dirname, 'src/northpole/disabled.json'), 'utf8'),
   ) as { booths: string[] };
   return file && existsSync(file)
     ? cleanChoice(JSON.parse(readFileSync(file, 'utf8')), disabled.booths, REPO_URL)
@@ -170,7 +172,7 @@ function squareNames(): Record<string, string> {
   const root = import.meta.dirname;
   const names: Record<string, string> = {};
   for (const kind of ['booth', 'attraction'] as ShareKind[]) {
-    const dir = join(root, `${kind}s`);
+    const dir = join(root, 'carnival', `${kind}s`);
     for (const id of readdirSync(dir)) {
       const file = join(dir, id, `${kind}.ts`);
       if (!existsSync(file)) continue;
@@ -221,6 +223,6 @@ export default defineConfig(({ command }) => ({
   preview: { cors: { origin: 'null' } },
   test: {
     environment: 'node',
-    include: ['{src,northpole,booths,attractions,levels,scripts}/**/*.test.ts'],
+    include: ['{src,carnival,scripts}/**/*.test.ts'],
   },
 }));

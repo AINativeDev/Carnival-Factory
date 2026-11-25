@@ -1,11 +1,11 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { CLAIM_URL, REPO_URL } from '../northpole/links';
-import { worldToScreen } from '../northpole/camera';
-import { CLAIM_SIGN, faceOf, middle, onFace } from '../northpole/render';
-import { buildWorld, toScreen, type PinnedPlots } from '../northpole/world';
-import { STALL_SHAPES, type StallShape, type StallStyle } from '../northpole/square';
+import { CLAIM_URL, REPO_URL } from '../src/northpole/links';
+import { worldToScreen } from '../src/northpole/camera';
+import { CLAIM_SIGN, faceOf, middle, onFace } from '../src/northpole/render';
+import { buildWorld, toScreen, type PinnedPlots } from '../src/northpole/world';
+import { STALL_SHAPES, type StallShape, type StallStyle } from '../src/northpole/square';
 
 /** A stall option of each shape, as a booth would write it. */
 const STALL_STYLES: Record<StallShape, StallStyle> = {
@@ -38,13 +38,13 @@ const PLAY_MS = 3000;
 
 // Squares a maintainer switched off show "Closed for repairs" and never open a
 // frame, so there's nothing of theirs to play.
-const disabled = JSON.parse(readFileSync(join(root, 'northpole/disabled.json'), 'utf8')) as {
+const disabled = JSON.parse(readFileSync(join(root, 'src/northpole/disabled.json'), 'utf8')) as {
   booths: string[];
   attractions: string[];
   levels: string[];
 };
 const squares = (['booth', 'attraction'] as const).flatMap((kind) => {
-  const dir = join(root, `${kind}s`);
+  const dir = join(root, 'carnival', `${kind}s`);
   const off = new Set(disabled[`${kind}s`].map((id) => id.toLowerCase()));
   return readdirSync(dir)
     .filter((name) => statSync(join(dir, name)).isDirectory() && !off.has(name))
@@ -409,10 +409,12 @@ for (const viewport of [
 
 const booths = squares.filter((square) => square.kind === 'booth').map((square) => square.id);
 const attractions = squares.filter((s) => s.kind === 'attraction').map((s) => s.id);
-const pinned = JSON.parse(readFileSync(join(root, 'northpole/plots.json'), 'utf8')) as PinnedPlots;
+const pinned = JSON.parse(
+  readFileSync(join(root, 'src/northpole/plots.json'), 'utf8'),
+) as PinnedPlots;
 /** Every level, each with its platform at the sleigh station, as the map lays them out. */
-const levelLogins = readdirSync(join(root, 'levels'))
-  .filter((name) => existsSync(join(root, 'levels', name, 'level.ts')))
+const levelLogins = readdirSync(join(root, 'carnival', 'levels'))
+  .filter((name) => existsSync(join(root, 'carnival', 'levels', name, 'level.ts')))
   .sort();
 
 test('the player walks the world with the keyboard, and it stays quiet', async ({ page }) => {

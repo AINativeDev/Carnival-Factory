@@ -16,8 +16,8 @@ import {
  */
 const root = join(import.meta.dirname, '..');
 const squares = (['booth', 'attraction'] as const).flatMap((kind) =>
-  readdirSync(join(root, `${kind}s`))
-    .filter((name) => statSync(join(root, `${kind}s`, name)).isDirectory())
+  readdirSync(join(root, 'carnival', `${kind}s`))
+    .filter((name) => statSync(join(root, 'carnival', `${kind}s`, name)).isDirectory())
     .map((id) => ({ kind, id })),
 );
 

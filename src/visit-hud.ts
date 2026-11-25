@@ -1,6 +1,6 @@
-import { badgeFor, factoryUrl } from '../northpole/badges';
-import { voteUrl } from '../northpole/peoples-choice';
-import { PEOPLES_CHOICE } from '../northpole/peoples-choice-standings';
+import { badgeFor, factoryUrl } from './northpole/badges';
+import { voteUrl } from './northpole/peoples-choice';
+import { PEOPLES_CHOICE } from './northpole/peoples-choice-standings';
 import {
   BADGE_REQUEST_URL,
   BUILD_YOUR_OWN_URL,
@@ -11,11 +11,11 @@ import {
   OWN_REPO_URL,
   keepPostedHref,
   remixUrl,
-} from '../northpole/links';
-import type { SquareKind } from '../northpole/map';
-import type { SandboxedSquare } from '../northpole/sandbox';
-import type { NorthPoleSquare } from '../northpole/square';
-import { shareLink, shareText } from '../northpole/visit';
+} from './northpole/links';
+import type { SquareKind } from './northpole/map';
+import type { SandboxedSquare } from './northpole/sandbox';
+import type { NorthPoleSquare } from './northpole/square';
+import { shareLink, shareText } from './northpole/visit';
 import {
   SQUARE_HISTORY,
   creditsFor,

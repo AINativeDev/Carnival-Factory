@@ -10,7 +10,7 @@
  * Run by .github/workflows/pages.yml with GITHUB_TOKEN and GITHUB_REPOSITORY set.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
-import { cleanCalendar } from '../northpole/advent.ts';
+import { cleanCalendar } from '../src/northpole/advent.ts';
 import { adventCounts, type AdventRecord } from './advent.ts';
 import { getAll, repoPath } from './github-api.ts';
 
@@ -19,7 +19,7 @@ const out = process.argv[2];
 if (!repository || !out) throw new Error('Set GITHUB_REPOSITORY, and name the file to write');
 
 const { year } = cleanCalendar(
-  JSON.parse(readFileSync(new URL('../challenges/advent.json', import.meta.url), 'utf8')),
+  JSON.parse(readFileSync(new URL('../carnival/challenges/advent.json', import.meta.url), 'utf8')),
 );
 // The first door opens at midnight on 1 December somewhere, which is 30 November in UTC.
 const since = `${String(year).padStart(4, '0')}-11-30T00:00:00Z`;

@@ -53,7 +53,7 @@ A few things that help:
 ## Ideas to start from
 
 - **Frozen-lake fair:** a pond with skaters, a skate rental, a cocoa hut, ice
-  fishing. (This is the starter level, `levels/jedi4ever/`.)
+  fishing. (This is the starter level, `carnival/levels/jedi4ever/`.)
 - **Reindeer ranch:** the stable, fenced paddocks, a feed cart, and squares
   for a reindeer school, a harness shop and a flight-test runway.
 - **Gingerbread village:** a lane of cabins, a big tree, and squares for a

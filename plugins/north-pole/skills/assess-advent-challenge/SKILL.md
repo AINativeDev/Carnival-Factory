@@ -6,7 +6,7 @@ description: "Assess one advent calendar challenge marked done (an issue from th
 # Assess an advent challenge
 
 Your run names one issue (`GITHUB_ISSUE_NUMBER`). A participant says they did
-one day's challenge from the advent calendar (`challenges/advent.json`) on a
+one day's challenge from the advent calendar (`carnival/challenges/advent.json`) on a
 repository of their own, and links the pull request or issue that shows it.
 You decide whether it counts. You **only** read the issue, run the check
 below, read what it prints, comment, add labels and close. You never change

@@ -15,8 +15,8 @@ const root = join(import.meta.dirname, '..');
 const out = join(root, 'public/avatars');
 mkdirSync(out, { recursive: true });
 
-const logins = readdirSync(join(root, 'booths'))
-  .filter((name) => existsSync(join(root, 'booths', name, 'booth.ts')) && isLogin(name))
+const logins = readdirSync(join(root, 'carnival', 'booths'))
+  .filter((name) => existsSync(join(root, 'carnival', 'booths', name, 'booth.ts')) && isLogin(name))
   .map((name) => name.toLowerCase());
 
 let failed = 0;

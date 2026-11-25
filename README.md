@@ -49,7 +49,7 @@ starter repo for the "Build your own software factory with context" workshop.
 
 1. **Ask for your booth.** Open **Issues → New issue → Your booth**, and say
    what your square should show. Your booth lives in
-   `booths/<your GitHub login>/`.
+   `carnival/booths/<your GitHub login>/`.
 2. **Let the factory assess it.** An agent reads your request first. If it's a
    sane change to your own booth, it hands it to the factory with the `tessl`
    label. If it's unclear, it asks a question: edit the issue to answer.
@@ -81,7 +81,7 @@ starter repo for the "Build your own software factory with context" workshop.
 **Want a whole world of your own?** Open **Issues → New issue → Your level**
 for a level: a patch of the North Pole laid out how you like, with up to 8
 squares of its own, that visitors reach by sleigh from the sleigh station by
-the entrance. It lives in `levels/<your-login>/` and opens at
+the entrance. It lives in `carnival/levels/<your-login>/` and opens at
 `…/#/level/<your-login>`. [Level ideas](docs/level-ideas.md) helps you write
 the request.
 
@@ -115,7 +115,7 @@ repository, voted on the same way.
 - A booth switched off by the kill switch drops out.
 - Voting closes at the end of **31 December 2026** (UTC). A 👍 given after
   that doesn't count. The date is `VOTING_CLOSES` in
-  `northpole/peoples-choice.ts`.
+  `src/northpole/peoples-choice.ts`.
 - The standings are counted every time the site is deployed, so they lag the
   votes by a deploy. The map shows a trophy on the top three booths' signs, and
   the People's Choice list below the map has every entry's votes and the Home
@@ -157,7 +157,7 @@ yours to change.
   request that changes a file outside its owner's booth. For a pull request the
   factory opens, the owner is whoever wrote the issue it closes.
 - **The attractions belong to the North Pole.** They live in
-  `attractions/<id>/`, outside every booth, so only maintainers change them.
+  `carnival/attractions/<id>/`, outside every booth, so only maintainers change them.
   Their signs say "North Pole" instead of a `@login`, and each opens at
   `#/attraction/<id>`. They follow the same house rules as booths.
 - **Issues, not pull requests.** Every change starts as an issue. A pull
@@ -224,7 +224,7 @@ ownership** check treats an issue a maintainer labelled, by user id, like a
 maintainer's own.
 
 To switch a misbehaving square off, add its login to `booths`, or its id to
-`attractions`, in `northpole/disabled.json`: it shows "Closed for repairs" and
+`attractions`, in `src/northpole/disabled.json`: it shows "Closed for repairs" and
 its `draw` never runs. Its code is still loaded, so for code that misbehaves as
 soon as it loads, remove its folder instead.
 
@@ -234,8 +234,8 @@ maintainer's account. Every deploy then adds a comment for each new booth and
 Elf Engineer while voting is open (`scripts/write-peoples-choice.ts`, with the
 deploy's own token), and counts the 👍. Until the discussion exists, the map
 shows no standings. To move the closing date, change `VOTING_CLOSES` in
-`northpole/peoples-choice.ts`. On a fork, set `REPO_URL` in
-`northpole/links.ts` to your fork's address too: the build keeps only
+`src/northpole/peoples-choice.ts`. On a fork, set `REPO_URL` in
+`src/northpole/links.ts` to your fork's address too: the build keeps only
 standings whose links are into that repository's discussions.
 
 Every pull request from this repository gets a **Preview** link to its build,
@@ -261,19 +261,19 @@ native dependencies, so `npm ci` is the whole setup. Node 22.13 or later.
 
 - `index.html` and `src/main.ts`: the page and the router: `#/` is the map,
   `#/booth/<login>` and `#/attraction/<id>` open the world with the player
-  inside that square, in a room the map draws (`northpole/interior.ts`) beside
+  inside that square, in a room the map draws (`src/northpole/interior.ts`) beside
   its HUD (`src/visit-hud.ts`), and
   `#/?booth=<login>` and `#/?attraction=<id>` open the map on that square.
   `src/route.ts` reads the hash. The build also writes a link-preview page per
   square, `share/<kind>-<id>.html` (`scripts/share-pages.ts`), which Share
   copies.
-- `northpole/`: the map: the `NorthPoleSquare` shape and registries, the
+- `src/northpole/`: the map: the `NorthPoleSquare` shape and registries, the
   isometric world you walk round (`world.ts`), how the camera frames its
   island (`camera.ts`), its drawing (`render.ts` and `map.ts`), which plot
   each square keeps (`plots.json`) and the theme.
-- `booths/<login>/`: one folder per participant. `booths/jedi4ever/` is the
+- `carnival/booths/<login>/`: one folder per participant. `carnival/booths/jedi4ever/` is the
   pattern to copy.
-- `attractions/<id>/`: one folder per attraction the North Pole owns.
+- `carnival/attractions/<id>/`: one folder per attraction the North Pole owns.
 - `plugins/north-pole/`: the factory's own skills: assessing booth requests,
   and the house-rules review lens.
 - `scripts/ownership.ts` and `scripts/check-booth-ownership.ts`: the booth

@@ -1,15 +1,15 @@
-import { boothRegistry } from '../northpole/booths';
-import { backdrop } from '../northpole/diorama';
+import { boothRegistry } from './northpole/booths';
+import { backdrop } from './northpole/diorama';
 import {
   CLAIM_URL,
   KEEP_POSTED_URL,
   keepPostedHref,
   OWN_REPO_URL,
   signupOffer,
-} from '../northpole/links';
-import type { SandboxedSquare } from '../northpole/sandbox';
+} from './northpole/links';
+import type { SandboxedSquare } from './northpole/sandbox';
 import { seasonStats } from '../scripts/season';
-import { canvasFont, theme } from '../northpole/theme';
+import { canvasFont, theme } from './northpole/theme';
 import { deepLink } from './route';
 import { SEASON, seasonHeadline, seasonLines, seasonShareText, type SeasonLine } from './season';
 

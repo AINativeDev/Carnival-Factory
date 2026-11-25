@@ -8,7 +8,7 @@
  * Run with GITHUB_TOKEN (or GH_TOKEN), GITHUB_REPOSITORY and ISSUE_NUMBER set.
  */
 import { readFileSync } from 'node:fs';
-import { cleanCalendar } from '../northpole/advent.ts';
+import { cleanCalendar } from '../src/northpole/advent.ts';
 import {
   ADVENT_FIELDS,
   adventDayOptions,
@@ -28,7 +28,7 @@ if (!repository || !number || !/^\d+$/.test(number)) {
 }
 
 const calendar = cleanCalendar(
-  JSON.parse(readFileSync(new URL('../challenges/advent.json', import.meta.url), 'utf8')),
+  JSON.parse(readFileSync(new URL('../carnival/challenges/advent.json', import.meta.url), 'utf8')),
 );
 
 const issue = await get<{

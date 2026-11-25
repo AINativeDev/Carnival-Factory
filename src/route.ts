@@ -1,4 +1,4 @@
-import type { SquareKind } from '../northpole/map';
+import type { SquareKind } from './northpole/map';
 
 /**
  * A booth's owner or an attraction's id, as the URL may name it. Squares are

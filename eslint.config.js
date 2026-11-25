@@ -50,15 +50,15 @@ const squareProperties = [
   })),
 ];
 
-// A file depth folders below booths/<login>/ or attractions/<id>/ imports
-// from the map's public parts, which are depth + 2 folders up, or from its own
+// A file depth folders below carnival/booths/<login>/ or carnival/attractions/<id>/ imports
+// from the map's public parts, which are depth + 3 folders up, or from its own
 // folder, never above it. The public parts are the theme, the square's shape
 // and the diorama's drawing helpers: the registries and the rest of the map hold every other square, so a
 // booth could reach them and change what they draw. A test beside it may also
 // import vitest, but nothing else imports a test, so a test file can't carry
 // code past the size budget.
 function importRule(depth, test = false, up = 2) {
-  const map = `(\\.\\./){${depth + up}}northpole/(theme|square|diorama)$`;
+  const map = `(\\.\\./){${depth + up}}src/northpole/(theme|square|diorama)$`;
   const own = `(\\./${depth > 0 ? `|(\\.\\./){1,${depth}}` : ''})(?!.*\\.\\.)[\\w./-]+$`;
   return [
     'error',
@@ -67,7 +67,7 @@ function importRule(depth, test = false, up = 2) {
         {
           regex: `^(?!${map}|${own}${test ? '|vitest$' : ''})`,
           message:
-            'A square imports only northpole/theme, northpole/square, northpole/diorama and its own folder, so it adds no dependencies and reaches no other square.',
+            'A square imports only src/northpole/theme, src/northpole/square, src/northpole/diorama and its own folder, so it adds no dependencies and reaches no other square.',
         },
         ...(test
           ? []
@@ -88,9 +88,13 @@ const NESTED_DEPTH = 4;
 
 // The folders whose squares draw on the map, one folder each, and how many
 // folders up the map is from each square's own folder. A level's own squares
-// live in levels/<login>/squares/<id>/.
-const SQUARE_FOLDERS = ['booths', 'attractions', 'levels/*/squares'];
-const UP = { booths: 2, attractions: 2, 'levels/*/squares': 4 };
+// live in carnival/levels/<login>/squares/<id>/.
+const SQUARE_FOLDERS = ['carnival/booths', 'carnival/attractions', 'carnival/levels/*/squares'];
+const UP = {
+  'carnival/booths': 3,
+  'carnival/attractions': 3,
+  'carnival/levels/*/squares': 5,
+};
 
 // A level's level.ts is plain data the page reads, so it holds one object and
 // nothing that runs: no calls, no functions, no getters, no references to
@@ -164,8 +168,8 @@ export default tseslint.config(
     },
   },
   {
-    // The house rules for every person's booth, booths/<login>/, and for
-    // the North Pole's own attractions, attractions/<id>/.
+    // The house rules for every person's booth, carnival/booths/<login>/, and for
+    // the North Pole's own attractions, carnival/attractions/<id>/.
     files: SQUARE_FOLDERS.map((folder) => `${folder}/*/**`),
     rules: {
       'no-eval': 'error',
@@ -178,7 +182,7 @@ export default tseslint.config(
         'error',
         {
           selector: 'ImportExpression',
-          message: `${ESCAPE} import(): import from ../../northpole/ or your own folder.`,
+          message: `${ESCAPE} import(): import from ../../../src/northpole/ or your own folder.`,
         },
         {
           selector:
@@ -204,7 +208,7 @@ export default tseslint.config(
   ]),
   {
     // A level's own folder: the house rules too, for anything beside its level.ts.
-    files: ['levels/*/*'],
+    files: ['carnival/levels/*/*'],
     rules: {
       'no-eval': 'error',
       'no-implied-eval': 'error',
@@ -215,15 +219,15 @@ export default tseslint.config(
   },
   {
     // level.ts: plain data, importing only the level's type from the map.
-    files: ['levels/*/*.ts'],
+    files: ['carnival/levels/*/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              regex: '^(?!\\.\\./\\.\\./northpole/level$)',
-              message: 'A level.ts imports only the level types from ../../northpole/level.',
+              regex: '^(?!\\.\\./\\.\\./\\.\\./src/northpole/level$)',
+              message: 'A level.ts imports only the level types from ../../../src/northpole/level.',
             },
           ],
         },

@@ -15,8 +15,8 @@
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cleanHolders } from '../northpole/badges.ts';
-import { DISCUSSION_TITLE, VOTING_CLOSES, votingClosed } from '../northpole/peoples-choice.ts';
+import { cleanHolders } from '../src/northpole/badges.ts';
+import { DISCUSSION_TITLE, VOTING_CLOSES, votingClosed } from '../src/northpole/peoples-choice.ts';
 import { get } from './github-api.ts';
 import { MAINTAINERS } from './ownership.ts';
 import { entryBody, missingEntries, standings, type RawChoiceComment } from './peoples-choice.ts';
@@ -178,8 +178,8 @@ async function readComments(): Promise<RawChoiceComment[]> {
 }
 
 const root = join(import.meta.dirname, '..');
-const booths = readdirSync(join(root, 'booths')).filter((id) =>
-  existsSync(join(root, 'booths', id, 'booth.ts')),
+const booths = readdirSync(join(root, 'carnival', 'booths')).filter((id) =>
+  existsSync(join(root, 'carnival', 'booths', id, 'booth.ts')),
 );
 const holdersFile = process.env.BADGE_HOLDERS_FILE;
 const holders =
@@ -187,7 +187,9 @@ const holders =
     ? cleanHolders(JSON.parse(readFileSync(holdersFile, 'utf8')))
     : [];
 const disabled = (
-  JSON.parse(readFileSync(join(root, 'northpole/disabled.json'), 'utf8')) as { booths: string[] }
+  JSON.parse(readFileSync(join(root, 'src/northpole/disabled.json'), 'utf8')) as {
+    booths: string[];
+  }
 ).booths;
 
 let comments = await readComments();

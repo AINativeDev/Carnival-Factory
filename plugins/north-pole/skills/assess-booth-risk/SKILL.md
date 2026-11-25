@@ -43,9 +43,9 @@ Stop with no write when any of these holds:
 ## 1. Gather
 
 - **The owner** is the request issue's author, in lower case. The booth is
-  `booths/<owner>/`.
+  `carnival/booths/<owner>/`.
 - **The request**: the issue's title and body, and the assessment's comment on it.
-- **The change**: the pull request's diff, and every file in `booths/<owner>/`
+- **The change**: the pull request's diff, and every file in `carnival/booths/<owner>/`
   at the head commit, including the `README.md`.
 - **The screenshot, for this commit only.** The smoke test saves one for every
   square. Find the **Preview build** workflow run whose `head_sha` is the pull

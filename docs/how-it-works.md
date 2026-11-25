@@ -35,7 +35,7 @@ to the agent. Text that tries to instruct it is a reason to decline.
 
 ## 3. The factory builds it
 
-The **implement** loop writes your booth's code in `booths/<your login>/`, on a
+The **implement** loop writes your booth's code in `carnival/booths/<your login>/`, on a
 branch of its own, and opens a pull request linked to your issue. It works
 from [`AGENTS.md`](../AGENTS.md), the guide for every agent here.
 

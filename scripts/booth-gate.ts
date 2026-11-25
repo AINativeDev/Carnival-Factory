@@ -63,7 +63,7 @@ export interface GateDecision {
   steps: GateStep[];
 }
 
-const isBoothFile = (owner: string, file: string) => file.startsWith(`booths/${owner}/`);
+const isBoothFile = (owner: string, file: string) => file.startsWith(`carnival/booths/${owner}/`);
 
 /** Decides what happens to a factory pull request for a booth. */
 export function evaluateGate(facts: GateFacts): GateDecision {
@@ -88,7 +88,7 @@ export function evaluateGate(facts: GateFacts): GateDecision {
     : facts.changedFiles;
   add(
     'Only the booth’s own folder',
-    'Every changed file is inside booths/<owner>/, so nothing else on the map can change.',
+    'Every changed file is inside carnival/booths/<owner>/, so nothing else on the map can change.',
     outside.length === 0 && facts.changedFiles.length > 0 ? 'pass' : 'fail',
     outside.length ? `Also changes ${outside.slice(0, 5).join(', ')}` : undefined,
   );

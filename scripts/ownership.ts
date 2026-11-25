@@ -1,6 +1,6 @@
 /**
  * The rule that keeps every participant inside their own booth: a pull request
- * may only change files under `booths/<owner>/`, where the owner is the
+ * may only change files under `carnival/booths/<owner>/`, where the owner is the
  * person the change is for. Maintainers may change anything.
  *
  * These are plain functions so they can be tested without GitHub.
@@ -21,12 +21,12 @@ export const MAINTAINERS: readonly { login: string; id: number }[] = [
 export const FACTORY_BOTS = ['tessl-app[bot]'];
 
 export function boothFolder(login: string): string {
-  return `booths/${login.toLowerCase()}/`;
+  return `carnival/booths/${login.toLowerCase()}/`;
 }
 
 /** A participant's level: their whole world of their own, theirs like their booth. */
 export function levelFolder(login: string): string {
-  return `levels/${login.toLowerCase()}/`;
+  return `carnival/levels/${login.toLowerCase()}/`;
 }
 
 export function isMaintainer(person: Pick<Author, 'id'>): boolean {
