@@ -31,6 +31,7 @@ assessment skill or the CSP in `square.html`. A rule nothing enforces yet says
 - [Visit panel and history](visit-panel-and-history.md): the HUD inside a square, Share, credits and "How was this built?".
 - [Booths panel](booths-panel.md): search, sections and "This is me".
 - [Factory numbers](factory-numbers.md): the `#/factory` page.
+- [First-visit intro](intro.md): what the North Pole is and how a booth gets built, shown once on `#/`.
 - [Analytics](analytics.md): cookieless PostHog events from the map page, off until configured.
 - [Advent calendar](advent-calendar.md): the doors, the challenge issues and booth decorations.
 - [People's Choice](peoples-choice.md): votes, standings and trophies.
