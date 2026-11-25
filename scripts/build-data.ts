@@ -5,7 +5,7 @@
  * of them. The craft badges come from the repository itself, so every build
  * has them.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanCounts } from '../src/northpole/advent.ts';
 import { cleanHolders } from '../src/northpole/badges.ts';
@@ -14,6 +14,7 @@ import { cleanChoice } from '../src/northpole/peoples-choice.ts';
 import { cleanYearInReview } from '../src/northpole/year-in-review.ts';
 import { craftOf } from './craft/craft.ts';
 import { readSquare, squareFolders } from './craft/check-square.ts';
+import { readSquareInfo } from './share-pages.ts';
 
 const readIfThere = (file: string | undefined): unknown =>
   file && existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : undefined;
@@ -72,4 +73,22 @@ export function squareCraft(root: string): Record<string, string[]> {
     craft[key] = craftOf(readSquare(join(root, folder))).badges;
   }
   return craft;
+}
+
+/**
+ * Every square's name, read from its source as the share pages read it, so the
+ * Booths panel can search and sort them before their frames have opened.
+ */
+export function squareNames(root: string): Record<string, string> {
+  const names: Record<string, string> = {};
+  for (const kind of ['booth', 'attraction'] as const) {
+    const dir = join(root, 'carnival', `${kind}s`);
+    for (const id of readdirSync(dir)) {
+      const file = join(dir, id, `${kind}.ts`);
+      if (!existsSync(file)) continue;
+      const name = readSquareInfo(readFileSync(file, 'utf8'), id).name;
+      if (name) names[`${kind}/${id}`] = name.slice(0, 80);
+    }
+  }
+  return names;
 }

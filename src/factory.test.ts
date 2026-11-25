@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FactoryStats } from '../scripts/factory-stats';
 import { openFactoryHud, type FactoryHudOptions } from './factory';
+import { switchFlags } from './test-support/feature-flags';
 
 const SQUARES = { booths: 12, attractions: 3, people: 11 };
 const STATS: FactoryStats = {
@@ -36,6 +37,19 @@ const texts = (root: ParentNode, selector: string) =>
 
 afterEach(() => {
   document.body.innerHTML = '';
+});
+
+describe("the factory's numbers page and the advent calendar's feature flag", () => {
+  const advent = () => open().card.querySelector('a[href="#/advent"]');
+  it('leaves out the advent calendar while it is off', () => {
+    expect(advent()).toBeNull();
+  });
+  describe('switched on', () => {
+    switchFlags({ advent: true });
+    it('links to the advent calendar', () => {
+      expect(advent()?.textContent).toBe('The advent calendar');
+    });
+  });
 });
 
 describe("the factory's numbers page", () => {

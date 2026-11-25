@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from './coverage';
 import { SHOTS, frameOf, watch } from './support/carnival';
+import { FLAGS } from './support/feature-flags';
 
 /**
  * Everything a visitor takes away from a booth: the Share line and the share
@@ -104,6 +105,8 @@ test('the Elf Engineer badges and their snippets are plain files on the site', a
     expect(svg).toContain('Elf Engineer');
     expect(svg).not.toMatch(/<script|href=/i);
   }
+  // The badges' snippet page waits for the Elf Engineer feature flag; the images stay.
+  if (!FLAGS.elfEngineer) return;
   const page = await (await request.get('badges/index.html')).text();
   expect(page).toContain('badges/elf-engineer-gold.svg)]');
   expect(page).not.toMatch(/<script/i);

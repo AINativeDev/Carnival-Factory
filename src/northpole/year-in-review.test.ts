@@ -40,10 +40,10 @@ describe('the questions', () => {
 describe('plainText', () => {
   it('keeps words on one line, drops what hides, and caps the length', () => {
     expect(plainText('  a\n\tb  ', 10)).toBe('a b');
-    expect(plainText('ze​ro‮width\u{E0041}', 20)).toBe('zerowidth');
+    expect(plainText('ze\u200Bro\u202Ewidth\u{E0041}', 20)).toBe('zerowidth');
     expect(plainText('abcdef', 4)).toBe('abc…');
     expect(plainText('😀😀😀', 2)).toBe('😀…');
-    expect(plainText('​ \n', 10)).toBeUndefined();
+    expect(plainText('\u200B \n', 10)).toBeUndefined();
     expect(plainText(42, 10)).toBeUndefined();
   });
 });
@@ -73,7 +73,7 @@ describe('cleanYearInReview', () => {
 
   it('keeps hostile words as plain text: markup stays letters, mentions stay words', () => {
     const hostile = answer({
-      answer: '<img src=x onerror=alert(1)> @everyone ‮gnp.exe',
+      answer: '<img src=x onerror=alert(1)> @everyone \u202Egnp.exe',
       question: '?'.repeat(MAX_QUESTION + 20),
     });
     const clean = cleanYearInReview({ [OWN_QUESTIONS]: [hostile] })[OWN_QUESTIONS]?.at(0);

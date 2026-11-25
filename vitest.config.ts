@@ -13,6 +13,9 @@ import viteConfig from './vite.config.ts';
 export default mergeConfig(
   viteConfig({ command: 'serve', mode: 'test' }),
   defineConfig({
+    // The unit tests see the live build's feature flags, all off, whatever the
+    // shell says; a test switches one on with src/test-support/feature-flags.ts.
+    define: { __FEATURE_FLAGS__: JSON.stringify('') },
     test: {
       environment: 'node',
       include: ['{src,carnival,scripts,lint}/**/*.test.ts'],

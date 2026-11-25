@@ -3,6 +3,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { attractionRegistry } from './attractions';
 import disabled from './disabled.json';
+import { attractionShown } from '../feature-flag-names';
+import { FEATURE_FLAGS } from '../feature-flags';
 import { fromFolders, isAttractionId, type NorthPoleSquare } from './square';
 
 const attractionsDir = join(import.meta.dirname, '../../carnival/attractions');
@@ -21,13 +23,15 @@ const modules = import.meta.glob<NorthPoleSquare | undefined>(
 const squares = fromFolders(modules);
 
 describe('attraction registry', () => {
-  it('puts every attraction folder on the map', () => {
+  it('puts every attraction folder on the map but those a feature flag holds back', () => {
     expect(
       attractionRegistry
         .all()
         .map((a) => a.id)
         .sort(),
-    ).toEqual([...folders].sort());
+    ).toEqual(folders.filter((id) => attractionShown(id, FEATURE_FLAGS)).sort());
+    // The live build, like the tests, leaves the Gift Shop out (docs/adr/0046-launch-behind-feature-flags.md).
+    expect(attractionRegistry.get('gift-shop')).toBeUndefined();
   });
 
   // Two rings of plots round the town square: sixteen keeps them all in the first two rows.

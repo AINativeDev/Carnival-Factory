@@ -6,6 +6,7 @@
  * the season link's login is set as a property.
  */
 import { the } from './dom';
+import { isOn } from './feature-flags';
 import { fillTourStop } from './factory-tour';
 import { BADGE_REQUEST_URL, CHANGE_URL, CLAIM_URL, LEVEL_REQUEST_URL } from './northpole/links';
 import type { SquareKind } from './northpole/map-options';
@@ -13,6 +14,18 @@ import { isNorthPoleLevel, landmarkLevel } from './northpole/north-pole-levels';
 import { levelLink, seasonLink } from './route';
 
 const GET_A_BOOTH = `<a href="${CLAIM_URL}" target="_blank" rel="noopener">Get a booth</a>`;
+
+/** "Built your own factory?" with the badge and the advent calendar, as far as their feature flags are on. */
+function factoryLine(): string {
+  const links = [
+    isOn('elfEngineer') &&
+      `<a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Get the Elf Engineer badge</a>`,
+    isOn('advent') && `<a href="#/advent">Open the advent calendar</a>`,
+  ].filter(Boolean);
+  return links.length
+    ? `<p><span class="visit-ask">Built your own factory?</span> ${links.join(' <span aria-hidden="true">·</span> ')}</p>`
+    : '';
+}
 
 /** Puts the next steps for this kind of square, or for a level itself, into its panel's help box. */
 export function fillVisitHelp(
@@ -31,7 +44,7 @@ export function fillVisitHelp(
     help.innerHTML = `<p>This square belongs to a participant's own level. ${GET_A_BOOTH} at the North Pole.</p>`;
   } else if (kind === 'booth') {
     help.innerHTML = `<p><span class="visit-ask">Is this yours?</span> <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask for a change</a> <span aria-hidden="true">·</span> <button class="visit-mine" type="button">Share it as yours</button></p>
-      <p><span class="visit-ask">Built your own factory?</span> <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Get the Elf Engineer badge</a> <span aria-hidden="true">·</span> <a href="#/advent">Open the advent calendar</a></p>
+      ${factoryLine()}
       <p><a class="visit-season">Your season</a></p>`;
     the(help, '.visit-season', HTMLAnchorElement).href = seasonLink(id);
   } else if (landmarkLevel(kind, id)) {

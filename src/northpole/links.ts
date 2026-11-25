@@ -14,13 +14,17 @@ export const LEVEL_REQUEST_URL = `${REPO_URL}/issues/new?template=02-your-level.
 
 /**
  * The Elf Engineer form: asks for the badge, for someone who set up a Tessl
- * factory on a repository of their own.
+ * factory on a repository of their own. It waits in
+ * `.github/issue-templates-later/` with the badge's feature flag: switching
+ * the flag on moves it back to `.github/ISSUE_TEMPLATE/`.
  */
 export const BADGE_REQUEST_URL = `${REPO_URL}/issues/new?template=03-elf-engineer.yml`;
 
 /**
  * The Advent challenge form: marks one of the advent calendar's challenges
  * done, with a link that shows it, so the owner's booth gets a decoration.
+ * Like the badge's, it waits in `.github/issue-templates-later/` with the
+ * advent calendar's feature flag.
  */
 export const ADVENT_REQUEST_URL = `${REPO_URL}/issues/new?template=04-advent-challenge.yml`;
 
@@ -103,7 +107,7 @@ export const keepPostedHref = (url: string = KEEP_POSTED_URL) => url || '#/keep-
 export const HOW_IT_WORKS_URL = `${REPO_URL}/blob/main/docs/how-it-works.md`;
 
 /** "Run this on your own repo": how to set up a Tessl factory on a repository of your own. */
-export const OWN_REPO_URL = `${REPO_URL}#try-it-on-your-own`;
+export const OWN_REPO_URL = `${REPO_URL}/blob/main/RUN-YOUR-OWN.md`;
 
 /**
  * The free credits offer for people who sign up for Tessl, shown beside the

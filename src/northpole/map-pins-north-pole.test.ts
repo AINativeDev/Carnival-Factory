@@ -56,7 +56,7 @@ describe('the North Pole', () => {
         for (let t = 6000; t < 9000; t += 200) frame(t);
       },
     );
-    expect(pin).toMatchInlineSnapshot(`"3cd32a61f1677c94 (632899 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"1d95918dcbf246ea (574344 calls)"`);
   });
 
   it('builds construction sites, and updates a booth being changed', () => {
@@ -81,12 +81,15 @@ describe('the North Pole', () => {
         frame(400);
         map.controls.leave();
         frame(600);
+        // The whole island, so every construction site is in view however close the camera rests.
+        map.controls.toggleOverview();
+        for (let t = 650; t <= 2650; t += 500) frame(t);
         for (const kind of ['site', 'open', 'platform', 'exit'])
           point(map, 'pointermove', screenAt(map, { x: kind.length, y: 4 }));
         frame(700);
       },
     );
-    expect(pin).toMatchInlineSnapshot(`"3da744954beb98f9 (170203 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"ad43f61c58ad39b9 (233011 calls)"`);
   });
 
   it('takes the sleigh from the station, but not to a level closed for repairs', () => {
@@ -101,7 +104,7 @@ describe('the North Pole', () => {
       frame(1500);
       expect(plots.length).toBeGreaterThan(0);
     });
-    expect(pin).toMatchInlineSnapshot(`"c7e7ff9e3d83b7ee (249604 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"39cf654b306fd165 (227774 calls)"`);
   });
 
   it('draws avatars once they have loaded', () => {
@@ -113,6 +116,6 @@ describe('the North Pole', () => {
       frame(200);
       frame(900);
     });
-    expect(pin).toMatchInlineSnapshot(`"8c3c0508dc3f18ea (92807 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"c4048e9e4f86be89 (86069 calls)"`);
   });
 });

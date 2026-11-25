@@ -39,7 +39,7 @@ describe('riding a level', () => {
       key('keydown', 'ArrowRight');
       for (let t = 3400; t < 6000; t += 150) frame(t);
     });
-    expect(pin).toMatchInlineSnapshot(`"74e1a515a7617c5e (178060 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"2c2abd6129e76750 (178060 calls)"`);
   });
 
   it('keeps still for reduced motion, jumping from station to station', () => {

@@ -27,6 +27,7 @@ import { linksHome } from './northpole/north-pole-links';
 import { showLevelLinks } from './level-links';
 import { showYearAnswers } from './year-in-review-panel';
 import { focusBack } from './focus-back';
+import { isOn } from './feature-flags';
 
 export interface VisitHudOptions {
   /** A square's kind, or `level` for the panel beside a level's own map (level-panel.ts). */
@@ -77,7 +78,8 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   const login = squareOwner(kind, square.id, level);
   const owner = login ? `@${login}` : '';
   const remix = $<HTMLAnchorElement>('.visit-remix-link');
-  remix.hidden = kind !== 'booth' || !!level;
+  // Remix this booth waits for its feature flag (docs/adr/0046-launch-behind-feature-flags.md).
+  remix.hidden = kind !== 'booth' || !!level || !isOn('remix');
   const map = $<HTMLAnchorElement>('.visit-map');
   map.href = level
     ? levelLink(level, square.id)
@@ -87,7 +89,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   if (level) map.textContent = 'See it in the level';
 
   // An Elf Engineer's booth links to the factory on their own repository.
-  const badge = kind === 'booth' ? badgeFor(square.id) : undefined;
+  const badge = kind === 'booth' && isOn('elfEngineer') ? badgeFor(square.id) : undefined;
   if (badge) {
     const factory = $<HTMLAnchorElement>('.visit-factory a');
     factory.href = factoryUrl(badge);

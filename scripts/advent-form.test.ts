@@ -5,7 +5,7 @@ import { ADVENT_FIELDS, adventDayOptions, parseDay } from './advent';
 
 describe('the Advent challenge issue form', () => {
   const form = readFileSync(
-    new URL('../.github/ISSUE_TEMPLATE/04-advent-challenge.yml', import.meta.url),
+    new URL('../.github/issue-templates-later/04-advent-challenge.yml', import.meta.url),
     'utf8',
   );
 

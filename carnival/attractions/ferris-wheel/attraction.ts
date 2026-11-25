@@ -1,40 +1,29 @@
-import type { NorthPoleSquare } from '../../../src/northpole/square';
+/**
+ * The Ferris Wheel: the wheel turns slowly, and a tap on a car boards it, so
+ * the wheel carries it to the top and the view opens out over the town.
+ */
+import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
 import { box, glow, iso, scene, shadow, stringLights } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
+import { baubleOf, board, canBoard, carAt, CARS, carSpots, wheelAngle, viewOpen } from './ride';
+import type { Ride } from './ride';
+import { drawView } from './view';
 
 const { colors } = theme;
 
-/** One full turn of the wheel, in milliseconds. */
-export const TURN = 24_000;
-
-/**
- * Where each gondola hangs from the rim at `time`: `count` points evenly round
- * a circle of `radius` about (cx, cy), turning clockwise once every `TURN`.
- */
-export function gondolaPositions(
-  count: number,
-  time: number,
-  cx: number,
-  cy: number,
-  radius: number,
-): { x: number; y: number }[] {
-  const turn = ((time % TURN) / TURN) * Math.PI * 2;
-  return Array.from({ length: count }, (_, i) => {
-    const angle = turn + (i / count) * Math.PI * 2;
-    return { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius };
-  });
-}
-
 const BAUBLES = [colors.berry, colors.gold, colors.mint, colors.violet];
 
-/** A ferris wheel hung with bauble gondolas, turning slowly under the northern lights. */
+/** The ride a visitor last boarded, if any: the attraction's one memory of the pointer. */
+let ride: Ride | undefined;
+
+/** A ferris wheel hung with bauble cars under the northern lights: tap one to ride it to the top. */
 const attraction: NorthPoleSquare = {
   id: 'ferris-wheel',
   name: 'Ferris Wheel',
-  description: 'Bauble gondolas turning slowly against the northern lights.',
+  description: 'Tap a bauble car to ride it to the top and look out over the North Pole.',
   // How it stands on the home map: what it is, not a pavilion (ADR 0042).
   stall: { shape: 'stall', roof: 'violet', trim: 'snow', landmark: 'big-wheel' },
-  draw(ctx, size, time) {
+  draw(ctx, size, time, pointer?: SquarePointer) {
     scene(ctx, size, time, () => {
       // The northern lights: two faint ribbons that ripple across the dusk.
       ctx.lineWidth = 4;
@@ -66,7 +55,15 @@ const attraction: NorthPoleSquare = {
       shadow(ctx, 52, foot + 3, 60);
       box(ctx, -12, -9, 24, 18, 3, colors.slab, colors.surface, colors.night);
 
-      const gondolas = gondolaPositions(8, time, cx, cy, radius);
+      // A tap on a car boards it, unless a ride is already up at the top.
+      const angle = wheelAngle(time, ride);
+      const gondolas = carSpots(CARS, angle, cx, cy, radius);
+      const over: number = pointer
+        ? carAt((pointer.x * 100) / size, (pointer.y * 100) / size, gondolas)
+        : -1;
+      if (pointer && pointer.presses > 0 && over >= 0 && canBoard(time, ride)) {
+        ride = board(over, time, ride);
+      }
       const legs = (dx: number, dy: number, color: string) => {
         ctx.strokeStyle = color;
         ctx.lineWidth = 2.2;
@@ -106,14 +103,21 @@ const attraction: NorthPoleSquare = {
       // Lights round the rim, between the gondolas.
       stringLights(
         ctx,
-        gondolaPositions(8, time + TURN / 16, cx, cy, radius),
+        carSpots(CARS, angle + Math.PI / CARS, cx, cy, radius),
         [colors.lantern],
         time,
       );
 
       // Each gondola hangs straight down from the rim, like a bauble on a branch.
-      gondolas.forEach(({ x, y }, i) => {
+      const riding = ride && viewOpen(time, ride) === 0 && !canBoard(time, ride) ? ride.car : -1;
+      gondolas.forEach((spot, i: number) => {
+        const { x, y } = spot;
         const g = { x: x + depth.x / 2, y: y + depth.y / 2 };
+        // A warm glow round the car under the pointer, and round the one rising.
+        if (i === over || i === riding) {
+          const bauble = baubleOf(spot);
+          glow(ctx, bauble.x, bauble.y, 9, 0.8);
+        }
         ctx.strokeStyle = colors.snowShade;
         ctx.lineWidth = 0.6;
         ctx.beginPath();
@@ -151,6 +155,10 @@ const attraction: NorthPoleSquare = {
       ctx.fillRect(lamp.x - 0.5, lamp.y - 12, 1, 12);
       ctx.fillStyle = colors.lantern;
       ctx.fillRect(lamp.x - 1.4, lamp.y - 15, 2.8, 3);
+
+      // At the top, the view opens out from the boarded car.
+      const top = ride ? gondolas.at(ride.car) : undefined;
+      if (ride && top) drawView(ctx, time, viewOpen(time, ride), baubleOf(top).x, baubleOf(top).y);
     });
   },
 };

@@ -32,6 +32,9 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
   as on a phone. A level's squares have no board.
 - Under the timeline, one quiet line lists the craft badges the square earned
   ("Code: Small files · Tested · …"), with how squares are checked.
+- **Remix this booth** waits behind the `remix` feature flag, and the Elf
+  Engineer's factory link behind `elfEngineer` ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)): both are off on the
+  live site, so the panel hides them.
 - A booth shows **Remix this booth** and **Build your own**. Remix opens the
   booth form pre-filled: title "My booth: a remix of @<login>'s booth" and
   "Start from @<login>'s <name>, copied into my own booth and credited to

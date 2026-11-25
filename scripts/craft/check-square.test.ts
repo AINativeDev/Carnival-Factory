@@ -19,6 +19,8 @@ describe('readSquare', () => {
       'README.md',
       'attraction.test.ts',
       'attraction.ts',
+      'ride.ts',
+      'view.ts',
     ]);
   });
 
