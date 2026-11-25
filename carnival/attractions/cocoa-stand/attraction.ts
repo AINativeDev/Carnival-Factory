@@ -1,33 +1,22 @@
-import type { NorthPoleSquare } from '../../../src/northpole/square';
-import { box, drum, glow, iso, scene, shadow } from '../../../src/northpole/diorama';
+import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
+import { box, glow, iso, scene, shadow } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
+import { cocoaStep, FRESH, hint, served, type Cocoa } from './cocoa';
+import { drawCup, drawCupSteam, drawPour, drawUrn } from './cup';
+import { drawBoard, drawHint } from './sign';
 
 const { colors } = theme;
 
-/** How long a wisp of steam takes to rise and fade, in milliseconds. */
-export const RISE = 2_400;
-
 /**
- * A wisp of steam from the mug at `mug`, at `time`: how far it has risen, from
- * 0 (just leaving the cocoa) to 1 (gone), and how far it curls sideways, from
- * -1 to 1. Each mug's steam starts at its own moment, so they don't rise in step.
+ * The visitor's cup, the stand's one memory of the pointer. It lives as long as
+ * the stand's sandboxed frame, which the map shares with the room inside and
+ * restarts only on a reload or once nobody has drawn the stand for a while, so
+ * stepping out and back in finds the same cup and count.
  */
-export function steam(mug: number, time: number): { rise: number; curl: number } {
-  const rise = (((time / RISE + mug * 0.37) % 1) + 1) % 1;
-  return { rise, curl: Math.sin(rise * Math.PI * 2 + mug) };
-}
+let cup: Cocoa = FRESH;
 
-function mug(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 0.7;
-  ctx.beginPath();
-  ctx.arc(x + 2.4, y - 2.4, 1.4, -Math.PI / 2, Math.PI / 2);
-  ctx.stroke();
-  drum(ctx, x, y, 2.4, 4.6, [color], 1, 0, colors.cocoa);
-  // A marshmallow bobbing on top.
-  ctx.fillStyle = colors.snowLit;
-  ctx.fillRect(x - 0.8, y - 5.6, 1.8, 1.3);
-}
+/** Where the cup stands on the counter, in front of the hatch, and how far it slides once served. */
+const CUP = { gx: 2, gy: 10, slide: 12 };
 
 /** A strip along the stall's front, from gx0 to gx1 at gy, from z0 up to z1. */
 function front(
@@ -44,14 +33,18 @@ function front(
   ctx.closePath();
 }
 
-/** A hot cocoa stand, with steam curling from the mugs on the counter. */
+/**
+ * A hot cocoa stand where the visitor makes their own cup: hold to pour, tap
+ * for the toppings, and the chalkboard counts the cups served since it opened.
+ */
 const attraction: NorthPoleSquare = {
   id: 'cocoa-stand',
   name: 'Hot Cocoa Stand',
-  description: 'Mugs of cocoa with marshmallows, steaming on the counter.',
+  description: 'Make your own cocoa: hold to pour, tap for marshmallows, cream and a candy cane.',
   // How it stands on the home map: what it is, not a pavilion (ADR 0042).
   stall: { shape: 'kiosk', roof: 'cocoa', trim: 'cream', landmark: 'cocoa-hut' },
-  draw(ctx, size, time) {
+  draw(ctx, size, time, pointer?: SquarePointer) {
+    cup = cocoaStep(cup, time, pointer);
     scene(ctx, size, time, () => {
       const wall = 30;
       // The hut: a wooden stand, its open front facing the lower left.
@@ -117,21 +110,17 @@ const attraction: NorthPoleSquare = {
         ctx.fill();
       }
 
-      const mugs = [colors.berry, colors.pine, colors.cream, colors.gold];
-      mugs.forEach((color, i) => {
-        const at = iso(-10 + i * 6.5, 10, 12);
-        mug(ctx, at.x, at.y, color);
-        // Three wisps of steam per mug, at different stages of rising.
-        for (let wisp = 0; wisp < 3; wisp++) {
-          const { rise, curl } = steam(i * 3 + wisp, time);
-          ctx.globalAlpha = 0.6 * (1 - rise);
-          ctx.fillStyle = colors.snowLit;
-          ctx.beginPath();
-          ctx.arc(at.x + curl * 2, at.y - 7 - rise * 16, 0.9 + rise * 1.6, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      });
-      ctx.globalAlpha = 1;
+      // The visitor's cup under the urn's spout, sliding away once it's served.
+      const away = served(cup, time);
+      const spot = iso(CUP.gx, CUP.gy, 12);
+      const at = iso(CUP.gx + away * CUP.slide, CUP.gy, 12);
+      drawUrn(ctx, spot.x, spot.y);
+      drawCup(ctx, at.x, at.y, cup, time, 1 - away);
+      if (pointer?.down && cup.fill < 1) drawPour(ctx, spot.x, spot.y, cup.fill);
+      if (cup.fill === 1 && away === 0) drawCupSteam(ctx, at.x, at.y, time);
+
+      drawBoard(ctx, cup.served);
+      drawHint(ctx, hint(cup));
     });
   },
 };
