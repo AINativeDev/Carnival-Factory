@@ -263,14 +263,14 @@ test("Share copies a friendly line with the booth's share page, which unfurls an
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('#/booth/jedi4ever');
   await page.getByRole('button', { name: 'Share', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Copied!' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Copied' })).toBeVisible();
   const copied = await page.evaluate(() => navigator.clipboard.readText());
   expect(copied).toMatch(
     /^@jedi4ever built .+ at the North Pole Carnival\. Come visit, and build your own: http:\/\/localhost:4173\/share\/booth-jedi4ever\.html$/,
   );
-  // The owner can share it as theirs, and edit the line before copying.
+  await page.locator('.visit-more summary').click(); // the owner's links, under More
   await page.getByRole('button', { name: 'share it as yours' }).click();
-  await expect(page.getByLabel('Share text')).toHaveValue(/^I built /);
+  await expect(page.getByLabel('The message Share copies')).toHaveValue(/^I built /);
 
   const share = await request.get('share/booth-jedi4ever.html');
   const html = await share.text();
@@ -283,6 +283,7 @@ test("Share copies a friendly line with the booth's share page, which unfurls an
   await expect(page).toHaveURL(/#\/booth\/jedi4ever$/);
   await expect(page.locator('.visit').and(page.getByRole('region', { name: /.+/ }))).toBeVisible();
 
+  await page.locator('.visit-more summary').click(); // the map link, under More
   await page.getByRole('link', { name: 'See it on the map' }).click();
   await expect(page).toHaveURL(/#\/\?booth=jedi4ever$/);
   await expect(page.locator('.visit')).toHaveCount(0);
@@ -295,7 +296,7 @@ test('a booth links to its season card, which downloads as a PNG and copies its 
 }) => {
   const problems = watch(page);
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await page.goto('#/booth/jedi4ever');
+  await page.goto('#/booth/jedi4ever').then(() => page.locator('.visit-more summary').click());
   await page.locator('.visit').getByRole('link', { name: 'Your season' }).click();
   await expect(page).toHaveURL(/#\/season\/jedi4ever$/);
   await expect(page.getByRole('heading', { name: 'Your season' })).toBeVisible();
@@ -315,7 +316,7 @@ test('a booth links to its season card, which downloads as a PNG and copies its 
   expect(saved.subarray(1, 4).toString()).toBe('PNG');
 
   await page.getByRole('button', { name: 'Copy link' }).click();
-  await expect(page.getByRole('button', { name: 'Copied!' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Copied' })).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
     'http://localhost:4173/#/?booth=jedi4ever',
   );
@@ -387,12 +388,12 @@ for (const viewport of [
     await expect(panel).toHaveCount(0);
     await expect(page).toHaveURL(/#\/$/);
 
-    // The visit's "How was this built?" links to it too.
-    await page.goto('#/booth/jedi4ever');
-    const history = page.locator('.visit-history');
-    if (!(await history.evaluate((details) => (details as HTMLDetailsElement).open)))
-      await history.locator('summary').click();
-    await history.getByRole('link', { name: "See the factory's numbers" }).click();
+    await page.goto('#/booth/jedi4ever'); // The visit's More links to it too.
+    await page.locator('.visit-more summary').click();
+    await page
+      .locator('.visit-more')
+      .getByRole('link', { name: "See the factory's numbers" })
+      .click();
     await expect(page).toHaveURL(/#\/factory$/);
     await expect(page.locator('.visit')).toHaveCount(0);
     await expect(panel).toBeVisible();
@@ -451,10 +452,10 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
   await expect(page).toHaveURL(/#\/booth\/jedi4ever$/);
   const card = page.locator('.visit');
   await expect(card).toBeVisible();
-  await expect(card.getByRole('heading')).toBeFocused();
+  await expect(card.getByRole('heading', { level: 2 })).toBeFocused();
   await expect(card).toContainText('@jedi4ever');
-  await expect(card.locator('.visit-owner')).toHaveText('Made by @jedi4ever.');
-  await expect(card.locator('.visit-person')).toHaveAttribute(
+  await expect(card.locator('.story-step').first()).toHaveText('Made by @jedi4ever');
+  await expect(card.locator('.story-person')).toHaveAttribute(
     'href',
     'https://github.com/jedi4ever',
   );
@@ -462,7 +463,7 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
     'href',
     /template=01-your-booth\.yml&title=.+&what=Start%20from%20%40jedi4ever's%20/,
   );
-  await expect(card.getByRole('link', { name: 'Build your own' })).toBeVisible();
+  await expect(card.getByRole('link', { name: 'Build your own booth' })).toBeHidden(); // a shared link: Claim instead
   await expect(card).toContainText('Esc or walk out to leave');
   await expect(page.locator('.map-frame')).toHaveAttribute('data-visiting', 'booth:jedi4ever');
   // After the fade, the room is drawn, with the player just inside its doorway.
@@ -470,7 +471,7 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
   await expect(page.locator('.hud-booths')).toBeHidden();
   await expect(frameOf(page, 'booth', 'jedi4ever')).toHaveAttribute('data-state', 'ready');
   // A link to the map counts as a shared link: the invitation shows, once a visit.
-  await expect(card.locator('.visit-invite')).toBeVisible();
+  await expect(card.locator('.visit-claim')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(card).toHaveCount(0);
   await expect(page).toHaveURL(/#\/\?booth=jedi4ever$/);
@@ -482,7 +483,7 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
   // The back button leaves too, and so does walking out through the doorway.
   await page.keyboard.press('e');
   await expect(card).toBeVisible();
-  await expect(card.locator('.visit-invite')).toBeHidden();
+  await expect(card.locator('.visit-claim')).toBeHidden();
   await page.goBack();
   await expect(card).toHaveCount(0);
   await canvas.focus();
@@ -516,13 +517,9 @@ test('a shared link starts inside the booth, and invites the visitor to claim th
   const card = page.locator('.visit');
   await expect(card).toBeVisible();
   await expect(page.locator('.map-canvas')).toHaveAttribute('data-room', '0.50,0.85');
-  const invite = card.locator('.visit-invite');
-  await expect(invite).toBeVisible();
-  await expect(invite).toContainText('@jedi4ever built this by describing it in an issue');
-  await expect(invite.getByRole('link', { name: 'How was this built?' })).toHaveAttribute(
-    'href',
-    /docs\/how-it-works\.md$/,
-  );
+  const invite = card.locator('.visit-want');
+  await expect(invite).toContainText('Want one of your own?');
+  await expect(invite.getByRole('link', { name: 'Build your own booth' })).toBeHidden();
   await invite.getByRole('button', { name: 'Claim the plot next door' }).click();
   await expect(card).toHaveCount(0);
   await expect(page).toHaveURL(/#\/$/);
@@ -535,7 +532,7 @@ test('a shared link starts inside the booth, and invites the visitor to claim th
   await page.locator('.hud-all button[data-kind="booth"][data-id="jedi4ever"]').click();
   await page.keyboard.press('e');
   await expect(card).toBeVisible();
-  await expect(card.locator('.visit-invite')).toBeHidden();
+  await expect(card.locator('.visit-claim')).toBeHidden();
   expect(problems).toEqual([]);
 });
 
@@ -877,14 +874,10 @@ test('the banner links to the repository, where every booth starts', async ({ pa
   );
 });
 
-test("a square's history lists each request as a block, not in columns", async ({ page }) => {
+test("a square's build story lists each step as a block, not in columns", async ({ page }) => {
   await page.goto('#/booth/jedi4ever');
-  const list = page.locator('.history-list');
-  await list.evaluate((element) => {
-    const item = document.createElement('li');
-    item.className = 'history-entry';
-    item.innerHTML = '<p class="history-request">#1 A request</p><p class="history-meta">@ana</p>';
-    element.append(item);
-  });
-  await expect(list.locator('.history-entry').last()).toHaveCSS('display', 'block');
+  const steps = page.locator('.visit .story-step');
+  await expect(steps.first()).toBeVisible();
+  await expect(steps.first()).toHaveCSS('display', 'block');
+  await expect(page.locator('.visit .visit-title')).toHaveCSS('position', 'absolute');
 });

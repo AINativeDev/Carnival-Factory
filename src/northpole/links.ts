@@ -75,7 +75,7 @@ export const CHANGE_URL = BOOTH_REQUEST_URL;
  * only links to it. Empty until a maintainer fills it in, and until then the
  * link goes to a page here that says the list opens soon and collects nothing.
  */
-export const KEEP_POSTED_URL = '';
+export const KEEP_POSTED_URL: string = '';
 
 /** Where "Keep me posted" links go: the real form once it's set, or the placeholder page. */
 export const keepPostedHref = (url: string = KEEP_POSTED_URL) => url || '#/keep-posted';

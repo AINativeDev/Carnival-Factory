@@ -1,8 +1,6 @@
-import { profileUrl } from './northpole/links';
 import type {
   Credits,
   Decision,
-  HistoryEntry,
   HistoryKind,
   HistoryPull,
   SquareHistory,
@@ -37,36 +35,6 @@ export function creditsFor(
   const credits = data?.credits?.[`${kind}/${id.toLowerCase()}`];
   if (credits) return credits;
   return kind === 'booth' ? { maker: id, improvers: [] } : undefined;
-}
-
-/** "a", "a and b", "a, b and c". */
-const listed = <T, S>(items: T[], and: S, comma: S): (T | S)[] =>
-  items.flatMap((item, n) => (n === 0 ? [item] : [n === items.length - 1 ? and : comma, item]));
-
-/**
- * Fills `line` with a square's credits, "Made by @a. Improved by @b and @c.",
- * or only who improved an attraction, each login set as text and linked to
- * its GitHub profile.
- */
-export function renderCredits(line: HTMLElement, credits: Credits) {
-  const person = (login: string): Node => {
-    const url = profileUrl(login);
-    if (!url) return document.createTextNode(`@${login}`);
-    const a = document.createElement('a');
-    a.className = 'visit-person';
-    a.href = url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.textContent = `@${login}`;
-    return a;
-  };
-  const parts: (Node | string)[] = [];
-  if (credits.maker) parts.push('Made by ', person(credits.maker), '.');
-  if (credits.improvers.length) {
-    if (parts.length) parts.push(' ');
-    parts.push('Improved by ', ...listed(credits.improvers.map(person), ' and ', ', '), '.');
-  }
-  line.replaceChildren(...parts);
 }
 
 /** What the panel says when a square has no requests to show. */
@@ -110,50 +78,33 @@ export function pullState(pull: HistoryPull): string {
   return pull.state === 'open' ? 'Open' : 'Closed without merging';
 }
 
-/** One request's line under its title: who asked, when, and what was decided. */
-export const requestLine = (entry: HistoryEntry) =>
-  `@${entry.author} · ${day(entry.openedAt)} · ${DECISIONS[entry.decision]}`;
-
-/**
- * Fills `list` with a square's timeline, every piece of text set as text and
- * every link to GitHub or this site's own previews.
- */
-export function renderHistory(list: HTMLElement, entries: HistoryEntry[]) {
-  list.replaceChildren();
-  const link = (href: string, text: string, className: string) => {
-    const a = document.createElement('a');
-    a.className = className;
-    a.href = safeHref(href);
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.textContent = text;
-    return a;
-  };
-  const line = (className: string, ...parts: (Node | string)[]) => {
-    const p = document.createElement('p');
-    p.className = className;
-    p.append(...parts);
-    return p;
-  };
-  for (const entry of entries) {
-    const item = document.createElement('li');
-    item.className = 'history-entry';
-    item.dataset.decision = entry.decision;
-    item.append(
-      line('history-request', link(entry.url, `#${entry.issue} ${entry.title}`, 'history-issue')),
-      line('history-meta', requestLine(entry)),
-    );
-    for (const pull of entry.pulls) {
-      const parts: (Node | string)[] = [
-        link(pull.url, `Pull request #${pull.number}`, 'history-pull'),
-        ` · ${pullState(pull)} · ${pullSummary(pull)}`,
-      ];
-      if (pull.preview) parts.push(' · ', link(pull.preview, 'Preview it', 'history-preview'));
-      item.append(line('history-pr', ...parts));
-    }
-    list.append(item);
-  }
-}
+/** What the assessment decided about a request, in words. */
+export const decisionText = (decision: Decision) => DECISIONS[decision];
 
 /** Only https links: the data is the build's own, but its links never run script. */
 export const safeHref = (href: string) => (/^https:\/\//i.test(href) ? href : '#');
+
+/** The history from JSON that isn't baked in: kept only when it's shaped like one. */
+export function readHistory(data: unknown): SquareHistory | undefined {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return undefined;
+  const { squares } = data as { squares?: unknown };
+  if (!squares || typeof squares !== 'object') return undefined;
+  if (!Object.values(squares).every((entries) => Array.isArray(entries))) return undefined;
+  return data as SquareHistory;
+}
+
+/**
+ * A preview has no history baked in, so the deploy puts the live site's beside
+ * it, and the panel reads it from the page's own site, like pending.json
+ * (docs/adr/0009). Anything missing or unreadable is no history.
+ */
+export async function loadHistoryFile(
+  fetchFile: (url: string) => Promise<Response> = (url) => fetch(url),
+): Promise<SquareHistory | undefined> {
+  try {
+    const response = await fetchFile('square-history.json');
+    return response.ok ? readHistory(await response.json()) : undefined;
+  } catch {
+    return undefined;
+  }
+}

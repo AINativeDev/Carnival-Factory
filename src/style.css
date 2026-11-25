@@ -957,7 +957,6 @@ kbd {
   overflow: auto;
   padding: 12px 18px 16px;
   border: 3px solid var(--color-gold);
-  text-align: center;
   animation: visit-in 0.5s ease-out;
 }
 
@@ -1005,6 +1004,16 @@ kbd {
   font-size: 22px;
 }
 
+/* The room's sign already shows the square's name, so the panel keeps its heading for screen readers only. */
+.visit .visit-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .visit .visit-title:focus,
 .visit .visit-title:focus-visible,
 .factory .visit-title:focus,
@@ -1012,32 +1021,106 @@ kbd {
   outline: none;
 }
 
-.visit-owner,
-.visit-factory,
+.visit {
+  text-align: left;
+}
+
 .visit-description {
-  margin: 6px 0;
-  font-size: 14px;
+  margin: 14px 0 4px;
+  font-size: 16px;
+  line-height: 1.45;
 }
 
-.visit-avatar {
-  margin-right: 4px;
-  border: 2px solid var(--color-gold);
+/* How it was built: the panel's main section, a timeline read top to bottom. */
+.visit-story {
+  margin-top: 18px;
+}
+
+.visit-eyebrow {
+  margin: 0 0 10px;
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.story-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* .hud .story-step, so it outranks the map's .hud li, which lays items in a row. */
+.hud .story-step {
+  position: relative;
+  display: block;
+  margin: 0;
+  padding: 0 0 14px 20px;
+}
+
+/* The rail that joins the steps, and each step's dot on it. */
+.hud .story-step::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  bottom: -5px;
+  left: 4px;
+  width: 2px;
+  background: color-mix(in srgb, var(--color-gold) 55%, transparent);
+}
+
+.hud .story-step:last-child::before {
+  display: none;
+}
+
+.hud .story-step::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 0;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  vertical-align: middle;
+  background: var(--color-gold);
 }
 
-.visit-owner {
-  font-weight: bold;
+.hud .story-step[data-kind='built']::after {
+  background: var(--color-berry);
 }
 
-/* A square's craft badges: small gold-edged tags, only for what it earned (docs/adr/0029). */
+.hud .story-step[data-kind='live']::after {
+  background: var(--color-cocoa);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-gold) 60%, transparent);
+}
+
+.story-step p,
+.history-empty {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.story-label {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.story-detail {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.story-meta,
+.history-empty {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+/* A square's craft: one quiet line of what it earned, never what it missed (docs/adr/0029). */
 .visit-craft {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 4px 6px;
-  margin: 4px 0 8px;
+  margin: 2px 0 0;
+  color: var(--color-muted);
   font-size: 12px;
 }
 
@@ -1045,40 +1128,68 @@ kbd {
   display: none;
 }
 
+.visit-craft-label {
+  margin-right: 4px;
+}
+
 .visit-craft-badge {
-  padding: 2px 8px;
-  border: 1px solid var(--color-gold);
-  border-radius: 999px;
-  color: var(--color-cocoa);
-  font-weight: 700;
   cursor: help;
 }
 
+.visit-craft-badge + .visit-craft-badge::before {
+  content: ' · ';
+}
+
 .visit-craft-about {
+  margin-left: 6px;
   color: var(--color-muted);
-  font-size: 11px;
 }
 
-.visit-remix {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px 16px;
-  margin: 4px 0;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.visit-description {
-  line-height: 1.4;
-}
-
+/* One quiet row of actions under the story. */
 .visit-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin: 14px 0 6px;
+  gap: 8px 16px;
+  margin: 16px 0 6px;
+  font-size: 14px;
+}
+
+.visit-actions .visit-copy {
+  padding: 3px 14px;
+  border: 1.5px solid var(--color-berry);
+  background: none;
+  color: var(--color-berry);
+  font-size: 14px;
+}
+
+/* The one ask: a booth of your own, or the plot next door for someone who came by a shared link. */
+.visit-want {
+  margin: 12px 0 4px;
+  font-size: 14px;
+}
+
+.visit-want a {
+  font-weight: 600;
+}
+
+.visit-want [hidden] {
+  display: none;
+}
+
+.visit-want .visit-claim:not([hidden]) {
+  display: block;
+  margin: 8px 0 0;
+  padding: 8px 20px;
+  font-size: 16px;
+}
+
+.visit-actions a {
+  font-weight: 600;
+}
+
+.visit-actions [hidden] {
+  display: none;
 }
 
 .visit-copy,
@@ -1088,7 +1199,7 @@ kbd {
   padding: 6px 22px;
   background: var(--color-berry);
   color: var(--color-snow);
-  font: bold 15px var(--font-family);
+  font: 600 15px var(--font-family);
   cursor: pointer;
 }
 
@@ -1106,29 +1217,26 @@ kbd {
   cursor: pointer;
 }
 
-/* The share message, folded away until someone wants to change it. */
+/* The message Share copies, and the map link, under More. */
 .visit-edit {
   font-size: 12px;
 }
 
-.visit-edit summary {
-  cursor: pointer;
-  opacity: 0.75;
+.visit-edit .visit-map {
+  display: inline-block;
+  margin-top: 6px;
 }
 
 .visit-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  display: block;
+  margin-top: 8px;
+  color: var(--color-muted);
 }
 
 .visit-share-text {
   box-sizing: border-box;
   width: 100%;
-  margin-top: 6px;
+  margin-top: 4px;
   padding: 6px 8px;
   border: 1px solid var(--color-wood);
   border-radius: 6px;
@@ -1136,117 +1244,36 @@ kbd {
   resize: vertical;
 }
 
-/* The small print at the bottom: owner's links, and keep me posted. */
-.visit-help {
+/* Everything else, folded: the owner's links, the factory's numbers, keep me posted. */
+.visit-more {
   margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px solid color-mix(in srgb, var(--color-wood) 30%, transparent);
-  font-size: 13px;
+  color: var(--color-muted);
+  font-size: 12px;
 }
 
+.visit-more summary {
+  cursor: pointer;
+}
+
+.visit-more p,
 .visit-help p {
   margin: 4px 0;
 }
 
-.visit-ask {
-  opacity: 0.75;
-}
-
-.visit-foot {
-  margin: 8px 0 0;
-  font-size: 12px;
-  opacity: 0.85;
-}
-
-/* The invitation, for someone who came by a shared link. */
-.visit-invite {
-  margin-top: 14px;
-  padding: 12px;
-  border: 2px dashed var(--color-berry);
-  border-radius: var(--radius);
-}
-
-.visit-invite[hidden] {
+.visit-factory[hidden] {
   display: none;
 }
 
-.visit-invite p {
-  margin: 0 0 10px;
+.visit-help {
+  margin-top: 8px;
 }
 
-.visit-claim {
-  display: block;
-  margin: 0 auto 8px;
-  padding: 10px 24px;
-  font-size: 18px;
-}
-
-.visit-how {
-  font-size: 13px;
-}
-
-.visit-history {
-  margin-top: 14px;
-  padding: 10px 12px;
-  border: 1px solid color-mix(in srgb, var(--color-gold) 70%, transparent);
-  border-radius: var(--radius);
-  text-align: left;
-}
-
-.visit-history summary {
-  cursor: pointer;
-  font-weight: 700;
-  text-align: center;
-}
-
-.history-list {
-  margin: 10px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* .hud .history-entry, so it outranks the map's .hud li, which lays items in a row. */
-.hud .history-entry {
-  display: block;
-  margin: 0 0 12px;
-  padding-left: 10px;
-  border-left: 3px solid var(--color-gold);
-}
-
-.history-entry[data-decision='declined'],
-.history-entry[data-decision='question'] {
-  border-left-color: var(--color-berry);
-}
-
-.history-entry p,
-.history-empty {
-  margin: 0 0 4px;
-  font-size: 13px;
-  overflow-wrap: anywhere;
-}
-
-.history-request {
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.history-meta,
-.history-pr {
+.visit-ask {
   opacity: 0.85;
 }
 
-.history-own,
-.history-factory {
+.visit-foot {
   margin: 10px 0 0;
-  font-size: 13px;
-}
-
-.history-factory-link {
-  font-weight: 700;
-}
-
-.history-own-link {
-  font-weight: 700;
 }
 
 .history-offer p {
@@ -1426,9 +1453,4 @@ kbd {
 
 .choice-votes {
   opacity: 0.75;
-}
-
-.visit-vote {
-  margin: 6px 0;
-  font-size: 14px;
 }
