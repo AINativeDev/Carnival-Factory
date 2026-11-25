@@ -4,7 +4,7 @@
  * square's frame gets a stand-in window that records the map's draw requests,
  * and messages reach the map the way a real frame's would, from that window.
  */
-import { vi } from 'vitest';
+import { assert, vi } from 'vitest';
 
 /** Stands in for an ImageBitmap, which happy-dom can't make from a frame. */
 export class FakeBitmap {
@@ -45,7 +45,7 @@ export const frameOf = (address: string) =>
  */
 export function playFrame(address: string) {
   const iframe = frameOf(address);
-  if (!iframe) throw new Error(`No frame runs ${address}`);
+  assert(iframe, `No frame runs ${address}`);
   const contentWindow = { postMessage: vi.fn() };
   Object.defineProperty(iframe, 'contentWindow', { value: contentWindow });
   return {
