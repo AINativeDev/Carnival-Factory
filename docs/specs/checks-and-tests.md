@@ -29,7 +29,10 @@ What runs on every pull request, and what each check guarantees.
   walking, visiting and leaving, construction sites, the Booths panel, fitting
   the window, the pointer, and history layout.
 - `smoke/levels.spec.ts` walks every open level from its arrival to each
-  square, inside each one, and to the sleigh home.
+  square, inside each one, and to the sleigh home. `smoke/level-walk.ts`
+  walks to each door in steps, each a click on the furthest tile of the way
+  that is on the canvas, so a door the camera doesn't show yet is still
+  reached.
 - `smoke/flashing.spec.ts` plays every booth and attraction on the back wall
   of its room and measures flashes.
 - Smoke scope: when every changed file is inside one booth's folder, CI sets
