@@ -49,6 +49,8 @@ const attraction: NorthPoleSquare = {
   id: 'cocoa-stand',
   name: 'Hot Cocoa Stand',
   description: 'Mugs of cocoa with marshmallows, steaming on the counter.',
+  // How it stands on the home map: what it is, not a pavilion (ADR 0042).
+  stall: { shape: 'kiosk', roof: 'cocoa', trim: 'cream', landmark: 'cocoa-hut' },
   draw(ctx, size, time) {
     scene(ctx, size, time, () => {
       const wall = 30;

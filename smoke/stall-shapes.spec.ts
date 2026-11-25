@@ -16,6 +16,17 @@ const STALL_STYLES: Record<StallShape, StallStyle> = {
   tent: { shape: 'tent', roof: 'berry', trim: 'snow' },
   cabin: { shape: 'cabin', roof: 'berry' },
   kiosk: { shape: 'kiosk', roof: 'violet', trim: 'cream' },
+  igloo: { shape: 'igloo', roof: 'ice' },
+  gazebo: { shape: 'gazebo', roof: 'pine', trim: 'cream' },
+  chalet: { shape: 'chalet', roof: 'berry' },
+  treehouse: { shape: 'treehouse', roof: 'pine' },
+  windmill: { shape: 'windmill', roof: 'gingerbread', trim: 'snow' },
+  lighthouse: { shape: 'lighthouse', roof: 'berry', trim: 'snow' },
+  'food-truck': { shape: 'food-truck', roof: 'mint', trim: 'snow' },
+  carousel: { shape: 'carousel', roof: 'violet', trim: 'snow' },
+  turret: { shape: 'turret', roof: 'violet' },
+  barn: { shape: 'barn', roof: 'berry', trim: 'snow' },
+  pagoda: { shape: 'pagoda', roof: 'berry', trim: 'gold' },
 };
 
 // Every booth in turn takes each stall shape, as if its booth.ts asked for it:

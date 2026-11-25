@@ -9,7 +9,9 @@ import { band, onFace, paintOnFace, type Face, type PaintSquare } from './faces'
 import { faceSign, type Owner } from './name-board';
 import type { NorthPoleSquare } from './square';
 import { SIGN_STYLES } from './sign-styles';
-import { STALL, stallLook, stallSignLow } from './stall-plan';
+import { SHAPE_PLANS } from './stall-catalogue';
+import { chosenStall } from './stall-default';
+import { STALL, stallSignLow } from './stall-plan';
 import { theme } from './theme';
 import type { Box, Plot } from './world';
 
@@ -39,7 +41,7 @@ export function stallFront(
     owner.by ?? `by @${square.id}`,
     0,
     owner,
-    SIGN_STYLES[stallLook(square.stall).shape],
+    SIGN_STYLES[SHAPE_PLANS[chosenStall(square).shape].sign],
   );
 }
 

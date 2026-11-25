@@ -50,6 +50,8 @@ const attraction: NorthPoleSquare = {
   id: 'snowball-toss',
   name: 'Snowball Toss',
   description: 'Knock the tin snowmen off the shelf and win a candy cane.',
+  // How it stands on the home map: what it is, not a pavilion (ADR 0042).
+  stall: { shape: 'stall', roof: 'pine', trim: 'snow', landmark: 'game-stall' },
   draw(ctx, size, time) {
     scene(ctx, size, time, () => {
       // The booth: two back walls meeting behind, a lamp in the corner, and striped awnings.

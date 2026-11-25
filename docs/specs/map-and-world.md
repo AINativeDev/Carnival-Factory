@@ -15,7 +15,9 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 
 - The world has a town square in the middle, an avenue off each side and lanes
   off the avenues. Attractions stand on 3 by 3 plots in rings round the town
-  square, booths on 2 by 2 plots along the lanes.
+  square, booths on 2 by 2 plots along the lanes. Each attraction stands as
+  its landmark, and each booth as its stall shape, the one it chose or the
+  one its id picks, so no two neighbours need look alike (ADR 0042).
 - There are always 3 open plots on top of the booths and the construction
   sites, which visitors see as free spots: each has a "Free spot" sign, its
   tag says "Free spot", and the call to action at it says "Build your booth
@@ -98,8 +100,9 @@ and the drawing:
 `src/northpole/render.ts`, which hands each thing and plot to the small file
 that draws it (`ground.ts`, `island.ts`, `sky.ts`, `pines.ts`, `houses.ts`,
 `street-things.ts`, `midway.ts`, `entrance.ts`, `people.ts`, `faces.ts`,
-`name-board.ts`, `stall.ts` with the `stall-*.ts` files, `pavilion.ts`,
-`tower.ts`, `open-plot.ts`, `site.ts`, `platform.ts` and `plot-marks.ts`).
+`name-board.ts`, `stall.ts` with `stall-catalogue.ts`, `stall-default.ts` and
+the `stall-*.ts` files, `pavilion.ts`, `landmarks.ts` with `landmark-parts.ts`
+and the `landmark-*.ts` files, `tower.ts`, `open-plot.ts`, `site.ts`, `platform.ts` and `plot-marks.ts`).
 
 ## Tested by
 

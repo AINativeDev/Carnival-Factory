@@ -30,7 +30,7 @@ export const attractionsModule = {
   attractionRegistry: registry([square('ferris-wheel', 'Ferris wheel')]),
 };
 
-/** Ana's open level with an igloo, and Bob's, closed for repairs. */
+/** Ana's open level with an igloo, Bob's, closed for repairs, and the North Pole's own Academy. */
 const LEVELS: LevelEntry[] = [
   {
     login: 'ana',
@@ -41,6 +41,14 @@ const LEVELS: LevelEntry[] = [
     squares: [square('igloo', 'Igloo')],
   },
   { login: 'bob', name: 'bob', description: '', owner: '@bob', squares: [] },
+  {
+    login: 'the-academy',
+    name: 'The Academy',
+    description: '',
+    owner: 'the North Pole',
+    level: { id: 'the-academy', name: 'The Academy', theme: 'dusk' } as NorthPoleLevel,
+    squares: [],
+  },
 ];
 export const levelsModule = {
   levels: LEVELS,

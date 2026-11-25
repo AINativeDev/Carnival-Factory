@@ -1,6 +1,6 @@
 /**
  * The North Pole's own map page: the walkable map with every booth and
- * attraction, the sleigh station's platforms, the HUD over it (the Booths
+ * attraction, the sleigh station's platforms for participants' levels, the HUD over it (the Booths
  * panel, Get a booth, the whole island) and People's Choice below it. The
  * router (src/router.ts) opens it; src/level-page.ts opens a level's instead.
  */
@@ -16,6 +16,7 @@ import { boothRegistry } from './northpole/booths';
 import { isPhone } from './northpole/camera';
 import { LEVEL_THEMES } from './northpole/level';
 import { levels } from './northpole/levels';
+import { isNorthPoleLevel } from './northpole/north-pole-levels';
 import { startMap, type MapControls, type SquareKind, type StationEntry } from './northpole/map';
 import { PEOPLES_CHOICE } from './northpole/peoples-choice-standings';
 import { sitesToRemember } from './northpole/plots';
@@ -25,14 +26,19 @@ import { levelLink, squareLink } from './route';
 /** The square the Booths panel features at its top. Once #33 lands, it's the day's featured square. */
 const FEATURED: { kind: SquareKind; id: string } = { kind: 'attraction', id: 'ferris-wheel' };
 
-/** Every level's platform at the sleigh station. */
-const STATION: StationEntry[] = levels.map((entry) => ({
-  login: entry.login,
-  name: entry.name,
-  owner: entry.owner,
-  color: entry.level ? LEVEL_THEMES[entry.level.theme].sign : theme.colors.muted,
-  closed: !entry.level,
-}));
+/**
+ * A platform at the sleigh station for every participant's level. The North
+ * Pole's own levels have none: their landmark attraction is the way in (ADR 0042).
+ */
+const STATION: StationEntry[] = levels
+  .filter((entry) => !isNorthPoleLevel(entry.login))
+  .map((entry) => ({
+    login: entry.login,
+    name: entry.name,
+    owner: entry.owner,
+    color: entry.level ? LEVEL_THEMES[entry.level.theme].sign : theme.colors.muted,
+    closed: !entry.level,
+  }));
 
 /** Takes the sleigh: to a level, or home to the North Pole. */
 export const travel = (login: string | undefined) => {

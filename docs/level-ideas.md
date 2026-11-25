@@ -32,7 +32,10 @@ describe, so a little detail goes a long way. Borrow freely from anything here.
   the order the ride goes, put loops on straight runs, and a golden ticket
   rides it from the first piece to the last.
 - **Squares of its own,** up to 8: little animated scenes on stalls, each drawn
-  like a booth, that visitors walk into.
+  like a booth, that visitors walk into. Each stall can be any of the booth
+  shapes in [Booth ideas](booth-ideas.md#your-stall), such as an igloo, a
+  windmill, a lighthouse or a pagoda, so the level doesn't look like one stall
+  over and over.
 - **Where visitors arrive,** and a sleigh back to the North Pole.
 - **A theme** from the North Pole's palette: dusk, aurora night, candy cane,
   frozen lake or gingerbread.

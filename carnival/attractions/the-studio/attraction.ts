@@ -44,6 +44,8 @@ const theStudio: NorthPoleSquare = {
   name: 'The Recording Studio',
   description:
     'Take the sleigh to the studio lot, where the podcast is recorded and the videos are made.',
+  // How it stands on the home map: what it is, not a pavilion (ADR 0042).
+  stall: { shape: 'shed', roof: 'surface', trim: 'berry', landmark: 'studio' },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
       const foot = iso(0, 0);

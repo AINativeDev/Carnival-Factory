@@ -8,7 +8,7 @@ const room = roomLayout(roomArea(1200, 800));
 const { colors } = theme;
 
 describe('wallStyle: the room takes after its stall', () => {
-  it('gives a cabin logs, a tent stripes and the rest planks, trimmed in its roof colour', () => {
+  it('gives a cabin logs, a tent stripes, an igloo blocks and the rest planks, trimmed in its roof colour', () => {
     expect(wallStyle({ shape: 'cabin', roof: 'pine' })).toEqual({
       material: 'logs',
       trim: colors.pine,
@@ -21,14 +21,10 @@ describe('wallStyle: the room takes after its stall', () => {
     });
     expect(wallStyle({ shape: 'shed', roof: 'gold' }).material).toBe('planks');
     expect(wallStyle({ shape: 'kiosk', roof: 'violet' }).material).toBe('planks');
-  });
-
-  it('dresses a square without a stall like the usual market stall', () => {
-    expect(wallStyle(undefined)).toEqual({
-      material: 'planks',
-      trim: colors.berry,
-      accent: colors.cream,
-    });
+    for (const shape of ['igloo', 'lighthouse', 'turret'] as const)
+      expect(wallStyle({ shape, roof: 'slab' }).material).toBe('blocks');
+    expect(wallStyle({ shape: 'chalet', roof: 'berry' }).material).toBe('logs');
+    expect(wallStyle({ shape: 'carousel', roof: 'berry' }).material).toBe('stripes');
   });
 });
 
@@ -56,7 +52,7 @@ describe('flakes', () => {
 
 describe('drawing the walls and the window', () => {
   it('draws each material on both side walls, with trim in the roof colour', () => {
-    for (const shape of ['cabin', 'tent', 'shed'] as const) {
+    for (const shape of ['cabin', 'tent', 'shed', 'igloo'] as const) {
       const calls = drawingOf((ctx) => {
         drawSideWalls(ctx, room, wallStyle({ shape, roof: 'pine' }));
       });

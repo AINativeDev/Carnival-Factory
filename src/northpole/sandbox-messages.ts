@@ -3,7 +3,7 @@
  * what it does with what the frame sends, once `readFrameMessage` has checked
  * it, and the draw requests it sends, one at a time, carrying the pointer.
  */
-import { readFrameMessage } from './frame-protocol';
+import { readFrameMessage, stallFor } from './frame-protocol';
 import { rescale, withOwedPress } from './pointer';
 import { fail, setState, type SquareRun } from './sandbox-run';
 import { MAX_PRESSES, type SquarePointer } from './square';
@@ -23,7 +23,11 @@ export function hearFrame(run: SquareRun, iframe: HTMLIFrameElement, data: unkno
   switch (message.type) {
     case 'ready':
       if (run.state !== 'loading') return;
-      run.info = { name: message.name, description: message.description, stall: message.stall };
+      run.info = {
+        name: message.name,
+        description: message.description,
+        stall: stallFor(run.kind, message.stall),
+      };
       setState(run, iframe, 'ready');
       if (run.frames > 0) break; // a restarted frame: the page already knows its name
       for (const listener of run.listeners.splice(0)) {

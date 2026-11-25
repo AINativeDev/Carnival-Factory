@@ -40,6 +40,8 @@ const attraction: NorthPoleSquare = {
   id: 'frozen-pond',
   name: 'Frozen Pond',
   description: 'Skaters tracing figure eights on the ice.',
+  // How it stands on the home map: what it is, not a pavilion (ADR 0042).
+  stall: { shape: 'igloo', roof: 'ice', trim: 'snow', landmark: 'ice-rink' },
   draw(ctx, size, time) {
     scene(ctx, size, time, () => {
       // Pines round the back of the pond.

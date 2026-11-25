@@ -34,6 +34,8 @@ const attraction: NorthPoleSquare = {
   id: 'gingerbread-fun-house',
   name: 'Gingerbread Fun House',
   description: 'A crooked gingerbread house with gumdrop lights and a wobbly mirror.',
+  // How it stands on the home map: what it is, not a pavilion (ADR 0042).
+  stall: { shape: 'cabin', roof: 'gingerbread', trim: 'snow', landmark: 'gingerbread-house' },
   draw(ctx, size, time) {
     scene(ctx, size, time, () => {
       const wall = 20;

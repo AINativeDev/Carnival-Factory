@@ -91,7 +91,7 @@ for (const login of logins) {
     await test.step('walk to the sleigh home', () => walkToDoor(page, world, home));
     await page.keyboard.press('e');
     await expect(page).toHaveURL(/#\/$/);
-    // Back at the North Pole, the station has this level's platform.
+    // Back at the North Pole, by the sleigh station, or by its landmark for the North Pole's own.
     await expect(canvas).toHaveAttribute('data-player', /./);
     expect(problems).toEqual([]);
   });

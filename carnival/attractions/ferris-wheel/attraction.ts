@@ -32,6 +32,8 @@ const attraction: NorthPoleSquare = {
   id: 'ferris-wheel',
   name: 'Ferris Wheel',
   description: 'Bauble gondolas turning slowly against the northern lights.',
+  // How it stands on the home map: what it is, not a pavilion (ADR 0042).
+  stall: { shape: 'stall', roof: 'violet', trim: 'snow', landmark: 'big-wheel' },
   draw(ctx, size, time) {
     scene(ctx, size, time, () => {
       // The northern lights: two faint ribbons that ripple across the dusk.

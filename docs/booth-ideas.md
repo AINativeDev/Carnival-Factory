@@ -43,15 +43,28 @@ A few things that help:
 ## Your stall
 
 Your drawing goes on the front of your stall on the map. The stall itself can
-be one of a few shapes the map knows how to draw, with its roof in one of the
+be any of the shapes the map knows how to draw, with its roof in one of the
 North Pole's colours:
 
-- **Market stall**, the usual one: wooden walls, a counter and a striped
-  awning.
+- **Market stall**: wooden walls, a counter and a striped awning.
 - **Shed**: long and low, with a flat roof.
 - **Tent**: round, with a striped canvas roof and a pennant on top.
 - **Cabin**: a log cabin with a snowy pitched roof.
 - **Kiosk**: a small hexagonal kiosk with a pointed roof.
+- **Igloo**: a dome of snow blocks with a little entrance tunnel.
+- **Gazebo**: round, on slim posts, under a domed roof.
+- **Chalet**: an alpine chalet with deep eaves and a balcony.
+- **Treehouse**: a hut up a trunk, with a ladder.
+- **Windmill**: a mill whose sails turn slowly.
+- **Lighthouse**: a striped tower with a lamp that turns slowly.
+- **Food truck**: a little truck with a serving hatch and an awning.
+- **Carousel**: a small carousel under a striped canopy.
+- **Turret**: a round stone turret, for a castle or a keep.
+- **Barn**: a barn with a hay loft and a snowy roof.
+- **Pagoda**: tiered roofs with upturned eaves and lanterns.
+
+Pick the one that fits your idea. If you don't name one, the factory picks
+one that suits your booth.
 
 Ask for one in your request, and name a roof colour, and a
 second colour for the stripes or the awning if you like: "a

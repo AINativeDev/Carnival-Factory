@@ -1,4 +1,15 @@
+import type { StallStyle } from './stall-style';
 import { canvasFont, theme } from './theme';
+
+export {
+  LANDMARKS,
+  LANDMARK_LETTERS,
+  STALL_SHAPES,
+  type Landmark,
+  type StallShape,
+  type StallStyle,
+  type ThemeColor,
+} from './stall-style';
 
 /**
  * One square of the North Pole map: a person's booth, or one of the North
@@ -39,33 +50,6 @@ export interface SquarePointer {
   down: boolean;
   presses: number;
 }
-
-/** The stall shapes the map knows how to draw. `stall` is the usual market stall. */
-export const STALL_SHAPES = ['stall', 'shed', 'tent', 'cabin', 'kiosk'] as const;
-
-export type StallShape = (typeof STALL_SHAPES)[number];
-
-/** The name of one of the `theme` colours, such as `'gold'`. */
-export type ThemeColor = keyof typeof theme.colors;
-
-/**
- * How a booth's stall on the map looks, as plain data: its `shape`, its
- * `roof` colour, and an optional `trim` colour for stripes or the awning,
- * each a `theme` colour's name. The map draws it, never the booth's own code:
- * `stall` is a market stall with an awning, `shed` a long, low shed with a
- * flat roof, `tent` a round striped tent, `cabin` a log cabin with a snowy
- * pitched roof, and `kiosk` a small hexagonal kiosk.
- */
-export interface StallStyle {
-  shape: StallShape;
-  roof: ThemeColor;
-  trim?: ThemeColor;
-  /** For an attraction only: rise as a tower with these capital letters, up to six, down its front. */
-  tower?: string;
-}
-
-/** A tower's letters: one to six capitals. */
-export const TOWER_LETTERS = /^[A-Z]{1,6}$/;
 
 /** The most presses one frame carries. Any more wait for the next frame. */
 export const MAX_PRESSES = 20;

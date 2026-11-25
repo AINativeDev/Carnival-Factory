@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { readStall } from './frame-protocol';
-import { STALL_SHAPES } from './square';
+import { readStall, stallFor } from './frame-protocol';
+import { LANDMARKS, STALL_SHAPES } from './square';
 
 describe('readStall', () => {
   it('reads every shape the map knows, with theme colours', () => {
@@ -42,18 +42,44 @@ describe('readStall', () => {
     }
   });
 });
-describe('readStall: a tower', () => {
-  it('keeps one to six capitals', () => {
-    expect(readStall({ shape: 'shed', roof: 'gold', tower: 'TESSL' })).toEqual({
-      shape: 'shed',
-      roof: 'gold',
-      tower: 'TESSL',
-    });
-    expect(readStall({ shape: 'shed', roof: 'gold', trim: 'cocoa', tower: 'A' })?.tower).toBe('A');
+describe('readStall: a landmark', () => {
+  it("keeps a landmark the map knows, and a tower's letters", () => {
+    for (const landmark of LANDMARKS)
+      expect(readStall({ shape: 'shed', roof: 'gold', landmark })).toEqual({
+        shape: 'shed',
+        roof: 'gold',
+        landmark,
+      });
+    expect(readStall({ shape: 'shed', roof: 'gold', landmark: 'tower', letters: 'TESSL' })).toEqual(
+      { shape: 'shed', roof: 'gold', landmark: 'tower', letters: 'TESSL' },
+    );
   });
 
-  it('drops the whole option for anything else', () => {
-    for (const tower of ['', 'tessl', 'TOOLONGX', '<b>', 7, null])
-      expect(readStall({ shape: 'shed', roof: 'gold', tower })).toBeUndefined();
+  it('drops the whole option for an unknown landmark or letters that are not one to six capitals', () => {
+    for (const landmark of ['castle', 'Tower', '', 7, null, ['tower']])
+      expect(readStall({ shape: 'shed', roof: 'gold', landmark })).toBeUndefined();
+    for (const letters of ['', 'tessl', 'TOOLONGX', '<b>', 7, null])
+      expect(
+        readStall({ shape: 'shed', roof: 'gold', landmark: 'tower', letters }),
+      ).toBeUndefined();
+  });
+});
+
+describe('stallFor: only an attraction stands as a landmark', () => {
+  const asked = { shape: 'tent', roof: 'berry', landmark: 'big-top', letters: 'TOP' } as const;
+
+  it("keeps an attraction's landmark", () => {
+    expect(stallFor('attraction', asked)).toEqual(asked);
+  });
+
+  it("drops a booth's or a level square's landmark, keeping its stall", () => {
+    for (const kind of ['booth', 'level'] as const)
+      expect(stallFor(kind, asked)).toEqual({ shape: 'tent', roof: 'berry' });
+    expect(stallFor('booth', undefined)).toBeUndefined();
+    expect(stallFor('booth', { ...asked, trim: 'gold' })).toEqual({
+      shape: 'tent',
+      roof: 'berry',
+      trim: 'gold',
+    });
   });
 });

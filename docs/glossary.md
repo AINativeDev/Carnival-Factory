@@ -28,8 +28,15 @@ page keeps to these plain words, one word for one thing, with no idioms.
   call it a construction site (`kind: 'site'`, `pending.json`).
 - **Level**: a participant's own patch of the North Pole, `carnival/levels/<login>/`,
   with up to 8 squares of its own, reached by sleigh.
-- **Sleigh station**: the platforms by the entrance, one per level, where the
-  sleigh leaves for each level. Inside a level, the sleigh home goes back.
+- **Sleigh station**: the platforms by the entrance, one per participant's
+  level, where the sleigh leaves for each level. Inside a level, the sleigh
+  home goes back. The North Pole's own levels are reached from their landmark.
+- **Landmark**: what an attraction stands as on the map, drawn as what it is:
+  a big wheel, a big top, an ice rink, The Factory's tower. Only attractions
+  have one.
+- **Stall shape**: what a booth's or a level square's stall looks like on the
+  map, such as a cabin, an igloo or a lighthouse. A square that names none
+  gets one picked from its id.
 - **The factory**: the software factory that turns an accepted request into a
   booth: an agent writes it, the checks and the review test it, and the gate
   merges it. Its numbers are at `#/factory`.

@@ -51,6 +51,8 @@ const attraction: NorthPoleSquare = {
   id: 'sleigh-coaster',
   name: 'Sleigh-Ride Coaster',
   description: "Santa's sleigh rattles up the hill and whooshes down the other side.",
+  // How it stands on the home map: what it is, not a pavilion (ADR 0042).
+  stall: { shape: 'shed', roof: 'berry', trim: 'gold', landmark: 'coaster' },
   draw(ctx, size, time) {
     scene(ctx, size, time, () => {
       const near = 3;

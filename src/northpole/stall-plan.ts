@@ -7,6 +7,7 @@
 import { corners } from './brushes';
 import { onFace, type Face, type PaintSquare } from './faces';
 import type { Owner } from './name-board';
+import { SHAPE_PLANS } from './stall-catalogue';
 import type { NorthPoleSquare, StallShape, StallStyle } from './square';
 import { theme } from './theme';
 import type { Box, Plot, Tile } from './world';
@@ -36,44 +37,31 @@ export interface OnPlot {
 
 /** The ground outline of each stall shape, on its plot, round it in order. */
 export function stallOutline(shape: StallShape): OnPlot[] {
-  const ring = (sides: number, radius: number, turn: number) =>
-    Array.from({ length: sides }, (_, n) => {
-      const angle = turn + (n / sides) * Math.PI * 2;
-      return { along: 0.5 + Math.cos(angle) * radius, depth: 0.5 + Math.sin(angle) * radius };
-    });
-  switch (shape) {
-    case 'tent':
-      return ring(20, 0.46, 0);
-    case 'kiosk':
-      // Flat to the front, so the drawing's board stands against one side.
-      return ring(6, 0.46, 0);
-    default:
-      return [
-        { along: 0, depth: 0 },
-        { along: 1, depth: 0 },
-        { along: 1, depth: 1 },
-        { along: 0, depth: 1 },
-      ];
+  const { ring } = SHAPE_PLANS[shape];
+  if (!ring) {
+    return [
+      { along: 0, depth: 0 },
+      { along: 1, depth: 0 },
+      { along: 1, depth: 1 },
+      { along: 0, depth: 1 },
+    ];
   }
+  return Array.from({ length: ring.sides }, (_, n) => {
+    const angle = ring.turn + (n / ring.sides) * Math.PI * 2;
+    return {
+      along: 0.5 + Math.cos(angle) * ring.radius,
+      depth: 0.5 + Math.sin(angle) * ring.radius,
+    };
+  });
 }
 
-/** How tall each stall shape's walls are, and how high its roof rises over them, in world pixels. */
-export const STALL_SHAPES_DRAWN: Record<StallShape, { wall: number; roof: number }> = {
-  stall: { wall: STALL.wall, roof: 25 },
-  shed: { wall: STALL.wall, roof: 10 },
-  tent: { wall: STALL.wall - 24, roof: 70 },
-  cabin: { wall: STALL.wall, roof: 46 },
-  kiosk: { wall: STALL.wall - 16, roof: 56 },
-};
-
 /** The colours a stall is drawn in: its shape, its roof, and its trim for stripes and the awning. */
-export function stallLook(stall: StallStyle | undefined): {
+export function stallLook(stall: StallStyle): {
   shape: StallShape;
   roof: string;
   trim: string;
 } {
-  if (!stall) return { shape: 'stall', roof: colors.berry, trim: colors.snow };
-  const trim = stall.trim ?? (stall.shape === 'shed' || stall.shape === 'kiosk' ? 'cream' : 'snow');
+  const trim = stall.trim ?? SHAPE_PLANS[stall.shape].trim;
   return { shape: stall.shape, roof: colors[stall.roof], trim: colors[trim] };
 }
 
@@ -89,8 +77,7 @@ export function stallSignLow(face: Face): number {
 
 /** How high a stall of `shape` reaches over its plot, with its awning, pennant or finial. */
 export function stallReach(shape: StallShape): number {
-  const { wall, roof } = STALL_SHAPES_DRAWN[shape];
-  const extra = shape === 'tent' ? 20 : shape === 'kiosk' ? 14 : 5;
+  const { wall, roof, extra } = SHAPE_PLANS[shape];
   return Math.max(STALL.wall, wall + roof) + extra;
 }
 
@@ -108,4 +95,6 @@ export interface StallParts {
   square: NorthPoleSquare;
   paint: PaintSquare;
   owner: Owner;
+  /** The map's clock, for a shape that moves: a windmill's sails, a lighthouse's lamp. */
+  time: number;
 }

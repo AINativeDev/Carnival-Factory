@@ -63,6 +63,8 @@ const attraction: NorthPoleSquare = {
   id: 'reindeer-carousel',
   name: 'Reindeer Carousel',
   description: 'Reindeer bobbing round under a candy-cane canopy.',
+  // How it stands on the home map: what it is, not a pavilion (ADR 0042).
+  stall: { shape: 'carousel', roof: 'berry', trim: 'snow', landmark: 'merry-go-round' },
   draw(ctx, size, time) {
     scene(ctx, size, time, () => {
       const x = 50;

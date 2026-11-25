@@ -1,0 +1,30 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the landmarks > draws each one the same, with the door on either side, as it moves 1`] = `
+{
+  "big-top 0": "b241b64a22b53f1f (1546 calls)",
+  "big-top 1": "352bfd91bed4c7e7 (1538 calls)",
+  "big-wheel 0": "17436541e7294191 (1186 calls)",
+  "big-wheel 1": "c11f2ffa40f52173 (1186 calls)",
+  "coaster 0": "a5bab193fd6044de (2116 calls)",
+  "coaster 1": "0aaabb1919df1313 (2116 calls)",
+  "cocoa-hut 0": "d1a80e7800208e1f (854 calls)",
+  "cocoa-hut 1": "7facf806ae2f9cd0 (854 calls)",
+  "game-stall 0": "5d3353dd7667633b (1222 calls)",
+  "game-stall 1": "46f171879f71ccbe (1222 calls)",
+  "gingerbread-house 0": "d75ca9bb4e8a6dff (934 calls)",
+  "gingerbread-house 1": "0824f96a2b9fa2ae (934 calls)",
+  "ice-rink 0": "1dc620e64deca197 (518 calls)",
+  "ice-rink 1": "e7c2828bdafeb011 (518 calls)",
+  "merry-go-round 0": "1968f41501d2d8ca (1738 calls)",
+  "merry-go-round 1": "e29fae7332d30ccf (1738 calls)",
+  "schoolhouse 0": "f59c0be2a09eaec5 (970 calls)",
+  "schoolhouse 1": "caf3a93a25abab0f (970 calls)",
+  "shopfront 0": "0d53ae967358a921 (1368 calls)",
+  "shopfront 1": "7c0b9c82df577918 (1368 calls)",
+  "studio 0": "3e2c9b8117c080b2 (848 calls)",
+  "studio 1": "0ac27c67c86140d3 (848 calls)",
+  "tower 0": "530d544ffd006f4d (1490 calls)",
+  "tower 1": "48bab2a57bf2799f (1490 calls)",
+}
+`;

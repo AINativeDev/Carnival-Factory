@@ -13,9 +13,15 @@ page never runs a square's code: each runs in its own sandboxed frame and worker
   `presses` counts presses since the square's last frame. On the map the square
   under the pointer gets it, and a click still goes inside. Inside, the
   drawing fills the back wall and gets the pointer and taps.
-- `stall` is `{ shape, roof, trim? }`: shape one of `stall`, `shed`, `tent`,
-  `cabin`, `kiosk`; roof and trim the names of `theme` colours. The map draws
-  the stall, with the square's drawing on its front.
+- `stall` is `{ shape, roof, trim?, landmark?, letters? }`: shape one of
+  `STALL_SHAPES` (`stall`, `shed`, `tent`, `cabin`, `kiosk`, `igloo`,
+  `gazebo`, `chalet`, `treehouse`, `windmill`, `lighthouse`, `food-truck`,
+  `carousel`, `turret`, `barn`, `pagoda`); roof and trim the names of `theme`
+  colours. The map draws the stall, with the square's drawing on its front.
+  A square that sets no `stall` gets a shape and colours picked from its id,
+  the same every time (`src/northpole/stall-default.ts`). `landmark` and
+  `letters` are for attractions only (see attractions.md); the map drops them
+  from a booth's or a level's square (`stallFor`).
 - Each square's frame starts on its first draw. Until a frame arrives it shows
   "Opening…". A frame not drawn for 20 seconds is released and restarts when
   drawn again. At most 24 frames run at once; the least recently drawn goes.
@@ -45,8 +51,10 @@ base-uri 'none'`. No network, storage or access to the page (enforced by:
   `x`, `y` within `0..size`, boolean `down`, `presses` a whole number from 0
   to 20. Only those four fields reach the square (enforced by:
   src/northpole/frame-protocol-draw.test.ts).
-- `readStall` keeps only a known shape and theme colour names; anything else
-  draws the usual stall (enforced by: src/northpole/frame-protocol-stall.test.ts,
+- `readStall` keeps only a known shape, theme colour names, a known landmark
+  and one to six capitals of letters; anything else draws the stall the id
+  picks. Only an attraction keeps its landmark (enforced by:
+  src/northpole/frame-protocol-stall.test.ts, src/northpole/stall-default.test.ts,
   the stall tests in smoke/stall-shapes.spec.ts).
 - Messages from any window but the frame's own, or of the wrong shape, are
   ignored by the map (enforced by: src/northpole/sandbox-messages.test.ts);

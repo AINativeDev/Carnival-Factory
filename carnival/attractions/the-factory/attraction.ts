@@ -91,7 +91,7 @@ const theFactory: NorthPoleSquare = {
   id: 'the-factory',
   name: 'The Factory',
   description: 'Take the sleigh inside and walk how a booth gets built, one stall at a time.',
-  stall: { shape: 'shed', roof: 'gold', trim: 'cocoa', tower: 'TESSL' },
+  stall: { shape: 'shed', roof: 'gold', trim: 'cocoa', landmark: 'tower', letters: 'TESSL' },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
       const foot = iso(0, 0);

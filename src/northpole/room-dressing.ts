@@ -14,6 +14,7 @@ import { drawPinboard } from './pinboard';
 import { pinnedNotes } from './pinboard-layout';
 import { drawSideWalls, drawWindow, flakes, wallStyle } from './room-walls';
 import type { NorthPoleSquare } from './square';
+import { chosenStall } from './stall-default';
 import { theme } from './theme';
 
 const { colors } = theme;
@@ -76,7 +77,7 @@ export function dressRoom(
   owner: RoomOwner,
   time: number,
 ) {
-  drawSideWalls(ctx, room, wallStyle(square.stall));
+  drawSideWalls(ctx, room, wallStyle(chosenStall(square)));
   drawWindow(ctx, room, time);
   drawGlow(ctx, room);
   drawDoorSnow(ctx, room, time);
