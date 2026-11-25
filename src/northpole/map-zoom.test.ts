@@ -98,7 +98,10 @@ describe('the zoom buttons', () => {
 describe('the zoom keys', () => {
   it('zoom in with + or =, and out with - or _', () => {
     const running = start();
-    const before = cameraOf(running).zoom;
+    // Out first, clear of the nearest limit the resting view sits close to.
+    key('keydown', '-');
+    key('keydown', '-');
+    const before = zoomAfter(running, 50);
     key('keydown', '+');
     const nearer = zoomAfter(running, 100);
     key('keydown', '=');
@@ -157,7 +160,7 @@ describe('the wheel', () => {
     wheel(running, { deltaY: 30, ctrlKey: true });
     const farther = zoomAfter(running, 100);
     expect(farther).toBeLessThan(before);
-    for (let n = 0; n < 10; n++) wheel(running, { deltaY: 3, deltaMode: 1 });
+    for (let n = 0; n < 40; n++) wheel(running, { deltaY: 3, deltaMode: 1 });
     const fit = zoomAfter(running, 200);
     expect(wheel(running, { deltaY: 100 }).defaultPrevented).toBe(true);
     expect(zoomAfter(running, 300)).toBe(fit);
