@@ -22,6 +22,8 @@ export interface StoryStep {
   meta?: string;
   /** An open pull request's preview of the square. */
   preview?: string;
+  /** How a pull request's review went: what it found, and how much was fixed. */
+  review?: { findings: number; fixed: number };
 }
 
 /** What the factory did in one pull request: the first build, a later improvement, or one in progress. */
@@ -38,6 +40,7 @@ function builtStep(pull: HistoryPull, first: boolean): StoryStep {
     link: { href: pull.url, text: `#${String(pull.number)}` },
     detail: pullSummary(pull),
     meta: pullState(pull),
+    review: { findings: pull.findings, fixed: pull.fixed },
     ...(pull.preview ? { preview: pull.preview } : {}),
   };
 }
