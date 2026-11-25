@@ -4,11 +4,13 @@
  */
 import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
 import { drawBelt, drawLetters, drawSparks, drawTick } from './belt';
+import { drawCube } from './cube';
 import { drawElves } from './elves';
 import { lettersAt } from './letters';
 import { drawPenguin, hopHeight, penguinAt, PENGUINS } from './penguins';
 import { drawRoom } from './room';
 import { drawSleigh } from './sleigh';
+import { restingSpin, stepSpin } from './spin';
 import { drawSnowGlobe, onGlobe } from './snow-globe';
 import { drawCheckLamp, drawToySign } from './tallies';
 
@@ -16,6 +18,10 @@ import { drawCheckLamp, drawToySign } from './tallies';
 const tapped: number[] = PENGUINS.map(() => -Infinity);
 /** When the snow globe was last tapped. */
 let globeTapped = -Infinity;
+
+/** The interlocking cube on the wall: its turn, and when it was last drawn. */
+let spin = restingSpin();
+let lastTime = -Infinity;
 
 /** Santa's toy factory: letters in, sorted, built into toys, checked and into the sleigh. */
 const booth: NorthPoleSquare = {
@@ -36,6 +42,12 @@ const booth: NorthPoleSquare = {
     drawLetters(ctx, u, letters);
     drawSparks(ctx, u, time, letters);
     drawTick(ctx, u, letters);
+
+    // The cube spins while the pointer is held, a little faster the longer it is, and coasts to rest.
+    const dt = Math.min(0.1, Math.max(0, (time - lastTime) / 1000));
+    lastTime = time;
+    spin = stepSpin(spin, Number.isFinite(dt) ? dt : 0, pointer?.down === true);
+    drawCube(ctx, 30 * u, 40 * u, 9 * u, spin.angle);
 
     // The snow globe swirls when tapped.
     if (pointer && pointer.presses > 0 && onGlobe(pointer.x / u, pointer.y / u)) globeTapped = time;

@@ -27,6 +27,7 @@ repeats every 12 seconds:
   it waves a flipper at you; tap one and it does a little hop.
 - **Snow globe**: a small globe with a tiny reindeer sits on a shelf near the
   front. Tap it and its snow swirls, then settles again over about 4 seconds.
+- **The cube**: a white isometric cube of interlocking blocks hangs on the left of the workshop, its top in three pinwheel blocks and each side in two blocks that lock at a notch, with dark ink in the gaps. Press and hold anywhere on the square and it spins about its vertical axis, faster the longer you hold; let go and it slows to a stop.
 - **On the map**: the stall is a log cabin with a berry red roof and gold trim.
 
 Everything is drawn from `time`. The one thing the booth remembers is when
@@ -48,6 +49,7 @@ beside it:
 - `penguins.ts` is the penguins (`shuffleOf`, `blinking`, `hopHeight`,
   `penguinAt`), and `snow-globe.ts` the globe (`swirlOf`, `onGlobe`,
   `globeFlake`).
+- `cube.ts` draws the cube; `spin.ts` is its turn (`stepSpin`), the booth's one other memory.
 - `motion.ts` and `brushes.ts` are the easing and the shapes and words they
   all share.
 
