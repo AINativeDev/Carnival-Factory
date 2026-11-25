@@ -56,6 +56,6 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 ## Tested by
 
 `src/northpole/attractions.test.ts`, `scripts/gift-shelf.test.ts`, each
-attraction's own `attraction.test.ts`, `smoke/squares.spec.ts`,
+attraction's own `attraction.test.ts`, `smoke/squares-play.spec.ts`,
 `smoke/flashing.spec.ts`, `smoke/the-factory.spec.ts`, `src/route.test.ts`
 (a landmark opens its level), `src/visit-help.test.ts`.

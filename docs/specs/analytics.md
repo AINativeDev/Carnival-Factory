@@ -33,7 +33,7 @@ How the map counts its use, without tracking the people who use it
   src/analytics.test.ts, and the smoke test's check that the page makes no
   requests to another origin).
 - Squares never reach the network; their sandbox is unchanged (enforced by:
-  the CSP in square.html, smoke/squares.spec.ts).
+  the CSP in square.html, smoke/squares-play.spec.ts).
 - The list of events is deliberate: adding one is a code change to
   `src/analytics-events.ts` (enforced by: review).
 - Analytics never stops the page: it runs before the map, so a send that

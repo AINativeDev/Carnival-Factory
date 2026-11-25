@@ -30,7 +30,6 @@
   "scripts/strict-types.ts": 2,
   "scripts/write-square-history.ts": 1,
   "smoke/flashing.spec.ts": 19,
-  "smoke/squares.spec.ts": 14,
   "src/advent.test.ts": 4,
   "src/booth-panel.test.ts": 4,
   "src/booth-panel.ts": 1,

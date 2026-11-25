@@ -75,9 +75,9 @@ them.
   scripts/square-history.test.ts, src/history.test.ts).
 - Share links go to the square's share page on the live site, even from a
   preview (enforced by: src/northpole/visit.test.ts, the Share test in
-  smoke/squares.spec.ts).
+  smoke/sharing.spec.ts).
 - Esc, Leave, the back button and walking out all leave the square (enforced
-  by: smoke/squares.spec.ts).
+  by: smoke/visit.spec.ts).
 
 ## Where it lives
 
@@ -96,5 +96,6 @@ them.
 `src/northpole/links.test.ts`, `src/northpole/interior.test.ts`,
 `src/northpole/room-dressing.test.ts`, `src/northpole/room-walls.test.ts`,
 `src/northpole/pinboard.test.ts`, `src/northpole/pinboard-layout.test.ts`,
-`smoke/squares.spec.ts` (Share, leaving, the invitation, the back button, the
-banner link, the build story's layout).
+`smoke/visit.spec.ts` (leaving, the invitation, the back button, the build
+story's layout), `smoke/sharing.spec.ts` (Share) and `smoke/map.spec.ts` (the
+banner link).

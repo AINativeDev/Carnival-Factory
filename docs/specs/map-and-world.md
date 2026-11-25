@@ -62,7 +62,7 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 - Route names are lower-cased and must match `[\w-]+`; anything malformed is
   the plain map (enforced by: src/route.test.ts). A name from the address is
   only ever set as text, capped in length (enforced by: the deep-link tests in
-  smoke/squares.spec.ts and smoke/levels.spec.ts).
+  smoke/deep-links.spec.ts and smoke/levels.spec.ts).
 - An open page never reloads twice for the same build (enforced by:
   src/updates.test.ts).
 
@@ -77,4 +77,5 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 `src/route.test.ts`, `src/updates.test.ts`, `src/northpole/world.test.ts`,
 `src/northpole/plots.test.ts`, `src/northpole/camera.test.ts`,
 `src/northpole/map.test.ts`, `src/northpole/visit.test.ts`, and
-`smoke/squares.spec.ts` (walking, deep links, open plots, fitting the window).
+`smoke/map.spec.ts` (walking, fitting the window), `smoke/deep-links.spec.ts`
+and `smoke/claiming.spec.ts` (open plots).

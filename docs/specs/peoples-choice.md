@@ -40,7 +40,7 @@ so the deploy counts the votes and the build bakes them in.
   logins and repositories, links into this repository's issues, and no
   switched-off booth (enforced by: src/northpole/peoples-choice.test.ts).
   The page never reaches the network (enforced by: the request check in
-  smoke/squares.spec.ts). Every login is set as text (not enforced yet).
+  smoke/support/carnival.ts). Every login is set as text (not enforced yet).
 - Without the ballot, the deploy writes nothing and the map shows no
   standings (enforced by: src/northpole/peoples-choice.test.ts).
 

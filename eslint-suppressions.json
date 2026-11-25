@@ -144,17 +144,6 @@
       "count": 1
     }
   },
-  "smoke/squares.spec.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 9
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 24
-    },
-    "@typescript-eslint/unbound-method": {
-      "count": 1
-    }
-  },
   "src/advent.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 2
