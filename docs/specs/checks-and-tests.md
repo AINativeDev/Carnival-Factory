@@ -77,8 +77,8 @@ What runs on every pull request, and what each check guarantees.
   smoke test; CI runs it (enforced by: the instructions in tessl.json).
 - No native dependencies: `npm ci` is the whole setup for `npm run check`
   (not enforced yet).
-- A code file has at most 200 lines; older files are held to their length in
-  `lint/oversize-baseline.json`, which only shrinks (enforced by: ESLint
+- A code file has at most 200 lines, with no exceptions and no baseline
+  ([ADR 0036](../adr/0036-no-oversize-files.md); enforced by: ESLint
   `max-lines`, lint/file-size.js, scripts/file-size.test.ts).
 - No unused files, exports or dependencies (enforced by: Knip, `knip.json`).
 - Markdown is linted and JSON parses (enforced by: markdownlint-cli2,

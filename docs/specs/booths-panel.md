@@ -29,15 +29,18 @@ short lists, every booth A to Z, and a way to say which booth is theirs.
   no date (enforced by: src/booth-panel.test.ts, scripts/booth-dates.test.ts).
 - Security: "This is me" and the folded sections are kept in the page's local
   storage only, never given to a square, and a stored login must match
-  `[\w-]{1,39}` (enforced by: src/booth-panel.test.ts for reading it back).
-  Every name and login is set as text (not enforced yet).
+  `[\w-]{1,39}` (enforced by: src/booth-panel.test.ts for reading it back,
+  src/booths-hud-memory.test.ts). Every name and login is set as text
+  (enforced by: src/booths-hud.test.ts).
 
 ## Where it lives
 
-`src/booths-hud.ts`, `src/booth-panel.ts`, `scripts/booth-dates.ts`,
+`src/booths-hud.ts` (with its markup, lists, keys and memory in
+`src/booths-hud-*.ts`), `src/booth-panel.ts`, `scripts/booth-dates.ts`,
 `vite.config.ts` (`__SQUARE_NAMES__`, `__BOOTH_ADDED__`).
 
 ## Tested by
 
-`src/booth-panel.test.ts`, `scripts/booth-dates.test.ts`,
+`src/booth-panel.test.ts`, `src/booths-hud.test.ts`, `src/booths-hud-keys.test.ts`,
+`src/booths-hud-memory.test.ts`, `scripts/booth-dates.test.ts`,
 `smoke/booths-panel.spec.ts` (picking, shift-click to walk, finding a login).

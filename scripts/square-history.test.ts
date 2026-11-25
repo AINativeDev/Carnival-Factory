@@ -1,104 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import {
-  branchIssue,
-  cap,
-  countFindings,
-  decisionOf,
-  shapeHistory,
-  squaresTouched,
-  type RawIssue,
-  type RawPull,
-} from './square-history.ts';
+import type { RawIssue, RawPull } from './github-requests.ts';
+import { cap, shapeHistory, type SquareHistory } from './square-history.ts';
+import { REPO, issue, pull, thread } from './test-support/github-requests.ts';
 
-const REPO = 'https://github.com/o/r';
-
-const issue = (number: number, login: string, labels: string[], createdAt: string): RawIssue => ({
-  number,
-  title: `Request ${number}`,
-  url: `${REPO}/issues/${number}`,
-  createdAt,
-  author: { login },
-  labels: { nodes: labels.map((name) => ({ name })) },
-});
-
-const thread = (login: string, isResolved: boolean) => ({
-  isResolved,
-  comments: { nodes: [{ author: { login } }] },
-});
-
-const pull = (
-  number: number,
-  branch: string,
-  paths: string[],
-  extra: Partial<RawPull> = {},
-): RawPull => ({
-  number,
-  url: `${REPO}/pull/${number}`,
-  state: 'MERGED',
-  mergedAt: '2026-11-24T15:18:46Z',
-  headRefName: branch,
-  isCrossRepository: false,
-  commits: { totalCount: 3 },
-  files: { nodes: paths.map((path) => ({ path })) },
-  reviewThreads: { nodes: [] },
-  ...extra,
-});
-
-describe('squaresTouched', () => {
-  it('finds the booths and attractions a change touches, once each', () => {
-    expect(
-      squaresTouched([
-        'carnival/booths/Ana/booth.ts',
-        'carnival/booths/ana/README.md',
-        'carnival/attractions/ferris-wheel/attraction.ts',
-        'src/northpole/map.ts',
-        'carnival/booths/README.md',
-      ]),
-    ).toEqual(['attraction/ferris-wheel', 'booth/ana']);
-  });
-  it('reads pull requests from before the squares moved into carnival/', () => {
-    expect(squaresTouched(['booths/ana/booth.ts', 'attractions/big-top/attraction.ts'])).toEqual([
-      'attraction/big-top',
-      'booth/ana',
-    ]);
-  });
-  it("finds a level from any file in its folder, its squares' too", () => {
-    expect(squaresTouched(['carnival/levels/Ana/squares/igloo/square.ts'])).toEqual(['level/ana']);
-  });
-});
-
-describe('branchIssue', () => {
-  it('reads the issue from a factory branch, and nothing from any other', () => {
-    expect(branchIssue('tessl/issue-76')).toBe(76);
-    expect(branchIssue('answer-by-reply')).toBeUndefined();
-    expect(branchIssue('tessl/issue-76-copy')).toBeUndefined();
-  });
-});
-
-describe('decisionOf', () => {
-  it('tells what the assessment decided', () => {
-    expect(decisionOf(['booth-request', 'declined'], false)).toBe('declined');
-    expect(decisionOf(['booth-request', 'needs-info'], false)).toBe('question');
-    expect(decisionOf(['booth-request', 'tessl'], false)).toBe('accepted');
-    expect(decisionOf([], true)).toBe('accepted');
-    expect(decisionOf(['booth-request'], false)).toBe('waiting');
-  });
-});
-
-describe('countFindings', () => {
-  it("counts the reviewer's threads, and the resolved ones as fixed", () => {
-    const pr = pull(1, 'tessl/issue-1', [], {
-      reviewThreads: {
-        nodes: [
-          thread('tessl-reviewer', true),
-          thread('tessl-reviewer[bot]', false),
-          thread('someone', true),
-        ],
-      },
-    });
-    expect(countFindings(pr)).toEqual({ findings: 2, fixed: 1 });
-  });
-});
+/** A square's history, or none: the index access may miss. */
+const entriesOn = (history: SquareHistory, square: string) =>
+  Object.entries(history.squares).find(([key]) => key === square)?.[1] ?? [];
 
 describe('cap', () => {
   it('keeps a title to one line and a set length', () => {
@@ -113,7 +20,7 @@ describe('shapeHistory', () => {
       squares: ['booth/ana', 'attraction/ferris-wheel', 'level/ana'],
       issues,
       pulls,
-      site,
+      ...(site === undefined ? {} : { site }),
       builtAt: '2026-11-24T16:00:00Z',
     });
 
@@ -133,9 +40,9 @@ describe('shapeHistory', () => {
         ]),
       ],
     );
-    expect(history.squares['booth/ana'].map((entry) => entry.issue)).toEqual([5, 1]);
-    expect(history.squares['attraction/ferris-wheel'].map((entry) => entry.issue)).toEqual([5]);
-    expect(history.squares['booth/ana'][1]).toEqual({
+    expect(entriesOn(history, 'booth/ana').map((entry) => entry.issue)).toEqual([5, 1]);
+    expect(entriesOn(history, 'attraction/ferris-wheel').map((entry) => entry.issue)).toEqual([5]);
+    expect(entriesOn(history, 'booth/ana').at(1)).toEqual({
       issue: 1,
       title: 'Request 1',
       url: `${REPO}/issues/1`,
@@ -166,8 +73,16 @@ describe('shapeHistory', () => {
         pull(7, 'tessl/issue-5', ['carnival/booths/ana/booth.ts']),
       ],
     );
-    expect(history.squares['attraction/ferris-wheel'][0].pulls.map((p) => p.number)).toEqual([6]);
-    expect(history.squares['booth/ana'][0].pulls.map((p) => p.number)).toEqual([7]);
+    expect(
+      entriesOn(history, 'attraction/ferris-wheel')
+        .at(0)
+        ?.pulls.map((p) => p.number),
+    ).toEqual([6]);
+    expect(
+      entriesOn(history, 'booth/ana')
+        .at(0)
+        ?.pulls.map((p) => p.number),
+    ).toEqual([7]);
   });
 
   it("shows a booth request that wasn't built on its author's booth", () => {
@@ -178,7 +93,7 @@ describe('shapeHistory', () => {
       ],
       [],
     );
-    expect(history.squares['booth/ana'].map((e) => [e.issue, e.decision, e.pulls])).toEqual([
+    expect(entriesOn(history, 'booth/ana').map((e) => [e.issue, e.decision, e.pulls])).toEqual([
       [4, 'question', []],
       [3, 'declined', []],
     ]);
@@ -262,10 +177,10 @@ describe('shapeHistory', () => {
       ],
       'https://o.github.io/r/',
     );
-    expect(history.squares['booth/ana'][0].pulls[0]).toMatchObject({
+    expect(entriesOn(history, 'booth/ana').at(0)?.pulls.at(0)).toMatchObject({
       state: 'open',
       preview: 'https://o.github.io/r/previews/pr-2/#/booth/ana',
     });
-    expect(history.squares['booth/ana'][0].pulls[0].mergedAt).toBeUndefined();
+    expect(entriesOn(history, 'booth/ana').at(0)?.pulls.at(0)?.mergedAt).toBeUndefined();
   });
 });

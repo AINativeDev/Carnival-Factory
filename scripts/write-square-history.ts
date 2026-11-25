@@ -13,7 +13,8 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { siteUrl } from './share-pages.ts';
 import { factoryStats } from './factory-stats.ts';
-import { shapeHistory, type RawIssue, type RawPull } from './square-history.ts';
+import type { RawIssue, RawPull } from './github-requests.ts';
+import { shapeHistory } from './square-history.ts';
 import { squaresOnDisk } from './history-squares.ts';
 
 const token = process.env.GITHUB_TOKEN;

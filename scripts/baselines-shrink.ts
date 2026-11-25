@@ -12,11 +12,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 
 /** The baselines, each a JSON file of debts. */
-export const BASELINES = [
-  'lint/oversize-baseline.json',
-  'lint/strict-types-baseline.json',
-  'eslint-suppressions.json',
-];
+export const BASELINES = ['lint/strict-types-baseline.json', 'eslint-suppressions.json'];
 
 /** Every number in a baseline, keyed by its path in the file, such as `src/a.ts › rule › count`. */
 export function debts(value: unknown, path: string[] = []): Map<string, number> {

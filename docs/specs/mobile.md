@@ -64,7 +64,7 @@ squares and play with them, and the panels move out of the way.
 `pinchCentre`), `src/northpole/map-touch.ts`
 (dragging and pinching), `src/northpole/map-pointer.ts` (tap and press
 tracking), `src/northpole/pointer.ts` (`TAP_SLOP`),
-`src/style.css`, `src/main.ts` (`renderHud`), `src/visit-hud.ts`,
+`src/style.css`, `src/map-page.ts` (`renderHud`), `src/visit-hud.ts`,
 `src/northpole/frame.ts`.
 
 ## Tested by

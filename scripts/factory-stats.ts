@@ -16,7 +16,7 @@ import {
   decisionOf,
   type RawIssue,
   type RawPull,
-} from './square-history.ts';
+} from './github-requests.ts';
 
 /** The label that hands an issue to the factory: the moment it carries it, the request is accepted. */
 export const ACCEPTED_LABEL = 'tessl';
