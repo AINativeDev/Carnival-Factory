@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fakeGitHub, levelIssue, levelPull, passingReplies, SHA } from './gate-fake.ts';
-import { gatePull } from './gate-pull.ts';
+import { gateOpenPulls, gatePull } from './gate-pull.ts';
 
 const GUIDE = 'https://example.com/guide';
 const now = new Date('2026-12-01T12:00:00Z');
@@ -101,5 +101,32 @@ describe('gatePull', () => {
     const { github, writes } = fakeGitHub(passingReplies());
     await gatePull({ ...github, dryRun: true }, levelPull, GUIDE, now);
     expect(writes).toEqual([]);
+  });
+});
+
+describe('gateOpenPulls', () => {
+  it("takes only the factory's own pull requests through, and counts one that fails", async () => {
+    const replies = passingReplies();
+    const mine = { ...levelPull, title: '#5: A cocoa stand' };
+    replies.set(page('pulls?state=open'), [
+      { ...levelPull, number: 1, user: { login: 'someone', type: 'User' } },
+      { ...levelPull, number: 2, head: { ...levelPull.head, ref: 'cocoa' } },
+      { ...levelPull, number: 3, head: { ...levelPull.head, repo: null } },
+      { ...levelPull, number: 4, body: 'Closes #404' },
+      mine,
+    ]);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { github, writes } = fakeGitHub(replies);
+    const run = await gateOpenPulls(github, GUIDE);
+    expect(run).toEqual({ merged: true, held: new Set(), failed: true });
+    expect(writes).toContain('PUT pulls/9/merge');
+    expect(writes.filter((write) => /pulls\/[1-4]\b/.test(write))).toEqual([]);
+  });
+
+  it('counts a pull request someone held', async () => {
+    const replies = passingReplies();
+    replies.set(page('pulls?state=open'), [{ ...levelPull, labels: [{ name: 'needs-human' }] }]);
+    const run = await gateOpenPulls(fakeGitHub(replies).github, GUIDE);
+    expect(run).toEqual({ merged: false, held: new Set([9]), failed: false });
   });
 });

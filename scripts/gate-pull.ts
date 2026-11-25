@@ -8,9 +8,10 @@
 import { evaluateGate } from './booth-gate.ts';
 import { gateComment } from './gate-comment.ts';
 import { gatherFacts } from './gate-facts.ts';
-import { squareRequest, type Comment, type GitHub, type Pull } from './gate-github.ts';
+import { getAll, squareRequest, type Comment, type GitHub, type Pull } from './gate-github.ts';
 import { landedNote } from './gate-request.ts';
 
+const FACTORY = 'tessl-app[bot]';
 /** Gate steps whose failure is labelled by someone else: the risk check, or a maintainer. */
 const LABELLED_ELSEWHERE = new Set(['Risk and taste check', 'No one has asked to hold it']);
 
@@ -95,4 +96,29 @@ export async function gatePull(
     state_reason: 'completed',
   });
   return outcome;
+}
+
+/**
+ * Takes every open factory pull request, from a `tessl/` branch of this
+ * repository, through the gate. One that fails to go through is logged and
+ * counted, and the rest still go.
+ */
+export async function gateOpenPulls(github: GitHub, guide: string) {
+  const run = { merged: false, held: new Set<number>(), failed: false };
+  for (const pull of await getAll<Pull>(github, 'pulls?state=open')) {
+    const fromFactory =
+      pull.user.login === FACTORY &&
+      pull.head.ref.startsWith('tessl/') &&
+      pull.head.repo?.full_name === github.repository;
+    if (!fromFactory) continue;
+    try {
+      const outcome = await gatePull(github, pull, guide);
+      run.merged ||= outcome.merged;
+      if (outcome.held) run.held.add(pull.number);
+    } catch (error) {
+      console.error(`#${pull.number}: ${String(error)}`);
+      run.failed = true;
+    }
+  }
+  return run;
 }
