@@ -10,11 +10,21 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   Today's plots are pinned in `src/northpole/plots.json`.
 - It opens at `#/attraction/<id>`, and the map shows it at
   `#/?attraction=<id>`. The map draws it as a pavilion with its drawing on
-  the front. Its hover tag names no owner, and inside, the North Pole's emblem
+  the front. An attraction whose `stall` sets `tower`, one to six capitals,
+  stands instead as a tall brick tower over a hall, its letters down the front
+  in gold, with lit windows, a turning cog and chimney smoke
+  (`src/northpole/tower.ts`): The Factory's says TESSL. A booth's `tower` is
+  ignored, and a level's square with a `stall` stands as that stall, signed by
+  nobody. Its hover tag names no owner, and inside, the North Pole's emblem
   (a gold star on a red disc) stands where a booth shows its owner's portrait.
 - Inside, the visit panel has no Remix link. It says attractions belong to the
   North Pole and offers to claim a booth beside it.
 - The ferris wheel is the Booths panel's Featured square.
+- The Factory is a landmark: opening it from the map, by a click, E or Enter,
+  takes the sleigh into the North Pole's level of
+  the same id rather than into a room. `#/attraction/the-factory` still shows
+  its room, whose panel has a link to take the sleigh inside
+  ([ADR 0035](../adr/0035-north-pole-levels.md)).
 - The Gift shop shows the gifts of `plugins/north-pole-gifts/`: small factory
   loops anyone can install on their own repository.
 
@@ -46,5 +56,6 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 ## Tested by
 
 `src/northpole/attractions.test.ts`, `scripts/gift-shelf.test.ts`, each
-attraction's own `attraction.test.ts`, `smoke/squares.spec.ts`,
-`smoke/flashing.spec.ts`.
+attraction's own `attraction.test.ts`, `smoke/squares-play.spec.ts`,
+`smoke/flashing.spec.ts`, `smoke/the-factory.spec.ts`, `src/route.test.ts`
+(a landmark opens its level), `src/visit-help.test.ts`.

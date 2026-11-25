@@ -13,6 +13,20 @@ describe, so a little detail goes a long way. Borrow freely from anything here.
   lamps, fences, the reindeer stable, sleighs, a big decorated tree, striped
   tents, benches, cocoa carts, banners, bunting, and one frozen pond that
   skaters go round.
+- **Performers and rides** that the North Pole animates for you:
+  - `fire-breather`: an elf on a crate, puffing a warm flame now and then.
+  - `juggler`: an elf juggling three or four balls in an arc.
+  - `stilt-walker`: a tall elf on striped stilts, striding back and forth
+    along two tiles.
+  - `acrobats`: one elf balancing on another's shoulders, wobbling.
+  - `band`: a drummer and a horn player, notes drifting up.
+  - `strongman`: an elf lifting a candy-cane barbell.
+  - `ferris-wheel`: a small wheel turning slowly, its cars lit (3 by 3 tiles).
+  - `carousel`: reindeer going round under a striped canopy (3 by 3).
+  - `balloon`: a tethered hot-air balloon bobbing over its basket (2 by 2).
+- **Factory dressing:** a `conveyor` belt with parcels sliding along it (1 by
+  3), a giant turning `cog`, a `candy-pipe` arch that puffs steam (2 by 1),
+  and a floating paper `lantern` that people walk under.
 - **Squares of its own,** up to 8: little animated scenes on stalls, each drawn
   like a booth, that visitors walk into.
 - **Where visitors arrive,** and a sleigh back to the North Pole.

@@ -34,7 +34,7 @@ page never runs a square's code: each runs in its own sandboxed frame and worker
   `default-src 'none'; script-src 'self'; img-src 'self' data: blob:;
 connect-src 'none'; worker-src blob:; frame-src 'none'; form-action 'none';
 base-uri 'none'`. No network, storage or access to the page (enforced by:
-  the CSP in square.html, the sandbox test in smoke/squares.spec.ts).
+  the CSP in square.html, the sandbox test in smoke/squares-play.spec.ts).
 - The worker is built into the frame's own script and started from a `blob:`
   URL, so it keeps the frame's CSP and loads nothing from a URL (enforced by:
   smoke/safari.spec.ts).
@@ -47,7 +47,7 @@ base-uri 'none'`. No network, storage or access to the page (enforced by:
   src/northpole/frame-protocol-draw.test.ts).
 - `readStall` keeps only a known shape and theme colour names; anything else
   draws the usual stall (enforced by: src/northpole/frame-protocol-stall.test.ts,
-  the stall tests in smoke/squares.spec.ts).
+  the stall tests in smoke/stall-shapes.spec.ts).
 - Messages from any window but the frame's own, or of the wrong shape, are
   ignored by the map (enforced by: src/northpole/sandbox-messages.test.ts);
   worker messages the frame isn't waiting for are ignored too (not enforced
@@ -102,6 +102,6 @@ its frame's lifecycle), `src/northpole/sandbox-schedule.ts` (which frames run),
 `src/northpole/frame-protocol-draw.test.ts` (draw requests and the pointer),
 `src/northpole/frame-protocol-address.test.ts`,
 `src/northpole/frame-protocol-stall.test.ts`, `src/northpole/pointer.test.ts`,
-`scripts/square-size.test.ts`, `smoke/squares.spec.ts` (the sandbox keeps a
+`scripts/square-size.test.ts`, `smoke/squares-play.spec.ts` (the sandbox keeps a
 square from the network, storage and the page; every square opens and draws
 within budget), `smoke/safari.spec.ts`.

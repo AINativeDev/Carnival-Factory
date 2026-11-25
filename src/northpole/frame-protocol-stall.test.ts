@@ -42,3 +42,18 @@ describe('readStall', () => {
     }
   });
 });
+describe('readStall: a tower', () => {
+  it('keeps one to six capitals', () => {
+    expect(readStall({ shape: 'shed', roof: 'gold', tower: 'TESSL' })).toEqual({
+      shape: 'shed',
+      roof: 'gold',
+      tower: 'TESSL',
+    });
+    expect(readStall({ shape: 'shed', roof: 'gold', trim: 'cocoa', tower: 'A' })?.tower).toBe('A');
+  });
+
+  it('drops the whole option for anything else', () => {
+    for (const tower of ['', 'tessl', 'TOOLONGX', '<b>', 7, null])
+      expect(readStall({ shape: 'shed', roof: 'gold', tower })).toBeUndefined();
+  });
+});

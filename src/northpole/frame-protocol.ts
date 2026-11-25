@@ -9,6 +9,7 @@ import {
   isBoothOwner,
   MAX_PRESSES,
   STALL_SHAPES,
+  TOWER_LETTERS,
   type SquarePointer,
   type StallStyle,
   type ThemeColor,
@@ -82,20 +83,26 @@ const isThemeColor = (value: unknown): value is ThemeColor =>
 
 /**
  * Checks a square's stall option: a `shape` from `STALL_SHAPES`, a `roof`
- * that names a `theme` colour, and a `trim` that is missing or names one too.
- * Anything else gives undefined, and the map draws the usual stall. Only
- * those three fields are kept.
+ * that names a `theme` colour, a `trim` that is missing or names one too, and
+ * a `tower` that is missing or one to six capitals. Anything else gives
+ * undefined, and the map draws the usual stall. Only those fields are kept.
  */
 export function readStall(value: unknown): StallStyle | undefined {
   if (typeof value !== 'object' || value === null) return undefined;
-  const { shape, roof, trim } = value as Record<string, unknown>;
+  const { shape, roof, trim, tower } = value as Record<string, unknown>;
   if (typeof shape !== 'string' || !(STALL_SHAPES as readonly string[]).includes(shape)) {
     return undefined;
   }
   if (!isThemeColor(roof)) return undefined;
-  if (trim === undefined) return { shape: shape as StallStyle['shape'], roof };
-  if (!isThemeColor(trim)) return undefined;
-  return { shape: shape as StallStyle['shape'], roof, trim };
+  if (trim !== undefined && !isThemeColor(trim)) return undefined;
+  if (tower !== undefined && (typeof tower !== 'string' || !TOWER_LETTERS.test(tower)))
+    return undefined;
+  return {
+    shape: shape as StallStyle['shape'],
+    roof,
+    ...(trim === undefined ? {} : { trim }),
+    ...(tower === undefined ? {} : { tower }),
+  };
 }
 
 const within = (value: unknown, max: number): value is number =>

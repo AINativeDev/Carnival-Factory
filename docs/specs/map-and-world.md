@@ -16,6 +16,11 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   at its door first. Esc on the map lets go of the picked square.
 - On a touch screen the first tap on a structure shows its tag, the second
   opens it. One finger drags the map, two fingers pinch the zoom.
+- A roadside billboard, high on braced steel legs with a catwalk and
+  spotlights, stands in open snow beside the main road east, in the opening
+  view, and says what's on next: AI DevCon, next in London, 7–8 June 2027 at The
+  Brewery. A click on it opens the tickets page in a new tab, and the pointer
+  turns to a hand over it (`src/northpole/billboard.ts`).
 - "Claim a plot" walks the player to the nearest open plot. "Show the whole
   island" toggles the overview.
 - Camera: a viewport under 720 CSS pixels wide is a phone. On a laptop the
@@ -27,7 +32,8 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 - The Booths and Controls panels start open on a wide map and folded on a phone.
 - Routes (`src/route.ts`): `#/` the map; `#/?booth=<login>` or
   `#/?attraction=<id>` the map showing that square; `#/booth/<login>` and
-  `#/attraction/<id>` the map with the player inside it; `#/level/<login>`,
+  `#/attraction/<id>` the map with the player inside it (opening a landmark
+  from the map goes to its level instead, ADR 0035); `#/level/<login>`,
   `#/level/<login>?square=<id>` and `#/level/<login>/<id>` a level;
   `#/factory`; `#/advent`; `#/season/<login>` a season card; `#/keep-posted`
   a placeholder page; `#/plot/<id>`, a link from before booths were called
@@ -61,19 +67,44 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 - Route names are lower-cased and must match `[\w-]+`; anything malformed is
   the plain map (enforced by: src/route.test.ts). A name from the address is
   only ever set as text, capped in length (enforced by: the deep-link tests in
-  smoke/squares.spec.ts and smoke/levels.spec.ts).
+  smoke/deep-links.spec.ts and smoke/levels.spec.ts).
 - An open page never reloads twice for the same build (enforced by:
   src/updates.test.ts).
 
 ## Where it lives
 
-`src/main.ts`, `src/route.ts`, `src/updates.ts`, `src/northpole/world.ts`,
-`src/northpole/plots.ts`, `src/northpole/plots.json`, `src/northpole/camera.ts`,
-`src/northpole/map.ts`, `src/northpole/render.ts`, `src/northpole/visit.ts`.
+`src/main.ts`, `src/router.ts`, `src/page.ts`, `src/map-page.ts`,
+`src/map-page-markup.ts`, `src/map-notes.ts`, `src/dom.ts`, `src/route.ts`,
+`src/updates.ts`, `src/northpole/world.ts`,
+`src/northpole/world-plots.ts`, `src/northpole/world-build.ts`,
+`src/northpole/world-town.ts`, `src/northpole/world-sights.ts`,
+`src/northpole/groundwork.ts`, `src/northpole/walking.ts`,
+`src/northpole/pathfinding.ts`, `src/northpole/plots.ts`,
+`src/northpole/plots.json`, `src/northpole/camera.ts`, `src/northpole/camera-view.ts`,
+`src/northpole/map.ts` (starting the map and wiring it to the page) with its
+parts in `src/northpole/map-*.ts`, which share one `MapRun`
+(`map-state.ts`), `src/northpole/draw-square.ts`, `src/northpole/visit.ts`,
+and the drawing:
+`src/northpole/render.ts`, which hands each thing and plot to the small file
+that draws it (`ground.ts`, `island.ts`, `sky.ts`, `pines.ts`, `houses.ts`,
+`street-things.ts`, `midway.ts`, `entrance.ts`, `people.ts`, `faces.ts`,
+`name-board.ts`, `stall.ts` with the `stall-*.ts` files, `pavilion.ts`,
+`tower.ts`, `open-plot.ts`, `site.ts`, `platform.ts` and `plot-marks.ts`).
 
 ## Tested by
 
-`src/route.test.ts`, `src/updates.test.ts`, `src/northpole/world.test.ts`,
+`src/route.test.ts`, `src/router.test.ts`, `src/router-levels.test.ts`,
+`src/page.test.ts`, `src/map-page.test.ts`, `src/dom.test.ts`,
+`src/updates.test.ts`, `src/northpole/world.test.ts`,
+`src/northpole/world-build.test.ts`, `src/northpole/world-plots.test.ts`,
+`src/northpole/world-sights.test.ts`, `src/northpole/world-pin.test.ts`,
+`src/northpole/walking.test.ts`, `src/northpole/pathfinding.test.ts`,
 `src/northpole/plots.test.ts`, `src/northpole/camera.test.ts`,
-`src/northpole/map.test.ts`, `src/northpole/visit.test.ts`, and
-`smoke/squares.spec.ts` (walking, deep links, open plots, fitting the window).
+`src/northpole/draw-square.test.ts`, `src/northpole/map-*.test.ts` (the
+map running in happy-dom through `src/test-support/map-harness.ts`, with
+`map-pins-*.test.ts` pinning what it draws frame by frame),
+`src/northpole/visit.test.ts`,
+`src/northpole/render-pins-plots.test.ts` and
+`src/northpole/render-pins-scene.test.ts` (every drawing, pinned by its
+fingerprint), `smoke/map.spec.ts` (walking, fitting the window),
+`smoke/deep-links.spec.ts` and `smoke/claiming.spec.ts` (open plots).

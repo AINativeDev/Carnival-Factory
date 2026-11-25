@@ -9,11 +9,13 @@
  * and pull requests from the GitHub API. The page itself never reaches the
  * network: the build bundles the file.
  */
-import { readdirSync, existsSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { siteUrl } from './share-pages.ts';
 import { factoryStats } from './factory-stats.ts';
-import { shapeHistory, type HistoryKind, type RawIssue, type RawPull } from './square-history.ts';
+import type { RawIssue, RawPull } from './github-requests.ts';
+import { shapeHistory } from './square-history.ts';
+import { squaresOnDisk } from './history-squares.ts';
 
 const token = process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY;
@@ -138,12 +140,7 @@ for (const pull of paged) {
   });
 }
 
-const root = join(import.meta.dirname, '..');
-const squares = (['booth', 'attraction'] as HistoryKind[]).flatMap((kind) =>
-  readdirSync(join(root, 'carnival', `${kind}s`))
-    .filter((id) => existsSync(join(root, 'carnival', `${kind}s`, id, `${kind}.ts`)))
-    .map((id) => `${kind}/${id}`),
-);
+const squares = squaresOnDisk(join(import.meta.dirname, '..'));
 
 const builtAt = new Date().toISOString();
 const history = shapeHistory({ squares, issues, pulls, site: siteUrl(process.env), builtAt });

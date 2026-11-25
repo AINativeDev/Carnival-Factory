@@ -57,12 +57,13 @@ If it says the installed packages don't match `package-lock.json`, run
 `npm install` first: `main` gained a dependency since you last installed.
 
 **Baselines only shrink.** Code that predates a rule is frozen at its current
-debt in `lint/oversize-baseline.json` (file length),
-`lint/strict-types-baseline.json` (strict compiler flags) and
+debt in `lint/strict-types-baseline.json` (strict compiler flags) and
 `eslint-suppressions.json` (strict lint). New code is held to the full rule.
 When you improve a file in `src/`, `scripts/` or `lint/`, lower its number in
 the same change; the hook prunes ESLint's suppressions for you. Never raise a
-number or add a file to a baseline.
+number or add a file to a baseline. File length has no baseline: every code
+file is at most 200 lines, with no exceptions
+([ADR 0036](docs/adr/0036-no-oversize-files.md)).
 
 The factory's sandbox can't start a browser, so agents there never run
 `npm run smoke` or install Playwright: CI runs the smoke test on every pull
@@ -118,18 +119,26 @@ folder only: it never edits a baseline or a doc outside it.
 index.html                  the page
 square.html                 the page each square's sandboxed frame loads
 src/
-  main.ts                   the router: #/ is the map, #/booth/<login> and
+  main.ts                   the page's entry point: starts the theme, the router and
+                            the intro
+  router.ts                 the router: #/ is the map, #/booth/<login> and
                             #/attraction/<id> the map with the player inside that
                             square, #/?booth=<login> or #/?attraction=<id> the map
                             showing that square, #/level/<login> a participant's level,
                             #/factory the factory's numbers, and #/advent the advent
                             calendar
+  page.ts                   what's on screen, and the panels over the map: a square's,
+                            the factory's numbers, the advent calendar
+  map-page.ts               the North Pole's map page and its HUD (map-page-markup.ts
+                            its markup, map-notes.ts its notes for a missing square)
+  level-page.ts             a participant's level page
   route.ts                  reading the hash (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
   visit-help.ts             the next steps at the foot of a square's panel, by whose square it is
   craft-badges.ts           a square's craft badges on its panel, baked in by the build
   booths-hud.ts             the Booths panel: search, Featured, Near you, Recently added,
                             Attractions, All booths a page at a time, and "This is me"
+                            (its markup, lists, keys and memory in booths-hud-*.ts)
   booth-panel.ts            the panel's searching, sorting and sections (plain functions)
   pending.ts                reading pending.json, the booths being built, every 2 minutes
   history.ts                the credits and the "How was this built?" panel: who made
@@ -144,31 +153,45 @@ src/
   keep-posted.ts            the "keep me posted" page, #/keep-posted, until its form is set
   offer.ts                  the free credits offer beside "Run this on your own repo",
                             hidden until TESSL_SIGNUP_URL and TESSL_SIGNUP_OFFER are set
-  factory.ts                the factory's numbers page, #/factory: its counts and figures
-                            (plain functions), over the map like a visit's panel
+  factory.ts                the factory's numbers page, #/factory, over the map like a
+                            visit's panel
+  factory-figures.ts        its counts and figures (plain functions)
   peoples-choice-hud.ts     the People's Choice list below the map: the top three, the
                             Home factory's leader and every entry's votes
   style.css
   northpole/                the map itself, and the parts every square imports
     square.ts               the NorthPoleSquare shape, the registries and the kill switch
-    level.ts                the NorthPoleLevel shape, its catalogue and themes, checking
-                            a level and laying it out as a world (plain functions)
+    level.ts                the NorthPoleLevel shape and its themes, checking a level
+                            and laying it out as a world (plain functions)
+    level-props.ts          the catalogue of props a level may place, with their footprints
+    show.ts                 drawing a level's performers, rides and factory dressing
+                            (with performers.ts, troupe.ts, rides.ts, carousel.ts,
+                            workshop.ts, and elf.ts for the elves)
+    brushes.ts              the map's shared brushes: blocks, shadows, glows, bulbs
     levels.ts               finds every level folder, checks it and sandboxes its squares
     diorama.ts              the diorama style's shared parts: the dusk backdrop, the
                             snow slab, lit volumes, glows (plain functions)
     booths.ts               finds every booth folder and puts it on the map
     attractions.ts          finds every attraction folder and puts it on the midway
-    world.ts                the isometric world: its tiles, where each square's plot
-                            is, walking and pathfinding (plain functions)
+    world.ts                the isometric world: its tiles, ground, things and plots,
+                            and the projection (plain functions), with world-plots.ts
+                            (where each numbered plot is), world-build.ts, world-town.ts,
+                            world-sights.ts and groundwork.ts (laying it out), walking.ts
+                            and pathfinding.ts
     plots.json              the maintainers' pins: which plot each square keeps
     plots.ts                which plot each booth gets from the pins, its own plot.json
-                            and the booths being built, and reading pending.json
-                            (plain functions)
+                            and the booths being built (plain functions)
+    construction-sites.ts   the booths being built: their stages, and reading pending.json
     camera.ts               framing the island: its outline, the zoom and where the
-                            camera looks on a laptop and a phone (plain functions)
-    render.ts               drawing the diorama: sky, island, fence and lights, cabins,
-                            tents, the ferris wheel, stalls in each booth's chosen
-                            shape, pavilions, people
+                            camera looks on a laptop and a phone (plain functions), with
+                            camera-view.ts for viewport points and dragging and pinching
+    render.ts               drawing the diorama: hands each thing and plot to the small
+                            file that draws it: sky.ts, island.ts, ground.ts, pines.ts,
+                            houses.ts, street-things.ts, midway.ts, entrance.ts,
+                            people.ts; stall.ts and the stall-*.ts files for each
+                            booth's chosen shape, pavilion.ts, tower.ts, open-plot.ts,
+                            site.ts, platform.ts and plot-marks.ts; faces.ts and
+                            name-board.ts for the signs and drawings on their fronts
     map.ts                  the walkable map (camera, keys, clicks, hover tags,
                             and going inside a square)
     interior.ts             the room inside a square: its layout, walking in it and
@@ -234,6 +257,8 @@ scripts/
                             and for the factory's numbers
   square-history.ts         every square's history and credits from its issues and
                             pull requests (plain functions)
+  github-requests.ts        requests and pull requests as the GitHub API gives them, and
+                            what's read off one (plain functions)
   factory-stats.ts          the factory's numbers from the same issues and pull requests:
                             builds, requests, findings, time to the map (plain functions)
   write-square-history.ts   reads them from the GitHub API and writes square-history.json,
@@ -385,7 +410,9 @@ uses any of it:
    `'shed'` (long and low, with a flat roof), `'tent'` (a round, striped
    tent), `'cabin'` (a log cabin with a snowy pitched roof) or `'kiosk'` (a
    small hexagonal kiosk). `roof` is a `theme` colour's name, and `trim`, a
-   second one for the stripes or the awning, is optional. The map draws the
+   second one for the stripes or the awning, is optional. An attraction may
+   also set `tower`, one to six capitals, to stand as a tower with them down
+   its front, as The Factory does; a booth's is ignored. The map draws the
    stall itself, with the booth's drawing on its front: the option only
    travels in the frame's `ready` message, and `readStall` in
    `src/northpole/frame-protocol.ts` drops anything else, so an invalid option
@@ -457,7 +484,7 @@ A participant's **level** is a whole patch of the North Pole of their own,
 ownership** check lets them change `carnival/booths/<login>/` and `carnival/levels/<login>/`, and
 nothing else. Visitors reach it from the **sleigh station**, one platform per
 level along the main path by the entrance (`platformPlot` in
-`src/northpole/world.ts`): E, Enter or a click on a platform takes the sleigh there,
+`src/northpole/world-plots.ts`): E, Enter or a click on a platform takes the sleigh there,
 and `#/level/<login>` opens it directly. Inside, the map walks the level's own
 world, `#/level/<login>?square=<id>` puts the player in front of one of its
 squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
@@ -482,7 +509,9 @@ squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
    - `ground`, areas of `snow`, `ice`, `path`, `water` or `bridge`, laid in
      order (ice and water can't be walked on, bridges can), and `blocked`,
      areas nobody can walk on;
-   - `props`, each a `kind` from the catalogue `LEVEL_PROPS` with its north
+   - `props`, each a `kind` from the catalogue `LEVEL_PROPS`
+     (`src/northpole/level-props.ts`: scenery, performers, rides and factory
+     dressing) with its north
      corner `x`, `y` and an optional `variant` from 0 to 1. `pond` is the one
      prop that's ground: a 5 by 4 sheet of ice that skaters go round;
    - `arrival`, the tile visitors arrive on, and `exits`, at least one sleigh
@@ -499,7 +528,7 @@ squares, `#/level/<login>/<id>` inside it, and the sleigh home goes back to
 4. The whole folder, its squares included, within the size budget in
    `scripts/square-size.ts`.
 
-**Validation.** `validateLevel` in `src/northpole/level.ts` checks a level before
+**Validation.** `validateLevel` in `src/northpole/level-check.ts` checks a level before
 anything is drawn: the size limits, only known tiles and catalogue props,
 nothing on water or ice or on top of anything else, every square folder placed
 and every placed square with a folder, and, by pathfinding, every square and

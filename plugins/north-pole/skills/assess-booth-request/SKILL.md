@@ -202,7 +202,7 @@ New or a change: check whether `carnival/levels/<author>/level.ts` is on `main`.
 as level data plus sandboxed squares: a name, one sentence about it, one of
 the themes in `LEVEL_THEMES`, a size of up to 41 tiles each way, ground of
 snow, ice, path, water and bridges, props from the catalogue in
-`LEVEL_PROPS` (`src/northpole/level.ts`), where visitors arrive, at least one
+`LEVEL_PROPS` (`src/northpole/level-props.ts`), where visitors arrive, at least one
 sleigh back to the North Pole, and its own squares.
 
 A level holds several ideas by design, so the one-idea rule above applies to

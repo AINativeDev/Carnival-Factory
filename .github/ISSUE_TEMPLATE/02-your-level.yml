@@ -6,39 +6,28 @@ body:
   - type: markdown
     attributes:
       value: |
-        Your level is yours alone: it lives in `carnival/levels/<your GitHub login>/`,
-        and a check stops any change for you from touching anything else. It's
-        a whole patch of the North Pole of your own, laid out how you like,
-        with up to 8 squares of its own, that visitors reach by sleigh from the
-        sleigh station. If you don't have a level yet, the factory builds it;
-        if you do, it changes it. Your latest request is the one that counts:
-        opening a new one closes any older level request you still have open.
-
-        An agent reads this with nobody around to answer questions, so say what
-        you want people to see and how you'll know it's done.
-
-        **What happens next:** an agent assesses your request, a software
-        factory built on [Tessl](https://tessl.io) builds it as a pull request,
-        and checks, a smoke test in a real browser and code review run on it.
+        A level is a whole patch of the North Pole of your own, with up to 8 squares, that
+        visitors reach by sleigh. The factory builds it in `carnival/levels/<your GitHub login>/`,
+        or changes the one you have. Your latest request is the one that counts.
         [How your request is built](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/how-it-works.md)
-        explains each step.
-  - type: markdown
-    attributes:
-      value: |
-        **Need ideas?** [Level ideas](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/level-ideas.md)
-        has examples to borrow from, and what a level is made of. The more you
-        say about the place, its landmarks and what moves, the closer the
-        factory gets on the first try. Everything below the first box is
-        optional.
+        · [Level ideas](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/level-ideas.md)
   - type: textarea
     id: what
     attributes:
       label: What should your level be?
-      description: The place, in a few sentences. What's in it, where, and what are its squares? For a change, what should be different.
+      description: |
+        A few sentences are plenty. Things you can mention:
+        - **The place**: what it is, and how it's laid out
+        - **Its squares**: up to 8 stalls people can go inside, and what each one shows
+        - **Landmarks**: two or three things to find, such as a pond, a big tree, a bridge
+        - **What moves**: skaters, a stream, steam from the cocoa
+        - **The theme**: dusk, aurora night, candy cane, frozen lake or gingerbread
+
+        For a change, say what should be different. You can attach a sketch of the layout.
       placeholder: |
-        A frozen-lake fair. A big pond in the middle with skaters going round,
-        a skate rental hut on one side and a cocoa hut on the other, and an
-        ice-fishing hole on the shore.
+        A frozen-lake fair under the aurora. A big pond in the middle with skaters going
+        round, a skate rental hut on one side, a cocoa hut on the other, and an
+        ice-fishing hole on the shore where a fish bites now and then.
     validations:
       required: true
   - type: input
@@ -47,71 +36,3 @@ body:
       label: Your level's name
       description: Shown on its platform at the sleigh station, up to about 24 characters. Leave it empty to keep the name it has.
       placeholder: Frozen Lake Fair
-  - type: dropdown
-    id: style
-    attributes:
-      label: Theme
-      description: The level's look, from the North Pole's palette. It tints the sky and colours its signs.
-      options:
-        - Dusk, the North Pole's own look
-        - Aurora night
-        - Candy cane
-        - Frozen lake
-        - Gingerbread
-        - Surprise me
-      default: 0
-  - type: input
-    id: mood
-    attributes:
-      label: Mood
-      description: How should it feel? A few words.
-      placeholder: Cosy, busy, a little magical
-  - type: textarea
-    id: landmarks
-    attributes:
-      label: Landmarks
-      description: The two or three things people should find, and roughly where. Props come from the North Pole's catalogue (pines, cabins, lamps, the pond, bridges, the reindeer stable, sleighs, tents, carts and more).
-      placeholder: The frozen pond in the middle. A big decorated tree at the back. A stream with a wooden bridge on the right.
-  - type: textarea
-    id: motion
-    attributes:
-      label: What moves?
-      description: Skaters on the pond, the stream, lamps; and inside each of your squares, a loop that repeats every few seconds.
-      placeholder: |
-        Skaters go round the pond. In the cocoa hut, steam curls up from the
-        cups. At the ice-fishing hole, the float bobs and a fish bites now
-        and then.
-  - type: textarea
-    id: details
-    attributes:
-      label: Little details
-      description: The small touches that make it yours (keep it friendly for everyone).
-      placeholder: Benches by the water. A banner over the path. Snowdrifts by the cabin.
-  - type: dropdown
-    id: colours
-    attributes:
-      label: Main colours
-      description: Pick a few from the North Pole palette.
-      multiple: true
-      options:
-        - Snow and ice
-        - Pine green
-        - Berry red
-        - Gold and glow
-        - Wood and gingerbread
-        - Cocoa brown
-        - Aurora green and violet
-        - Mint
-        - Night blue
-  - type: textarea
-    id: done
-    attributes:
-      label: Done when
-      description: A short checklist the agent can test its work against.
-      value: |
-        - [ ] My level has a platform at the sleigh station, and opens at `#/level/<my login>`
-        - [ ] Every square can be walked to, and the sleigh takes me back to the North Pole
-        - [ ] Every change is inside `carnival/levels/<my login>/`
-        - [ ] `npm run check` passes
-    validations:
-      required: true

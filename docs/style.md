@@ -45,7 +45,8 @@ to copy.
 ## Helpers
 
 `src/northpole/diorama.ts` draws the shared parts, so a square only draws its own
-scene. Import it as `../../../src/northpole/diorama`, like the theme.
+scene. Import it as `../../../src/northpole/diorama`, like the theme: it gathers
+the parts kept in the `diorama-*.ts` files beside it.
 
 - `scene(ctx, size, time, paint)` scales the context to the square's 0 to 100
   units, paints the dusk sky, the far mountains and the slab of snow, then

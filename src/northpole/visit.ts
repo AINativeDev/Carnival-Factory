@@ -5,7 +5,10 @@
  * and the tests use them the same way. Points are in world pixels unless they
  * say otherwise.
  */
-import { findPathToFirst, tileOf, type Box, type Plot, type Tile, type World } from './world';
+import { squareOwner } from './north-pole-levels';
+import { findPathToFirst } from './pathfinding';
+import { tileOf } from './walking';
+import { type Box, type Plot, type Tile, type World } from './world';
 
 /**
  * The open plots, nearest `from` first, and the path to the nearest one the
@@ -52,16 +55,18 @@ export function nearYou<T extends { door: { x: number; y: number } }>(
     .map(({ square }) => square);
 }
 
-/** What Share copies for a square: a short, friendly line, and the link. */
+/** What Share copies for a square or a level: a short, friendly line crediting its owner, and the link. */
 export function shareText(
-  square: { kind: 'booth' | 'attraction'; id: string; name: string },
+  square: { kind: 'booth' | 'attraction' | 'level'; id: string; name: string },
   link: string,
   mine = false,
 ): string {
-  if (square.kind === 'attraction')
-    return `${square.name} is at the North Pole Carnival. Come visit, and build a booth of your own: ${link}`;
-  const who = mine ? 'I' : `@${square.id}`;
-  return `${who} built ${square.name} at the North Pole Carnival. Come visit, and build your own: ${link}`;
+  const what = square.kind === 'level' ? `${square.name}, a level,` : square.name;
+  const owner = squareOwner(square.kind, square.id);
+  if (!owner)
+    return `${what} is at the North Pole Carnival. Come visit, and build a booth of your own: ${link}`;
+  const who = mine ? 'I' : `@${owner}`;
+  return `${who} built ${what} at the North Pole Carnival. Come visit, and build your own: ${link}`;
 }
 
 /** Where a square's link-preview page is, from the site's root. */

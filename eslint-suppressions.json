@@ -32,14 +32,6 @@
       "count": 1
     }
   },
-  "scripts/elf-engineer.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 5
-    },
-    "@typescript-eslint/no-unnecessary-boolean-literal-compare": {
-      "count": 2
-    }
-  },
   "scripts/file-size.test.ts": {
     "@typescript-eslint/no-unnecessary-type-assertion": {
       "count": 1
@@ -144,36 +136,11 @@
       "count": 1
     }
   },
-  "smoke/squares.spec.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 9
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 24
-    },
-    "@typescript-eslint/unbound-method": {
-      "count": 1
-    }
-  },
   "src/advent.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 2
     },
     "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unnecessary-type-parameters": {
-      "count": 1
-    }
-  },
-  "src/booths-hud.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 3
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 10
-    },
-    "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
     },
     "@typescript-eslint/no-unnecessary-type-parameters": {
@@ -196,14 +163,6 @@
       "count": 1
     }
   },
-  "src/main.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 11
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 30
-    }
-  },
   "src/northpole/attractions.test.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 1
@@ -217,21 +176,8 @@
       "count": 1
     }
   },
-  "src/northpole/camera.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    }
-  },
   "src/northpole/diorama.test.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    }
-  },
-  "src/northpole/diorama.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 5
-    },
-    "@typescript-eslint/no-non-null-assertion": {
       "count": 1
     }
   },
@@ -246,30 +192,9 @@
       "count": 1
     }
   },
-  "src/northpole/interior.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 2
-    }
-  },
-  "src/northpole/interior.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 2
-    }
-  },
   "src/northpole/level.test.ts": {
     "@typescript-eslint/no-non-null-assertion": {
       "count": 1
-    }
-  },
-  "src/northpole/level.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 2
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 2
-    },
-    "@typescript-eslint/no-unnecessary-type-conversion": {
-      "count": 2
     }
   },
   "src/northpole/levels.ts": {
@@ -288,25 +213,6 @@
   "src/northpole/links.ts": {
     "@typescript-eslint/no-misused-spread": {
       "count": 1
-    }
-  },
-  "src/northpole/map.test.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 1
-    }
-  },
-  "src/northpole/map.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 11
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 35
-    },
-    "@typescript-eslint/no-unnecessary-type-assertion": {
-      "count": 2
     }
   },
   "src/northpole/owners.test.ts": {
@@ -330,14 +236,6 @@
   "src/northpole/pointer.test.ts": {
     "@typescript-eslint/no-non-null-assertion": {
       "count": 3
-    }
-  },
-  "src/northpole/render.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 23
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
     }
   },
   "src/northpole/square-worker.ts": {
@@ -366,16 +264,6 @@
       "count": 3
     }
   },
-  "src/northpole/world.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 10
-    }
-  },
-  "src/northpole/world.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 3
-    }
-  },
   "src/peoples-choice-hud.ts": {
     "@typescript-eslint/no-non-null-assertion": {
       "count": 1
@@ -386,20 +274,6 @@
   },
   "src/route.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    }
-  },
-  "src/season-card.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 4
-    },
-    "@typescript-eslint/no-misused-promises": {
-      "count": 1
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unnecessary-type-parameters": {
       "count": 1
     }
   },

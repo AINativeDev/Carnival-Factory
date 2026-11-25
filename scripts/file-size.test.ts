@@ -1,26 +1,19 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { MAX_LINES, OVERSIZE, countLines } from '../lint/file-size.js';
+import { MAX_LINES, countLines, sizeLimits } from '../lint/file-size.js';
 
-const root = join(import.meta.dirname, '..');
+describe('code files stay under 200 lines, with no exceptions', () => {
+  it('holds every code file to the one limit', () => {
+    expect(MAX_LINES).toBe(200);
+    expect(sizeLimits()).toEqual([
+      {
+        files: ['**/*.{ts,js,mjs,cjs}'],
+        rules: { 'max-lines': ['error', { max: 200, skipBlankLines: false, skipComments: false }] },
+      },
+    ]);
+  });
 
-// The baseline records debt, so it may only shrink: a file that got shorter must
-// be written down at its new length, and a file split under the limit must leave
-// the list, or the slack would let it grow back unnoticed.
-describe('the oversize baseline only tightens', () => {
-  // Files in carnival/ are skipped below: ESLint's max-lines stops them growing.
-  it.each(Object.entries(OVERSIZE as Record<string, number>))('%s', (file, max) => {
-    expect(existsSync(join(root, file)), `${file} is gone: remove it from the baseline`).toBe(true);
-    const lines = countLines(readFileSync(join(root, file), 'utf8'));
-    // A booth's pull request can't edit the baseline outside its folder, so a
-    // carnival file only has to stay within its length; ESLint holds it there.
-    if (file.startsWith('carnival/')) return;
-    expect(
-      lines,
-      `${file} is ${lines} lines; set it to ${lines} in lint/oversize-baseline.json` +
-        (lines <= MAX_LINES ? ', or better, remove it: it fits now' : ''),
-    ).toBe(max);
-    expect(lines).toBeGreaterThan(MAX_LINES);
+  it('counts lines as ESLint does: a final newline adds none', () => {
+    expect(countLines('a\nb\n')).toBe(2);
+    expect(countLines('a\r\nb')).toBe(2);
   });
 });

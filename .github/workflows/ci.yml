@@ -31,6 +31,12 @@ jobs:
         run: |
           git fetch --no-tags --depth=1 origin "$BASE"
           node scripts/diff-coverage.ts "origin/$BASE"
+      # Baselines only shrink: no debt added or raised (AGENTS.md).
+      - name: Baselines only shrink
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.base_ref }}
+        run: node scripts/baselines-shrink.ts "origin/$BASE"
       - run: npm run build
 
   shell:

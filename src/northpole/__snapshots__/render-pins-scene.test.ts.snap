@@ -1,0 +1,67 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the scene, pinned before the renderer split > draws every thing the same 1`] = `
+{
+  "arch 0.2": "c6aa4b8cabd1ff42 (1064 calls)",
+  "arch 0.8": "c6aa4b8cabd1ff42 (1064 calls)",
+  "banner 0.2": "e20f735723cbadc3 (100 calls)",
+  "banner 0.8": "e20f735723cbadc3 (100 calls)",
+  "bench 0.2": "2fbf7057b0ffcc1c (108 calls)",
+  "bench 0.8": "2fbf7057b0ffcc1c (108 calls)",
+  "bunting 0.2": "5cf9a4e6024e670a (194 calls)",
+  "bunting 0.8": "449f6e790f533c22 (194 calls)",
+  "cabin 0.2": "c72e618c03d52cd1 (366 calls)",
+  "cabin 0.8": "18abfbf2e2171111 (366 calls)",
+  "carousel 0.2": "da3f448b34f8dafa (924 calls)",
+  "carousel 0.8": "f559f6187a2d35c6 (924 calls)",
+  "cart 0.2": "d5637fee3fb89d9e (130 calls)",
+  "cart 0.8": "6ece556fd2d3ddde (130 calls)",
+  "drift 0.2": "3830ce430d0125a7 (20 calls)",
+  "drift 0.8": "59b892d9c7c81ca5 (20 calls)",
+  "fence 0.2": "9cb652aed982f053 (32 calls)",
+  "fence 0.8": "9cb652aed982f053 (32 calls)",
+  "lamp 0.2": "54d8b6fc27197b52 (46 calls)",
+  "lamp 0.8": "2f297089142b534d (46 calls)",
+  "sleigh 0.2": "91196ae06178e10e (82 calls)",
+  "sleigh 0.8": "91196ae06178e10e (82 calls)",
+  "stable 0.2": "e788bce0a3c4e04e (190 calls)",
+  "stable 0.8": "7121bf76ac75f397 (190 calls)",
+  "tent 0.2": "66ee7b91e72d992f (258 calls)",
+  "tent 0.8": "c538b7c118432ef9 (258 calls)",
+  "town-tree 0.2": "cd16916f8f2e3495 (308 calls)",
+  "town-tree 0.8": "cd16916f8f2e3495 (308 calls)",
+  "tree 0.2": "7eab64c69372d1f7 (152 calls)",
+  "tree 0.8": "0166a4efbbff273f (152 calls)",
+  "wheel 0.2": "aea3b5bc1f7b1f75 (764 calls)",
+  "wheel 0.8": "aea3b5bc1f7b1f75 (764 calls)",
+}
+`;
+
+exports[`the scene, pinned before the renderer split > draws the people the same 1`] = `
+{
+  "person -1 false": "8ae2a82fec98ac3b (76 calls)",
+  "person -1 true": "9f94f89a5b49c87a (76 calls)",
+  "person 1 false": "8a0828c231ea1f62 (76 calls)",
+  "person 1 true": "eb732c10d4e98fb3 (76 calls)",
+  "portrait": "e11c1400a0ccf41c (41 calls)",
+  "reindeer -1 false": "708551d219cf4bd7 (90 calls)",
+  "reindeer -1 true": "98dd771a985c363b (90 calls)",
+  "reindeer 1 false": "08b3f8d7ed0884b7 (90 calls)",
+  "reindeer 1 true": "67f9a0c60ce67e16 (90 calls)",
+}
+`;
+
+exports[`the scene, pinned before the renderer split > draws the sky and the island the same 1`] = `
+{
+  "aurora": "3149b12de5611aea (247 calls)",
+  "clouds": "3f8a90f373365d50 (78 calls)",
+  "front fence": "4b222cb808dae31f (510 calls)",
+  "island": "1e94cf92d3622eb6 (69886 calls)",
+  "lights": "d80daf3fbded2aef (1410 calls)",
+  "mountains": "cc1f0e9bbf68f093 (360 calls)",
+  "pools": "5b809b254b17f66d (1096 calls)",
+  "ripples": "e5dfbb40c7460d48 (80 calls)",
+  "sky": "0bd4f56c8e5ddc68 (16 calls)",
+  "snowfall": "eae3236c13b4f3f0 (558 calls)",
+}
+`;

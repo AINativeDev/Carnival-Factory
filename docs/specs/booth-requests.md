@@ -12,6 +12,10 @@ accepted ones.
 - One form serves a new booth and a change alike: the factory builds the
   booth if `carnival/booths/<author>/` doesn't exist, and changes it if it does.
   The same holds for levels.
+- The booth and level forms ask two things: what it should show or be, with a
+  list of hints of what to mention (the scene, what moves, the look, the stall
+  or the squares, landmarks, little details), and its name. Style, stall
+  shape, colours and the rest go in the description in the person's own words.
 - The `assess-booth-request` skill runs when a `booth-request` or
   `level-request` issue is opened by a user, when an open `needs-info` issue is
   edited, and when someone comments on one. It does one of:

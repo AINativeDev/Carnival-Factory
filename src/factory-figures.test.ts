@@ -7,7 +7,7 @@ import {
   readFactoryStats,
   squareCounts,
   updatedAt,
-} from './factory';
+} from './factory-figures';
 
 const stats: FactoryStats = {
   builds: 41,
@@ -99,7 +99,9 @@ describe('factoryFigures', () => {
   });
 
   it('leaves out the time to the map when no request has merged', () => {
-    const labels = factoryFigures(squares, { ...stats, toMap: undefined }).map((f) => f.label);
+    const unmerged: FactoryStats = { ...stats };
+    delete unmerged.toMap;
+    const labels = factoryFigures(squares, unmerged).map((f) => f.label);
     expect(labels.some((label) => label.includes('minute'))).toBe(false);
   });
 });

@@ -1,9 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import {
   alongEdge,
   carnivalBounds,
   CARNIVAL_MARGIN,
-  dragCentre,
   duskAt,
   fitZoom,
   frameCentre,
@@ -12,19 +11,15 @@ import {
   islandCorners,
   isPhone,
   MARGIN,
-  MAX_PINCH_ZOOM,
   PHONE_ZOOM,
-  pinchCentre,
-  pinchZoom,
-  screenToWorld,
   WALK_ZOOM,
-  worldToScreen,
 } from './camera';
-import { faceOf, onFace } from './render';
-import { buildWorld, toScreen } from './world';
+import { worldToScreen } from './camera-view';
+import { faceOf, onFace } from './faces';
+import { toScreen } from './world';
+import { buildWorld } from './world-build';
+import { ATTRACTIONS, booths } from '../test-support/sample-squares';
 
-const ATTRACTIONS = ['big-top', 'cocoa-stand', 'ferris-wheel', 'frozen-pond', 'sleigh-coaster'];
-const booths = (count: number) => Array.from({ length: count }, (_, n) => `elf-${n}`);
 const world = buildWorld(ATTRACTIONS, booths(3));
 
 describe('the island', () => {
@@ -62,14 +57,15 @@ describe('the island', () => {
     const points = alongEdge({ x: 0, y: 0 }, { x: 100, y: 50 }, 24);
     expect(points[0]).toEqual({ x: 0, y: 0 });
     expect(points.at(-1)).toEqual({ x: 100, y: 50 });
-    for (let n = 1; n < points.length; n++)
-      expect(
-        Math.hypot(points[n].x - points[n - 1].x, points[n].y - points[n - 1].y),
-      ).toBeLessThanOrEqual(24);
+    points.reduce((before, point) => {
+      expect(Math.hypot(point.x - before.x, point.y - before.y)).toBeLessThanOrEqual(24);
+      return point;
+    });
   });
 
   it('has an entrance arch at the front, over the main path, where the player starts', () => {
-    const arch = world.things.find((t) => t.kind === 'arch')!;
+    const arch = world.things.find((t) => t.kind === 'arch');
+    assert(arch);
     expect(arch.x).toBe(world.extent - 1);
     expect(world.start).toEqual({ x: world.extent - 2, y: 0 });
     expect(world.ground.get(`${arch.x},0`)).toBe('path');
@@ -158,39 +154,10 @@ describe('framing', () => {
     expect(framing(world, 390, 800, world.start, 0, true).zoom).toBe(fitZoom(bounds, 390, 800));
   });
 
-  it('turns a point on screen into the world and back', () => {
-    const centre = { x: 120, y: -40 };
-    const point = { x: 300, y: 500 };
-    const there = screenToWorld(point, 1280, 800, centre, 0.4);
-    expect(worldToScreen(there, 1280, 800, centre, 0.4)).toEqual(point);
-    expect(screenToWorld({ x: 640, y: 400 }, 1280, 800, centre, 0.4)).toEqual(centre);
-  });
-
   it('darkens the dusk a little over a few minutes, and lightens it again', () => {
     expect(duskAt(0)).toBe(0);
     expect(duskAt(120_000)).toBeCloseTo(1);
     expect(duskAt(240_000)).toBeCloseTo(0);
-  });
-});
-
-describe('dragging the map', () => {
-  const bounds = islandBounds(world);
-  const zoom = PHONE_ZOOM;
-  const centre = frameCentre(bounds, 390, 844, zoom, { x: 0, y: 0 });
-
-  it('moves the island with the finger', () => {
-    const at = { x: 200, y: 400 };
-    const moved = dragCentre(bounds, 390, 844, zoom, centre, at, { x: 230, y: 380 });
-    const before = screenToWorld(at, 390, 844, centre, zoom);
-    const after = worldToScreen(before, 390, 844, moved, zoom);
-    expect(after.x).toBeCloseTo(230);
-    expect(after.y).toBeCloseTo(380);
-  });
-
-  it('stops at the edge of the island', () => {
-    const far = dragCentre(bounds, 390, 844, zoom, centre, { x: 0, y: 0 }, { x: 99999, y: 99999 });
-    expect(far.x).toBeCloseTo(bounds.x + 390 / zoom / 2);
-    expect(far.y).toBeCloseTo(bounds.y + 844 / zoom / 2);
   });
 });
 
@@ -206,33 +173,5 @@ describe('fronts', () => {
       expect(out.x - middle.x).toBe(face.out.x);
       expect(out.y - middle.y).toBe(face.out.y - 10);
     }
-  });
-});
-
-describe('pinching the map', () => {
-  const bounds = islandBounds(world);
-  const fit = fitZoom(bounds, 390, 844);
-  const zoom = PHONE_ZOOM;
-  const centre = frameCentre(bounds, 390, 844, zoom, { x: 0, y: 0 });
-
-  it('comes nearer as the fingers spread, and goes farther as they close', () => {
-    expect(pinchZoom(zoom, 100, 150, fit)).toBeCloseTo(zoom * 1.5);
-    expect(pinchZoom(zoom, 150, 100, fit)).toBeCloseTo(zoom / 1.5);
-  });
-
-  it('stops at the whole island and at the nearest the camera comes', () => {
-    expect(pinchZoom(zoom, 100, 1, fit)).toBe(fit);
-    expect(pinchZoom(zoom, 1, 100, fit)).toBe(MAX_PINCH_ZOOM);
-  });
-
-  it('keeps what was between the fingers under them', () => {
-    const from = { x: 180, y: 420 };
-    const to = { x: 200, y: 400 };
-    const next = pinchZoom(zoom, 100, 140, fit);
-    const moved = pinchCentre(bounds, 390, 844, zoom, next, centre, from, to);
-    const held = screenToWorld(from, 390, 844, centre, zoom);
-    const after = worldToScreen(held, 390, 844, moved, next);
-    expect(after.x).toBeCloseTo(to.x);
-    expect(after.y).toBeCloseTo(to.y);
   });
 });

@@ -1,4 +1,5 @@
-import type { SquareKind } from './northpole/map';
+import type { SquareKind } from './northpole/map-options';
+import { landmarkLevel } from './northpole/north-pole-levels';
 
 /**
  * A booth's owner or an attraction's id, as the URL may name it. Squares are
@@ -77,4 +78,13 @@ export function seasonLink(login: string): string {
 export function levelLink(login: string, square?: string): string {
   const base = `#/level/${encodeURIComponent(login)}`;
   return square ? `${base}?square=${encodeURIComponent(square)}` : base;
+}
+
+/**
+ * The hash that opens a square from the map: its room, or, for a landmark, its
+ * level. A landmark's own `#/attraction/<id>` still shows its room (ADR 0035).
+ */
+export function squareLink(kind: SquareKind, id: string): string {
+  const level = landmarkLevel(kind, id);
+  return level ? levelLink(level) : `#/${kind}/${encodeURIComponent(id)}`;
 }

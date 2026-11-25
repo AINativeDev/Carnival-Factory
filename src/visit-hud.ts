@@ -2,7 +2,7 @@ import { badgeFor, factoryUrl } from './northpole/badges';
 import { voteUrl } from './northpole/peoples-choice';
 import { PEOPLES_CHOICE } from './northpole/peoples-choice-standings';
 import { remixUrl } from './northpole/links';
-import type { SquareKind } from './northpole/map';
+import type { SquareKind } from './northpole/map-options';
 import type { SandboxedSquare } from './northpole/sandbox';
 import type { NorthPoleSquare } from './northpole/square';
 import { shareLink } from './northpole/visit';
@@ -22,10 +22,12 @@ import { VISIT_PANEL } from './visit-template';
 import { deepLink, levelLink } from './route';
 import { SQUARE_CRAFT, craftKey, earnedBadges, renderCraft } from './craft-badges';
 import { fillVisitHelp } from './visit-help';
+import { squareOwner } from './northpole/north-pole-levels';
 
 export interface VisitHudOptions {
-  kind: SquareKind;
-  square: NorthPoleSquare;
+  /** A square's kind, or `level` for the panel beside a level's own map (level-panel.ts). */
+  kind: SquareKind | 'level';
+  square: Pick<NorthPoleSquare, 'id' | 'name' | 'description'>;
   /** Whether to show the invitation to build a booth of your own, for someone who came by a shared link. */
   invite: boolean;
   /** Leaves the square: Esc, or the Leave button. */
@@ -43,6 +45,9 @@ export interface VisitHud {
   close(): void;
 }
 
+/** A visit's HUD, and the panel it shows, for a level's panel to fit (level-panel.ts). */
+export type VisitPanel = VisitHud & { card: HTMLElement };
+
 /**
  * The panel inside a square the player has entered, beside the room the map
  * draws. The room's own sign already shows the square's name and maker, so the
@@ -51,8 +56,10 @@ export interface VisitHud {
  * quiet footer. Focus moves into it, and back out when it closes. Every name and
  * description is only ever set as text.
  */
-export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): VisitHud {
+export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): VisitPanel {
   const { kind, square, level } = options;
+  // A level's own panel stands beside its map while the player walks it: it never takes the keys.
+  const walking = kind === 'level';
   const before = document.activeElement as HTMLElement | null;
   const card = document.createElement('section');
   card.className = 'hud visit';
@@ -62,11 +69,17 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   card.dataset.id = square.id;
   card.innerHTML = VISIT_PANEL;
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
-  const owner = kind === 'attraction' && !level ? '' : `@${level ?? square.id}`;
+  // Whose square it is: a booth's owner, a participant's level's, or nobody for the North Pole's own.
+  const login = squareOwner(kind, square.id, level);
+  const owner = login ? `@${login}` : '';
   const remix = $<HTMLAnchorElement>('.visit-remix-link');
   remix.hidden = kind !== 'booth' || !!level;
   const map = $<HTMLAnchorElement>('.visit-map');
-  map.href = level ? levelLink(level, square.id) : deepLink(kind, square.id);
+  map.href = level
+    ? levelLink(level, square.id)
+    : walking
+      ? levelLink(square.id)
+      : deepLink(kind, square.id);
   if (level) map.textContent = 'See it in the level';
 
   // An Elf Engineer's booth links to the factory on their own repository.
@@ -88,7 +101,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   // How it was built: a level's square credits the level's owner, with no history of its own.
   const tellStory = (data: SquareHistory | undefined) => {
     const steps = level
-      ? storySteps([], { maker: level, improvers: [] })
+      ? storySteps([], login ? { maker: login, improvers: [] } : undefined)
       : storySteps(historyOf(data, kind, square.id), creditsFor(data, kind, square.id));
     renderStory($('.story-list'), steps);
     const empty = $<HTMLElement>('.history-empty');
@@ -109,10 +122,11 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   showSignupOffer(card);
   fillVisitHelp($('.visit-help'), kind, square.id, level);
 
-  // A level's square has no share page of its own: its link opens the level in front of it.
-  const link = level
-    ? new URL(levelLink(level, square.id), document.baseURI).href
-    : shareLink(kind, square.id, document.baseURI);
+  // A level and its squares have no share page of their own: the link opens the level, in front of the square.
+  const link =
+    level || walking
+      ? new URL(level ? levelLink(level, square.id) : levelLink(square.id), document.baseURI).href
+      : shareLink(kind, square.id, document.baseURI);
   const share = wireShare(
     { copy: $('.visit-copy'), text: $('.visit-share-text'), options: $('.visit-more') },
     { kind, id: square.id, name: () => square.name },
@@ -152,12 +166,13 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       options.onClose();
     }
   };
-  document.addEventListener('keydown', onKeyDown);
+  if (!walking) document.addEventListener('keydown', onKeyDown);
 
   frame.append(card);
-  $<HTMLElement>('.visit-title').focus({ preventScroll: true });
+  if (!walking) $<HTMLElement>('.visit-title').focus({ preventScroll: true });
 
   return {
+    card,
     close() {
       share.stop();
       document.removeEventListener('keydown', onKeyDown);

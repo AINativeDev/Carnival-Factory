@@ -43,13 +43,13 @@ squares and play with them, and the panels move out of the way.
 - Squares never see the page's touch or pointer events, only the checked
   `{ x, y, down, presses }`, with `presses` capped at 20 a frame (enforced by:
   src/northpole/frame-protocol-draw.test.ts, the pointer tests in
-  smoke/squares.spec.ts).
+  smoke/square-pointer.spec.ts).
 - Pinch zoom stays between the whole island and 1.5, and a drag never shows
   past the island (enforced by: src/northpole/camera.test.ts).
 - A press that moves more than 8 CSS pixels is not a click (enforced by:
   src/northpole/pointer.test.ts).
 - The map fits a 390 by 844 window with no scrolling, and `#/factory` fits
-  its width (enforced by: smoke/squares.spec.ts).
+  its width (enforced by: smoke/map.spec.ts, smoke/factory-page.spec.ts).
 - The phone width is one number, 720 in `src/northpole/camera.ts`, matched by
   the CSS breakpoint `max-width: 719px` (not enforced yet).
 - Squares must open in Safari on an iPhone: the square worker is inlined into
@@ -59,17 +59,21 @@ squares and play with them, and the panels move out of the way.
 
 ## Where it lives
 
-`src/northpole/camera.ts` (`isPhone`, `PHONE_ZOOM`, `MAX_PINCH_ZOOM`,
-`dragCentre`, `pinchZoom`, `pinchCentre`), `src/northpole/map.ts` (touch,
-tap and press tracking), `src/northpole/pointer.ts` (`TAP_SLOP`),
-`src/style.css`, `src/main.ts` (`renderHud`), `src/visit-hud.ts`,
+`src/northpole/camera.ts` (`isPhone`, `PHONE_ZOOM`),
+`src/northpole/camera-view.ts` (`MAX_PINCH_ZOOM`, `dragCentre`, `pinchZoom`,
+`pinchCentre`), `src/northpole/map-touch.ts`
+(dragging and pinching), `src/northpole/map-pointer.ts` (tap and press
+tracking), `src/northpole/pointer.ts` (`TAP_SLOP`),
+`src/style.css`, `src/map-page.ts` (`renderHud`), `src/visit-hud.ts`,
 `src/northpole/frame.ts`.
 
 ## Tested by
 
-`src/northpole/camera.test.ts`, `src/northpole/pointer.test.ts`,
+`src/northpole/camera.test.ts`, `src/northpole/camera-view.test.ts`, `src/northpole/pointer.test.ts`,
 `smoke/safari.spec.ts` (the `webkit` project in `playwright.config.ts`, as an
 iPhone 13: the squares in view open and none is broken), and
-`smoke/squares.spec.ts` at 390 by 844: deep links open the map on the square,
-`#/factory` fits with no horizontal scroll, the map fits the window with no
-scrolling, and inside a booth its drawing gets the pointer and taps by touch.
+the smoke specs at 390 by 844: deep links open the map on the square
+(`smoke/deep-links.spec.ts`), `#/factory` fits with no horizontal scroll
+(`smoke/factory-page.spec.ts`), the map fits the window with no scrolling
+(`smoke/map.spec.ts`), and inside a booth its drawing gets the pointer and taps
+by touch (`smoke/square-pointer.spec.ts`).

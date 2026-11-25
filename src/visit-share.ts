@@ -3,7 +3,7 @@
  * with the square's link, which "Share options" lets the visitor edit or open
  * on the map. A booth's owner can share it as theirs, which changes the line.
  */
-import type { SquareKind } from './northpole/map';
+import type { SquareKind } from './northpole/map-options';
 import { shareText } from './northpole/visit';
 
 export interface ShareParts {
@@ -15,7 +15,7 @@ export interface ShareParts {
 /** Wires up Share for one square; `refresh` rewrites the line unless the visitor edited it. */
 export function wireShare(
   parts: ShareParts,
-  square: { kind: SquareKind; id: string; name: () => string },
+  square: { kind: SquareKind | 'level'; id: string; name: () => string },
   link: string,
 ) {
   let mine = false;

@@ -11,7 +11,9 @@ import {
   targetAt,
   nearYou,
 } from './visit';
-import { buildWorld, walkAlong, type Plot } from './world';
+import { walkAlong } from './walking';
+import { type Plot } from './world';
+import { buildWorld } from './world-build';
 
 const ATTRACTIONS = ['big-top', 'cocoa-stand', 'ferris-wheel', 'frozen-pond', 'sleigh-coaster'];
 const world = buildWorld(ATTRACTIONS, ['elf-0', 'elf-1', 'jedi4ever'], pinned);
@@ -54,6 +56,15 @@ describe('the share line', () => {
   it('invites to build a booth beside an attraction', () => {
     expect(shareText({ kind: 'attraction', id: 'ferris-wheel', name: 'Ferris Wheel' }, 'L')).toBe(
       'Ferris Wheel is at the North Pole Carnival. Come visit, and build a booth of your own: L',
+    );
+  });
+
+  it("names a participant's level's builder, and a North Pole level as the North Pole's", () => {
+    expect(shareText({ kind: 'level', id: 'bo', name: 'Ice Maze' }, 'L')).toBe(
+      '@bo built Ice Maze, a level, at the North Pole Carnival. Come visit, and build your own: L',
+    );
+    expect(shareText({ kind: 'level', id: 'the-factory', name: 'The Factory' }, 'L')).toBe(
+      'The Factory, a level, is at the North Pole Carnival. Come visit, and build a booth of your own: L',
     );
   });
 

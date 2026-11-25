@@ -35,7 +35,9 @@ What runs on every pull request, and what each check guarantees.
   the network, storage and the page, the map's own frame budget (25 ms on CI),
   deep links, stall shapes, Share, the season card, badges, `#/factory`,
   walking, visiting and leaving, construction sites, the Booths panel, fitting
-  the window, the pointer, and history layout.
+  the window, the pointer, and history layout. Each part of the map has its
+  own spec file, and what they share (the squares, the budgets, the request
+  check, reading the map's camera and stage) is in `smoke/support/`.
 - `smoke/levels.spec.ts` walks every open level from its arrival to each
   square, inside each one, and to the sleigh home. `smoke/level-walk.ts`
   walks to each door in steps, each a click on the furthest tile of the way
@@ -58,7 +60,7 @@ What runs on every pull request, and what each check guarantees.
   (not enforced yet).
 - Every booth and attraction opens, draws within the frame budget and stays
   quiet, and every open level walks from arrival to each square and home
-  (enforced by: smoke/squares.spec.ts, smoke/levels.spec.ts).
+  (enforced by: smoke/squares-play.spec.ts, smoke/levels.spec.ts).
 - The house rules reach every square: every `.ts` and `.js` file under
   `carnival/booths`, `carnival/attractions` and each level's `squares/` runs
   with `no-restricted-globals`, `no-restricted-imports` and `no-eval` at error,
@@ -75,8 +77,8 @@ What runs on every pull request, and what each check guarantees.
   smoke test; CI runs it (enforced by: the instructions in tessl.json).
 - No native dependencies: `npm ci` is the whole setup for `npm run check`
   (not enforced yet).
-- A code file has at most 200 lines; older files are held to their length in
-  `lint/oversize-baseline.json`, which only shrinks (enforced by: ESLint
+- A code file has at most 200 lines, with no exceptions and no baseline
+  ([ADR 0036](../adr/0036-no-oversize-files.md); enforced by: ESLint
   `max-lines`, lint/file-size.js, scripts/file-size.test.ts).
 - No unused files, exports or dependencies (enforced by: Knip, `knip.json`).
 - Markdown is linted and JSON parses (enforced by: markdownlint-cli2,
@@ -89,6 +91,10 @@ What runs on every pull request, and what each check guarantees.
   findings, and the baselines for older code only shrink, except that carnival
   files only have to stay within theirs (enforced by: tsconfig.strict.json,
   scripts/strict-types.ts, `strictTypeChecked` with eslint-suppressions.json).
+- Baselines only shrink: a pull request may lower a number in a baseline or
+  drop an entry, never raise one, add one or add a baseline file (enforced
+  by: scripts/baselines-shrink.ts, the "Baselines only shrink" step in
+  .github/workflows/ci.yml).
 - Coverage: 99% of added lines, and of the branch arms on them, in `src/`,
   `scripts/` and `lint/` ([ADR 0031](../adr/0031-changed-branches-too.md)), and the
   whole-repository thresholds only rise, raised on main with

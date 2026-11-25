@@ -5,7 +5,7 @@ import { defineConfig, type Plugin } from 'vitest/config';
 import { BADGE_REQUEST_URL } from './src/northpole/links.ts';
 import { readBoothAddedDates } from './scripts/booth-dates.ts';
 import { adventCounts, badgeHolders, peoplesChoice, squareCraft } from './scripts/build-data.ts';
-import { badgePage } from './scripts/elf-engineer.ts';
+import { badgePage } from './scripts/badge-page.ts';
 import {
   factorySharePage,
   readSquareInfo,

@@ -9,7 +9,7 @@
  * This is the page's own file on its own site: squares still never reach the
  * network. Without it, as in a preview or a local build, nothing is pending.
  */
-import { readPending, type PendingBooth } from './northpole/plots';
+import { readPending, type PendingBooth } from './northpole/construction-sites';
 
 /** How often an open page reads `pending.json` again. */
 const PENDING_EVERY_MS = 2 * 60 * 1000;

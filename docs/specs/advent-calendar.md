@@ -35,22 +35,24 @@ decorates the participant's booth. The participant guide is
 - Counts come only from acceptances `tessl-app[bot]` wrote, for the issue's
   author. An issue counts by its latest decision only, so a declined one never
   counts. A day counts once per person (enforced by: scripts/advent.ts,
-  scripts/advent.test.ts).
+  scripts/advent-counts.test.ts).
 - `cleanCalendar` keeps only well-formed challenges, one a day, with `https:`
   docs links. `cleanCounts` keeps lower-case logins with 1 to 24. Doors open
   at midnight on their day by the visitor's clock (enforced by:
   src/northpole/advent.test.ts).
 - Security: counts are baked in at build time, so the page never asks the
-  network (enforced by: the request check in smoke/squares.spec.ts). Every
+  network (enforced by: the request check in smoke/support/carnival.ts). Every
   challenge is set as text and nothing is tracked (not enforced yet).
 
 ## Where it lives
 
 `carnival/challenges/advent.json`, `src/advent.ts`, `src/northpole/advent.ts`,
 `scripts/advent.ts`, `scripts/check-advent.ts`, `scripts/write-advent.ts`,
-`src/northpole/render.ts` (decorations),
+`src/northpole/advent-decorations.ts` (decorations),
 `plugins/north-pole/skills/assess-advent-challenge/SKILL.md`.
 
 ## Tested by
 
-`src/advent.test.ts`, `src/northpole/advent.test.ts`, `scripts/advent.test.ts`.
+`src/advent.test.ts`, `src/northpole/advent.test.ts`, `scripts/advent.test.ts`,
+`scripts/advent-counts.test.ts`, `scripts/advent-form.test.ts` (the issue form
+names its fields and days as the scripts read them).

@@ -7,13 +7,13 @@
  */
 import {
   decideBadge,
-  formField,
   FORM_FIELDS,
   freeText,
   parsePullRequest,
   parseRepository,
   type BadgeFacts,
 } from './elf-engineer.ts';
+import { formField } from './issue-form.ts';
 import { exists, get, repoPath } from './github-api.ts';
 import { scanParticipantText } from './injection-scan.ts';
 

@@ -1,19 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
 import calendar from '../carnival/challenges/advent.json';
 import {
-  acceptMarker,
-  ADVENT_FIELDS,
-  ADVENT_MARKER,
-  adventCounts,
   adventDayOptions,
   adventFreeText,
   decideAdvent,
   parseAdventLink,
   parseDay,
-  readAccepted,
   type AdventFacts,
-  type AdventRecord,
 } from './advent';
 
 describe('parseDay', () => {
@@ -81,6 +74,9 @@ describe('decideAdvent', () => {
     repo: { fullName: 'octocat/hello', owner: 'octocat' },
     item: { kind: 'pull', number: 7, author: 'tessl-app[bot]' },
   };
+  /** The facts with one left out, as scripts/check-advent.ts gives what GitHub couldn't find. */
+  const without = (missing: 'dayField' | 'repo' | 'item'): AdventFacts =>
+    Object.fromEntries(Object.entries(facts).filter(([key]) => key !== missing)) as AdventFacts;
 
   it('passes a public pull request on the author’s own repository on to the skill', () => {
     expect(decideAdvent(facts)).toEqual({
@@ -119,7 +115,7 @@ describe('decideAdvent', () => {
   });
 
   it('declines a missing day, a door not open yet, or a link it can’t read', () => {
-    expect(decideAdvent({ ...facts, dayField: undefined })).toMatchObject({ check: false });
+    expect(decideAdvent(without('dayField'))).toMatchObject({ check: false });
     expect(decideAdvent({ ...facts, openedAt: new Date(Date.UTC(2026, 10, 30)) })).toEqual({
       check: false,
       reason: "day 2's door hadn't opened yet",
@@ -128,11 +124,11 @@ describe('decideAdvent', () => {
   });
 
   it('declines a repository GitHub can’t show, and a link that isn’t in it', () => {
-    expect(decideAdvent({ ...facts, repo: undefined })).toEqual({
+    expect(decideAdvent(without('repo'))).toEqual({
       check: false,
       reason: "octocat/hello isn't a public repository",
     });
-    expect(decideAdvent({ ...facts, item: undefined })).toMatchObject({ check: false });
+    expect(decideAdvent(without('item'))).toMatchObject({ check: false });
     expect(
       decideAdvent({ ...facts, item: { kind: 'issue', number: 7, author: 'octocat' } }),
     ).toMatchObject({ check: false });
@@ -146,80 +142,5 @@ describe('decideAdvent', () => {
         item: { kind: 'pull', number: 7, author: 'elf' },
       }),
     ).toEqual({ check: false, reason: "elves/hello isn't yours, and you didn't open that one" });
-  });
-});
-
-describe('readAccepted', () => {
-  it('reads back the day an acceptance marks', () => {
-    expect(readAccepted(`${ADVENT_MARKER}\n${acceptMarker(9)}\nWell done!`)).toBe(9);
-    expect(readAccepted('<!-- advent-done: 30 -->')).toBeUndefined();
-    expect(readAccepted('no marker')).toBeUndefined();
-  });
-});
-
-describe('adventCounts', () => {
-  const app = { login: 'tessl-app[bot]', type: 'Bot' };
-  const accept = (day: number, at = '2026-12-05T00:00:00Z') => ({
-    user: app,
-    body: `${ADVENT_MARKER}\n${acceptMarker(day)}\nWell done!`,
-    created_at: at,
-  });
-  const record = (
-    number: number,
-    login: string,
-    comments: AdventRecord['comments'],
-    labels: string[] = ['advent-done', 'accepted'],
-  ): AdventRecord => ({
-    issue: { number, user: { login }, labels: labels.map((name) => ({ name })) },
-    comments,
-  });
-
-  it('counts each participant’s accepted days, once a day', () => {
-    expect(
-      adventCounts([
-        record(1, 'Octocat', [accept(1)]),
-        record(2, 'octocat', [accept(2)]),
-        record(3, 'octocat', [accept(2)]),
-        record(4, 'elf', [accept(5)]),
-      ]),
-    ).toEqual({ elf: 1, octocat: 2 });
-  });
-
-  it('only counts acceptances the Tessl App wrote', () => {
-    const forged = { ...accept(1), user: { login: 'octocat', type: 'User' } };
-    expect(adventCounts([record(1, 'octocat', [forged])])).toEqual({});
-  });
-
-  it('goes by the latest decision, and skips anything labelled declined', () => {
-    const declined = {
-      user: app,
-      body: `${ADVENT_MARKER}\nNot this time.`,
-      created_at: '2026-12-06T00:00:00Z',
-    };
-    expect(
-      adventCounts([
-        record(1, 'octocat', [accept(1), declined]),
-        record(2, 'octocat', [accept(2)], ['advent-done', 'declined']),
-      ]),
-    ).toEqual({});
-  });
-});
-
-describe('the Advent challenge issue form', () => {
-  const form = readFileSync(
-    new URL('../.github/ISSUE_TEMPLATE/04-advent-challenge.yml', import.meta.url),
-    'utf8',
-  );
-
-  it('labels its issues advent-done, and names its fields as the scripts read them', () => {
-    expect(form).toContain('labels: [advent-done]');
-    expect(form).toContain(`label: ${ADVENT_FIELDS.day}\n`);
-    expect(form).toContain(`label: ${ADVENT_FIELDS.link}\n`);
-  });
-
-  it('offers every day of the calendar, each read back as its own day', () => {
-    const options = [...form.matchAll(/^ {8}- (['"])(Day .*)\1$/gm)].map((match) => match[2]);
-    expect(options).toEqual(adventDayOptions(calendar));
-    expect(options.map(parseDay)).toEqual(calendar.challenges.map((c) => c.day));
   });
 });

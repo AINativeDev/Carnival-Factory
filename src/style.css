@@ -523,6 +523,26 @@ body[data-view='map'] .map {
   display: block;
 }
 
+/* On a level, the same corner takes you home to the North Pole, until you go inside one of its squares. */
+.hud-home {
+  top: 12px;
+  left: 12px;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font: bold 14px var(--font-family);
+  text-decoration: none;
+}
+
+.map-frame[data-visiting] .hud-home {
+  display: none;
+}
+
+.hud-home:hover,
+.hud-home:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
 .map-frame[data-visiting] .hud-tessl,
 .map-frame[data-factory] .hud-tessl {
   display: none;
@@ -559,21 +579,61 @@ a.hud-tessl:focus-visible {
   width: auto;
 }
 
-/* A level's own card: its name, its owner, what it is, and the way home. */
+/*
+ * A level's own panel is a visit's panel (level-panel.ts) standing beside its
+ * map, not over it: on the right, or below it on a phone. The map's frame takes
+ * what's left, so the camera frames the level there and the way home in its
+ * top-left corner is never covered. The map doesn't show the level's name, so
+ * the panel does, and under it its owner.
+ */
+body[data-view='map'] .map:has(> .hud-level) {
+  flex-direction: row;
+}
+
 .hud-level {
-  top: 12px;
-  right: 12px;
-  width: 260px;
-  max-width: calc(100% - 24px);
+  position: relative;
+  flex: none;
+  box-sizing: border-box;
+  width: 344px;
+  overflow: auto;
+  padding: 12px 18px 16px;
+  border-left: 3px solid var(--color-gold);
+  border-radius: 0;
+  box-shadow: none;
+  text-align: left;
+  animation: visit-in 0.5s ease-out;
 }
 
-.hud-level h1 {
+@media (max-width: 719px) {
+  body[data-view='map'] .map:has(> .hud-level) {
+    flex-direction: column;
+  }
+
+  .hud-level {
+    width: auto;
+    max-height: 43%;
+    border-top: 3px solid var(--color-gold);
+    border-left: 0;
+  }
+  /* The map is shorter above the panel, and a phone walks by touch: the key hints step aside. */
+  .map:has(> .hud-level) .hud-controls {
+    display: none;
+  }
+}
+
+.hud-level .visit-title {
+  margin-top: 0;
+}
+
+/* What a level hasn't got, such as the way out of a room, stays hidden whatever its own display. */
+.hud-level [hidden] {
+  display: none;
+}
+
+.level-owner {
   margin: 0;
-  font-size: 18px;
-}
-
-.hud-level p {
-  margin: 4px 0;
+  font-size: 13px;
+  font-style: italic;
 }
 
 .hud-group {
@@ -862,7 +922,6 @@ kbd {
 .map-frame[data-visiting] .map-prompt,
 .map-frame[data-visiting] .hud-actions,
 .map-frame[data-visiting] .hud-booths,
-.map-frame[data-visiting] .hud-level,
 .map-frame[data-visiting] .hud-controls,
 .map-frame[data-factory] .hud-booths,
 .map-frame[data-factory] .hud-controls {
@@ -1204,6 +1263,7 @@ kbd {
 }
 
 .visit a,
+.hud-level a,
 .visit-mine {
   color: var(--color-berry);
 }
@@ -1295,6 +1355,7 @@ kbd {
 }
 
 .visit :focus-visible,
+.hud-level :focus-visible,
 .factory :focus-visible {
   outline: 3px solid var(--color-gold);
   outline-offset: 2px;
@@ -1344,6 +1405,7 @@ kbd {
   }
 
   .visit,
+  .hud-level,
   .factory {
     animation: none;
   }

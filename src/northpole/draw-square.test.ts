@@ -1,12 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { drawSquare } from './map';
+import { drawSquare } from './draw-square';
 import type { NorthPoleSquare } from './square';
 
 /** A stand-in canvas context that records the calls made on it. */
 function recordingContext() {
   const calls: string[] = [];
   const args: unknown[][] = [];
-  const ctx = new Proxy({} as Record<string, unknown>, {
+  const store: Record<string, unknown> = {};
+  const ctx = new Proxy(store, {
     get: (target, key: string) =>
       key in target
         ? target[key]
@@ -39,7 +40,9 @@ describe('drawSquare', () => {
     drawSquare(
       map.ctx,
       scratch.canvas,
-      booth((ctx) => ctx.fillRect(0, 0, 1, 1)),
+      booth((ctx) => {
+        ctx.fillRect(0, 0, 1, 1);
+      }),
       10,
       20,
       100,
