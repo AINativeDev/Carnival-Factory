@@ -24,11 +24,6 @@
       "count": 2
     }
   },
-  "carnival/booths/chandler767/booth.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 2
-    }
-  },
   "carnival/booths/fernandezbaptiste/booth.test.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 1
