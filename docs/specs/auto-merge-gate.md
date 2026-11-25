@@ -25,7 +25,9 @@ every check passes on its head commit. Any doubt sends it to a person.
 ## Rules
 
 The steps, all on the current head commit (enforced by: scripts/booth-gate.ts,
-scripts/auto-merge-booths.ts, scripts/booth-gate.test.ts):
+scripts/merge-gate-facts.ts, scripts/booth-gate.test.ts,
+scripts/auto-merge-booths-waits.test.ts,
+scripts/auto-merge-booths-needs-human.test.ts):
 
 1. **Request accepted** (hard): the linked issue is open and has
    `booth-request` and `tessl`. A superseded request is closed, so it fails.
@@ -38,7 +40,8 @@ scripts/auto-merge-booths.ts, scripts/booth-gate.test.ts):
    folder, no symlinks, at most 40 files, 100 KB each, 300 KB in all.
    `plot.json` holds only a plot and maybe an issue number, and only a new
    booth's first pull request may add or change it (enforced by:
-   scripts/square-code.ts, scripts/square-code.test.ts).
+   scripts/square-code.ts and its rule families in scripts/square-code/,
+   scripts/square-code.test.ts, scripts/square-code/*.test.ts).
 4. **No hidden instructions** (hard): no text aimed at an AI, hidden
    characters or encoded blobs in the issue's title and body, the pull
    request's title, or the code (enforced by: scripts/injection-scan.ts,
@@ -58,26 +61,70 @@ scripts/auto-merge-booths.ts, scripts/booth-gate.test.ts):
 
 - The gate puts `needs-human` on for its own hard failures only (steps 1 to
   4), never over a maintainer who just took it off (enforced by:
-  scripts/auto-merge-booths.ts).
+  scripts/merge-gate-decision.ts,
+  scripts/auto-merge-booths-needs-human.test.ts).
 - Security: the workflow runs main's own code on every trigger, never checks
   out or runs the pull request's code, and reads its files as text through
-  the API. The token is kept out of `.git/config` (enforced by:
-  .github/workflows/auto-merge-booths.yml).
+  the API (scripts/merge-gate-booth-files.ts). The token is kept out of
+  `.git/config` (enforced by: .github/workflows/auto-merge-booths.yml).
 - The merge is pinned to the head sha, and if it fails and the pull request
   is not merged, `auto-merged` comes off (enforced by:
-  scripts/auto-merge-booths.ts).
+  scripts/merge-gate-actions.ts, scripts/auto-merge-booths.test.ts).
+- GitHub's passing failures don't stop a round: a request GitHub answers
+  502, 503 or 504, or whose connection fails, is tried up to 3 times in all,
+  after 1 s and then 3 s; any other status fails at once. A write that would
+  do something twice, a merge, a new comment or a workflow dispatch, is tried
+  again only when its connection never reached GitHub (refused, not found or
+  timed out connecting), never after an answer or a connection that broke
+  once sent, since GitHub may have done it. Reads, edits, deletes and adding
+  labels are retried either way (enforced by:
+  scripts/merge-gate-github.ts, scripts/merge-gate-github.test.ts).
+- A failure about one pull request, while gating it or reading its history
+  to decide whether to publish the map, is logged and skips only that pull
+  request: the round gates and publishes for the others, then exits non-zero
+  so the failure shows (enforced by: scripts/merge-gate-round.ts,
+  scripts/merge-gate-publish.ts, scripts/merge-gate-round.test.ts).
 - Level requests never merge on their own: the gate only takes
-  `booth-request` issues (enforced by: scripts/auto-merge-booths.ts).
+  `booth-request` issues (enforced by: scripts/merge-gate-requests.ts,
+  scripts/auto-merge-booths-pulls.test.ts).
 
 ## Where it lives
 
-`scripts/booth-gate.ts`, `scripts/auto-merge-booths.ts`,
-`scripts/square-code.ts`, `scripts/injection-scan.ts`,
+`scripts/booth-gate.ts` decides. `scripts/auto-merge-booths.ts` is the
+runner the workflow starts: it reads its settings and runs one round,
+`scripts/merge-gate-round.ts`, with a GitHub client passed in
+(`scripts/merge-gate-github.ts`). The round gathers the facts
+(`scripts/merge-gate-facts.ts`, `scripts/merge-gate-booth-files.ts`,
+`scripts/merge-gate-requests.ts`), decides (`evaluateGate`, and
+`scripts/merge-gate-decision.ts` for its own `needs-human`), and acts
+(`scripts/merge-gate-actions.ts`, `scripts/merge-gate-publish.ts`). Also
+`scripts/square-code.ts`, which runs the code check's rule families in
+`scripts/square-code/`: `banned-names.ts` and `reach.ts` (banned globals,
+properties, strings and computed keys), `names.ts` (names that are not
+references), `imports.ts` (the import allow-list), `loading.ts` (nothing runs
+while a square loads), `syntax.ts` (`with`, `debugger`, tagged templates and
+canvases of its own), `text-checks.ts` (hidden characters and injection),
+`plot-file.ts` (`plot.json`), `square-program.ts` (the program the rules ask for types and declarations, whose compiler errors are not read)
+and `problems.ts` (what a problem is). Then `scripts/injection-scan.ts`,
 `.github/workflows/auto-merge-booths.yml`,
 `.github/workflows/auto-merge-digest.yml`,
 `plugins/north-pole/skills/assess-booth-risk/SKILL.md`.
 
 ## Tested by
 
-`scripts/booth-gate.test.ts`, `scripts/square-code.test.ts`,
-`scripts/injection-scan.test.ts`.
+`scripts/booth-gate.test.ts`, `scripts/square-code.test.ts` (the check as a
+whole, and every real booth and attraction), one test file per rule family
+in `scripts/square-code/` (`banned-names.test.ts`, `imports.test.ts`,
+`loading.test.ts`, `syntax.test.ts`, `text-checks.test.ts`,
+`plot-file.test.ts`, sharing the made-up booth in `test-booth.ts`), and
+`scripts/injection-scan.test.ts`. The runner is pinned end to end against a
+scripted GitHub (`scripts/merge-gate-fake-github.ts`, with the booth world in
+`scripts/merge-gate-world.ts`) by `scripts/auto-merge-booths.test.ts` (a
+merge, the checklist, a failed merge), `scripts/auto-merge-booths-waits.test.ts`
+(each reason to wait, and the hourly limit),
+`scripts/auto-merge-booths-needs-human.test.ts` (each reason for a person)
+and `scripts/auto-merge-booths-pulls.test.ts` (forks, other branches,
+publishing the map), `scripts/merge-gate-round.test.ts` passes the
+scripted client straight to the round (and one bad pull request among good
+ones), and `scripts/merge-gate-github.test.ts` pins the client's retries
+against the scripted GitHub's failures in turn and unreachable connections.

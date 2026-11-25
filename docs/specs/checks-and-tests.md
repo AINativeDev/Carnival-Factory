@@ -11,7 +11,7 @@ What runs on every pull request, and what each check guarantees.
 - Vitest runs `{src,carnival,scripts,lint}/**/*.test.ts` in Node, configured in
   `vitest.config.ts`.
 - On a pull request, CI checks that 99% of the lines it adds to `src/`,
-  `scripts/` and `lint/` ran under the unit tests, and runs ShellCheck and
+  `scripts/` and `lint/`, and of the branch arms on them, ran under the unit tests, and runs ShellCheck and
   actionlint.
 - Claude Code hooks (`.claude/settings.json`) check each file an agent edits,
   and run types, Knip and the tests before it finishes. When the installed packages
@@ -84,7 +84,8 @@ What runs on every pull request, and what each check guarantees.
   findings, and the baselines for older code only shrink, except that carnival
   files only have to stay within theirs (enforced by: tsconfig.strict.json,
   scripts/strict-types.ts, `strictTypeChecked` with eslint-suppressions.json).
-- Coverage: 99% of added lines in `src/`, `scripts/` and `lint/`, and the
+- Coverage: 99% of added lines, and of the branch arms on them, in `src/`,
+  `scripts/` and `lint/` ([ADR 0031](../adr/0031-changed-branches-too.md)), and the
   whole-repository thresholds only rise (enforced by: scripts/diff-coverage.ts,
   the thresholds in vitest.config.ts).
 - The docs name only files that exist, and the ADR index lists every record

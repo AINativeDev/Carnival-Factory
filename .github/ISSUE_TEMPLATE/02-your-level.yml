@@ -41,6 +41,12 @@ body:
         ice-fishing hole on the shore.
     validations:
       required: true
+  - type: input
+    id: name
+    attributes:
+      label: Your level's name
+      description: Shown on its platform at the sleigh station, up to about 24 characters. Leave it empty to keep the name it has.
+      placeholder: Frozen Lake Fair
   - type: dropdown
     id: style
     attributes:
@@ -97,12 +103,6 @@ body:
         - Aurora green and violet
         - Mint
         - Night blue
-  - type: input
-    id: name
-    attributes:
-      label: Your level's name
-      description: Shown on its platform at the sleigh station, up to about 24 characters. Leave it empty to keep the name it has.
-      placeholder: Frozen Lake Fair
   - type: textarea
     id: done
     attributes:

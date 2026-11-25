@@ -38,13 +38,19 @@ body:
     id: what
     attributes:
       label: What should your booth show?
-      description: The scene, in a few sentences. Who or what is in it, and what are they doing? For a change, what should be different.
+      description: The scene, in a few sentences. Who or what is in it, and what are they doing? For a change, what should be different. You can also attach a picture to draw from, such as your logo or a sketch; the factory redraws it in shapes.
       placeholder: |
         A frozen pond at dusk. Two penguins in scarves skate figure eights, and a
         third wobbles at the edge holding a cup of cocoa. Pine trees behind, a
         lantern on a post.
     validations:
       required: true
+  - type: input
+    id: name
+    attributes:
+      label: Your booth's name
+      description: Shown on your booth's sign, up to about 24 characters. Leave it empty to keep the name it has.
+      placeholder: Penguin Pond
   - type: dropdown
     id: style
     attributes:
@@ -109,12 +115,6 @@ body:
         - Aurora green and violet
         - Mint
         - Night blue
-  - type: input
-    id: name
-    attributes:
-      label: Your booth's name
-      description: Shown on your booth's sign, up to about 24 characters. Leave it empty to keep the name it has.
-      placeholder: Penguin Pond
   - type: textarea
     id: done
     attributes:

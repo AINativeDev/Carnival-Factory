@@ -272,7 +272,7 @@ describe('badgeHolders', () => {
 
 describe('badgePage', () => {
   const site = 'https://ainativedev.github.io/Northpole-Carnival-Factory/';
-  const page = badgePage(site, 'https://github.com/x/y/issues/new?template=02-elf-engineer.yml');
+  const page = badgePage(site, 'https://github.com/x/y/issues/new?template=03-elf-engineer.yml');
 
   it('shows every badge with a snippet that links back to the map', () => {
     for (const image of ['', '-bronze', '-silver', '-gold']) {
