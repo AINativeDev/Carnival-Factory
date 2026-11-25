@@ -4,9 +4,17 @@ What runs on every pull request, and what each check guarantees.
 
 ## Behaviour
 
-- `npm run check` runs ESLint, Prettier's check, `tsc --noEmit` and Vitest.
-  CI runs it and `npm run build` on every pull request and push to main.
-- Vitest runs `{src,carnival,scripts}/**/*.test.ts` in Node.
+- `npm run check` runs `lint` (ESLint, markdownlint, the JSON check, Knip),
+  Prettier's check, `typecheck` (`tsc --noEmit` and the strict baseline) and
+  Vitest with coverage. CI runs it and `npm run build` on every pull request
+  and push to main.
+- Vitest runs `{src,carnival,scripts,lint}/**/*.test.ts` in Node, configured in
+  `vitest.config.ts`.
+- On a pull request, CI checks that 99% of the lines it adds to `src/`,
+  `scripts/` and `lint/` ran under the unit tests, and runs ShellCheck and
+  actionlint.
+- Claude Code hooks (`.claude/settings.json`) check each file an agent edits,
+  and run types, Knip and the tests before it finishes.
 - **Booth ownership** runs on every pull request (see [booths](booths.md)).
 - `npm run smoke` is Playwright against the built site on port 4173, one
   worker. Projects: `chromium` at 1200 by 1000 (or the local Chrome with
@@ -44,7 +52,7 @@ What runs on every pull request, and what each check guarantees.
   with `no-restricted-globals`, `no-restricted-imports` and `no-eval` at error,
   and `fetch` is flagged in each. Every level's `level.ts` is held to plain
   data. So if squares move and the rules don't, the check fails (enforced by:
-  scripts/square-lint.test.ts).
+  scripts/square-lint-reach.test.ts).
 - Every booth, attraction and level fits the size budget, and every real
   level passes `validateLevel` (enforced by: scripts/square-size.test.ts,
   src/northpole/level.test.ts).
@@ -55,16 +63,44 @@ What runs on every pull request, and what each check guarantees.
   smoke test; CI runs it (enforced by: the instructions in tessl.json).
 - No native dependencies: `npm ci` is the whole setup for `npm run check`
   (not enforced yet).
+- A code file has at most 200 lines; older files are held to their length in
+  `lint/oversize-baseline.json`, which only shrinks (enforced by: ESLint
+  `max-lines`, lint/file-size.js, scripts/file-size.test.ts).
+- No unused files, exports or dependencies (enforced by: Knip, `knip.json`).
+- Markdown is linted and JSON parses (enforced by: markdownlint-cli2,
+  scripts/check-json.ts).
+- Shell scripts and workflows pass ShellCheck and actionlint (enforced by: the
+  `shell` job in .github/workflows/ci.yml).
+- Workflow patterns that find squares start from `carnival/` (enforced by:
+  scripts/workflow-paths.test.ts).
+- Strict TypeScript: new code has no strict compiler errors or strict lint
+  findings, and the baselines for older code only shrink, except that carnival
+  files only have to stay within theirs (enforced by: tsconfig.strict.json,
+  scripts/strict-types.ts, `strictTypeChecked` with eslint-suppressions.json).
+- Coverage: 99% of added lines in `src/`, `scripts/` and `lint/`, and the
+  whole-repository thresholds only rise (enforced by: scripts/diff-coverage.ts,
+  the thresholds in vitest.config.ts).
+- The docs name only files that exist, and the ADR index lists every record
+  (enforced by: scripts/docs-paths.test.ts). Whether the prose is still true,
+  names say why, and changes are tested first and end to end (enforced by:
+  the review-craft lens; not on carnival pull requests).
 
 ## Where it lives
 
 `package.json`, `.github/workflows/ci.yml`,
 `.github/workflows/preview-build.yml`, `playwright.config.ts`, `smoke/`,
 `scripts/smoke-scope.ts`, `scripts/flashing.ts`, `eslint.config.js`,
-`vite.config.ts` (`test`).
+`lint/`, `knip.json`, `.markdownlint-cli2.jsonc`, `tsconfig.strict.json`,
+`vitest.config.ts`, `scripts/diff-coverage.ts`, `scripts/strict-types.ts`,
+`scripts/check-json.ts`, `scripts/docs-paths.ts`, `scripts/hooks/`,
+`.claude/settings.json`, `plugins/north-pole/skills/review-craft/`.
 
 ## Tested by
 
 `scripts/smoke-scope.test.ts`, `scripts/flashing.test.ts`,
-`scripts/square-lint.test.ts`, `scripts/square-size.test.ts`,
-`src/northpole/level.test.ts`.
+`scripts/square-lint.test.ts`, `scripts/square-lint-reach.test.ts`,
+`scripts/square-size.test.ts`, `src/northpole/level.test.ts`,
+`scripts/file-size.test.ts`, `scripts/diff-coverage.test.ts`,
+`scripts/strict-types.test.ts`, `scripts/check-json.test.ts`,
+`scripts/docs-paths.test.ts`, `scripts/workflow-paths.test.ts`,
+`scripts/hooks/hooks.test.ts`.

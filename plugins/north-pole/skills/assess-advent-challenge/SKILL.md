@@ -111,7 +111,7 @@ leaves a comment promising something that didn't happen. Create a missing label
   issue as completed. `<day>` is `decision.day` and `<title>` is the
   challenge's title.
 
-  ```
+  ```text
   <!-- assess-advent-challenge -->
   <!-- advent-done: <day> -->
   Well done! Day <day>, <title>, is marked done. Your booth on the map gets its decoration with the site's next build.
@@ -120,7 +120,7 @@ leaves a comment promising something that didn't happen. Create a missing label
 - **For a maintainer** (`decision.review` is true, or step 0's text rule): add
   `needs-human`, then comment, and leave the issue open:
 
-  ```
+  ```text
   <!-- assess-advent-challenge -->
   Thanks! A maintainer will look at this one before it's decided.
   ```
@@ -129,7 +129,7 @@ leaves a comment promising something that didn't happen. Create a missing label
   match): add `declined`, then comment, then close the issue as not planned.
   `<reason>` is `decision.reason`, or step 2's reason.
 
-  ```
+  ```text
   <!-- assess-advent-challenge -->
   Thanks for taking part! This one isn't marked done yet: <reason>. Once that's sorted, you're welcome to mark it done again with the same form.
   ```

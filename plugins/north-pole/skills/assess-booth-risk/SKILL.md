@@ -99,7 +99,7 @@ verdict without its label:
 Create a missing label before you use it. Then comment, starting with the
 marker for the **current head sha**, exactly like this:
 
-```
+```text
 <!-- assess-booth-risk sha=<40-character head sha> verdict=<low-risk|needs-human> -->
 **Risk and taste check:** <low-risk | needs a person>
 

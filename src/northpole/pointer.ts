@@ -10,7 +10,7 @@ import type { SquarePointer } from './square';
 import type { Tile } from './world';
 
 /** How far, in CSS pixels, a press may move before letting go and still count as a click. */
-export const TAP_SLOP = 8;
+const TAP_SLOP = 8;
 
 /**
  * Where a world point falls on a square `size` across that is drawn through

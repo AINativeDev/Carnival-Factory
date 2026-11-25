@@ -10,6 +10,8 @@ Say **what's in the scene, what it's doing, and how it should feel**. Compare:
 
 > Something Christmassy with animals.
 
+with:
+
 > A frozen pond at dusk. Two penguins in red scarves skate slow figure eights,
 > and a third wobbles at the edge holding a mug of cocoa that steams. Pine
 > trees behind, a lantern that flickers. Cosy and a little silly.
@@ -69,7 +71,7 @@ someone else owns, though anything _in the spirit of_ one is fine.
 
 ## Ideas to start from
 
-**Cosy**
+### Cosy
 
 - A reading nook by a fireplace, with a cat curled on a footstool whose tail
   twitches, and snow falling past the window.
@@ -78,7 +80,7 @@ someone else owns, though anything _in the spirit of_ one is fine.
 - A hot spring in the snow with three snow monkeys, one of them wearing a
   little towel on its head.
 
-**Busy**
+### Busy
 
 - An elf post office: letters drop down a chute, get stamped, and slide into
   sacks on a conveyor.
@@ -86,7 +88,7 @@ someone else owns, though anything _in the spirit of_ one is fine.
   lands in a snowdrift.
 - A toy repair shop where a wind-up robot gets a new key and marches off.
 
-**Night and lights**
+### Night and lights
 
 - A lighthouse on an iceberg, its beam sweeping slowly through falling snow.
 - A cabin under the northern lights, with the aurora rippling across the sky
@@ -94,14 +96,14 @@ someone else owns, though anything _in the spirit of_ one is fine.
 - A lantern festival on a frozen lake, with lanterns rising slowly and drifting
   off the top.
 
-**Silly**
+### Silly
 
 - A snowman barber shop: a snowman gets his carrot nose trimmed.
 - Penguins queuing for an ice cream van in a blizzard.
 - A polar bear trying to fit into a tiny igloo, giving up, and building a
   bigger one.
 
-**Made for you**
+### Made for you
 
 - Your hometown's best-known building, covered in snow.
 - Your team's mascot, ice skating.

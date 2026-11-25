@@ -25,15 +25,15 @@ import {
 } from './world';
 
 /** The ground a level may lay. Snow is everywhere else. */
-export const LEVEL_GROUNDS = ['snow', 'ice', 'path', 'water', 'bridge'] as const;
-export type LevelGround = (typeof LEVEL_GROUNDS)[number];
+const LEVEL_GROUNDS = ['snow', 'ice', 'path', 'water', 'bridge'] as const;
+type LevelGround = (typeof LEVEL_GROUNDS)[number];
 
 /**
  * The engine's catalogue of North Pole things a level may place, with the
  * tiles each one covers and whether it stops people walking through it. The
  * pond is the one prop that's ground: a sheet of ice that skaters go round.
  */
-export const LEVEL_PROPS = {
+const LEVEL_PROPS = {
   pine: { thing: 'tree', w: 1, h: 1, blocks: true },
   drift: { thing: 'drift', w: 1, h: 1, blocks: false },
   cabin: { thing: 'cabin', w: 3, h: 3, blocks: true },
@@ -52,7 +52,7 @@ export const LEVEL_PROPS = {
   string,
   { thing: ThingKind | undefined; w: number; h: number; blocks: boolean }
 >;
-export type LevelPropKind = keyof typeof LEVEL_PROPS;
+type LevelPropKind = keyof typeof LEVEL_PROPS;
 
 /**
  * The looks a level may pick, each from the map's palette: the colours of its
@@ -65,17 +65,17 @@ export const LEVEL_THEMES = {
   'frozen-lake': { tint: theme.colors.ice, sign: theme.colors.ice },
   gingerbread: { tint: theme.colors.gingerbread, sign: theme.colors.gingerbread },
 } as const;
-export type LevelTheme = keyof typeof LEVEL_THEMES;
+type LevelTheme = keyof typeof LEVEL_THEMES;
 
 /** A tile, or a box of tiles when it has a width and height. */
-export interface LevelArea {
+interface LevelArea {
   x: number;
   y: number;
   w?: number;
   h?: number;
 }
 
-export interface LevelProp {
+interface LevelProp {
   kind: LevelPropKind;
   /** The north corner of the tiles it covers. */
   x: number;
@@ -89,7 +89,7 @@ export interface LevelProp {
  * whose north corner is (x, y). Visitors stand at its door, the tile east of
  * its top row, (x + 2, y).
  */
-export interface LevelSquarePlace {
+interface LevelSquarePlace {
   id: string;
   x: number;
   y: number;
@@ -123,11 +123,11 @@ export interface NorthPoleLevel {
   squares?: LevelSquarePlace[];
 }
 
-export const LEVEL_SIZE = { min: 9, max: 41 };
+const LEVEL_SIZE = { min: 9, max: 41 };
 /** The most squares of its own a level may have. */
-export const MAX_LEVEL_SQUARES = 8;
-export const MAX_LEVEL_PROPS = 400;
-export const MAX_LEVEL_AREAS = 200;
+const MAX_LEVEL_SQUARES = 8;
+const MAX_LEVEL_PROPS = 400;
+const MAX_LEVEL_AREAS = 200;
 const MAX_NAME = 40;
 const MAX_DESCRIPTION = 160;
 
@@ -365,6 +365,3 @@ export function validateLevel(
   }
   return problems;
 }
-
-/** A level's owner, from its folder: a GitHub login in lower case. */
-export const isLevelOwner = isBoothOwner;

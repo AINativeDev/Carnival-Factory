@@ -31,7 +31,31 @@ levels and the advent challenges. Everything else is the code that runs it.
 ## Commands
 
 Run `npm run format`, then `npm run check`, before you finish any change. CI
-runs `npm run check` and `npm run build`.
+runs `npm run check` and `npm run build`. `npm run check` is:
+
+- `npm run lint`: ESLint (the house rules, the 200-line limit and the strict
+  type-aware rules), markdownlint, a JSON check and Knip for unused code;
+- `npm run format:check`: Prettier;
+- `npm run typecheck`: TypeScript, and the strict flags against their baseline
+  (`node scripts/strict-types.ts`);
+- `npm test`: the unit tests with coverage, whose thresholds only rise.
+
+On a pull request, CI also runs `npm run test:changed` (99% of the lines it adds
+to `src/`, `scripts/` and `lint/` must run under the tests) and checks shell
+scripts and workflows with ShellCheck and actionlint (`npm run lint:shell`
+locally, if both are installed).
+
+**Claude Code hooks** (`.claude/settings.json`) run the same checks for you:
+each file you write or edit is checked at once, and the project checks (types,
+Knip, the tests) run before you finish. When one fails, fix it before going on.
+
+**Baselines only shrink.** Code that predates a rule is frozen at its current
+debt in `lint/oversize-baseline.json` (file length),
+`lint/strict-types-baseline.json` (strict compiler flags) and
+`eslint-suppressions.json` (strict lint). New code is held to the full rule.
+When you improve a file in `src/`, `scripts/` or `lint/`, lower its number in
+the same change; the hook prunes ESLint's suppressions for you. Never raise a
+number or add a file to a baseline.
 
 The factory's sandbox can't start a browser, so agents there never run
 `npm run smoke` or install Playwright: CI runs the smoke test on every pull
@@ -66,6 +90,17 @@ is that way. Read the spec for the area before you change it.
   Never a comment that repeats the code ([ADR 0023](docs/adr/0023-meaningful-names-and-docs.md)).
 - **No dead code.** Remove what a change stops using, in the same change
   ([ADR 0021](docs/adr/0021-knip.md)).
+- **Test first.** Write the failing test, then the code, then tidy. A bug fix
+  starts with a test that reproduces it ([ADR 0024](docs/adr/0024-test-first.md)).
+  New lines need 99% coverage ([ADR 0025](docs/adr/0025-test-coverage.md)).
+- **End to end.** What people see or do on the page has a Playwright test in
+  `smoke/`, at phone width when it differs there
+  ([ADR 0026](docs/adr/0026-end-to-end-tests.md)).
+- **Strict types.** No non-null assertions, no unsafe `any`, and index access
+  that may miss is handled ([ADR 0027](docs/adr/0027-strict-typescript.md)).
+
+A booth or level request follows the size, type and test rules for its own
+folder only: it never edits a baseline or a doc outside it.
 
 ## Layout
 
@@ -477,6 +512,8 @@ edit its description to add them, since the number comes with it. Locally it's
 The `.tessl/` rules linked below are not committed. `tessl install` fetches
 them, and the factory runs it before every session. If `.tessl/RULES.md` is
 missing, run `tessl install` first.
+
+<!-- markdownlint-disable MD025 -->
 
 # Agent Rules <!-- tessl-managed -->
 

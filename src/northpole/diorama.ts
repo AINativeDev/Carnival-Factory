@@ -22,7 +22,7 @@ export interface Point {
 }
 
 /** The ground slab: its middle on screen, how far it reaches along each side, and how thick it is. */
-export const GROUND = { x: 50, y: 66, reach: 22, depth: 6 };
+const GROUND = { x: 50, y: 66, reach: 22, depth: 6 };
 
 /**
  * Where a spot on the ground is on screen, `z` above it. `gx` runs down to the
@@ -103,7 +103,7 @@ export function backdrop(ctx: CanvasRenderingContext2D) {
 }
 
 /** The slab of snowy ground the scene stands on: a lit top, two sides and a soft shadow under it. */
-export function slab(ctx: CanvasRenderingContext2D) {
+function slab(ctx: CanvasRenderingContext2D) {
   const { reach: r, depth } = GROUND;
   box(ctx, -r, -r, 2 * r, 2 * r, depth, colors.snow, colors.slab, colors.slabShade, -depth);
   // The light falls from the upper left, so the far left of the snow is warmest.
@@ -365,7 +365,7 @@ export function cone(
 }
 
 /** How bright string light `n` is at `time`: a slow, gentle shimmer, never a flash. */
-export function shimmer(time: number, n: number) {
+function shimmer(time: number, n: number) {
   return 0.8 + 0.2 * Math.sin(time / 900 + n * 1.9);
 }
 

@@ -12,12 +12,12 @@
 import { readPending, type PendingBooth } from './northpole/plots';
 
 /** How often an open page reads `pending.json` again. */
-export const PENDING_EVERY_MS = 2 * 60 * 1000;
+const PENDING_EVERY_MS = 2 * 60 * 1000;
 /** Where the page remembers the construction sites it last showed, so the booth that replaces one sparkles. */
 const STORAGE_KEY = 'north-pole-sites';
 
 /** Reads the pending booth requests, bypassing every cache; undefined if it can't. */
-export async function latestPending(base = document.baseURI): Promise<PendingBooth[] | undefined> {
+async function latestPending(base = document.baseURI): Promise<PendingBooth[] | undefined> {
   try {
     const url = new URL(`pending.json?t=${Date.now()}`, base);
     const response = await fetch(url, { cache: 'no-store' });

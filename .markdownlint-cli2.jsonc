@@ -1,0 +1,21 @@
+{
+  // Markdown carries the rules agents follow, so it is linted like code
+  // (docs/adr/0022). Prettier owns wrapping and spacing, so the rules that
+  // fight it are off.
+  "config": {
+    "default": true,
+    "MD013": false, // line length: Prettier wraps prose
+    "MD033": false, // inline HTML: the README's centred hero and images
+    "MD041": false, // first line a heading: issue and PR templates start with text
+  },
+  "globs": ["**/*.md"],
+  "ignores": [
+    "node_modules",
+    "dist",
+    ".tessl",
+    ".agents",
+    ".claude",
+    "test-results",
+    "playwright-report",
+  ],
+}

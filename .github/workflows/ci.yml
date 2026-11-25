@@ -22,4 +22,24 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      # New and changed lines need 99% unit-test coverage (docs/adr/0025).
+      # The pull request's merge commit is compared with its base branch.
+      - name: Coverage of changed lines
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE"
+          node scripts/diff-coverage.ts "origin/$BASE"
       - run: npm run build
+
+  shell:
+    # Shell scripts through ShellCheck, and workflows through actionlint, which
+    # also checks every run: step with ShellCheck (docs/adr/0022).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: shellcheck setup.sh
+      - run: docker run --rm -v "$PWD:/repo" --workdir /repo rhysd/actionlint:1.7.12 -color

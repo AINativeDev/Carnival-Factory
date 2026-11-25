@@ -93,7 +93,7 @@ for this repository: `<site>` below.
   `decision.tier`, or `none` when it has none; `<image>` is
   `badges/elf-engineer.svg`, or `badges/elf-engineer-<tier>.svg` with a tier.
 
-  ````
+  ````text
   <!-- assess-badge-request -->
   <!-- elf-engineer-badge: <decision.repo> <tier> -->
   Congratulations, Elf Engineer! <decision.repo> has a working Tessl factory, so the badge is yours<, at <tier>: N factory pull requests merged, when it has a tier>. Your booth gets an elf-hat pin and a link to your factory with the site's next build.
@@ -110,7 +110,7 @@ for this repository: `<site>` below.
 - **For a maintainer** (`decision.review` is true): add `needs-human`, then
   comment, and leave the issue open:
 
-  ```
+  ```text
   <!-- assess-badge-request -->
   Thanks for asking. A maintainer will look at this request before it's decided.
   ```
@@ -118,7 +118,7 @@ for this repository: `<site>` below.
 - **Declined** (`decision.grant` is false, with no `review`): add `declined`, then comment, then
   close the issue as not planned:
 
-  ```
+  ```text
   <!-- assess-badge-request -->
   Thanks for asking. The badge isn't granted this time: <decision.reason>. Once that's sorted, you're welcome to ask again with the same form.
   ```

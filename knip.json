@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "scripts/*.ts",
+    "carnival/booths/*/booth.ts",
+    "carnival/attractions/*/attraction.ts",
+    "scripts/hooks/check-*.ts",
+    "carnival/levels/*/level.ts",
+    "carnival/levels/*/squares/*/square.ts",
+    "lint/*.js"
+  ],
+  "project": ["{src,scripts,carnival,lint,smoke}/**/*.{ts,js}", "*.{ts,js}"],
+  "ignore": ["lint/*.d.ts"],
+  "ignoreBinaries": ["shellcheck", "actionlint"]
+}

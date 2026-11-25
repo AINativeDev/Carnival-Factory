@@ -22,7 +22,7 @@ const LOGIN = /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/;
 /** A repository as `owner/name`. */
 const REPO = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}\/[A-Za-z0-9._-]{1,100}$/;
 
-export const isLogin = (text: string) => LOGIN.test(text);
+const isLogin = (text: string) => LOGIN.test(text);
 export const isRepo = (text: string) => REPO.test(text) && !/\/\.\.?$/.test(text);
 
 /**

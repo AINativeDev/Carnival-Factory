@@ -25,7 +25,7 @@ every link it gives still goes somewhere.
 1. **Read the README** at the repository's root. If there is none, stop and say
    so.
 2. **Collect the commands** from its fenced `sh`, `bash`, `shell` or `console`
-   blocks, in order, dropping a leading `$ `. Keep the heading each came under.
+   blocks, in order, dropping a leading `$` prompt and its space. Keep the heading each came under.
 3. **Run them** in a fresh clone of the default branch, in the README's order,
    each with a five minute limit. A command that starts a server counts as
    working once it's listening; stop it then. Note each one's exit code and the

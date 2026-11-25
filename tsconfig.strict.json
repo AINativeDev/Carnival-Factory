@@ -1,0 +1,8 @@
+{
+  "//": "The strictest flags, still being adopted: scripts/strict-types.ts holds every file to its count of errors in lint/strict-types-baseline.json, which only shrinks (docs/adr/0027-strict-typescript.md). Once the baseline is empty, these move into tsconfig.json.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true
+  }
+}
