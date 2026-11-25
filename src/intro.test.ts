@@ -105,7 +105,7 @@ describe('the intro as a dialog', () => {
     expect(dialog.getAttribute('role')).toBe('dialog');
     expect(dialog.getAttribute('aria-modal')).toBe('true');
     const title = document.getElementById(dialog.getAttribute('aria-labelledby') ?? '');
-    expect(title?.textContent).toBe('Welcome to the North Pole Carnival');
+    expect(title?.textContent).toBe('Welcome to Carnival Factory – Christmas edition');
     expect(document.querySelectorAll('.intro-beat')).toHaveLength(3);
     expect(document.querySelectorAll('.intro-beat canvas')).toHaveLength(3);
     const build = the('.intro-build') as HTMLAnchorElement;

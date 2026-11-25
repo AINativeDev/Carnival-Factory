@@ -37,7 +37,7 @@ afterEach(() => {
 });
 
 describe('visit', () => {
-  it("opens a square's panel, which can say it's yours, close, or claim the plot next door", () => {
+  it("opens a square's panel, which can say it's yours, close, or get the spot next door", () => {
     const page = onTheMap();
     page.invite = 'ana';
     visit(page, 'booth', 'ana', false);
@@ -68,7 +68,7 @@ describe('visit', () => {
     expect(note()).toBe('The North Pole has no attraction called "big-top".');
     lastMap().visit.mockReturnValueOnce(false);
     visit(page, 'booth', 'ana', false);
-    expect(note()).toBe("There's no booth for @ana yet. Claim it!");
+    expect(note()).toBe("There's no booth for @ana yet. Get a booth");
     page.shown = 'ana';
     visit(page, 'attraction', 'shed', false);
     expect(note()).toBe('Ana land has no square called "shed".');

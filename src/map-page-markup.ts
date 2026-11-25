@@ -15,7 +15,7 @@ import { the } from './dom';
 export const NORTH_POLE_MAP = `
     <section class="map">
       <div class="map-frame">
-        <canvas class="map-canvas" tabindex="0" aria-label="The North Pole. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a booth or an attraction to go inside, or at an open plot to claim it. Inside, Esc or walking out through the doorway leaves."></canvas>
+        <canvas class="map-canvas" tabindex="0" aria-label="The North Pole. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a booth or an attraction to go inside, or at a free spot to build your booth there. Inside, Esc or walking out through the doorway leaves."></canvas>
         <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
         <a class="hud hud-tessl" href="#/factory">Built with Tessl</a>
@@ -23,10 +23,10 @@ export const NORTH_POLE_MAP = `
         ${BOOTHS_PANEL}
         <details class="hud hud-controls">
           <summary>Controls</summary>
-          <p>Walk with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys, <kbd>E</kbd> to visit or claim</p>
+          <p>Walk with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys, <kbd>E</kbd> to go inside or build</p>
         </details>
         <div class="hud-actions">
-          <button class="hud hud-claim" type="button">Claim a plot</button>
+          <button class="hud hud-claim" type="button">Get a booth</button>
           <button class="hud hud-overview" type="button">Show the whole island</button>
         </div>
       </div>
@@ -34,9 +34,9 @@ export const NORTH_POLE_MAP = `
       <div class="visually-hidden">
         <p>
           Welcome to the North Pole. The attractions round the town square are part of the North
-          Pole itself, and the stalls along the lanes each belong to one person. The plots marked
-          "For claim" are waiting for a booth:
-          <a href="${CLAIM_URL}" target="_blank" rel="noopener">claim your own</a>.
+          Pole itself, and the stalls along the lanes each belong to one person. The spots marked
+          "Free spot" are waiting for a booth:
+          <a href="${CLAIM_URL}" target="_blank" rel="noopener">get a booth</a>.
         </p>
         <nav class="map-guide" aria-label="Attractions">
           <h2>Attractions</h2>

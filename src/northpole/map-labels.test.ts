@@ -64,8 +64,8 @@ describe('what plots say', () => {
   });
 
   it('puts the right words on the call to action', () => {
-    expect(promptWords(m, plot('open'))).toBe('Claim this plot');
-    expect(promptWords(m, plot('site', 'blitzen'))).toMatch(/^Being built for @blitzen: /);
+    expect(promptWords(m, plot('open'))).toBe('Build your booth here');
+    expect(promptWords(m, plot('site', 'blitzen'))).toMatch(/^Booth for @blitzen: /);
     expect(promptWords(m, plot('exit'))).toBe('Take the sleigh back to the North Pole');
     expect(promptWords(m, plot('platform', 'tester'))).toBe('Take the sleigh to Test Fair');
     expect(promptWords(m, plot('platform', 'shut'))).toBe('Shut Fair is closed for repairs');
@@ -103,7 +103,7 @@ describe('avatars', () => {
 });
 
 describe('opening a plot', () => {
-  it('opens the claim form for an open plot, and the request for a site', () => {
+  it('opens the booth form at a free spot, and the request for a site', () => {
     const opened: string[] = [];
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
       this: HTMLAnchorElement,

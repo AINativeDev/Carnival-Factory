@@ -6,7 +6,7 @@
  */
 import { bulb, corners, diamond, glow, middle, quad } from './brushes';
 import { LIGHTS } from './island';
-import { CLAIM_SIGN } from './open-plot';
+import { FREE_SPOT_SIGN } from './open-plot';
 import { inTurn } from './rounds';
 import { PAVILION, STALL } from './stall-plan';
 import { theme } from './theme';
@@ -72,7 +72,7 @@ export function drawPlotGlow(ctx: CanvasRenderingContext2D, plot: Plot, strength
       ? PAVILION.wall
       : plot.kind === 'booth'
         ? STALL.wall
-        : CLAIM_SIGN.post;
+        : FREE_SPOT_SIGN.post;
   glow(ctx, x, y - tall / 2, tall, strength);
 }
 

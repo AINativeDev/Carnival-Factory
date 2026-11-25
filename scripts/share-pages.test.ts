@@ -17,7 +17,7 @@ describe('share pages', () => {
 
   it('unfurls with a title, a description and the map as the image', () => {
     expect(page).toContain(
-      `<meta property="og:title" content="Santa&#39;s &lt;Toy&gt; Factory, by @elf, at the North Pole Carnival" />`,
+      `<meta property="og:title" content="Santa&#39;s &lt;Toy&gt; Factory, by @elf, at Carnival Factory" />`,
     );
     expect(page).toContain(
       '<meta property="og:description" content="Toys &amp; &quot;elves&quot;" />',
@@ -38,16 +38,19 @@ describe('share pages', () => {
 
   it('gives a square without a description a line of its own', () => {
     const bare = sharePage({ kind: 'attraction', id: 'x', name: 'X', description: '' }, 'map.png');
-    expect(bare).toContain('<title>X at the North Pole Carnival</title>');
+    expect(bare).toContain('<title>X at Carnival Factory</title>');
     expect(bare).not.toContain('by the North Pole');
-    expect(bare).toContain('Visit X at the North Pole Carnival');
+    expect(bare).toContain('Visit X at Carnival Factory, and get a booth too.');
+    expect(bare).toContain(
+      '<meta property="og:site_name" content="Carnival Factory – Christmas edition" />',
+    );
   });
 
   it("gives the factory's numbers a share page of their own", () => {
     const factory = factorySharePage('map.png');
-    expect(factory).toContain('<title>The North Pole Carnival factory</title>');
+    expect(factory).toContain('<title>The factory behind Carnival Factory</title>');
     expect(factory).toContain(
-      '<meta property="og:title" content="The North Pole Carnival factory" />',
+      '<meta property="og:title" content="The factory behind Carnival Factory" />',
     );
     expect(factory).toContain('<meta http-equiv="refresh" content="0; url=../#/factory" />');
     expect(factory).not.toMatch(/<script/i);

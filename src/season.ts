@@ -1,3 +1,4 @@
+import { SITE_NAME } from './edition';
 import { EMPTY_SEASON, readSeason, type SeasonData, type SeasonStats } from '../scripts/season';
 
 declare const __SEASON__: unknown;
@@ -49,5 +50,5 @@ export function seasonShareText(
     shipped > 0
       ? `I shipped ${shipped} ${plural(shipped, 'request', 'requests')} to ${boothName}`
       : `I built ${boothName}`;
-  return `My season at the North Pole Carnival as @${login}: ${what}. Come visit: ${link}`;
+  return `My season at ${SITE_NAME} as @${login}: ${what}. Come visit: ${link}`;
 }

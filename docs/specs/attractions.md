@@ -18,7 +18,7 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   nobody. Its hover tag names no owner, and inside, the North Pole's emblem
   (a gold star on a red disc) stands where a booth shows its owner's portrait.
 - Inside, the visit panel has no Remix link. It says attractions belong to the
-  North Pole and offers to claim a booth beside it.
+  North Pole and offers "Get a booth" beside it.
 - The ferris wheel is the Booths panel's Featured square.
 - The Factory is a landmark: opening it from the map, by a click, E or Enter,
   takes the sleigh into the North Pole's level of

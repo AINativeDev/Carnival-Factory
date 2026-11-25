@@ -6,6 +6,7 @@
  * to the world with the player inside the square. They have no scripts: the
  * redirect is a meta refresh, with a plain link beside it. No tracking.
  */
+import { SITE_NAME, SITE_TITLE } from '../src/edition.ts';
 
 export type ShareKind = 'booth' | 'attraction';
 
@@ -92,13 +93,11 @@ export function sharePage(square: SharedSquare, image: string): string {
   return previewPage({
     title:
       square.kind === 'booth'
-        ? `${square.name}, by @${square.id}, at the North Pole Carnival`
-        : `${square.name} at the North Pole Carnival`,
-    description:
-      square.description ||
-      `Visit ${square.name} at the North Pole Carnival, and build a booth of your own.`,
+        ? `${square.name}, by @${square.id}, at ${SITE_NAME}`
+        : `${square.name} at ${SITE_NAME}`,
+    description: square.description || `Visit ${square.name} at ${SITE_NAME}, and get a booth too.`,
     to: worldLink(square.kind, square.id),
-    link: `Visit ${square.name} at the North Pole Carnival`,
+    link: `Visit ${square.name} at ${SITE_NAME}`,
     image,
   });
 }
@@ -109,11 +108,10 @@ export const FACTORY_LINK = '../#/factory';
 /** The share page of the factory's numbers, `share/factory.html`. */
 export function factorySharePage(image: string): string {
   return previewPage({
-    title: 'The North Pole Carnival factory',
-    description:
-      'How many booths a software factory has built for the North Pole Carnival, and how busy it is.',
+    title: `The factory behind ${SITE_NAME}`,
+    description: `How many booths a software factory has built for ${SITE_TITLE}, and how busy it is.`,
     to: FACTORY_LINK,
-    link: "See the North Pole Carnival factory's numbers",
+    link: "See the factory's numbers",
     image,
   });
 }
@@ -141,7 +139,7 @@ function previewPage(page: {
     <title>${title}</title>
     <meta name="description" content="${description}" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="North Pole Carnival" />
+    <meta property="og:site_name" content="${escapeHtml(SITE_TITLE)}" />
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
     <meta property="og:image" content="${picture}" />

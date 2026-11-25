@@ -48,7 +48,7 @@ export const FACTORY_TOUR: Readonly<Record<string, TourStop>> = {
   },
   map: {
     story:
-      'Merged, the booth goes live: the next deploy builds the map and puts it on its plot, where the construction site stood. Then anyone can walk up and visit it.',
+      'Merged, the booth goes live: the next deploy builds the map and puts it on its spot, where it was being built. Then anyone can walk up and visit it.',
     label: 'How your request is built',
     href: `${FILE}/docs/how-it-works.md`,
   },
@@ -58,7 +58,7 @@ export const FACTORY_TOUR: Readonly<Record<string, TourStop>> = {
 export function fillTourStop(help: Element, id: string) {
   // Only its own stops: an id such as `constructor` is no stop of the tour.
   const stop = Object.hasOwn(FACTORY_TOUR, id) ? FACTORY_TOUR[id] : undefined;
-  const more = `<a href="#/factory">See the factory’s numbers</a> <span aria-hidden="true">·</span> <a href="${CLAIM_URL}" target="_blank" rel="noopener">Ask for a booth of your own</a>`;
+  const more = `<a href="#/factory">See the factory’s numbers</a> <span aria-hidden="true">·</span> <a href="${CLAIM_URL}" target="_blank" rel="noopener">Get a booth</a>`;
   help.innerHTML = stop
     ? `<p class="tour-story">${stop.story.replace('<login>', '&lt;login&gt;')}</p>
       <p><a class="tour-link" href="${stop.href}" target="_blank" rel="noopener">${stop.label}</a> <span aria-hidden="true">·</span> ${more}</p>`
