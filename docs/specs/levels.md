@@ -2,8 +2,10 @@
 
 A level is a whole patch of the North Pole of a participant's own,
 `carnival/levels/<login>/`, reached by sleigh from the sleigh station. The
-North Pole has levels of its own too, such as The Factory,
-`carnival/levels/the-factory/` ([ADR 0035](../adr/0035-north-pole-levels.md)).
+North Pole has levels of its own too: The Factory,
+`carnival/levels/the-factory/`, The Academy, `carnival/levels/the-academy/`,
+and The Recording Studio, `carnival/levels/the-studio/`
+([ADR 0035](../adr/0035-north-pole-levels.md)).
 
 ## Behaviour
 
@@ -68,6 +70,17 @@ North Pole has levels of its own too, such as The Factory,
   and the map, to the sleigh home. Each stall's panel tells its step in two
   or three sentences, with a link to the real thing and to `#/factory`, from
   fixed text in `src/factory-tour.ts`.
+- The Academy, `#/level/the-academy`, is a campus with one lesson stall per
+  section of the Tessl Academy, in its order: Quickstart, Skill Foundations,
+  Tuning Your Agent, Code Review Loops and Reference. The Recording Studio,
+  `#/level/the-studio`, is a studio lot with the Podcast Booth, the Video
+  Set, the Control Room, the Green Room and the Broadcast Tower.
+- A North Pole level may link out: its links, from `NORTH_POLE_LINKS` in
+  `src/northpole/north-pole-links.ts`, show as buttons under the description
+  on the level's panel, its landmark's room and each of its squares' panels,
+  and open in a new tab. The Academy has "Start the Academy"; The Recording
+  Studio has "Listen to the podcast" and "Watch on YouTube"
+  ([ADR 0038](../adr/0038-north-pole-links.md)).
 
 ## Rules
 
@@ -110,6 +123,12 @@ North Pole has levels of its own too, such as The Factory,
 - A North Pole level's panel and its stalls' panels credit nobody, and its
   landmark's room takes the sleigh inside (enforced by: src/level-panel.test.ts,
   src/history.test.ts, src/visit-help.test.ts and smoke/the-factory.spec.ts).
+- Only a North Pole level links out, only to https addresses, from
+  maintainer code and never from level data; each link is built with DOM
+  calls and opens in a new tab with `rel="noopener"` (enforced by:
+  src/northpole/north-pole-links.test.ts, src/level-links.test.ts,
+  src/visit-hud-links.test.ts, src/level-panel.test.ts and
+  smoke/north-pole-places.spec.ts).
 - A level's panel is the visit panel, with its name and description set only
   as text, steps aside inside a square and never covers the way home
   (enforced by: src/level-panel.test.ts, and the panel test at desktop and
@@ -123,7 +142,8 @@ North Pole has levels of its own too, such as The Factory,
 `carnival/levels/`, `src/northpole/level.ts`, `src/northpole/level-check.ts`,
 `src/northpole/level-check-places.ts`, `src/northpole/level-props.ts`,
 `src/northpole/show.ts` (and the files it draws with), `src/northpole/levels.ts`,
-`src/northpole/north-pole-levels.ts`, `src/factory-tour.ts`, `src/level-hud.ts`,
+`src/northpole/north-pole-levels.ts`, `src/northpole/north-pole-links.ts`,
+`src/level-links.ts`, `src/factory-tour.ts`, `src/level-hud.ts`,
 `src/level-panel.ts`,
 `src/northpole/world-plots.ts` (`platformPlot`), `src/level-page.ts` (`renderLevel`),
 `eslint.config.js`.
@@ -136,7 +156,12 @@ North Pole has levels of its own too, such as The Factory,
 `scripts/square-lint.test.ts` (level data held to plain data),
 `smoke/levels.spec.ts` (walks every open level to each square and home),
 `smoke/the-factory.spec.ts` (from the landmark into The Factory and past each
-stall, at desktop and phone width, and from the landmark's room), `src/northpole/north-pole-levels.test.ts`,
+stall, at desktop and phone width, and from the landmark's room),
+`smoke/north-pole-places.spec.ts` (the same for The Academy and The Recording
+Studio, with their links out), `src/northpole/north-pole-levels.test.ts`,
+`src/northpole/north-pole-links.test.ts`, `src/level-links.test.ts`,
+`src/visit-hud-links.test.ts`, `src/northpole/north-pole-places-pins.test.ts`
+(their squares' drawings pinned),
 `src/factory-tour.test.ts`, `src/level-hud.test.ts`, `src/level-panel.test.ts`,
 `src/northpole/levels.test.ts`,
 each level square's `square.test.ts`.

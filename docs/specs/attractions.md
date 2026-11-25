@@ -20,11 +20,14 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 - Inside, the visit panel has no Remix link. It says attractions belong to the
   North Pole and offers to claim a booth beside it.
 - The ferris wheel is the Booths panel's Featured square.
-- The Factory is a landmark: opening it from the map, by a click, E or Enter,
-  takes the sleigh into the North Pole's level of
-  the same id rather than into a room. `#/attraction/the-factory` still shows
-  its room, whose panel has a link to take the sleigh inside
-  ([ADR 0035](../adr/0035-north-pole-levels.md)).
+- The Factory, The Academy and The Recording Studio are landmarks: opening
+  one from the map, by a click, E or Enter, takes the sleigh into the North
+  Pole's level of the same id rather than into a room. `#/attraction/<id>`
+  still shows its room, whose panel has a link to take the sleigh inside
+  ([ADR 0035](../adr/0035-north-pole-levels.md)). The Academy (plot 10) is a
+  schoolhouse with a swinging bell, and The Recording Studio (plot 11) a
+  studio with a glowing ON AIR sign; both stand as pavilions. Their rooms
+  show their level's links out as buttons ([ADR 0038](../adr/0038-north-pole-links.md)).
 - The Gift shop shows the gifts of `plugins/north-pole-gifts/`: small factory
   loops anyone can install on their own repository.
 
@@ -57,5 +60,7 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 
 `src/northpole/attractions.test.ts`, `scripts/gift-shelf.test.ts`, each
 attraction's own `attraction.test.ts`, `smoke/squares-play.spec.ts`,
-`smoke/flashing.spec.ts`, `smoke/the-factory.spec.ts`, `src/route.test.ts`
-(a landmark opens its level), `src/visit-help.test.ts`.
+`smoke/flashing.spec.ts`, `smoke/the-factory.spec.ts`,
+`smoke/north-pole-places.spec.ts`, `src/route.test.ts` (a landmark opens its
+level), `src/visit-help.test.ts`, `src/visit-hud-links.test.ts`,
+`src/northpole/north-pole-places-pins.test.ts`.
