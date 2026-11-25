@@ -40,26 +40,41 @@ describe('noteFor: each step as a note on the board', () => {
       line: '@bo',
     });
     expect(
-      noteFor(step('built', { link: { href: '', text: '#72' }, review: { findings: 2, fixed: 2 } })),
+      noteFor(
+        step('built', { link: { href: '', text: '#72' }, review: { findings: 2, fixed: 2 } }),
+      ),
     ).toEqual({ paper: 'blueprint', title: '#72', line: 'Built', stamp: '2 fixed' });
     expect(noteFor(step('live'))).toEqual({ paper: 'star', title: 'On the map', line: '' });
-    expect(noteFor(step('made', { who: 'ana' }))).toEqual({ paper: 'letter', title: 'Made by', line: '@ana' });
+    expect(noteFor(step('made', { who: 'ana' }))).toEqual({
+      paper: 'letter',
+      title: 'Made by',
+      line: '@ana',
+    });
   });
 
   it('stamps a clean review as such, and leaves a build in progress unstamped', () => {
-    const clean = step('built', { link: { href: '', text: '#5' }, review: { findings: 0, fixed: 0 } });
+    const clean = step('built', {
+      link: { href: '', text: '#5' },
+      review: { findings: 0, fixed: 0 },
+    });
     expect(noteFor(clean).stamp).toBe('Clean');
-    const open = step('built', { link: { href: '', text: '#6' }, meta: 'Open', review: { findings: 1, fixed: 0 } });
+    const open = step('built', {
+      link: { href: '', text: '#6' },
+      meta: 'Open',
+      review: { findings: 1, fixed: 0 },
+    });
     expect(noteFor(open)).toMatchObject({ line: 'Building' });
     expect(noteFor(open).stamp).toBeUndefined();
   });
 });
 
 describe('pinnedNotes', () => {
-  it('pins the most recent steps when there are more than fit', () => {
-    const many = Array.from({ length: 9 }, (_, n) => step('changed', { link: { href: '', text: `#${String(n)}` } }));
+  it('pins the first request and the most recent steps when there are more than fit', () => {
+    const many = Array.from({ length: 9 }, (_, n) =>
+      step('changed', { link: { href: '', text: `#${String(n)}` } }),
+    );
     const notes = pinnedNotes(many);
     expect(notes).toHaveLength(MAX_NOTES);
-    expect(notes.at(-1)?.title).toBe('#8');
+    expect(notes.map((note) => note.title)).toEqual(['#0', '#4', '#5', '#6', '#7', '#8']);
   });
 });

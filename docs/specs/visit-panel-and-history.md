@@ -18,6 +18,16 @@ them.
   their GitHub profile. A build without history, such as a preview, says "Made
   by @a", then "On the map"; an attraction without history says timelines
   appear once it's on the live map.
+- **The room tells it too.** The room is dressed as the square's own: its side
+  walls match its stall outside (logs for a cabin, striped fabric for a tent,
+  planks otherwise) trimmed in its roof colour, a window on the left wall shows
+  the dusk with snow falling, a lamp lights it warm from the upper left, and
+  snow drifts in at the doorway. Right of the stage, a pinboard headed "How it
+  was built" pins the same story as notes: a request as a letter, a change as
+  a note, each build as a blueprint stamped with its fixes ("2 fixed") or
+  "Clean", and a gold star for the map. It holds four, keeping the first
+  request and the latest steps, and is left out when the wall is too narrow,
+  as on a phone. A level's squares have no board.
 - Under the timeline, one quiet line lists the craft badges the square earned
   ("Code: Small files · Tested · …"), with how squares are checked.
 - A booth shows **Remix this booth** and **Build your own**. Remix opens the
@@ -75,7 +85,8 @@ them.
 `src/visit-share.ts`, `src/visit-template.ts`, `src/visit-help.ts`, `src/craft-badges.ts`, `src/history.ts`, `scripts/square-history.ts`,
 `scripts/write-square-history.ts`, `scripts/share-pages.ts`,
 `src/northpole/visit.ts`, `src/northpole/links.ts`, `src/northpole/interior.ts`,
-`index.html`.
+`src/northpole/room-dressing.ts`, `src/northpole/room-walls.ts`,
+`src/northpole/pinboard.ts`, `src/northpole/pinboard-layout.ts`, `index.html`.
 
 ## Tested by
 
@@ -83,5 +94,7 @@ them.
 `src/visit-hud.test.ts`, `src/visit-share.test.ts`, `src/history-load.test.ts`, `scripts/square-history.test.ts`,
 `scripts/share-pages.test.ts`, `src/northpole/visit.test.ts`,
 `src/northpole/links.test.ts`, `src/northpole/interior.test.ts`,
+`src/northpole/room-dressing.test.ts`, `src/northpole/room-walls.test.ts`,
+`src/northpole/pinboard.test.ts`, `src/northpole/pinboard-layout.test.ts`,
 `smoke/squares.spec.ts` (Share, leaving, the invitation, the back button, the
 banner link, the build story's layout).
