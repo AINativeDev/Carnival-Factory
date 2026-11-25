@@ -1,16 +1,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { worldToScreen } from '../src/northpole/camera';
 import { levelWorld, validateLevel, type NorthPoleLevel } from '../src/northpole/level';
-import {
-  canStand,
-  findPath,
-  toScreen,
-  type Plot,
-  type Tile,
-  type World,
-} from '../src/northpole/world';
+import { stillCamera, walkToDoor } from './level-walk';
 
 /**
  * Walks every level: from its arrival point to each of its squares, inside
@@ -45,70 +37,6 @@ function watch(page: Page) {
     if (url.origin !== site.origin) problems.push(`request to ${request.url()}`);
   });
   return problems;
-}
-
-/** Waits until the camera stands still, and says where it is. Gives up after 15 seconds. */
-async function stillCamera(page: Page) {
-  const canvas = page.locator('.map-canvas');
-  const until = Date.now() + 15_000;
-  let camera = '';
-  while (
-    camera !== (camera = (await canvas.getAttribute('data-camera', { timeout: 5000 })) ?? '')
-  ) {
-    if (Date.now() > until) throw new Error(`the camera never stood still, last at ${camera}`);
-    await page.waitForTimeout(400);
-  }
-  const [x, y, zoom] = camera.split(',').map(Number);
-  return { x, y, zoom };
-}
-
-/**
- * The tiles beside a door the player can step onto it from, each with the
- * keys for that one step: from the east up and left on screen, from the south
- * up and right, and from the north down and left. West of a door is its stall.
- */
-const APPROACHES: { dx: number; dy: number; keys: [string, string] }[] = [
-  { dx: 1, dy: 0, keys: ['w', 'a'] },
-  { dx: 0, dy: 1, keys: ['w', 'd'] },
-  { dx: 0, dy: -1, keys: ['s', 'a'] },
-];
-
-/**
- * Walks the player to a plot's door: a click on the ground beside it, which
- * the map walks to, then a step onto the door. Clicking the door itself would
- * land on the stall in front of it. A player already on the door, such as one
- * who arrived there, stays put.
- */
-async function walkToDoor(page: Page, world: World, plot: Plot) {
-  const canvas = page.locator('.map-canvas');
-  if ((await canvas.getAttribute('data-player')) === `${plot.door.x},${plot.door.y}`) {
-    await expect(canvas).toHaveAttribute('data-near', `${plot.kind}:${plot.id}`);
-    return;
-  }
-  const approach = APPROACHES.map(({ dx, dy, keys }) => ({
-    beside: { x: plot.door.x + dx, y: plot.door.y + dy } as Tile,
-    keys,
-  })).find(
-    ({ beside }) => canStand(world, beside) && findPath(world, world.start, beside) !== undefined,
-  );
-  expect(approach, `a tile beside ${plot.kind} ${plot.id}'s door is clear`).toBeDefined();
-  const { beside, keys } = approach!;
-  const camera = await stillCamera(page);
-  const box = (await canvas.boundingBox())!;
-  const at = worldToScreen(toScreen(beside), box.width, box.height, camera, camera.zoom);
-  expect(
-    at.x >= 0 && at.y >= 0 && at.x < box.width && at.y < box.height,
-    `the tile beside ${plot.kind} ${plot.id}'s door, at ${Math.round(at.x)}, ${Math.round(at.y)}, is on the canvas`,
-  ).toBe(true);
-  await canvas.click({ position: at, timeout: 10_000 });
-  await expect(canvas).toHaveAttribute('data-player', `${beside.x},${beside.y}`, {
-    timeout: 15_000,
-  });
-  await page.waitForTimeout(300);
-  for (const key of keys) await page.keyboard.down(key);
-  await page.waitForTimeout(200);
-  for (const key of keys) await page.keyboard.up(key);
-  await expect(canvas).toHaveAttribute('data-near', `${plot.kind}:${plot.id}`);
 }
 
 mkdirSync(SHOTS, { recursive: true });
