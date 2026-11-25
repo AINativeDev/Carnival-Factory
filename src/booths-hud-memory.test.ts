@@ -11,6 +11,7 @@ beforeEach(() => {
 afterEach(() => {
   stopPanels();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 const section = (panel: HTMLElement, name: string) => {
@@ -58,12 +59,11 @@ describe('what the Booths panel remembers', () => {
   });
 
   it('just forgets when the page has no storage', () => {
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+    // happy-dom's storage doesn't go through Storage.prototype, so the page's own is replaced.
+    const off = () => {
       throw new Error('No storage');
-    });
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('No storage');
-    });
+    };
+    vi.stubGlobal('localStorage', { getItem: off, setItem: off });
     const { hud, panel } = openPanel();
     expect(hud.me).toBeUndefined();
     expect(section(panel, 'all').open).toBe(true);

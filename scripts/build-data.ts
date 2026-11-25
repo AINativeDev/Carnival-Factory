@@ -47,11 +47,11 @@ export function peoplesChoice(file: string | undefined, root: string) {
 export function squareCraft(root: string): Record<string, string[]> {
   const craft: Record<string, string[]> = {};
   for (const folder of squareFolders(root)) {
-    const parts = folder.split('/');
-    const key =
-      parts[1] === 'levels'
-        ? `level/${parts[2] ?? ''}/${parts[4] ?? ''}`
-        : `${parts[1] === 'booths' ? 'booth' : 'attraction'}/${parts[2] ?? ''}`;
+    // squareFolders gives only these three shapes of folder, so the key is a rename of it.
+    const key = folder
+      .replace(/^carnival\/levels\/([^/]+)\/squares\//, 'level/$1/')
+      .replace(/^carnival\/booths\//, 'booth/')
+      .replace(/^carnival\/attractions\//, 'attraction/');
     craft[key] = craftOf(readSquare(join(root, folder))).badges;
   }
   return craft;

@@ -51,6 +51,7 @@ describe('checksOf', () => {
       ]),
     ).toBe('passed');
     expect(checksOf([{ status: 'completed', conclusion: 'failure' }])).toBe('failed');
+    expect(checksOf([{ status: 'completed', conclusion: null }])).toBe('failed');
   });
 });
 

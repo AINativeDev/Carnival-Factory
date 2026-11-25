@@ -61,6 +61,11 @@ describe('flashingArea', () => {
     expect(flashingArea([left, left, right, right])).toBeGreaterThan(MAX_FLASHING_AREA);
   });
 
+  it('finds no flashing with nothing to measure', () => {
+    expect(flashingArea([])).toBe(0);
+    expect(maxFlashesPerSecond([])).toBe(0);
+  });
+
   it('allows a small twinkle in one corner', () => {
     const still = sample(2000, 25, () => 0.5);
     const twinkle = sample(2000, 25, (t) => (Math.floor(t / 50) % 2 ? 1 : 0));

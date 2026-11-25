@@ -20,6 +20,11 @@ describe('build-time avatars', () => {
     const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0]);
     expect(isAvatar(png)).toBe(true);
     expect(isAvatar(jpeg)).toBe(true);
+    expect(isAvatar(new TextEncoder().encode('GIF89a and more'))).toBe(true);
+    // Only the whole signature counts: a first byte or two alone is something else.
+    expect(isAvatar(new TextEncoder().encode('Gx-------'))).toBe(false);
+    expect(isAvatar(new TextEncoder().encode('GIx------'))).toBe(false);
+    expect(isAvatar(new Uint8Array([0xff, 0xd8, 0, 0, 0, 0, 0, 0]))).toBe(false);
     expect(isAvatar(new TextEncoder().encode('<html>not found</html>'))).toBe(false);
     const huge = new Uint8Array(AVATAR_MAX_BYTES + 1);
     huge.set(png);

@@ -112,7 +112,7 @@ function declaredNames(source: ts.SourceFile): string[] {
 function nameProblems(files: SquareFiles): string[] {
   const problems: string[] = [];
   for (const [path, text] of Object.entries(files)) {
-    const fileName = path.split('/').at(-1) ?? path;
+    const fileName = path.slice(path.lastIndexOf('/') + 1);
     if (!/^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z]+)+$/.test(fileName) && fileName !== 'README.md')
       problems.push(`${path}: name files in kebab-case, such as penguin-pond.ts.`);
     if (!isCode(path)) continue;

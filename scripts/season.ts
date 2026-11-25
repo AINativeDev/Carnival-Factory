@@ -84,7 +84,6 @@ export function readSeason(value: unknown): SeasonData {
   const { countedAt, participants } = value as Record<string, unknown>;
   if (typeof participants !== 'object' || participants === null) return EMPTY_SEASON;
   const count = (n: unknown) => (Number.isInteger(n) && (n as number) >= 0 ? (n as number) : 0);
-  const optional = (n: unknown) => (n === undefined ? undefined : count(n));
   const out: Record<string, SeasonStats> = {};
   for (const [login, stats] of Object.entries(participants)) {
     if (!/^[a-z0-9-]+$/.test(login) || typeof stats !== 'object' || stats === null) continue;
@@ -93,9 +92,9 @@ export function readSeason(value: unknown): SeasonData {
       requests: count(s.requests),
       shipped: count(s.shipped),
       findingsFixed: count(s.findingsFixed),
-      ...(s.featured !== undefined && { featured: optional(s.featured) }),
-      ...(s.votes !== undefined && { votes: optional(s.votes) }),
-      ...(s.advent !== undefined && { advent: optional(s.advent) }),
+      ...(s.featured !== undefined && { featured: count(s.featured) }),
+      ...(s.votes !== undefined && { votes: count(s.votes) }),
+      ...(s.advent !== undefined && { advent: count(s.advent) }),
     };
   }
   return { countedAt: typeof countedAt === 'string' ? countedAt : null, participants: out };

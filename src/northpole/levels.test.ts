@@ -6,7 +6,7 @@ vi.mock('./disabled.json', () => ({
   default: { booths: [], attractions: [], levels: ['The-Factory'] },
 }));
 
-const { levels } = await import('./levels');
+const { levels, levelOf } = await import('./levels');
 
 describe('the kill switch for levels', () => {
   it('closes a switched-off level, runs none of its squares, and keeps its credit', () => {
@@ -24,5 +24,10 @@ describe('the kill switch for levels', () => {
     const starter = levels.find((entry) => entry.login === 'jedi4ever');
     expect(starter?.closed).toBeUndefined();
     expect(starter?.owner).toBe('@jedi4ever');
+  });
+
+  it('finds a level by its login', () => {
+    expect(levelOf('jedi4ever')?.login).toBe('jedi4ever');
+    expect(levelOf('nobody')).toBeUndefined();
   });
 });
