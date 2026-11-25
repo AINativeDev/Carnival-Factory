@@ -79,7 +79,7 @@ properties, strings and computed keys), `names.ts` (names that are not
 references), `imports.ts` (the import allow-list), `loading.ts` (nothing runs
 while a square loads), `syntax.ts` (`with`, `debugger`, tagged templates and
 canvases of its own), `text-checks.ts` (hidden characters and injection),
-`plot-file.ts` (`plot.json`), `square-program.ts` (the type-checked program)
+`plot-file.ts` (`plot.json`), `square-program.ts` (the program the rules ask for types and declarations, whose compiler errors are not read)
 and `problems.ts` (what a problem is). Then `scripts/injection-scan.ts`,
 `.github/workflows/auto-merge-booths.yml`,
 `.github/workflows/auto-merge-digest.yml`,

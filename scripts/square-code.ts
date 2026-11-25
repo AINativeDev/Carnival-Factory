@@ -40,9 +40,11 @@ export function checkSquareCode(folder: string, files: readonly SourceFile[]): C
   const declaredHere = (node: ts.Identifier) => {
     // In `{ fetch }` the name is the object's own property, declared right
     // here; what it hands on is the value it names, which may be a global.
-    const symbol = ts.isShorthandPropertyAssignment(node.parent)
-      ? checker.getShorthandAssignmentValueSymbol(node.parent)
-      : checker.getSymbolAtLocation(node);
+    // Only the name: a default, as in `{ value = postMessage }`, is its own.
+    const symbol =
+      ts.isShorthandPropertyAssignment(node.parent) && node.parent.name === node
+        ? checker.getShorthandAssignmentValueSymbol(node.parent)
+        : checker.getSymbolAtLocation(node);
     return (
       !!symbol?.declarations?.length &&
       symbol.declarations.every((d) => ownFiles.has(d.getSourceFile().fileName))

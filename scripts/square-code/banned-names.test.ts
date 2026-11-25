@@ -89,6 +89,11 @@ describe('a banned name that is only a name', () => {
     expect(rules(`const close = 1;\nexport const x = { close };`)).toEqual([]);
   });
 
+  it('catches a global given as a shorthand default', () => {
+    const code = `let value: unknown;\nexport const x = () => { ({ value = postMessage } = {}); return value; };`;
+    expect(rules(code)).toEqual(['global']);
+  });
+
   it("lets the square's own names shadow a global", () => {
     expect(rules(`const close = () => 1;\nexport const x = () => close();`)).toEqual([]);
     expect(rules(`export const x = (self: number) => self + 1;`)).toEqual([]);

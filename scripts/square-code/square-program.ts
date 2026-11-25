@@ -1,8 +1,11 @@
 /**
- * The square's code as a TypeScript program, parsed and type checked but
- * never run, so the rules can ask what type a computed key has and where a
- * name is declared. It sees only the square's own files and the language's
- * own library: no DOM, no Node.
+ * The square's code as a TypeScript program, parsed and bound but never run,
+ * so the rules can ask what type a computed key has and where a name is
+ * declared. Its compiler errors are never read, so code that fails to type
+ * check is not rejected for that. Its default library is the language's own,
+ * with no DOM or Node types, but other files are read from the disk, so a
+ * `/// <reference lib="dom" />` still brings the DOM's in: the banned names
+ * are caught by name, whatever declares them.
  */
 import ts from 'typescript';
 import type { SourceFile } from './problems.ts';
