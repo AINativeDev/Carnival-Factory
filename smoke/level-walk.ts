@@ -15,7 +15,7 @@ import {
  * rests there for a while after (`SETTLE` in src/northpole/map.ts), so the
  * next door can be off the canvas when the walk starts: the walk goes in
  * steps, each to the furthest tile on its way that is on the canvas and
- * clear of every structure.
+ * clear of every structure, or to a detour when none of them is.
  */
 
 /** How far inside the canvas's edges a step's click lands, clear of the HUD. */
@@ -77,6 +77,36 @@ async function opensSomething(page: Page, position: { x: number; y: number }) {
 }
 
 /**
+ * The tile on the canvas, clear of every structure, that is the fewest steps
+ * from `beside` and fewer than `from` is, or undefined when there is none.
+ * Hovers only as many tiles as it takes, nearest first.
+ */
+async function detour(
+  page: Page,
+  world: World,
+  from: Tile,
+  beside: Tile,
+  screenOf: (tile: Tile) => { x: number; y: number } | undefined,
+) {
+  const stepsLeft = (tile: Tile) => findPath(world, tile, beside)?.length ?? Infinity;
+  const most = stepsLeft(from);
+  const tiles: { tile: Tile; left: number }[] = [];
+  for (let x = -world.extent; x <= world.extent; x++)
+    for (let y = -world.extent; y <= world.extent; y++) {
+      const tile = { x, y };
+      if (!canStand(world, tile) || !screenOf(tile)) continue;
+      const left = stepsLeft(tile);
+      if (left < most) tiles.push({ tile, left });
+    }
+  tiles.sort((a, b) => a.left - b.left);
+  for (const { tile } of tiles) {
+    const position = screenOf(tile);
+    if (position && !(await opensSomething(page, position))) return tile;
+  }
+  return undefined;
+}
+
+/**
  * One step towards `beside`: a click on the furthest tile of the way there
  * that is on the canvas where the camera stands now, then a wait for the
  * player to stop. A camera that moved before the click only makes the step
@@ -101,6 +131,12 @@ async function stepToward(page: Page, world: World, from: Tile, beside: Tile, wh
     next = tile;
     break;
   }
+  // When every tile of the way on the canvas is behind a structure, as on a
+  // phone's close camera, a detour does: the clear tile nearest `beside`.
+  next ??= await detour(page, world, from, beside, (tile) => {
+    const position = screenOf(tile);
+    return onCanvas(position) ? position : undefined;
+  });
   expect(
     next,
     `a tile on the way from ${from.x}, ${from.y} to ${what} is on the canvas and clear of every structure, with the camera at ${camera.x}, ${camera.y}`,

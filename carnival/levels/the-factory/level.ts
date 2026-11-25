@@ -55,13 +55,16 @@ const level: NorthPoleLevel = {
   ],
   arrival: { x: 6, y: 19 },
   exits: [{ x: 12, y: 18 }],
+  // Staggered so no stall stands in front of another's door on screen: a
+  // pavilion is tall, so one in line with a door across the way hides it, and
+  // a click on that door opens the pavilion instead.
   squares: [
-    { id: 'letter-box', x: 4, y: 15 },
-    { id: 'assessment-desk', x: 4, y: 10 },
-    { id: 'workshop', x: 4, y: 5 },
+    { id: 'letter-box', x: 4, y: 16 },
+    { id: 'assessment-desk', x: 4, y: 13 },
+    { id: 'workshop', x: 4, y: 7 },
     { id: 'inspection-bench', x: 12, y: 4 },
     { id: 'gate', x: 12, y: 9 },
-    { id: 'map', x: 12, y: 14 },
+    { id: 'map', x: 12, y: 15 },
   ],
 };
 

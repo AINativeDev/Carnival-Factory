@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import theFactory from '../carnival/levels/the-factory/level';
 import { FACTORY_TOUR } from './factory-tour';
+import { levelWorld } from './northpole/level';
+import { drawPlot } from './northpole/render';
+import { targetAt } from './northpole/visit';
+import { canStand, toScreen } from './northpole/world';
+import { drawingOf } from './test-support/recording-canvas';
 
 /**
  * How many path tiles each tile on The Factory's path is from the arrival
@@ -52,5 +57,32 @@ describe('FACTORY_TOUR', () => {
       expect(stop.href).toMatch(/^https:\/\/github\.com\//);
       expect(stop.label).not.toBe('');
     }
+  });
+});
+
+describe("The Factory's layout", () => {
+  it('leaves ground beside every door clear of the stalls on screen', () => {
+    // A click on ground behind a pavilion opens the pavilion (onClick in
+    // src/northpole/map.ts), so a door with every tile beside it hidden that
+    // way can't be walked to with clicks.
+    const world = levelWorld(theFactory);
+    const stalls = world.plots
+      .filter((plot) => plot.kind === 'attraction')
+      .map((plot) => {
+        const square = { id: plot.id ?? '', name: '', description: '', draw: () => undefined };
+        let box = { x: 0, y: 0, w: 0, h: 0 };
+        drawingOf((ctx) => (box = drawPlot(ctx, plot, square, () => undefined, 0)));
+        return { plot, box };
+      });
+    const hidden = world.plots
+      .filter(({ door }) =>
+        [
+          { x: door.x + 1, y: door.y },
+          { x: door.x, y: door.y + 1 },
+          { x: door.x, y: door.y - 1 },
+        ].every((tile) => !canStand(world, tile) || targetAt(stalls, toScreen(tile))),
+      )
+      .map((plot) => plot.id);
+    expect(hidden).toEqual([]);
   });
 });
