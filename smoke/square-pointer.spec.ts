@@ -67,18 +67,22 @@ test('the map gives the pointer to the square under it, and a click still opens 
   expect(problems).toEqual([]);
 });
 
-for (const viewport of [
+// The Sleigh-Ride Coaster too: a tap inside launches its sleigh.
+for (const [viewport, kind, id] of [
   { width: 1200, height: 1000, touch: false },
   { width: 390, height: 844, touch: true },
-]) {
-  test(`inside a booth, its drawing gets the pointer and taps at ${viewport.width} wide`, async ({
+].flatMap((viewport) => [
+  [viewport, 'booth', 'jedi4ever'] as const,
+  [viewport, 'attraction', 'sleigh-coaster'] as const,
+])) {
+  test(`inside the ${kind} ${id}, its drawing gets the pointer and taps at ${viewport.width} wide`, async ({
     browser,
   }) => {
     const context = await browser.newContext({ hasTouch: viewport.touch, viewport });
     const page = await context.newPage();
     const problems = watch(page);
-    await page.goto('#/booth/jedi4ever');
-    const frame = frameOf(page, 'booth', 'jedi4ever');
+    await page.goto(`#/${kind}/${id}`);
+    const frame = frameOf(page, kind, id);
     await expect(frame).toHaveAttribute('data-state', 'ready');
     const canvas = page.locator('.map-canvas');
     await expect(canvas).toHaveAttribute('data-room', '0.50,0.85');
@@ -87,7 +91,7 @@ for (const viewport of [
       await page.touchscreen.tap(stage.x + stage.w / 2, stage.y + stage.h / 3);
     } else {
       await page.mouse.move(stage.x + stage.w / 2, stage.y + stage.h / 3);
-      await expect(canvas).toHaveAttribute('data-pointer', 'booth:jedi4ever');
+      await expect(canvas).toHaveAttribute('data-pointer', `${kind}:${id}`);
       await page.mouse.down();
       await page.waitForTimeout(200);
       await page.mouse.up();

@@ -64,6 +64,10 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   so it isn't on the map, in the Booths panel's Attractions, at
   `#/attraction/gift-shop` (which says it isn't there) or among the share
   pages, and its pinned plot stays empty.
+- The Sleigh-Ride Coaster is played inside: its sleigh waits at the station
+  until a tap, with a mouse or a finger, launches it over the hill, its
+  riders' hands go up on each drop, and each launch lights one more bulb of
+  its cheer meter, five to fill it. A tap while the sleigh rides does nothing.
 
 ## Rules
 
@@ -95,7 +99,8 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 `src/northpole/attractions.test.ts`, `scripts/gift-shelf.test.ts`, each
 attraction's own `attraction.test.ts`, `smoke/squares-play.spec.ts`,
 `smoke/flashing.spec.ts`, `smoke/the-factory.spec.ts`,
-`smoke/north-pole-places.spec.ts`, `src/route.test.ts` (a landmark opens its
+`smoke/north-pole-places.spec.ts`, `smoke/square-pointer.spec.ts` (a tap inside the
+Sleigh-Ride Coaster), `src/route.test.ts` (a landmark opens its
 level), `src/visit-help.test.ts`, `src/visit-hud-links.test.ts`,
 `src/northpole/north-pole-places-pins.test.ts`, `src/northpole/landmarks.test.ts`
 (each landmark pinned, its drawing painted once under its name),
