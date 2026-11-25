@@ -1,4 +1,5 @@
 import type { SquareKind } from './northpole/map-options';
+import { isOn } from './feature-flags';
 import { landmarkLevel } from './northpole/north-pole-levels';
 
 /**
@@ -32,7 +33,8 @@ export type Route =
  */
 export function parseHash(hash: string): Route {
   if (hash === '#/factory') return { view: 'factory' };
-  if (hash === '#/advent') return { view: 'advent' };
+  // The advent calendar waits for its feature flag: until then its link is the plain map.
+  if (hash === '#/advent') return isOn('advent') ? { view: 'advent' } : { view: 'map' };
 
   const level = hash.match(/^#\/level\/([\w-]+)(?:\/([\w-]+)|\?(.*))?$/);
   if (level) {

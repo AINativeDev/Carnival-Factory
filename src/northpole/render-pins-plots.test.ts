@@ -6,6 +6,8 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 import { pinDrawing } from '../test-support/recording-canvas';
+import { switchFlags } from '../test-support/feature-flags';
+import { FEATURE_FLAGS } from '../feature-flags';
 import { STALL_SHAPES, type NorthPoleSquare, type StallStyle } from './square';
 import type { Plot } from './world';
 import type { Owner } from './name-board';
@@ -69,7 +71,25 @@ const square = (id: string, stall?: StallStyle): NorthPoleSquare => ({
 const atTimes = (plot: Plot, sq: NorthPoleSquare | undefined, near = false, owner?: Owner) =>
   pinDrawing((ctx, paint) => TIMES.map((t) => drawPlot(ctx, plot, sq, paint, t, near, owner)));
 
+describe('the stalls while the Elf Engineer and advent feature flags are off', () => {
+  // The live build hangs no badge pin and no advent decorations on any stall.
+  it('draws an honoured stall with only its trophy, and a decorated one undecorated', () => {
+    const at = (id: string) => atTimes(front, square(id), false, OWNERS[1]);
+    const off = { some: at('some'), honoured: at('honoured') };
+    Object.assign(FEATURE_FLAGS, { elfEngineer: true, advent: true });
+    try {
+      expect(off.some).not.toBe(at('some'));
+      expect(off.honoured).not.toBe(at('honoured'));
+    } finally {
+      Object.assign(FEATURE_FLAGS, { elfEngineer: false, advent: false });
+    }
+    expect(off).toMatchSnapshot();
+  });
+});
+
 describe('the plots, pinned before the renderer split', () => {
+  // The pins were taken with every honour showing: the badge pin and the advent decorations.
+  switchFlags({ elfEngineer: true, advent: true });
   it('draws every stall shape the same, on either face, for every owner and honour', () => {
     const prints: Record<string, string> = {};
     for (const shape of STALL_SHAPES)

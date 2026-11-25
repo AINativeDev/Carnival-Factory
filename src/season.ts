@@ -1,4 +1,5 @@
 import { SITE_NAME } from './edition';
+import { isOn } from './feature-flags';
 import { readSeason, type SeasonData, type SeasonStats } from '../scripts/season';
 
 declare const __SEASON__: unknown;
@@ -28,7 +29,8 @@ export function seasonLines(stats: SeasonStats | undefined): SeasonLine[] {
     [stats.findingsFixed, 'review finding fixed', 'review findings fixed'],
     [stats.featured, 'time featured', 'times featured'],
     [stats.votes, 'vote received', 'votes received'],
-    [stats.advent, 'advent challenge done', 'advent challenges done'],
+    // The advent calendar's count waits for its feature flag, like the calendar.
+    [isOn('advent') ? stats.advent : undefined, 'advent challenge done', 'advent challenges done'],
   ];
   return lines
     .filter(([value]) => value !== undefined && value > 0)

@@ -2,6 +2,7 @@ import type { Locator } from '@playwright/test';
 import { expect, test } from './coverage';
 import { CLAIM_URL } from '../src/northpole/links';
 import { frameOf, present, watch } from './support/carnival';
+import { FLAGS } from './support/feature-flags';
 
 /**
  * Going inside a square and coming back out: E at the stall, a shared link
@@ -20,10 +21,12 @@ async function expectJedi4everPanel(card: Locator) {
     'href',
     'https://github.com/jedi4ever',
   );
-  await expect(card.getByRole('link', { name: 'Remix this booth' })).toHaveAttribute(
-    'href',
-    /template=01-your-booth\.yml&title=.+&what=Start%20from%20%40jedi4ever's%20/,
-  );
+  // Remix this booth waits for its feature flag; smoke/feature-flags.spec.ts checks it's gone.
+  if (FLAGS.remix)
+    await expect(card.getByRole('link', { name: 'Remix this booth' })).toHaveAttribute(
+      'href',
+      /template=01-your-booth\.yml&title=.+&what=Start%20from%20%40jedi4ever's%20/,
+    );
   await expect(card.getByRole('link', { name: 'Get a booth', exact: true })).toBeHidden(); // a shared link: the spot next door instead
   await expect(card).toContainText('Esc or walk out to leave');
 }

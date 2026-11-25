@@ -452,3 +452,10 @@ exports[`the plots, pinned before the renderer split > draws sites, platforms an
   "update": "07003dc74d1439de (13 calls)",
 }
 `;
+
+exports[`the stalls while the Elf Engineer and advent feature flags are off > draws an honoured stall with only its trophy, and a decorated one undecorated 1`] = `
+{
+  "honoured": "3d6d46035b3c29a6 (1542 calls)",
+  "some": "9859ad46a4d6e84a (418 calls)",
+}
+`;
