@@ -151,4 +151,18 @@ describe('a sandboxed square’s frame', () => {
     expect(frameOf('elf')).toBeUndefined();
     expect(lastWords(ctx)).toBe('Under construction');
   });
+
+  it('never times out a frame that was released before it opened', async () => {
+    const { sandboxedSquare, MAX_LIVE_FRAMES } = await sandbox();
+    const { ctx, canvas } = fakeContext();
+    const first = sandboxedSquare('booth', 'elf-first');
+    first.draw(canvas, 100, 0);
+    for (let i = 0; i < MAX_LIVE_FRAMES; i++)
+      sandboxedSquare('booth', `elf-${i}`).draw(canvas, 100, 0);
+    expect(frameOf('elf-first')).toBeUndefined();
+    vi.advanceTimersByTime(10_000);
+    first.draw(canvas, 100, 0);
+    expect(lastWords(ctx)).toBe('Opening…');
+    expect(frameOf('elf-first')?.dataset.state).toBe('loading');
+  });
 });
