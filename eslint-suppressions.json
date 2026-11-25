@@ -4,11 +4,6 @@
       "count": 4
     }
   },
-  "carnival/attractions/gift-shop/attraction.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 4
-    }
-  },
   "carnival/attractions/sleigh-coaster/attraction.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 2
@@ -22,36 +17,6 @@
   "carnival/attractions/snowball-toss/attraction.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 2
-    }
-  },
-  "carnival/booths/chandler767/booth.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 2
-    }
-  },
-  "carnival/booths/hamzaoza/booth.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 3
-    }
-  },
-  "carnival/booths/jedi4ever/booth.test.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 8
-    }
-  },
-  "carnival/booths/jedi4ever/booth.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 1
-    }
-  },
-  "carnival/booths/pstember/booth.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 5
-    }
-  },
-  "carnival/booths/sjmaple/booth.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 1
     }
   },
   "scripts/auto-merge-booths.ts": {
@@ -197,9 +162,6 @@
   },
   "smoke/levels.spec.ts": {
     "@typescript-eslint/no-non-null-assertion": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unnecessary-type-assertion": {
       "count": 1
     }
   },

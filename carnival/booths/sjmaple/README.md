@@ -23,10 +23,23 @@ own spinning top and test it. Go inside the booth to play:
   elf builds and tests a different top every 16 seconds. Tap a part to take
   over from the elf's top.
 
-The pixels are drawn from `time` on a 64 by 64 board. The parts, the test and
-the buttons (`testOf`, `rating`, `stageAt`, `spinAngle`, `wobble`, `press`,
-`settle`, `idle`, `demoAt`, `buttonAt`) are plain functions in `booth.ts`,
-tested in `booth.test.ts`. The booth remembers only what has been built and
-tested this visit.
+The pixels are drawn from `time` on a 64 by 64 board. The code is split by
+what it is in the workshop:
+
+- `booth.ts`: the square itself, the booth's one memory of the visit, and the
+  top on the bench and the mat.
+- `parts.ts`: the bodies, stripes and handles to pick from.
+- `test-mat.ts`: how a top does on the mat (`testOf`, `rating`, `stageAt`,
+  `spinAngle`, `wobble`, `carryTip`, `restPose`).
+- `workshop.ts`: the buttons' effect and the elf's own rounds (`press`,
+  `settle`, `idle`, `demoAt`).
+- `board.ts`: the pixel board and where its buttons are (`buttonAt`).
+- `control-panel.ts`: the parts board, the spin button and what the test board
+  says (`testBoardLines`).
+- `tops.ts` and `scene.ts`: drawing the tops, and the sky, bench, mat, elf and
+  sign.
+
+The plain functions are tested in the `.test.ts` file beside each one. The
+booth remembers only what has been built and tested this visit.
 
 Preview it at `#/booth/sjmaple`.

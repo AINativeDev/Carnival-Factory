@@ -116,6 +116,8 @@ src/
                             calendar
   route.ts                  reading the hash (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
+  visit-help.ts             the next steps at the foot of a square's panel, by whose square it is
+  craft-badges.ts           a square's craft badges on its panel, baked in by the build
   booths-hud.ts             the Booths panel: search, Featured, Near you, Recently added,
                             Attractions, All booths a page at a time, and "This is me"
   booth-panel.ts            the panel's searching, sorting and sections (plain functions)

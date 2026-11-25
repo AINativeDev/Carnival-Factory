@@ -15,5 +15,12 @@ Belgian waffles. Drawn as a diorama in the North Pole's own style.
   slowly, and a few snowy pines.
 
 Nothing flashes: the hatch light, the lights and the steam all move gently.
-`rise` and `gleam` in `booth.ts` are the plain functions behind the steam and
-the gleam, tested in `booth.test.ts`.
+
+## The code
+
+- `booth.ts`: the booth itself, laying out the scene and the pines.
+- `falls.ts`: the cliff, the frozen falls and the pool.
+- `waffle-hut.ts`: the hut, its seller, the waffle, the steam and the smoke.
+- `quad.ts`: the flat patches the ledges, ribbons and awning are drawn with.
+- `motion.ts`: `rise` and `gleam`, the plain functions behind the steam and
+  the gleam, tested in `booth.test.ts`.

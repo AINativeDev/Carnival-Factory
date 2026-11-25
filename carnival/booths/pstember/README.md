@@ -22,6 +22,12 @@ On the map, the depot's stall is a long, low shed with a flat gold roof
 
 Everything is drawn from `time`. The timing (`waveAngle`, `stackAt`, `elfWalk`,
 `handoffAt`, `headLift`, `earFlick`, `lanternAt`, `flake`) is plain functions in
-`booth.ts`, tested in `booth.test.ts`.
+`timing.ts`, tested in `timing.test.ts`.
+
+Each part of the scene has its own file: `paddock.ts` (the fence and the
+reindeer), `sleigh.ts` (the stack and the sleigh), `parcels.ts`, `elves.ts`,
+`santa.ts` and `gate.ts`, all painted with the strokes in `brush.ts`.
+`booth.ts` is the square itself, and paints them back to front, with the snow
+on top.
 
 Preview it at `#/booth/pstember`.
