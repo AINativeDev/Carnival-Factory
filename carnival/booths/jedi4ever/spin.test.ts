@@ -17,6 +17,14 @@ describe('the spinning cube', () => {
     expect(spin.speed).toBeLessThanOrEqual(TOP_SPEED);
   });
 
+  it('keeps its speed when pressed again while it coasts', () => {
+    let spin = { angle: 0, speed: TOP_SPEED, held: 5 };
+    spin = stepSpin(spin, 0.016, false);
+    const coasting = spin.speed;
+    spin = stepSpin(spin, 0.016, true);
+    expect(spin.speed).toBeGreaterThanOrEqual(coasting);
+  });
+
   it('slows to a stop once let go', () => {
     let spin = { angle: 0, speed: 10, held: 2 };
     for (let i = 0; i < 600; i++) spin = stepSpin(spin, 0.016, false);

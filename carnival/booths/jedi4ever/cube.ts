@@ -48,13 +48,6 @@ const SIDE: Pt[][] = [
 
 const TOP = pinwheel();
 
-/** Pulls a block toward its middle, so the gap between blocks shows the ink. */
-function inset(block: Pt[], k: number): Pt[] {
-  const cx = block.reduce((sum, p) => sum + p[0], 0) / block.length;
-  const cy = block.reduce((sum, p) => sum + p[1], 0) / block.length;
-  return block.map(([x, y]): Pt => [cx + (x - cx) * k, cy + (y - cy) * k]);
-}
-
 /** Where a face's (u, v) lands in 3D, for the face whose outward direction is `facing`. */
 function onFace(facing: number, u: number, v: number): Vec {
   if (facing < 0) return [u * 2 - 1, v * 2 - 1, 1];
@@ -94,10 +87,18 @@ function face(
   ]);
   ctx.fillStyle = theme.colors.ink;
   ctx.fill();
-  ctx.fillStyle = fill;
+  // Each block is outlined in ink, so every edge two blocks share, the notch's
+  // included, shows an even gap; shrinking blocks toward their middles left
+  // the side blocks touching across the notch.
+  ctx.strokeStyle = theme.colors.ink;
+  ctx.lineWidth = r * 0.08;
+  ctx.lineJoin = 'round';
   for (const block of blocks) {
-    path(inset(block, 0.93));
+    path(block);
+    ctx.closePath();
+    ctx.fillStyle = fill;
     ctx.fill();
+    ctx.stroke();
   }
 }
 

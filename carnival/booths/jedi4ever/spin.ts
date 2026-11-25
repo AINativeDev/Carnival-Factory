@@ -27,7 +27,8 @@ export function stepSpin(spin: Spin, dt: number, down: boolean): Spin {
   const held = down ? spin.held + dt : 0;
   const target = Math.min(TOP_SPEED, 5 + held * HOLD_BOOST);
   const speed = down
-    ? Math.min(target, spin.speed + SPEED_UP * dt * 2)
+    ? // A new press never brakes a coasting cube: it keeps its speed until the target catches up.
+      Math.max(spin.speed, Math.min(target, spin.speed + SPEED_UP * dt * 2))
     : spin.speed * Math.pow(COAST, dt) * (spin.speed < 0.05 ? 0 : 1);
   return { angle: spin.angle + speed * dt, speed, held };
 }

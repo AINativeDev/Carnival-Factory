@@ -67,6 +67,9 @@ class DrawingLog {
   fill = (...args: unknown[]) => {
     this.note('fill', args);
   };
+  closePath = (...args: unknown[]) => {
+    this.note('closePath', args);
+  };
   stroke = (...args: unknown[]) => {
     this.note('stroke', args);
   };
