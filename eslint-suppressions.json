@@ -27,11 +27,6 @@
       "count": 1
     }
   },
-  "scripts/booth-gate.ts": {
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 1
-    }
-  },
   "scripts/diff-coverage.ts": {
     "@typescript-eslint/no-non-null-assertion": {
       "count": 1

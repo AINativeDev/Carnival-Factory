@@ -34,8 +34,10 @@ accepted ones.
     `implement-booth`.
   - `tessl` added by the Tessl App to a `level-request`: `implement-level`.
   - `tessl` added by a maintainer to a `booth-request`: `implement-booth`.
-  - `tessl` added by a maintainer to any issue without `booth-request`:
-    `implement`, the general action.
+  - `tessl` added by a maintainer to a `level-request`: `implement-level`.
+  - `tessl` added by a maintainer to any issue without `booth-request` or
+    `level-request`: `implement`, the general action (enforced by:
+    scripts/factory-routing.test.ts).
   - `shepherd` answers reviews, comments and failed or passed checks on the
     factory's `tessl/` pull requests; `follow-ticket-changes` follows issues
     and pull requests closing or `tessl` coming off; `merge-conflict-sweep`

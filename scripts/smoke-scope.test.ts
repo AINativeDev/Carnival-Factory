@@ -24,4 +24,27 @@ describe('smokeScope', () => {
     expect(smokeScope(['carnival/booths/a b/booth.ts'])).toBeUndefined();
     expect(smokeScope(['carnival/booths/-ana/booth.ts'])).toBeUndefined();
   });
+
+  it("plays just the level and its squares when only that level's folder changes", () => {
+    expect(
+      smokeScope([
+        'carnival/levels/ana/level.ts',
+        'carnival/levels/ana/squares/cocoa/square.ts',
+        'carnival/levels/ana/README.md',
+      ]),
+    ).toBe('level/ana');
+  });
+
+  it('plays everything when a level changes with a booth, another level or anything else', () => {
+    expect(
+      smokeScope(['carnival/levels/ana/level.ts', 'carnival/booths/ana/booth.ts']),
+    ).toBeUndefined();
+    expect(
+      smokeScope(['carnival/levels/ana/level.ts', 'carnival/levels/bo/level.ts']),
+    ).toBeUndefined();
+    expect(smokeScope(['carnival/levels/ana/level.ts', 'src/northpole/level.ts'])).toBeUndefined();
+    expect(smokeScope(['carnival/levels/README.md'])).toBeUndefined();
+    expect(smokeScope(['carnival/levels/Ana/level.ts'])).toBeUndefined();
+    expect(smokeScope(['carnival/constructor/ana/level.ts'])).toBeUndefined();
+  });
 });

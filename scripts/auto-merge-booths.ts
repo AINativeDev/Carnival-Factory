@@ -1,6 +1,6 @@
 /**
  * The auto-merge gate. For each open factory pull request built from a booth
- * request, it gathers the facts, runs the deterministic checks, keeps one
+ * or level request (ADR 0030), it gathers the facts, runs the deterministic checks, keeps one
  * checklist comment up to date, and merges only when `evaluateGate` says so.
  *
  * Run by .github/workflows/auto-merge-booths.yml from main's own code, with
@@ -10,19 +10,21 @@
  */
 import {
   evaluateGate,
-  gateComment,
+  ownFolder,
   RATE_LIMIT_MS,
   type CheckState,
   type GateFacts,
 } from './booth-gate.ts';
+import { gateComment } from './gate-comment.ts';
+import {
+  folderCodeProblems,
+  landedNote,
+  mergesWithoutPerson,
+  requestKind,
+} from './gate-request.ts';
 import { injectionMarkers, scanParticipantText } from './injection-scan.ts';
 import { linkedIssue } from './ownership.ts';
-import {
-  checkSquareCode,
-  plotFileProblems,
-  type CodeProblem,
-  type SourceFile,
-} from './square-code.ts';
+import type { CodeProblem, SourceFile } from './square-code.ts';
 
 const token = process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY;
@@ -32,8 +34,6 @@ const api = process.env.GITHUB_API_URL ?? 'https://api.github.com';
 const FACTORY = 'tessl-app[bot]';
 const REVIEWER = 'tessl-reviewer[bot]';
 const GUIDE = `https://github.com/${repository}/blob/main/docs/how-it-works.md`;
-/** The only kinds of file a booth may hold and still merge without a person. */
-const TEXT_FILES = /\.(ts|md)$/;
 /** Limits on what the gate reads and compiles, checked from the tree before any file is loaded. */
 const MAX_FILES = 40;
 const MAX_FILE_BYTES = 100 * 1024;
@@ -101,12 +101,12 @@ interface Comment {
 
 const names = (labels: Label[]) => labels.map((label) => label.name);
 
-/** The request issue a factory pull request builds, if it's a booth request by a person. */
+/** The request issue a factory pull request builds, if it's a booth or level request by a person. */
 async function boothRequest(pull: Pull): Promise<Issue | undefined> {
   const number = linkedIssue(pull.body ?? '', repository!);
   if (!number) return undefined;
   const issue = await get<Issue>(`issues/${number}`);
-  if (issue.user.type === 'Bot' || !names(issue.labels).includes('booth-request')) return undefined;
+  if (issue.user.type === 'Bot' || !requestKind(names(issue.labels))) return undefined;
   return issue;
 }
 
@@ -117,15 +117,15 @@ async function changedFiles(pull: Pull): Promise<ChangedFile[]> {
 }
 
 /**
- * Every file in the booth's folder at the head commit, read as text, plus any
- * problem with what the folder holds. Sizes are checked from the tree first,
- * so an oversized booth goes to a person without being loaded or compiled.
+ * Every file in the booth's or level's folder at the head commit, read as
+ * text, plus any problem with what the folder holds. Sizes are checked from
+ * the tree first, so an oversized one goes to a person without being loaded.
  */
 async function boothFiles(
   sha: string,
-  owner: string,
+  kind: GateFacts['kind'],
+  folder: string,
 ): Promise<{ files: SourceFile[]; problems: CodeProblem[] }> {
-  const folder = `carnival/booths/${owner}/`;
   const tree = await get<{
     tree: { path: string; type: string; sha: string; mode: string; size?: number }[];
     truncated: boolean;
@@ -152,10 +152,9 @@ async function boothFiles(
   }
   const problems: CodeProblem[] = [];
   for (const entry of entries) {
-    const plotFile = entry.path === `${folder}plot.json`;
-    if (entry.mode === '120000' || !(TEXT_FILES.test(entry.path) || plotFile)) {
+    if (!mergesWithoutPerson(kind, folder, entry.path, entry.mode)) {
       problems.push(
-        problem(entry.path, 'Only .ts and .md files, and plot.json, merge without a person.'),
+        problem(entry.path, 'Only .ts and .md files, and a booth’s plot.json, merge on their own.'),
       );
       continue;
     }
@@ -264,6 +263,8 @@ async function gate(pull: Pull) {
   const issue = await boothRequest(pull);
   if (!issue) return;
   const owner = issue.user.login.toLowerCase();
+  const kind = requestKind(names(issue.labels)) ?? 'booth';
+  const folder = ownFolder(kind, owner);
   const sha = pull.head.sha;
   const now = new Date();
   const changed = await changedFiles(pull);
@@ -274,23 +275,21 @@ async function gate(pull: Pull) {
   // Only an open request counts: accepting a newer one closes the older, so a
   // superseded request's pull request never merges on its own.
   const accepted = issue.state === 'open' && names(issue.labels).includes('tessl');
-  const inScope = files.length > 0 && files.every((f) => f.startsWith(`carnival/booths/${owner}/`));
-  // Only read and compile the booth when the cheap checks already pass.
-  const booth = accepted && inScope ? await boothFiles(sha, owner) : { files: [], problems: [] };
+  const inScope = files.length > 0 && files.every((f) => f.startsWith(folder));
+  // Only read and compile the booth or level when the cheap checks already pass.
+  const booth =
+    accepted && inScope ? await boothFiles(sha, kind, folder) : { files: [], problems: [] };
   const [checks, review, all] = await Promise.all([
     checkStates(sha),
     reviewState(pull),
     getAll<Comment>(`issues/${pull.number}/comments`),
   ]);
   const facts: GateFacts = {
+    kind,
     owner,
     accepted,
     changedFiles: files,
-    codeProblems: [
-      ...booth.problems,
-      ...plotFileProblems(`carnival/booths/${owner}/`, changed),
-      ...checkSquareCode(`carnival/booths/${owner}/`, booth.files),
-    ],
+    codeProblems: [...booth.problems, ...folderCodeProblems(kind, folder, changed, booth.files)],
     textFindings: [
       ...scanParticipantText(`${issue.title}\n${issue.body ?? ''}`),
       ...injectionMarkers(pull.title),
@@ -303,8 +302,8 @@ async function gate(pull: Pull) {
     now,
   };
   const result = evaluateGate(facts);
-  console.log(`#${pull.number} (booth ${owner}, ${sha.slice(0, 7)}): ${result.decision}`);
-  await upsertComment(pull.number, all, gateComment(result, GUIDE));
+  console.log(`#${pull.number} (${kind} ${owner}, ${sha.slice(0, 7)}): ${result.decision}`);
+  await upsertComment(pull.number, all, gateComment(result, GUIDE, kind));
 
   // Label only the gate's own deterministic failures. The risk check labels its
   // own verdicts, and a maintainer removing the label is asking it to look
@@ -340,7 +339,7 @@ async function gate(pull: Pull) {
   // A merge by this workflow's token doesn't close the linked issue, so close
   // the request here, with a note on how it got onto the map.
   await call('POST', `issues/${issue.number}/comments`, {
-    body: `Your booth is on the map. It merged on its own in #${pull.number} after passing every check in the auto-merge gate. [How your request is built](${GUIDE}) explains each one.`,
+    body: landedNote(kind, pull.number, GUIDE),
   });
   await call('PATCH', `issues/${issue.number}`, { state: 'closed', state_reason: 'completed' });
 }

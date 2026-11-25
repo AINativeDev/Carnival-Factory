@@ -37,8 +37,13 @@ What runs on every pull request, and what each check guarantees.
 - `smoke/flashing.spec.ts` plays every booth and attraction on the back wall
   of its room and measures flashes.
 - Smoke scope: when every changed file is inside one booth's folder, CI sets
-  `SMOKE_ONLY=booth/<login>` and plays only that booth one by one; the
-  map-wide tests still run. Anything else plays every square.
+  `SMOKE_ONLY=booth/<login>` and plays only that booth one by one; when every
+  changed file is inside one level's folder, `SMOKE_ONLY=level/<login>` walks
+  only that level and its squares. The map-wide tests still run. Anything
+  else plays every square.
+- `smoke/levels.spec.ts` saves a screenshot of each level from its arrival
+  point, `level-<login>.png`, and of each of its squares from inside,
+  `level-<login>-<id>.png`, for the preview and the risk check.
 
 ## Rules
 
@@ -60,8 +65,8 @@ What runs on every pull request, and what each check guarantees.
 - Every booth, attraction and level fits the size budget, and every real
   level passes `validateLevel` (enforced by: scripts/square-size.test.ts,
   src/northpole/level.test.ts).
-- The smoke test plays only the changed booth when nothing else changes, and
-  every square otherwise (enforced by: scripts/smoke-scope.ts,
+- The smoke test plays only the changed booth, or walks only the changed
+  level, when nothing else changes, and every square otherwise (enforced by: scripts/smoke-scope.ts,
   scripts/smoke-scope.test.ts, .github/workflows/preview-build.yml).
 - The factory's sandbox can't start a browser, so agents there never run the
   smoke test; CI runs it (enforced by: the instructions in tessl.json).

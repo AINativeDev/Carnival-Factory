@@ -298,7 +298,10 @@
         },
         "event.issue.labels.*.name": {
           "none": {
-            "equals": "booth-request"
+            "in": [
+              "booth-request",
+              "level-request"
+            ]
           }
         }
       },
@@ -329,6 +332,31 @@
       },
       "action": {
         "use": "implement-booth",
+        "inputs": {
+          "GITHUB_ISSUE_LABEL": "tessl",
+          "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"
+        }
+      }
+    },
+    "implement-level-by-maintainer": {
+      "on": [
+        "github:issues.labeled"
+      ],
+      "when": {
+        "event.label.name": "tessl",
+        "event.sender.id": {
+          "in": [
+            70908
+          ]
+        },
+        "event.issue.labels.*.name": {
+          "any": {
+            "equals": "level-request"
+          }
+        }
+      },
+      "action": {
+        "use": "implement-level",
         "inputs": {
           "GITHUB_ISSUE_LABEL": "tessl",
           "GITHUB_ISSUE_NUMBER": "{{ event.issue.number }}"

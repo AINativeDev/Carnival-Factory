@@ -495,8 +495,10 @@ repairs" on its platform, and the reason goes in the console once.
 author's own folder only, family-friendly, and buildable as level data plus
 sandboxed squares. The latest request wins: accepting one closes the author's
 older open `level-request` issues as superseded. Accepted level requests are
-built by the `implement-level` action, and a level's pull request waits for a
-maintainer rather than merging on its own. [Level ideas](docs/level-ideas.md)
+built by the `implement-level` action, whether the assessment or a maintainer
+adds `tessl`, and a level's pull request goes through the same auto-merge gate
+as a booth's ([ADR 0030](docs/adr/0030-levels-through-the-gate.md)): it merges
+on its own when every check passes, and waits for a maintainer otherwise. [Level ideas](docs/level-ideas.md)
 helps participants write one. `carnival/levels/jedi4ever/` is the starter level to copy.
 
 **In the pull request,** say what changed, and give a preview link for every

@@ -21,8 +21,12 @@ A level is a whole patch of the North Pole of a participant's own,
   open the level in front of the square.
 - The theme (`dusk`, `aurora-night`, `candy-cane`, `frozen-lake`,
   `gingerbread`) tints the sky and colours the signs.
-- A level's pull request waits for a maintainer: the auto-merge gate only
-  takes booth requests.
+- A level's pull request merges on its own through the auto-merge gate when
+  every check passes, and waits for a maintainer otherwise, exactly like a
+  booth's ([ADR 0030](../adr/0030-levels-through-the-gate.md)).
+- A `level-request` labelled `tessl`, by the assessment or a maintainer, is
+  built by the `implement-level` action: Sonnet on the `dev` machines, in the
+  level's own folder only.
 
 ## Rules
 
@@ -54,8 +58,16 @@ A level is a whole patch of the North Pole of a participant's own,
   by: scripts/square-size.test.ts).
 - A participant may change their own level folder, and nobody else's
   (enforced by: scripts/check-booth-ownership.ts, scripts/ownership.test.ts).
-- A level's pull request waits for a maintainer (enforced by:
-  scripts/auto-merge-booths.ts, which only takes booth requests).
+- A level's pull request goes through the auto-merge gate like a booth's:
+  only `carnival/levels/<owner>/` changes, its `level.ts` is plain data and
+  every square passes the static code check (enforced by:
+  scripts/booth-gate.ts, scripts/level-code.ts, scripts/gate-request.ts and
+  their tests; see [auto-merge-gate.md](auto-merge-gate.md)).
+- Both routes to `implement-level` (enforced by: tessl.json,
+  scripts/factory-routing.test.ts).
+- A pull request that only changes one level walks just that level and its
+  squares in the smoke test, plus the map-wide tests (enforced by:
+  scripts/smoke-scope.ts, scripts/smoke-scope.test.ts).
 
 ## Where it lives
 
@@ -67,5 +79,7 @@ A level is a whole patch of the North Pole of a participant's own,
 
 `src/northpole/level.test.ts` (runs `validateLevel` on every real level),
 `scripts/square-lint.test.ts` (level data held to plain data),
-`smoke/levels.spec.ts` (walks every open level to each square and home),
+`smoke/levels.spec.ts` (walks every open level to each square and home,
+saving a screenshot of the level and of each square for the risk check),
+`scripts/level-code.test.ts`, `scripts/factory-routing.test.ts`,
 each level square's `square.test.ts`.
