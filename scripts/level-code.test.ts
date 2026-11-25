@@ -69,6 +69,11 @@ describe('checkLevelCode', () => {
       data.replace("'../../../src/northpole/level'", "'../../../src/northpole/theme'"),
     ],
     ['a value import', data.replace('import type', 'import')],
+    ['no level at all', ''],
+    ['a level that is not an object', 'const level = 1;\nexport default level;\n'],
+    ['an export of something else', data.replace('export default level', 'export default other')],
+    ['a second object', data.replace('export default', 'const other = {};\nexport default')],
+    ['a second export', `${data}export default level;\n`],
   ])('sends level data with %s to a person', (_, text) => {
     expect(rules({ 'level.ts': text })).toContain('level-data');
   });

@@ -11,12 +11,13 @@ const published = '2026-12-01T10:00:00Z';
 
 vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-/** The writes publishing makes, with the last Pages run at `published`. */
+/** The writes publishing makes, with the last Pages run at `published`; `sent` gets their bodies. */
 async function publish(
   change: Record<string, unknown>,
   merged = false,
   held: number[] = [],
   dryRun = false,
+  sent: unknown[] = [],
 ) {
   const replies = new Map<string, unknown>([
     [DONE, { workflow_runs: [{ created_at: published }] }],
@@ -25,14 +26,17 @@ async function publish(
     [EVENTS, []],
   ]);
   for (const [path, reply] of Object.entries(change)) replies.set(path, reply);
-  const { github, writes } = fakeGitHub(replies);
-  await publishIfBehind({ ...github, dryRun }, merged, new Set(held));
-  return writes;
+  const fake = fakeGitHub(replies);
+  await publishIfBehind({ ...fake.github, dryRun }, merged, new Set(held));
+  sent.push(...fake.sent.map((write) => write.body));
+  return fake.writes;
 }
 
 describe('publishIfBehind', () => {
   it('publishes after a merge this run made, or one since the last deploy', async () => {
-    expect(await publish({}, true)).toEqual([PUBLISH]);
+    const sent: unknown[] = [];
+    expect(await publish({}, true, [], false, sent)).toEqual([PUBLISH]);
+    expect(sent).toEqual([{ ref: 'main' }]);
     const since = {
       ...levelPull,
       updated_at: '2026-12-01T11:00:00Z',

@@ -63,18 +63,44 @@ function isLevelStatement(statement: ts.Statement): boolean {
   );
 }
 
+/**
+ * Whether level.ts, statement by statement allowed, also adds up to one level:
+ * one object, and one default export of that object's name. Without this an
+ * empty file, or an export of something else, would pass (ADR 0031).
+ */
+function exportsOneLevel(statements: readonly ts.Statement[]): boolean {
+  const objects = statements.filter(ts.isVariableStatement);
+  const exports = statements.filter(ts.isExportAssignment);
+  const declaration = objects.at(0)?.declarationList.declarations.at(0);
+  const name = declaration && ts.isIdentifier(declaration.name) ? declaration.name.text : '';
+  const exported = exports.at(0)?.expression;
+  return (
+    objects.length === 1 &&
+    exports.length === 1 &&
+    !!declaration?.initializer &&
+    ts.isObjectLiteralExpression(declaration.initializer) &&
+    !!exported &&
+    ts.isIdentifier(exported) &&
+    exported.text === name
+  );
+}
+
+const LEVEL_DATA =
+  'A level.ts holds only `import type` of its level type, one object of plain data, and its export.';
+
 /** Problems with a level.ts as plain data: each statement that isn't its import, its object or its export. */
 function levelDataProblems(file: SourceFile): CodeProblem[] {
   const source = ts.createSourceFile(file.path, file.text, ts.ScriptTarget.ES2022, true);
-  return source.statements
+  const problems = source.statements
     .filter((statement) => !isLevelStatement(statement))
     .map((statement) => ({
       file: file.path,
       line: source.getLineAndCharacterOfPosition(statement.getStart(source)).line + 1,
       rule: 'level-data',
-      message:
-        'A level.ts holds only `import type` of its level type, one object of plain data, and its export.',
+      message: LEVEL_DATA,
     }));
+  if (problems.length || exportsOneLevel(source.statements)) return problems;
+  return [{ file: file.path, line: 1, rule: 'level-data', message: LEVEL_DATA }];
 }
 
 /** Hidden characters and text aimed at an AI, in a file that isn't a square's. */

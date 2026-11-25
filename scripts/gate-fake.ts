@@ -1,6 +1,7 @@
 /**
  * A scripted GitHub for the auto-merge gate's tests: it answers each GET from
- * a table of replies, records every write, and can make one call fail, so
+ * a table of replies, records every write with what it sent, and can make one
+ * call fail, so
  * the gate's reads and its merge are tested end to end without the network.
  * Also a level pull request that passes every step, to change one fact at a time.
  */
@@ -94,22 +95,28 @@ export function passingReplies(): Map<string, unknown> {
   ]);
 }
 
-/** A GitHub that answers GETs from `replies` and records every other call; `fail` makes one throw. */
+/**
+ * A GitHub that answers GETs from `replies` and records every other call:
+ * `writes` by method and path, and `sent` with its body too, so a test can
+ * tell a merge's sha or a needs-human label from any other; `fail` makes one throw.
+ */
 export function fakeGitHub(replies: Map<string, unknown>, fail?: string) {
   const writes: string[] = [];
+  const sent: { write: string; body: unknown }[] = [];
   const github: GitHub = {
     repository: REPOSITORY,
     dryRun: false,
-    call<T>(method: string, path: string): Promise<T> {
+    call<T>(method: string, path: string, body?: unknown): Promise<T> {
       const key = `${method} ${path}`;
       if (key === fail) return Promise.reject(new Error(`${key} answered HTTP 500`));
       if (method !== 'GET') {
         writes.push(key);
+        sent.push({ write: key, body });
         return Promise.resolve(undefined as T);
       }
       if (!replies.has(path)) return Promise.reject(new Error(`no reply for GET ${path}`));
       return Promise.resolve(replies.get(path) as T);
     },
   };
-  return { github, writes };
+  return { github, writes, sent };
 }

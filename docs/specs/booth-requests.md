@@ -34,6 +34,11 @@ accepted ones.
     `implement-booth`.
   - `tessl` added by the Tessl App to a `level-request`: `implement-level`.
   - `tessl` added by a maintainer to a `booth-request`: `implement-booth`.
+    On an issue with both request labels the maintainer's routes both match,
+    since one label condition can't say "this and not that"; the booth
+    builder stands down at once, so only `implement-level` builds it, as on
+    the assessment's route. Both builders share one concurrency key, so they
+    never run at once (enforced by: scripts/factory-routing.test.ts).
   - `tessl` added by a maintainer to a `level-request`: `implement-level`.
   - `tessl` added by a maintainer to any issue without `booth-request` or
     `level-request`: `implement`, the general action (enforced by:

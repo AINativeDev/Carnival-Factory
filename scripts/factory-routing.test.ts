@@ -58,6 +58,26 @@ describe('tessl.json routing', () => {
     expect(routed(sender, labels)).toEqual([action]);
   });
 
+  it("builds a maintainer's request with both labels as a level, as the assessment's route does", () => {
+    const both = ['booth-request', 'level-request', 'tessl'];
+    expect(routed(TESSL_APP, both)).toEqual(['implement-level']);
+    // One label path can't hold two conditions, so the maintainer's booth route
+    // matches too: the booth builder stands down, and the shared concurrency
+    // key keeps the two from ever running at once.
+    expect(routed(MAINTAINER, both)).toEqual(['implement-booth', 'implement-level']);
+    const actions = (
+      JSON.parse(readFileSync(join(import.meta.dirname, '..', 'tessl.json'), 'utf8')) as {
+        actions: Record<string, { instructions: string; concurrency: unknown } | undefined>;
+      }
+    ).actions;
+    expect(actions['implement-booth']?.instructions).toMatch(
+      /^If the issue also has the level-request label, stop with no change and no comment/,
+    );
+    expect(actions['implement-booth']?.concurrency).toEqual(
+      actions['implement-level']?.concurrency,
+    );
+  });
+
   it('builds the level with Sonnet on the dev machines, in its own folder only', () => {
     const level = (
       JSON.parse(readFileSync(join(import.meta.dirname, '..', 'tessl.json'), 'utf8')) as {

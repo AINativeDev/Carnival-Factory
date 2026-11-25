@@ -10,9 +10,9 @@ const page = (path: string) => `${path}${path.includes('?') ? '&' : '?'}per_page
 async function run(change: Record<string, unknown> = {}, fail?: string) {
   const replies = passingReplies();
   for (const [path, reply] of Object.entries(change)) replies.set(path, reply);
-  const { github, writes } = fakeGitHub(replies, fail);
+  const { github, writes, sent } = fakeGitHub(replies, fail);
   const outcome = await gatePull(github, levelPull, GUIDE, now);
-  return { outcome, writes };
+  return { outcome, writes, sent };
 }
 
 afterEach(() => vi.restoreAllMocks());
@@ -20,7 +20,7 @@ vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
 describe('gatePull', () => {
   it('merges a level whose every step passes, then closes its request with a note', async () => {
-    const { outcome, writes } = await run();
+    const { outcome, writes, sent } = await run();
     expect(outcome).toEqual({ merged: true, held: false });
     expect(writes).toEqual([
       'POST issues/9/comments',
@@ -29,10 +29,16 @@ describe('gatePull', () => {
       'POST issues/5/comments',
       'PATCH issues/5',
     ]);
+    const [checklist, label, merge, note, close] = sent.map((write) => write.body);
+    expect((checklist as { body: string }).body).toContain('How this level gets onto the map');
+    expect(label).toEqual({ labels: ['auto-merged'] });
+    expect(merge).toEqual({ merge_method: 'merge', sha: SHA });
+    expect((note as { body: string }).body).toMatch(/^Your level is on the map\..* #9 /);
+    expect(close).toEqual({ state: 'closed', state_reason: 'completed' });
   });
 
   it('holds a level that also changes its owner’s booth for a person', async () => {
-    const { outcome, writes } = await run({
+    const { outcome, writes, sent } = await run({
       [page('pulls/9/files')]: [
         { filename: 'carnival/levels/elf/level.ts', status: 'modified' },
         { filename: 'carnival/booths/elf/booth.ts', status: 'modified' },
@@ -40,6 +46,7 @@ describe('gatePull', () => {
     });
     expect(outcome).toEqual({ merged: false, held: true });
     expect(writes).toEqual(['POST issues/9/comments', 'POST issues/9/labels']);
+    expect(sent.at(1)?.body).toEqual({ labels: ['needs-human'] });
   });
 
   it("holds a level whose level.ts isn't plain data", async () => {
