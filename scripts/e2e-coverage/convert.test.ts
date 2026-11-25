@@ -34,6 +34,24 @@ describe('toIstanbul: a browser run, back on the source files', () => {
   });
 });
 
+describe('toIstanbul with a source map', () => {
+  it('maps a bundle back through its source map onto the source file it names', async () => {
+    // One line, mapped column 0 to column 0 of src/pick.ts.
+    const map = {
+      version: 3,
+      file: 'bundle.js',
+      sources: ['../src/pick.ts'],
+      names: [],
+      mappings: 'AAAA',
+    };
+    const files = await toIstanbul(
+      { url: 'file:///repo/dist/bundle.js', source: code, functions },
+      map,
+    );
+    expect(Object.keys(files).every((file) => file.endsWith('src/pick.ts'))).toBe(true);
+  });
+});
+
 describe('combinedLines: a line counts if either kind of test ran it', () => {
   it('adds runs line by line, so differently split statements are never counted twice', async () => {
     const once = await toIstanbul(

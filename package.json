@@ -22,7 +22,8 @@
     "smoke": "playwright test",
     "lint:shell": "shellcheck setup.sh && actionlint",
     "test:changed": "node scripts/diff-coverage.ts",
-    "coverage:combined": "node scripts/e2e-coverage/report.ts"
+    "coverage:combined": "node scripts/e2e-coverage/report.ts",
+    "coverage:ratchet": "RATCHET=1 vitest run --coverage"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
