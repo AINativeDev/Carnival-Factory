@@ -320,7 +320,7 @@ jobs:
             if gh run download "$run" --name screenshots --dir "$shots" 2>/dev/null; then
               mkdir -p "$dir/screenshots"
               find "$shots" -maxdepth 1 -type f -regextype posix-extended \
-                -regex '.*/(map|(booth|attraction)-[a-z0-9]+(-[a-z0-9]+)*)\.png' \
+                -regex '.*/(map|(booth|attraction|level)-[a-z0-9]+(-[a-z0-9]+)*)\.png' \
                 -exec cp {} "$dir/screenshots/" \;
             fi
             echo "$sha" > "$dir/.preview-sha"
@@ -379,7 +379,7 @@ jobs:
             # A direct link to every booth, attraction and level the pull request changes,
             # and their screenshots side by side under the map's, each opening its square.
             squares=$(gh api "repos/$GH_REPO/pulls/$pr/files" --paginate --jq '.[].filename' |
-              sed -nE 's#^(booth|attraction|level)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
+              sed -nE 's#^carnival/(booth|attraction|level)s/([a-z0-9]+(-[a-z0-9]+)*)/.*#\1/\2#p' | sort -u)
             links=""
             row=""
             shots="${url}screenshots"
