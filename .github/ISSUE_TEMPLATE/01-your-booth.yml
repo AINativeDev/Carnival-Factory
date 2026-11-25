@@ -6,123 +6,33 @@ body:
   - type: markdown
     attributes:
       value: |
-        Your booth is yours alone: it lives in `carnival/booths/<your GitHub login>/`,
-        and a check stops any change for you from touching anything else. If
-        you don't have a booth yet, the factory builds it; if you do, it
-        changes it. Your latest request is the one that counts: opening a new
-        one closes any older one you still have open.
-
-        An agent reads this with nobody around to answer questions, so say what
-        you want people to see and how you'll know it's done.
-
-        **What happens next:** an agent assesses your request, a software
-        factory built on [Tessl](https://tessl.io) builds it as a pull request,
-        and checks, a smoke test in a real browser, code review and a risk and
-        taste check run on it. If every check passes, it merges on its own;
-        otherwise a maintainer takes a look. [How your request is built](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/how-it-works.md)
-        explains each step.
-  - type: markdown
-    attributes:
-      value: |
-        **Need ideas?** [Booth ideas](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/booth-ideas.md)
-        has examples to borrow from. The more you say about the scene, its
-        style and what moves, the closer the factory gets on the first try.
-        Everything below the first box is optional.
-
-        **The default look** is the [diorama style](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/style.md),
-        the same as the rest of the North Pole: a little isometric scene at
-        dusk, lit warm, so your booth sits naturally on its stall. Pick another
-        style below if you'd like one. To restyle a booth you already have,
-        ask for it here too.
+        Describe your booth and the factory builds it in `carnival/booths/<your GitHub login>/`.
+        If you already have one, it changes it. Your latest request is the one that counts.
+        [How your request is built](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/how-it-works.md)
+        · [Booth ideas](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/booth-ideas.md)
   - type: textarea
     id: what
     attributes:
       label: What should your booth show?
-      description: The scene, in a few sentences. Who or what is in it, and what are they doing? For a change, what should be different. You can also attach a picture to draw from, such as your logo or a sketch; the factory redraws it in shapes.
+      description: |
+        A few sentences are plenty. Things you can mention:
+        - **The scene**: who or what is in it, and what they're doing
+        - **What moves**: a loop every few seconds, or what happens when someone taps it (a game?)
+        - **The look**: the North Pole's own [diorama style](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/style.md) by default, or pixel art, papercut, storybook…
+        - **The stall**: a market stall, shed, tent, log cabin or kiosk, and a roof colour
+        - **Little details**: a sign, a pet, a friendly joke, the colours you like
+
+        For a change, say what should be different. You can attach a picture, such as your logo or a sketch, and the factory redraws it in shapes.
       placeholder: |
-        A frozen pond at dusk. Two penguins in scarves skate figure eights, and a
-        third wobbles at the edge holding a cup of cocoa. Pine trees behind, a
-        lantern on a post.
+        A frozen pond at dusk. Two penguins in scarves skate figure eights every few
+        seconds, and a third wobbles at the edge with a cup of cocoa. Tap the pond and
+        a fish jumps. A log cabin stall with a gold roof, and a tiny sign: "Thin ice,
+        skate anyway".
     validations:
       required: true
   - type: input
     id: name
     attributes:
       label: Your booth's name
-      description: Shown on your booth's sign, up to about 24 characters. Leave it empty to keep the name it has.
+      description: Shown on its sign, up to about 24 characters. Leave it empty to keep the name it has.
       placeholder: Penguin Pond
-  - type: dropdown
-    id: style
-    attributes:
-      label: Style
-      description: How it's drawn. All of them use the North Pole's own colours and its dusk light.
-      options:
-        - Diorama at dusk, the North Pole's own look
-        - Cosy storybook, soft shapes and warm light
-        - Bold and flat, like a poster
-        - Papercut, layered shapes with little shadows
-        - Pixel art, chunky and retro
-        - Tiny details, like a model railway
-        - Night scene, glowing lights on dark
-        - Surprise me
-      default: 0
-  - type: dropdown
-    id: stall
-    attributes:
-      label: Stall shape
-      description: What your stall on the map looks like, with your drawing on its front. Name a roof colour from the palette in your request too, such as "a gold roof".
-      options:
-        - Keep it as it is
-        - Market stall with a striped awning
-        - Shed, long and low with a flat roof
-        - Tent, round and striped
-        - Log cabin with a snowy pitched roof
-        - Kiosk, small and hexagonal
-      default: 0
-  - type: input
-    id: mood
-    attributes:
-      label: Mood
-      description: How should it feel? A few words.
-      placeholder: Cosy, a little silly, quietly busy
-  - type: textarea
-    id: motion
-    attributes:
-      label: What moves?
-      description: The animation, if any. Booths animate from time, so describe a loop that repeats every few seconds. A booth can also react to hover, clicks and taps, so say what happens when someone points at it or taps it, or what game it plays.
-      placeholder: |
-        The penguins skate a slow figure eight every 6 seconds. Steam rises
-        from the cocoa. Snow falls gently. The lantern flickers.
-  - type: textarea
-    id: details
-    attributes:
-      label: Little details
-      description: The small touches that make it yours. A sign, a pet, a joke only your friends get (keep it friendly for everyone).
-      placeholder: A tiny sign that reads "Thin ice, skate anyway". A fish peeking out of a hole in the ice.
-  - type: dropdown
-    id: colours
-    attributes:
-      label: Main colours
-      description: Pick a few from the North Pole palette.
-      multiple: true
-      options:
-        - Snow and ice
-        - Pine green
-        - Berry red
-        - Gold and glow
-        - Wood and gingerbread
-        - Cocoa brown
-        - Aurora green and violet
-        - Mint
-        - Night blue
-  - type: textarea
-    id: done
-    attributes:
-      label: Done when
-      description: A short checklist the agent can test its work against.
-      value: |
-        - [ ] My booth shows up on the map, and at `#/booth/<my login>`
-        - [ ] Every change is inside `carnival/booths/<my login>/`
-        - [ ] `npm run check` passes
-    validations:
-      required: true
