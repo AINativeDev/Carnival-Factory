@@ -27,6 +27,9 @@ repeats every 12 seconds:
   it waves a flipper at you; tap one and it does a little hop.
 - **Snow globe**: a small globe with a tiny reindeer sits on a shelf near the
   front. Tap it and its snow swirls, then settles again over about 4 seconds.
+- **The logo**: the owner's logo, a white cube of interlocking blocks on a dark
+  plaque, hangs on the back wall to the right of the toy sign. Press it and it
+  spins for as long as you hold; let go and it slows to a stop.
 - **On the map**: the stall is a log cabin with a berry red roof and gold trim.
 
 Everything is drawn from `time`. The one thing the booth remembers is when

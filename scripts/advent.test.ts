@@ -207,7 +207,7 @@ describe('adventCounts', () => {
 
 describe('the Advent challenge issue form', () => {
   const form = readFileSync(
-    new URL('../.github/ISSUE_TEMPLATE/03-advent-challenge.yml', import.meta.url),
+    new URL('../.github/ISSUE_TEMPLATE/04-advent-challenge.yml', import.meta.url),
     'utf8',
   );
 

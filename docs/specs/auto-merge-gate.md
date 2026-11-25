@@ -70,6 +70,20 @@ scripts/auto-merge-booths-needs-human.test.ts):
 - The merge is pinned to the head sha, and if it fails and the pull request
   is not merged, `auto-merged` comes off (enforced by:
   scripts/merge-gate-actions.ts, scripts/auto-merge-booths.test.ts).
+- GitHub's passing failures don't stop a round: a request GitHub answers
+  502, 503 or 504, or whose connection fails, is tried up to 3 times in all,
+  after 1 s and then 3 s; any other status fails at once. A write that would
+  do something twice, a merge, a new comment or a workflow dispatch, is tried
+  again only when its connection never reached GitHub (refused, not found or
+  timed out connecting), never after an answer or a connection that broke
+  once sent, since GitHub may have done it. Reads, edits, deletes and adding
+  labels are retried either way (enforced by:
+  scripts/merge-gate-github.ts, scripts/merge-gate-github.test.ts).
+- A failure about one pull request, while gating it or reading its history
+  to decide whether to publish the map, is logged and skips only that pull
+  request: the round gates and publishes for the others, then exits non-zero
+  so the failure shows (enforced by: scripts/merge-gate-round.ts,
+  scripts/merge-gate-publish.ts, scripts/merge-gate-round.test.ts).
 - Level requests never merge on their own: the gate only takes
   `booth-request` issues (enforced by: scripts/merge-gate-requests.ts,
   scripts/auto-merge-booths-pulls.test.ts).
@@ -110,5 +124,7 @@ merge, the checklist, a failed merge), `scripts/auto-merge-booths-waits.test.ts`
 (each reason to wait, and the hourly limit),
 `scripts/auto-merge-booths-needs-human.test.ts` (each reason for a person)
 and `scripts/auto-merge-booths-pulls.test.ts` (forks, other branches,
-publishing the map), and `scripts/merge-gate-round.test.ts` passes the
-scripted client straight to the round.
+publishing the map), `scripts/merge-gate-round.test.ts` passes the
+scripted client straight to the round (and one bad pull request among good
+ones), and `scripts/merge-gate-github.test.ts` pins the client's retries
+against the scripted GitHub's failures in turn and unreachable connections.

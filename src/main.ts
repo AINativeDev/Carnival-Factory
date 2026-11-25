@@ -1,6 +1,6 @@
 import './style.css';
 import { attractionRegistry } from './northpole/attractions';
-import { CLAIM_URL, REPO_URL } from './northpole/links';
+import { CLAIM_URL } from './northpole/links';
 import { isPhone } from './northpole/camera';
 import { LEVEL_THEMES, levelWorld } from './northpole/level';
 import { levelOf, levels } from './northpole/levels';
@@ -21,6 +21,8 @@ import { renderSeason } from './season-card';
 import { openVisitHud, type VisitHud } from './visit-hud';
 import { followPending, knownPending, loadSites, saveSites } from './pending';
 import { keepUpToDate } from './updates';
+import { startIntro } from './intro';
+import { renderKeepPosted } from './keep-posted';
 
 applyTheme();
 keepUpToDate();
@@ -322,29 +324,6 @@ function renderUnknown(note: HTMLElement, focus: { kind: SquareKind; id: string 
   note.hidden = false;
 }
 
-/**
- * Stands in for the "keep me posted" form until a maintainer sets
- * KEEP_POSTED_URL. It collects nothing: it only says the list opens soon.
- */
-function renderKeepPosted() {
-  document.body.dataset.view = 'booth';
-  app.innerHTML = `
-    <section class="booth">
-      <div class="booth-header">
-        <a href="#/">← Back to the map</a>
-        <h1>Keep me posted</h1>
-        <p class="description">
-          The list for news about the next North Pole event opens soon. Nothing is
-          collected on this page. In the meantime, watch the repository on GitHub
-          for updates.
-        </p>
-        <p class="booth-help">
-          <a href="${REPO_URL}" target="_blank" rel="noopener">Open the repository</a>
-        </p>
-      </div>
-    </section>`;
-}
-
 /** The map running now, the HUD of the square the player is inside or of the factory's numbers, and how they came in. */
 let map: MapControls | undefined;
 let card: VisitHud | undefined;
@@ -449,7 +428,7 @@ function route(event?: HashChangeEvent) {
     closeCard(false);
     stop?.();
     stop = map = undefined;
-    return renderKeepPosted();
+    return renderKeepPosted(app);
   }
 
   const route = parseHash(location.hash);
@@ -528,3 +507,4 @@ function route(event?: HashChangeEvent) {
 
 window.addEventListener('hashchange', route);
 route();
+startIntro(location.hash);

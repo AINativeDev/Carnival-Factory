@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { analyticsConfig, capture, startAnalytics, type Page } from './analytics';
 
@@ -46,7 +48,8 @@ describe('capture: one cookieless event', () => {
 
 /** A page that records its listeners, so the test can fire them. */
 function fakePage(hash: string) {
-  const listeners: Partial<Record<string, (event: { target: unknown }) => void>> = {};
+  const listeners: Partial<Record<string, (event: { target: unknown; detail?: unknown }) => void>> =
+    {};
   const page: Page = {
     location: { hash, href: `https://x.test/${hash}` },
     addEventListener: (type, listener) => (listeners[type] = listener as never),
@@ -79,5 +82,42 @@ describe('startAnalytics', () => {
     listeners.click?.({ target: { closest: () => null } });
     listeners.click?.({ target: null });
     expect(events).toEqual(['square_opened', 'factory_viewed']);
+  });
+
+  it('counts the intro opening and how it closed, and nothing else it might be sent', () => {
+    const { page, listeners } = fakePage('#/');
+    const sent: { event: string; properties: Record<string, unknown> }[] = [];
+    const send = (_url: string, body: string) => sent.push(JSON.parse(body) as never) > 0;
+    startAnalytics(config, page, () => 'id', send);
+    listeners['north-pole-intro']?.({ target: null, detail: 'opened' });
+    listeners['north-pole-intro']?.({ target: null, detail: 'explore' });
+    listeners['north-pole-intro']?.({ target: null, detail: 'somewhere else' });
+    expect(sent.map(({ event, properties }) => [event, properties.how])).toEqual([
+      ['map_viewed', undefined],
+      ['intro_opened', undefined],
+      ['intro_closed', 'explore'],
+    ]);
+  });
+
+  it('never stops the page when sending fails, as where sendBeacon is switched off', () => {
+    const { page, listeners } = fakePage('#/');
+    let tries = 0;
+    const send = () => {
+      tries += 1;
+      throw new TypeError('navigator.sendBeacon is not a function');
+    };
+    expect(() => {
+      startAnalytics(config, page, () => 'id', send);
+    }).not.toThrow();
+    expect(() => listeners.hashchange?.({ target: null })).not.toThrow();
+    expect(tries).toBe(2);
+  });
+});
+
+describe('the page', () => {
+  it('starts analytics before the map, so it hears the intro open on a first visit', () => {
+    const page = readFileSync(join(import.meta.dirname, '..', 'index.html'), 'utf8');
+    expect(page.indexOf('/src/analytics.ts')).toBeGreaterThan(0);
+    expect(page.indexOf('/src/analytics.ts')).toBeLessThan(page.indexOf('/src/main.ts'));
   });
 });

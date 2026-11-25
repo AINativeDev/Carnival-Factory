@@ -5,10 +5,12 @@
 import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
 import { drawBelt, drawLetters, drawSparks, drawTick } from './belt';
 import { drawElves } from './elves';
+import { drawLogo } from './logo';
 import { lettersAt } from './letters';
 import { drawPenguin, hopHeight, penguinAt, PENGUINS } from './penguins';
 import { drawRoom } from './room';
 import { drawSleigh } from './sleigh';
+import { onLogo, REST, stepSpin, type Spin } from './spin';
 import { drawSnowGlobe, onGlobe } from './snow-globe';
 import { drawCheckLamp, drawToySign } from './tallies';
 
@@ -16,6 +18,9 @@ import { drawCheckLamp, drawToySign } from './tallies';
 const tapped: number[] = PENGUINS.map(() => -Infinity);
 /** When the snow globe was last tapped. */
 let globeTapped = -Infinity;
+/** The logo's turn, and whether the press that spins it began on the logo. */
+let spin: Spin = REST;
+let holdingLogo = false;
 
 /** Santa's toy factory: letters in, sorted, built into toys, checked and into the sleigh. */
 const booth: NorthPoleSquare = {
@@ -35,6 +40,13 @@ const booth: NorthPoleSquare = {
     drawSleigh(ctx, u, time);
     drawLetters(ctx, u, letters);
     drawSparks(ctx, u, time, letters);
+
+    // The logo spins while a press that began on it is held, and slows once let go.
+    if (pointer && pointer.presses > 0 && onLogo(pointer.x / u, pointer.y / u)) holdingLogo = true;
+    if (!pointer?.down) holdingLogo = false;
+    spin = stepSpin(spin, holdingLogo, time);
+    drawLogo(ctx, u, spin.angle);
+
     drawTick(ctx, u, letters);
 
     // The snow globe swirls when tapped.
