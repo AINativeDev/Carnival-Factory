@@ -93,3 +93,4 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0045](0045-feedback-and-ideas-stay-open.md) | Feedback and ideas have forms of their own, and stay open | Accepted |
 | [0046](0046-launch-behind-feature-flags.md) | Launch with unfinished features behind feature flags | Accepted |
 | [0047](0047-year-in-review-answers.md) | Year in Review answers are moderated and baked in at build | Accepted |
+| [0048](0048-a-level-unlocks-after-a-booth.md) | A level unlocks after a booth | Accepted |

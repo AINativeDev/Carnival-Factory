@@ -61,6 +61,18 @@ describe('visit', () => {
     call('onMine');
   });
 
+  it("tells a booth's panel when it's the visitor's own, so it offers them a level next", () => {
+    const page = onTheMap();
+    Object.assign(panels.at(-1) ?? {}, { me: 'ana' });
+    visit(page, 'booth', 'ana', false);
+    expect(lastHud().options).toMatchObject({ mine: true });
+    visit(page, 'booth', 'bob', false);
+    expect(lastHud().options).toMatchObject({ mine: false });
+    page.shown = 'ana';
+    visit(page, 'attraction', 'ana', false);
+    expect(lastHud().options).toMatchObject({ mine: false });
+  });
+
   it("says on the map, or in the level, when a square isn't there or the map can't go in", () => {
     const page = onTheMap();
     const note = () => page.app.querySelector('.map-note')?.textContent;

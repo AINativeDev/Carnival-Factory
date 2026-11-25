@@ -28,8 +28,9 @@ The Recording Studio, `carnival/levels/the-studio/`, and The Year in Review,
   and the way home stays clear. It shows the level's name (the map has no
   sign for it), "A level by @<login>" and its description, then **How it was
   built** from the level's own requests, then Share (the level's link,
-  `#/level/<login>`), "Want one too? Get a level" (the
-  level form) and **More**. A level has no Remix, no People's Choice vote and
+  `#/level/<login>`), "Want one too? Get a booth first, then a level" (the
+  booth form, then the level form: a level unlocks once you have a booth,
+  [ADR 0048](../adr/0048-a-level-unlocks-after-a-booth.md)) and **More**. A level has no Remix, no People's Choice vote and
   no Leave: the player walks on with the keys while it shows. Inside one of
   the level's squares, that square's panel takes its place, and it comes back
   on leaving.
@@ -181,6 +182,12 @@ The Recording Studio, `carnival/levels/the-studio/`, and The Year in Review,
   ([ADR 0038](../adr/0038-north-pole-links.md)).
 
 ## Rules
+
+- A level unlocks once its author has a booth: a level request from someone
+  with no booth on `main` and no accepted booth request being built waits as
+  a question (`needs-info`) with a link to **Your booth**, and the site asks
+  for a booth first (enforced by: assess-booth-request skill,
+  src/level-panel.test.ts, src/visit-hud-actions.test.ts).
 
 - `level.ts` is plain data, read by the page: `import type` of
   `NorthPoleLevel`, one `const level: NorthPoleLevel = { ... }` holding only

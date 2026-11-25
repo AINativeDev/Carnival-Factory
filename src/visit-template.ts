@@ -1,6 +1,7 @@
 /**
  * The markup of a square's visit panel (visit-hud.ts fills it in): the
- * description, the build story first, one quiet row of actions, one ask, and
+ * description, the build story first, one quiet row of actions, one ask (or,
+ * for a booth's owner, the level that comes next), and
  * everything else folded under More. Only fixed text and the repository's own
  * links are written here; every name and description is set as text later.
  */
@@ -8,6 +9,7 @@ import { SITE_NAME } from './edition';
 import {
   BUILD_YOUR_OWN_URL,
   KEEP_POSTED_URL,
+  LEVEL_REQUEST_URL,
   OWN_REPO_URL,
   keepPostedHref,
 } from './northpole/links';
@@ -37,6 +39,7 @@ export const VISIT_PANEL = `
       <a class="visit-remix-link" target="_blank" rel="noopener">Remix this booth</a>
     </div>
     <p class="visit-want">Want one too? <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Get a booth</a><button class="visit-claim" type="button" hidden>Get the spot next door</button></p>
+    <p class="visit-next" hidden>Next: <a href="${LEVEL_REQUEST_URL}" target="_blank" rel="noopener">get a level of your own</a></p>
     <details class="visit-more">
       <summary>More</summary>
       <div class="visit-edit">

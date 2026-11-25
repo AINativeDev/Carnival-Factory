@@ -1425,13 +1425,16 @@ kbd {
   font-size: 14px;
 }
 
-/* The one ask: a booth of your own, or the spot next door for someone who came by a shared link. */
-.visit-want {
+/* The one ask: a booth of your own, the spot next door for someone who came by a shared link,
+   or, for the booth's owner, a level of their own next (ADR 0048). */
+.visit-want,
+.visit-next {
   margin: 12px 0 4px;
   font-size: 14px;
 }
 
-.visit-want a {
+.visit-want a,
+.visit-next a {
   font-weight: 600;
 }
 

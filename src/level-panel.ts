@@ -1,7 +1,7 @@
 /**
  * The panel beside a level's map: a square's visit panel (visit-hud.ts), fitted
  * to a whole level. It shows the level's name, who it's by and its description,
- * then how it was built, Share, the level request form and More. A level has
+ * then how it was built, Share, a booth first and then a level, and More. A level has
  * no remix, no People's Choice vote and nothing to leave, and the player walks
  * on with the keys while it's open. It stands beside the map rather than over
  * it, and inside one of the level's squares, that square's own panel takes its
@@ -45,9 +45,15 @@ export function openLevelPanel(frame: HTMLElement, level: LevelSummary): VisitHu
     owner.textContent = `A level by ${levelOwner(level.id)}`;
     title.after(owner);
   });
-  card.querySelectorAll<HTMLAnchorElement>('.visit-build').forEach((build) => {
-    build.href = LEVEL_REQUEST_URL;
-    build.textContent = 'Get a level';
+  // A level unlocks once you have a booth (ADR 0048): "Get a booth" stays, and the level comes after.
+  card.querySelectorAll('.visit-build').forEach((build) => {
+    const next = document.createElement('a');
+    next.className = 'visit-level';
+    next.href = LEVEL_REQUEST_URL;
+    next.target = '_blank';
+    next.rel = 'noopener';
+    next.textContent = 'a level';
+    build.after(' first, then ', next);
   });
 
   // Beside the map's frame, not over it, so the camera frames the level in the space that's left.

@@ -48,6 +48,9 @@ set them, so trust labels over comments.
 - **New or a change?** Check whether `carnival/booths/<author>/booth.ts` is on `main`.
   If it isn't, the factory builds the booth; if it is, the factory changes it.
   Both are the same kind of request, so neither is a reason to decline.
+- **For a level, a booth first?** Check whether `carnival/booths/<author>/booth.ts`
+  is on `main`, or the author has an open issue labelled `booth-request` and
+  `tessl`. A level unlocks once they have one (see **For a level**).
 - **Is it switched off?** Check whether `<author>` is in
   the `booths` list of `src/northpole/disabled.json`.
 - **A remix?** If it starts from someone's booth, check that
@@ -200,6 +203,28 @@ A level is plain data, a `NorthPoleLevel` in `carnival/levels/<author>/level.ts`
 up to 8 squares of its own in `carnival/levels/<author>/squares/<id>/square.ts`, each
 built like a booth and run sandboxed (see the level section of `AGENTS.md`).
 New or a change: check whether `carnival/levels/<author>/level.ts` is on `main`.
+
+**A level unlocks once you have a booth**
+([ADR 0048](../../../../docs/adr/0048-a-level-unlocks-after-a-booth.md)).
+Before anything else in **Decide**, check that the author has a booth: either
+`carnival/booths/<author>/booth.ts` is on `main`, or the author has an open
+issue labelled both `booth-request` and `tessl` (an accepted booth being
+built). If neither holds, the factory doesn't build the level yet. That is a
+**question**, never a decline: add `needs-info`, keep the issue open, and
+comment:
+
+```text
+<!-- assess-booth-request -->
+Thanks, this sounds like a lovely level. Levels unlock once you have a booth
+on the map, so the factory will build this one after yours. Open
+[Your booth](https://github.com/AINativeDev/Northpole-Carnival-Factory/issues/new?template=01-your-booth.yml)
+to get a booth first. Once it's on the map, edit this issue or reply here, and
+your level will be looked at again.
+```
+
+When the author edits or replies later, check again: once they have a booth,
+assess the level as usual. A booth on the kill switch still counts as a booth;
+the `levels` list of `src/northpole/disabled.json` decides about the level.
 
 **Accept** a level request when, on top of the rules above, it can be built
 as level data plus sandboxed squares: a name, one sentence about it, one of

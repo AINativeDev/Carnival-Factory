@@ -84,6 +84,8 @@ export function visit(page: Page, kind: SquareKind, id: string, fromHistory: boo
     square,
     ...(shown ? { level: shown } : {}),
     invite: kind === 'booth' && page.invite === id,
+    // Their own booth's panel offers them a level next (ADR 0048).
+    mine: !shown && kind === 'booth' && page.panel?.me === id,
     onMine: () => {
       page.panel?.setMe(id);
     },

@@ -144,7 +144,9 @@ test("a level's panel tells how it was built beside its map, clear of the way ho
     await expect(panel.getByRole('heading', { name: 'How it was built' })).toBeVisible();
     await expect(panel.locator('.story-step').first()).toContainText(`@${login}`);
     await expect(panel.locator('.visit-copy')).toBeVisible();
-    await expect(panel.locator('.visit-build')).toHaveText('Get a level');
+    // A level unlocks once you have a booth (ADR 0048).
+    await expect(panel.locator('.visit-want')).toContainText('Get a booth first, then a level');
+    await expect(panel.locator('.visit-level')).toHaveAttribute('href', /02-your-level\.yml$/);
     await expect(panel.locator('.visit-remix-link')).toBeHidden();
     const home = await page.locator('.hud-home').boundingBox();
     const box = await panel.boundingBox();
