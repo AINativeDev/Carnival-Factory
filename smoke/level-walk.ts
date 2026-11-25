@@ -1,13 +1,8 @@
 import { expect, type Page } from '@playwright/test';
-import { worldToScreen } from '../src/northpole/camera';
-import {
-  canStand,
-  findPath,
-  toScreen,
-  type Plot,
-  type Tile,
-  type World,
-} from '../src/northpole/world';
+import { worldToScreen } from '../src/northpole/camera-view';
+import { findPath } from '../src/northpole/pathfinding';
+import { canStand } from '../src/northpole/walking';
+import { type Plot, type Tile, toScreen, type World } from '../src/northpole/world';
 
 /**
  * Walking a level's player to a door in a real browser, for

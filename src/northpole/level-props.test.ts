@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { levelWorld, validateLevel, type NorthPoleLevel } from './level';
+import { levelWorld, type NorthPoleLevel } from './level';
+import { validateLevel } from './level-check';
 import { LEVEL_PROPS } from './level-props';
-import { key, walkable } from './world';
+import { walkable } from './walking';
+import { key } from './world';
 
 /** An open 15 by 15 level, with room for any prop in the middle and a stream down one side. */
 const open = (props: NonNullable<NorthPoleLevel['props']>): NorthPoleLevel => ({

@@ -1,5 +1,6 @@
 import disabled from './disabled.json';
-import { validateLevel, type NorthPoleLevel } from './level';
+import type { NorthPoleLevel } from './level';
+import { validateLevel } from './level-check';
 import { levelOwner } from './north-pole-levels';
 import { sandboxedSquare } from './sandbox';
 import type { NorthPoleSquare } from './square';

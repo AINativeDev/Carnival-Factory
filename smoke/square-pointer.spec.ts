@@ -1,5 +1,5 @@
 import { expect, test, type Page } from './coverage';
-import { worldToScreen } from '../src/northpole/camera';
+import { worldToScreen } from '../src/northpole/camera-view';
 import { faceOf, onFace } from '../src/northpole/faces';
 import { carnivalWorld, frameOf, present, watch } from './support/carnival';
 import { boxOf, cameraFrom, stageOf } from './support/map-canvas';

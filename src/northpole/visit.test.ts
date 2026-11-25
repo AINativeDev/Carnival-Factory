@@ -11,7 +11,9 @@ import {
   targetAt,
   nearYou,
 } from './visit';
-import { buildWorld, walkAlong, type Plot } from './world';
+import { walkAlong } from './walking';
+import { type Plot } from './world';
+import { buildWorld } from './world-build';
 
 const ATTRACTIONS = ['big-top', 'cocoa-stand', 'ferris-wheel', 'frozen-pond', 'sleigh-coaster'];
 const world = buildWorld(ATTRACTIONS, ['elf-0', 'elf-1', 'jedi4ever'], pinned);

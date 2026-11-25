@@ -4,12 +4,6 @@
   "src/booths-hud.ts": 399,
   "src/factory.ts": 227,
   "src/main.ts": 501,
-  "src/northpole/camera.test.ts": 238,
-  "src/northpole/camera.ts": 253,
-  "src/northpole/level.ts": 341,
-  "src/northpole/map.ts": 1456,
-  "src/northpole/plots.ts": 211,
-  "src/northpole/world.test.ts": 407,
-  "src/northpole/world.ts": 717,
+  "src/northpole/map.ts": 1448,
   "src/season-card.ts": 256
 }

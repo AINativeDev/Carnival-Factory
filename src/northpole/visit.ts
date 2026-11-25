@@ -6,7 +6,9 @@
  * say otherwise.
  */
 import { squareOwner } from './north-pole-levels';
-import { findPathToFirst, tileOf, type Box, type Plot, type Tile, type World } from './world';
+import { findPathToFirst } from './pathfinding';
+import { tileOf } from './walking';
+import { type Box, type Plot, type Tile, type World } from './world';
 
 /**
  * The open plots, nearest `from` first, and the path to the nearest one the

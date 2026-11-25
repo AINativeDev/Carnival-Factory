@@ -69,7 +69,11 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 ## Where it lives
 
 `src/main.ts`, `src/route.ts`, `src/updates.ts`, `src/northpole/world.ts`,
-`src/northpole/plots.ts`, `src/northpole/plots.json`, `src/northpole/camera.ts`,
+`src/northpole/world-plots.ts`, `src/northpole/world-build.ts`,
+`src/northpole/world-town.ts`, `src/northpole/world-sights.ts`,
+`src/northpole/groundwork.ts`, `src/northpole/walking.ts`,
+`src/northpole/pathfinding.ts`, `src/northpole/plots.ts`,
+`src/northpole/plots.json`, `src/northpole/camera.ts`, `src/northpole/camera-view.ts`,
 `src/northpole/map.ts`, `src/northpole/visit.ts`, and the drawing:
 `src/northpole/render.ts`, which hands each thing and plot to the small file
 that draws it (`ground.ts`, `island.ts`, `sky.ts`, `pines.ts`, `houses.ts`,
@@ -80,6 +84,9 @@ that draws it (`ground.ts`, `island.ts`, `sky.ts`, `pines.ts`, `houses.ts`,
 ## Tested by
 
 `src/route.test.ts`, `src/updates.test.ts`, `src/northpole/world.test.ts`,
+`src/northpole/world-build.test.ts`, `src/northpole/world-plots.test.ts`,
+`src/northpole/world-sights.test.ts`, `src/northpole/world-pin.test.ts`,
+`src/northpole/walking.test.ts`, `src/northpole/pathfinding.test.ts`,
 `src/northpole/plots.test.ts`, `src/northpole/camera.test.ts`,
 `src/northpole/map.test.ts`, `src/northpole/visit.test.ts`,
 `src/northpole/render-pins-plots.test.ts` and

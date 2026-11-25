@@ -8,7 +8,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from '../coverage';
-import { buildWorld, type PinnedPlots, type WorldExtras } from '../../src/northpole/world';
+import { buildWorld, type PinnedPlots, type WorldExtras } from '../../src/northpole/world-build';
 
 const root = join(import.meta.dirname, '..', '..');
 /** Where every spec saves its screenshots, for the pull request's preview comment. */

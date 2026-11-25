@@ -57,11 +57,12 @@ site on the plot held for it, so the booth lands where its site stood.
 ## Where it lives
 
 `scripts/pending.ts`, `scripts/write-pending.ts`, `src/pending.ts`,
-`src/northpole/plots.ts`, `vite.config.ts` (`pendingFile`),
+`src/northpole/plots.ts`, `src/northpole/construction-sites.ts`, `vite.config.ts` (`pendingFile`),
 `src/northpole/visit.ts` (`tagText`).
 
 ## Tested by
 
 `scripts/pending.test.ts`, `src/northpole/plots.test.ts`,
+`src/northpole/construction-sites.test.ts`,
 `src/northpole/visit.test.ts`, `smoke/claiming.spec.ts` (an accepted request
 shows a site, its stage and a link, never its text).

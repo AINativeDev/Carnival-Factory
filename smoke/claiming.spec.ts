@@ -1,6 +1,6 @@
 import { expect, test } from './coverage';
 import { CLAIM_URL, REPO_URL } from '../src/northpole/links';
-import { worldToScreen } from '../src/northpole/camera';
+import { worldToScreen } from '../src/northpole/camera-view';
 import { middle } from '../src/northpole/brushes';
 import { CLAIM_SIGN } from '../src/northpole/open-plot';
 import { toScreen } from '../src/northpole/world';

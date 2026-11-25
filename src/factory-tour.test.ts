@@ -4,7 +4,8 @@ import { FACTORY_TOUR } from './factory-tour';
 import { levelWorld } from './northpole/level';
 import { drawPlot } from './northpole/render';
 import { targetAt } from './northpole/visit';
-import { canStand, toScreen } from './northpole/world';
+import { canStand } from './northpole/walking';
+import { toScreen } from './northpole/world';
 import { drawingOf } from './test-support/recording-canvas';
 
 /**

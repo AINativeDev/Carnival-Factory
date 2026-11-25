@@ -5,7 +5,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import { pinDrawing } from '../test-support/recording-canvas';
-import { buildWorld, type ThingKind } from './world';
+import type { ThingKind } from './world';
+import { buildWorld } from './world-build';
 import { drawLightPools, drawRipples } from './ground';
 import { drawFrontFence, drawIsland, drawStringLights } from './island';
 import { drawPerson, drawReindeer, portrait } from './people';
