@@ -10,7 +10,7 @@ import {
   type StandingsInput,
 } from './peoples-choice';
 
-const DISCUSSION = 'https://github.com/AINativeDev/Northpole-Carnival-Factory/discussions/7';
+const BALLOT = 'https://github.com/AINativeDev/Northpole-Carnival-Factory/issues/7';
 const CLOSES = '2026-12-31T23:59:59Z';
 
 const OWNERS: Record<string, number> = { jedi4ever: 1, sjmaple: 2, hamzaoza: 3, pstember: 4 };
@@ -24,7 +24,7 @@ function comment(
   more: Partial<RawChoiceComment> = {},
 ): RawChoiceComment {
   return {
-    url: `${DISCUSSION}#discussioncomment-${login.length}`,
+    url: `${BALLOT}#issuecomment-${login.length}`,
     body: entryBody(category, login, OWNERS[login] ?? 99, undefined, undefined),
     createdAt: '2026-11-25T10:00:00Z',
     viewerDidAuthor: true,
@@ -37,7 +37,7 @@ const input = (
   comments: RawChoiceComment[],
   more: Partial<StandingsInput> = {},
 ): StandingsInput => ({
-  discussion: DISCUSSION,
+  ballot: BALLOT,
   comments,
   booths: ['jedi4ever', 'sjmaple', 'hamzaoza'],
   holders: [{ login: 'pstember', repo: 'pstember/factory' }],
@@ -113,7 +113,7 @@ describe('standings', () => {
         comment('factory', 'pstember', [vote(4), vote(20)]),
       ]),
     );
-    expect(result.discussion).toBe(DISCUSSION);
+    expect(result.ballot).toBe(BALLOT);
     expect(result.booths.map((entry) => [entry.login, entry.votes])).toEqual([
       ['sjmaple', 3],
       ['jedi4ever', 1],

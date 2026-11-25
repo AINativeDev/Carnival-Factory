@@ -241,7 +241,7 @@ scripts/
                             and writes their counts before the deploy's build
   elf-engineer.ts           the Elf Engineer badge's rules: the form, the check,
                             the tiers and the holders (plain functions)
-  peoples-choice.ts         the People's Choice standings from its discussion's comments:
+  peoples-choice.ts         the People's Choice standings from its ballot issue's comments:
                             one vote per account, not the owner's (plain functions)
   write-peoples-choice.ts   adds a comment for each new entry, reads the votes and writes
                             the standings before the deploy's build (previews have none)
