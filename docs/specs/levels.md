@@ -10,7 +10,8 @@ A level is a whole patch of the North Pole of a participant's own,
   open platform takes the sleigh there. A closed level's platform says
   "Closed for repairs" and has no sleigh.
 - `#/level/<login>` walks the level's own world, with its name, owner,
-  description and "Back to the North Pole" over the map.
+  description over the map, and "Back to the North Pole" in the top-left
+  corner, where "Back to the map" stands inside one of its squares.
   `#/level/<login>?square=<id>` puts the player in front of a square, and
   `#/level/<login>/<id>` inside it. The sleigh home goes back to `#/`.
 - A link to a level that doesn't exist, or is closed, shows the North Pole

@@ -523,6 +523,26 @@ body[data-view='map'] .map {
   display: block;
 }
 
+/* On a level, the same corner takes you home to the North Pole, until you go inside one of its squares. */
+.hud-home {
+  top: 12px;
+  left: 12px;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font: bold 14px var(--font-family);
+  text-decoration: none;
+}
+
+.map-frame[data-visiting] .hud-home {
+  display: none;
+}
+
+.hud-home:hover,
+.hud-home:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
 .map-frame[data-visiting] .hud-tessl,
 .map-frame[data-factory] .hud-tessl {
   display: none;
@@ -559,12 +579,19 @@ a.hud-tessl:focus-visible {
   width: auto;
 }
 
-/* A level's own card: its name, its owner, what it is, and the way home. */
+/* A level's own card: its name, its owner and what it is. The way home has the top-left corner. */
 .hud-level {
   top: 12px;
   right: 12px;
   width: 260px;
   max-width: calc(100% - 24px);
+}
+
+/* On a phone the card goes under the way home, so it never covers it. */
+@media (max-width: 719px) {
+  .hud-level {
+    top: 52px;
+  }
 }
 
 .hud-level h1 {

@@ -244,11 +244,11 @@ function renderLevel(login: string, focus?: string) {
         <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
         <button class="hud hud-back" type="button"><span aria-hidden="true">←</span> Back to the map</button>
+        <a class="hud hud-home" href="#/"><span aria-hidden="true">←</span> Back to the North Pole</a>
         <section class="hud hud-level">
           <h1 class="level-name"></h1>
           <p class="level-owner"></p>
           <p class="level-description"></p>
-          <a class="level-home" href="#/">Back to the North Pole</a>
         </section>
         <details class="hud hud-controls" open>
           <summary>Controls</summary>

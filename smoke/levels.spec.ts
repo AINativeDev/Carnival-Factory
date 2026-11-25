@@ -93,6 +93,30 @@ for (const login of logins) {
   });
 }
 
+test('a level has the way back to the North Pole in its corner, until you go inside a square', async ({
+  page,
+}) => {
+  const login = logins.at(0) ?? '';
+  test.skip(!login, 'no levels');
+  const square = readdirSync(join(root, 'carnival', 'levels', login, 'squares')).at(0) ?? '';
+  await page.goto(`#/level/${login}/${square}`);
+  await expect(page.locator('.visit')).toBeVisible();
+  await expect(page.locator('.hud-home')).toBeHidden();
+  await expect(page.locator('.hud-back')).toBeVisible();
+  await page.goto(`#/level/${login}`);
+  const home = page.locator('.hud-home');
+  await expect(home).toBeVisible();
+  await expect(home).toHaveText(/Back to the North Pole/);
+  // On a phone, the level's card sits under the way home, never over it.
+  await page.setViewportSize({ width: 390, height: 844 });
+  const corner = await home.boundingBox();
+  const card = await page.locator('.hud-level').boundingBox();
+  expect(card && corner && card.y >= corner.y + corner.height).toBe(true);
+  await home.click();
+  await expect(page).toHaveURL(/#\/$/);
+  await expect(page.locator('.hud-home')).toHaveCount(0);
+});
+
 test("a level's deep links say when a level or square isn't there", async ({ page }) => {
   test.skip(!logins.length, 'no levels');
   const problems = watch(page);
