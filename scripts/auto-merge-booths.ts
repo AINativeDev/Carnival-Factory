@@ -9,7 +9,8 @@
  * text through the API and never checks out or runs its code. DRY_RUN=1 only
  * prints what it would do.
  */
-import { closedSince, getAll, names, type GitHub, type Label, type Pull } from './gate-github.ts';
+import { getAll, type GitHub, type Pull } from './gate-github.ts';
+import { publishIfBehind } from './gate-publish.ts';
 import { gatePull } from './gate-pull.ts';
 
 const token = process.env.GITHUB_TOKEN;
@@ -33,50 +34,11 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
   if (!response.ok) throw new Error(`${method} ${path} answered HTTP ${response.status}`);
   return (response.status === 204 ? undefined : await response.json()) as T;
 }
-const get = <T>(path: string) => call<T>('GET', path);
 const github: GitHub = { repository, dryRun, call };
 
 let merged = false;
 /** Factory pull requests with needs-human, which puts their booth's site at "Waiting for a maintainer". */
 const held = new Set<number>();
-
-/** Whether needs-human was last put on a pull request after `since`. */
-async function labelledSince(number: number, since: number): Promise<boolean> {
-  type Event = { event: string; label?: Label; created_at: string };
-  const events = await getAll<Event>(github, `issues/${number}/events`);
-  const last = events
-    .filter((e) => e.event === 'labeled' && e.label?.name === 'needs-human')
-    .at(-1);
-  return !!last && new Date(last.created_at).getTime() > since;
-}
-
-/**
- * Publishes the map if an auto-merge, or needs-human going on a pull request
- * (which moves its booth's construction site to "Waiting for a maintainer"),
- * is newer than the last successful Pages run. A merge or a label by this
- * workflow's token starts no other workflows, so this is how the map updates.
- * Both are read from GitHub rather than remembered, so every run retries a
- * dispatch that failed or was skipped while a deploy was already running.
- */
-async function publishIfBehind() {
-  type Runs = { workflow_runs: { created_at: string }[] };
-  const done = await get<Runs>('actions/workflows/pages.yml/runs?status=success&per_page=1');
-  const lastPublished = new Date(done.workflow_runs[0]?.created_at ?? 0).getTime();
-  const running = await get<Runs>('actions/workflows/pages.yml/runs?status=in_progress&per_page=1');
-  const behind = (await closedSince(github, lastPublished)).some(
-    (pull) =>
-      pull.merged_at &&
-      names(pull.labels).includes('auto-merged') &&
-      new Date(pull.merged_at).getTime() > lastPublished,
-  );
-  if (running.workflow_runs.length > 0) return;
-  let stale = behind || merged;
-  for (const number of held) stale ||= await labelledSince(number, lastPublished);
-  if (!stale) return;
-  if (dryRun) return console.log('would publish the map');
-  await call('POST', 'actions/workflows/pages.yml/dispatches', { ref: 'main' });
-  console.log('published the map');
-}
 
 const pulls = await getAll<Pull>(github, 'pulls?state=open');
 for (const pull of pulls) {
@@ -94,4 +56,4 @@ for (const pull of pulls) {
     process.exitCode = 1;
   }
 }
-await publishIfBehind();
+await publishIfBehind(github, merged, held);
