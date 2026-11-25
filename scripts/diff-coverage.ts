@@ -15,9 +15,17 @@ import { relative } from 'node:path';
 export const REQUIRED = 0.99;
 
 /** Istanbul's per-file coverage, as vitest writes it to coverage-final.json. */
+interface Span {
+  start: { line: number };
+  end: { line: number };
+}
+
 export interface FileCoverage {
-  statementMap: Record<string, { start: { line: number }; end: { line: number } }>;
+  statementMap: Record<string, Span>;
   s: Record<string, number>;
+  /** Each branch point's arms (an if's two sides, a ?:'s, a ??'s), and how often each ran. */
+  branchMap?: Record<string, { locations: Span[] }>;
+  b?: Record<string, number[] | undefined>;
 }
 
 /** The lines each file gains, from `git diff -U0` output. */
@@ -58,7 +66,7 @@ export interface DiffCoverage {
  */
 export function diffCoverage(
   added: Map<string, Set<number>>,
-  coverage: Record<string, FileCoverage>,
+  coverage: Partial<Record<string, FileCoverage>>,
 ): DiffCoverage {
   const result: DiffCoverage = { total: 0, covered: 0, missing: [] };
   for (const [file, lines] of added) {
@@ -74,6 +82,31 @@ export function diffCoverage(
       result.total++;
       if (statements.some(([id]) => data!.s[id] > 0)) result.covered++;
       else result.missing.push(`${file}:${line}`);
+    }
+  }
+  return result;
+}
+
+/**
+ * Of the branch arms that start on added lines, how many a test took. A changed
+ * line can run and still hide an untested side: the else nobody reached, the
+ * fallback after a ?? that never fired.
+ */
+export function diffBranchCoverage(
+  added: Map<string, Set<number>>,
+  coverage: Partial<Record<string, FileCoverage>>,
+): DiffCoverage {
+  const result: DiffCoverage = { total: 0, covered: 0, missing: [] };
+  for (const [file, lines] of added) {
+    const data = coverage[file];
+    if (!isGated(file) || !data?.branchMap || !data.b) continue;
+    for (const [id, branch] of Object.entries(data.branchMap)) {
+      branch.locations.forEach((arm, index) => {
+        if (!lines.has(arm.start.line)) return;
+        result.total++;
+        if ((data.b?.[id]?.at(index) ?? 0) > 0) result.covered++;
+        else result.missing.push(`${file}:${arm.start.line} (a branch no test took)`);
+      });
     }
   }
   return result;
@@ -100,12 +133,20 @@ if (process.argv[1]?.endsWith('diff-coverage.ts')) {
   const coverage = Object.fromEntries(
     Object.entries(raw).map(([path, data]) => [relative(root, path), data]),
   );
-  const { total, covered, missing } = diffCoverage(addedLines(diff), coverage);
-  const share = total ? covered / total : 1;
-  console.log(`Changed lines covered: ${covered} of ${total} (${(share * 100).toFixed(1)}%)`);
-  if (share < REQUIRED) {
-    console.error(`Below ${REQUIRED * 100}%. Write the tests for:\n${missing.join('\n')}`);
-    process.exit(1);
+  const added = addedLines(diff);
+  let failed = false;
+  for (const [what, result] of [
+    ['lines', diffCoverage(added, coverage)],
+    ['branches', diffBranchCoverage(added, coverage)],
+  ] as const) {
+    const share = result.total ? result.covered / result.total : 1;
+    const percent = (share * 100).toFixed(1);
+    console.log(`Changed ${what} covered: ${result.covered} of ${result.total} (${percent}%)`);
+    if (share < REQUIRED) {
+      console.error(`Below ${REQUIRED * 100}%. Write the tests for:\n${result.missing.join('\n')}`);
+      failed = true;
+    }
   }
+  if (failed) process.exit(1);
 }
 /* v8 ignore stop */
