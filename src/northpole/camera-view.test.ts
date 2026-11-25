@@ -55,6 +55,10 @@ describe('pinching the map', () => {
     expect(pinchZoom(zoom, 150, 100, fit)).toBeCloseTo(zoom / 1.5);
   });
 
+  it('stays put while the fingers have no distance between them yet', () => {
+    expect(pinchZoom(zoom, 0, 100, fit)).toBe(zoom);
+  });
+
   it('stops at the whole island and at the nearest the camera comes', () => {
     expect(pinchZoom(zoom, 100, 1, fit)).toBe(fit);
     expect(pinchZoom(zoom, 1, 100, fit)).toBe(MAX_PINCH_ZOOM);

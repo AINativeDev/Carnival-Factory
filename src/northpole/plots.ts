@@ -68,7 +68,7 @@ export function boothPlotNumbers(
     .sort(
       (a, b) =>
         (a.file.issue ?? Infinity) - (b.file.issue ?? Infinity) ||
-        (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+        Number(a.id > b.id) - Number(a.id < b.id),
     );
   const limit = plotLimit(ids.length);
   for (const { id, file } of claims) {

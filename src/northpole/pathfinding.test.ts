@@ -17,6 +17,11 @@ describe('finding the way', () => {
     }
   });
 
+  it('has no way to walk when already there, and none to goals nobody can stand on', () => {
+    expect(findPath(world, world.start, world.start)).toEqual([]);
+    expect(findPathToFirst(world, world.start, [{ x: 0, y: 0 }])).toBeUndefined();
+  });
+
   it('takes the shortest way and no way at all to a blocked tile', () => {
     expect(findPath(world, { x: 0, y: 2 }, { x: 2, y: 2 })).toEqual([
       { x: 1, y: 2 },

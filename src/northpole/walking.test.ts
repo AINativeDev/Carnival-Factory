@@ -83,6 +83,11 @@ describe('walking', () => {
     expect(plotAtDoor(world, world.start)).toBeUndefined();
   });
 
+  it('keeps a stroller with nowhere to go standing where they are', () => {
+    const still = { from: { x: 2, y: 3 }, to: { x: 2, y: 3 }, seed: 0.5 };
+    expect(strollAt(still, 5000)).toMatchObject({ x: 2, y: 3 });
+  });
+
   it('keeps strollers on walkable ground', () => {
     for (const stroll of world.strolls)
       for (const time of [0, 5000, 60000]) {

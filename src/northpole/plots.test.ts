@@ -62,6 +62,22 @@ describe('boothPlotNumbers', () => {
     expect(numbers.get('amy')).toBe(0);
   });
 
+  it('gives a contested plot with no issue numbers to the login that sorts first', () => {
+    const files = {
+      dan: { plot: 3 },
+      cat: { plot: 3 },
+      amy: { plot: 3 },
+      bob: { plot: 5, issue: 9 },
+    };
+    const numbers = boothPlotNumbers(['dan', 'cat', 'bob', 'amy'], {}, files);
+    expect([...numbers]).toEqual([
+      ['bob', 5],
+      ['amy', 3],
+      ['dan', 0],
+      ['cat', 1],
+    ]);
+  });
+
   it('lets a pin win over a plot.json that claims the same plot', () => {
     const numbers = boothPlotNumbers(['amy', 'bob'], { bob: 4 }, { amy: { plot: 4, issue: 1 } });
     expect(numbers.get('bob')).toBe(4);
