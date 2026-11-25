@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHANGE_URL, CLAIM_URL } from './northpole/links';
+import { BOOTH_REQUEST_URL, CHANGE_URL, CLAIM_URL } from './northpole/links';
 import { fillVisitHelp } from './visit-help';
 
 /** A help box that keeps its HTML and hands out one season link. */
@@ -30,5 +30,25 @@ describe('fillVisitHelp', () => {
     const level = helpBox();
     fillVisitHelp(level.element, 'attraction', 'hut', 'bo');
     expect(level.box.innerHTML).toContain("participant's own level");
+  });
+
+  it("takes the sleigh in from a landmark's room", () => {
+    const landmark = helpBox();
+    fillVisitHelp(landmark.element, 'attraction', 'the-factory');
+    expect(landmark.box.innerHTML).toContain('href="#/level/the-factory"');
+  });
+
+  it("tells a Factory stall's step of the tour, with its link", () => {
+    const stall = helpBox();
+    fillVisitHelp(stall.element, 'attraction', 'letter-box', 'the-factory');
+    expect(stall.box.innerHTML).toContain('booth form');
+    expect(stall.box.innerHTML).toContain(BOOTH_REQUEST_URL);
+    expect(stall.box.innerHTML).toContain('#/factory');
+    const workshop = helpBox();
+    fillVisitHelp(workshop.element, 'attraction', 'workshop', 'the-factory');
+    expect(workshop.box.innerHTML).toContain('carnival/booths/&lt;login&gt;/');
+    const unknown = helpBox();
+    fillVisitHelp(unknown.element, 'attraction', 'storeroom', 'the-factory');
+    expect(unknown.box.innerHTML).toContain('North Pole’s own level');
   });
 });

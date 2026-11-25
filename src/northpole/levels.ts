@@ -1,5 +1,6 @@
 import disabled from './disabled.json';
 import { validateLevel, type NorthPoleLevel } from './level';
+import { levelOwner } from './north-pole-levels';
 import { sandboxedSquare } from './sandbox';
 import type { NorthPoleSquare } from './square';
 
@@ -22,6 +23,8 @@ export interface LevelEntry {
   /** Its name, or its owner's login when it's closed. */
   name: string;
   description: string;
+  /** Who it's by, as its panel says it: `@<login>`, or the North Pole for its own levels. */
+  owner: string;
   /** The level, when it passed validation and isn't switched off. */
   level?: NorthPoleLevel;
   /** Its own squares, sandboxed, by id. */
@@ -51,16 +54,32 @@ export const levels: LevelEntry[] = Object.keys(files)
     const value = files[path];
     const ids = squareIds.get(login) ?? [];
     const problems = validateLevel(value, login, ids);
-    if (off.has(login)) return { login, name: login, description: '', squares: [], closed: 'off' };
+    if (off.has(login))
+      return {
+        login,
+        name: login,
+        description: '',
+        owner: levelOwner(login),
+        squares: [],
+        closed: 'off',
+      };
     if (problems.length) {
       console.error(`The level ${login} is closed for repairs: ${problems.join('; ')}`);
-      return { login, name: login, description: '', squares: [], closed: problems.join('; ') };
+      return {
+        login,
+        name: login,
+        description: '',
+        owner: levelOwner(login),
+        squares: [],
+        closed: problems.join('; '),
+      };
     }
     const level = value as NorthPoleLevel;
     return {
       login,
       name: level.name,
       description: level.description,
+      owner: levelOwner(login),
       level,
       squares: ids.map((id) => sandboxedSquare('level', id, login)),
     };

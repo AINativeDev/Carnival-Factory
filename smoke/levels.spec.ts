@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './coverage';
 import { levelWorld, validateLevel, type NorthPoleLevel } from '../src/northpole/level';
+import { isNorthPoleLevel } from '../src/northpole/north-pole-levels';
 import { stillCamera, walkToDoor } from './level-walk';
 
 /**
@@ -72,7 +73,9 @@ for (const login of logins) {
         await expect(page).toHaveURL(new RegExp(`#/level/${login}/${plot.id}$`));
         const frame = page.locator(`iframe[data-kind="level"][data-id="${login}/${plot.id}"]`);
         await expect(frame).toHaveAttribute('data-state', 'ready', { timeout: 5000 });
-        await expect(page.locator('.visit')).toContainText(`@${login}`);
+        // A participant's level credits its owner; the North Pole's own tell their step instead.
+        const credit = isNorthPoleLevel(login) ? 'See the factory’s numbers' : `@${login}`;
+        await expect(page.locator('.visit')).toContainText(credit);
         await page.waitForTimeout(1500);
         await expect(frame).toHaveAttribute('data-state', 'ready');
         await page.keyboard.press('Escape');

@@ -53,6 +53,7 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0032](0032-browser-coverage-counts.md)    | Browser tests count towards coverage, line by line                 | Accepted |
 | [0033](0033-attached-pictures.md)          | Participants can attach a picture for the factory to draw from     | Accepted |
 | [0034](0034-ratchet-on-main.md)            | The coverage floor is raised on main, not in pull requests         | Accepted |
+| [0035](0035-north-pole-levels.md)          | The North Pole has levels of its own, opened from a landmark       | Proposed |
 
 ## Template
 

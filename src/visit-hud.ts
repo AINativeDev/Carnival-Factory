@@ -22,6 +22,7 @@ import { VISIT_PANEL } from './visit-template';
 import { deepLink, levelLink } from './route';
 import { SQUARE_CRAFT, craftKey, earnedBadges, renderCraft } from './craft-badges';
 import { fillVisitHelp } from './visit-help';
+import { squareOwner } from './northpole/north-pole-levels';
 
 export interface VisitHudOptions {
   kind: SquareKind;
@@ -62,7 +63,9 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   card.dataset.id = square.id;
   card.innerHTML = VISIT_PANEL;
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
-  const owner = kind === 'attraction' && !level ? '' : `@${level ?? square.id}`;
+  // Whose square it is: a booth's owner, a participant's level's, or nobody for the North Pole's own.
+  const login = squareOwner(kind, square.id, level);
+  const owner = login ? `@${login}` : '';
   const remix = $<HTMLAnchorElement>('.visit-remix-link');
   remix.hidden = kind !== 'booth' || !!level;
   const map = $<HTMLAnchorElement>('.visit-map');
@@ -88,7 +91,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   // How it was built: a level's square credits the level's owner, with no history of its own.
   const tellStory = (data: SquareHistory | undefined) => {
     const steps = level
-      ? storySteps([], { maker: level, improvers: [] })
+      ? storySteps([], login ? { maker: login, improvers: [] } : undefined)
       : storySteps(historyOf(data, kind, square.id), creditsFor(data, kind, square.id));
     renderStory($('.story-list'), steps);
     const empty = $<HTMLElement>('.history-empty');

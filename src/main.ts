@@ -16,7 +16,8 @@ import { openAdventHud } from './advent';
 import { openFactoryHud, readFactoryStats, squareCounts } from './factory';
 import { CHOICE_PANEL, renderChoice } from './peoples-choice-hud';
 import { SQUARE_HISTORY } from './history';
-import { levelLink, parseHash } from './route';
+import { levelLink, parseHash, squareLink } from './route';
+import { labelLevel } from './level-hud';
 import { renderSeason } from './season-card';
 import { openVisitHud, type VisitHud } from './visit-hud';
 import { followPending, knownPending, loadSites, saveSites } from './pending';
@@ -134,6 +135,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
   if (focus && !registry.get(focus.id)) renderUnknown(app.querySelector('.map-note')!, focus);
 
   const canvas = app.querySelector('canvas')!;
+  /* v8 ignore next -- the page's wiring: squareLink is unit tested, and smoke/the-factory.spec.ts opens the landmark here */
   const started = startMap(
     app.querySelector('.map-frame')!,
     canvas,
@@ -141,7 +143,7 @@ function renderMap(focus?: { kind: SquareKind; id: string }) {
     {
       attractions: attractionRegistry.all(),
       booths: boothRegistry.all(),
-      onOpen: (kind, id) => (location.hash = `#/${kind}/${id}`),
+      onOpen: (kind, id) => (location.hash = squareLink(kind, id)),
       onLeave: () => closeCard(true),
       onSelect: (selected) => panel?.showSelected(selected),
       avatars: AVATARS,
@@ -257,13 +259,8 @@ function renderLevel(login: string, focus?: string) {
       </div>
     </section>`;
   const canvas = app.querySelector('canvas')!;
-  canvas.setAttribute(
-    'aria-label',
-    `${level.name}, @${login}'s level. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a square to go inside, or at the sleigh to go back to the North Pole.`,
-  );
-  app.querySelector('.level-name')!.textContent = level.name;
-  app.querySelector('.level-owner')!.textContent = `A level by @${login}`;
-  app.querySelector('.level-description')!.textContent = level.description;
+  /* v8 ignore next -- the page's wiring: labelLevel is unit tested, and smoke/the-factory.spec.ts reads it */
+  labelLevel(app, canvas, level, entry.owner);
   const known = focus && entry.squares.some((square) => square.id === focus);
   if (focus && !known) renderUnknownInLevel(login, focus);
   const started = startMap(

@@ -57,7 +57,7 @@ describe("a square's panel", () => {
     expect(card.querySelector<HTMLElement>('.visit-craft')?.hidden).toBe(true);
   });
 
-  it("offers a booth's owner their next steps, and a level's square the way to a booth", () => {
+  it("offers a booth's owner their next steps, and a level's square the way to a booth and its credit", () => {
     const booth = open({ kind: 'booth', square: square('ana', "Ana's booth") }).card;
     expect(booth.querySelector('.visit-help')?.textContent).toContain('Is this yours?');
     const levelSquare = open({
@@ -68,6 +68,14 @@ describe("a square's panel", () => {
     expect(levelSquare.querySelector('.visit-help')?.textContent).toContain(
       "participant's own level",
     );
+    expect(levelSquare.querySelector('.story-step')?.textContent).toBe('Made by @bo');
+    const stall = open({
+      kind: 'attraction',
+      square: square('gate', 'Gate'),
+      level: 'the-factory',
+    });
+    expect(stall.card.querySelectorAll('.story-step')).toHaveLength(0);
+    expect(stall.card.querySelector('.tour-link')).not.toBeNull();
   });
 
   it('leads with how it was built, a timeline that credits its maker even without history', () => {
