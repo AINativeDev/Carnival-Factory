@@ -255,7 +255,8 @@ carnival/                   everything on the map that people make, kept apart f
   challenges/
     advent.json             the advent calendar's 24 challenges, one a day
 plugins/north-pole/         the factory's own skills: assessing booth and badge
-                            requests and advent challenges, and the house-rules
+                            requests and advent challenges, welcoming feedback
+                            and ideas, and the house-rules
                             review lens
 plugins/north-pole-gifts/   the gift shelf: small factory loops anyone can install
                             on their own repository, shown at the Gift shop
