@@ -1,10 +1,10 @@
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { cleanChoice } from '../src/northpole/peoples-choice';
 import { REPO_URL } from '../src/northpole/links';
-import { adventCounts, badgeHolders, peoplesChoice, squareCraft } from './build-data';
+import { adventCounts, badgeHolders, peoplesChoice, squareCraft, squareNames } from './build-data';
 
 const root = join(import.meta.dirname, '..');
 const written = (data: unknown) => {
@@ -33,5 +33,24 @@ describe('the data a build bakes into the page', () => {
     expect(craft['attraction/ferris-wheel']).toContain('small-files');
     expect(craft['booth/jedi4ever']).toContain('tested');
     expect(Object.keys(craft)).toContain('level/jedi4ever/cocoa-hut');
+  });
+});
+
+describe('squareNames', () => {
+  it("reads each square's name, capped, and skips a folder with no square or no name", () => {
+    const at = mkdtempSync(join(tmpdir(), 'square-names-'));
+    const square = (kind: string, id: string, source?: string) => {
+      mkdirSync(join(at, 'carnival', `${kind}s`, id), { recursive: true });
+      if (source !== undefined)
+        writeFileSync(join(at, 'carnival', `${kind}s`, id, `${kind}.ts`), source);
+    };
+    square(
+      'booth',
+      'ana',
+      `const b = { id: 'ana', name: '${'Cocoa'.repeat(20)}', description: '' };`,
+    );
+    square('booth', 'empty');
+    square('attraction', 'nameless', 'export default {};');
+    expect(squareNames(at)).toEqual({ 'booth/ana': 'Cocoa'.repeat(16) });
   });
 });

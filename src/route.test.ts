@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { switchFlags } from './test-support/feature-flags';
 import { deepLink, levelLink, parseHash, seasonLink, squareLink } from './route';
 
 describe('parseHash', () => {
@@ -12,9 +13,16 @@ describe('parseHash', () => {
     expect(parseHash('#/factory/more')).toEqual({ view: 'map' });
   });
 
-  it('reads the advent calendar', () => {
-    expect(parseHash('#/advent')).toEqual({ view: 'advent' });
-    expect(parseHash('#/advent/3')).toEqual({ view: 'map' });
+  it('reads the advent calendar as the map while its feature flag is off', () => {
+    expect(parseHash('#/advent')).toEqual({ view: 'map' });
+  });
+
+  describe('with the advent calendar switched on', () => {
+    switchFlags({ advent: true });
+    it('reads the advent calendar', () => {
+      expect(parseHash('#/advent')).toEqual({ view: 'advent' });
+      expect(parseHash('#/advent/3')).toEqual({ view: 'map' });
+    });
   });
 
   it("reads a square's own page", () => {

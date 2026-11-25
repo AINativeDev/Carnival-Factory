@@ -7,6 +7,7 @@
 import { adventCountFor, decorationsFor } from './advent';
 import { adventCrown, drawAdventDecorations } from './advent-decorations';
 import { badgeFor } from './badges';
+import { isOn } from '../feature-flags';
 import { middle, quad, shadow } from './brushes';
 import { faceOf, onFace, type Face, type PaintSquare } from './faces';
 import type { Owner } from './name-board';
@@ -69,7 +70,7 @@ export function drawStall(
   const who = owner.by === undefined ? square.id : '';
   drawHonours(ctx, face, who);
   // The owner's advent challenges, as decorations the map hangs on whatever shape the stall is.
-  const decorations = decorationsFor(adventCountFor(who));
+  const decorations = decorationsFor(isOn('advent') ? adventCountFor(who) : 0);
   const crown = stallReach(look.shape) + 6;
   const centre = plotPoint(face, deep, { along: 0.5, depth: 0.5 });
   drawAdventDecorations(ctx, face, centre, crown, decorations, time);
@@ -85,7 +86,7 @@ export function drawStall(
 
 /** An Elf Engineer's pin on the name board's right end, and a People's Choice trophy on its left. */
 function drawHonours(ctx: CanvasRenderingContext2D, face: Face, who: string) {
-  const badge = badgeFor(who);
+  const badge = isOn('elfEngineer') ? badgeFor(who) : undefined;
   if (badge) {
     const signLow = stallSignLow(face);
     const pin = onFace(face, 0.94, (signLow + STALL.wall - 2) / 2, 0.1);

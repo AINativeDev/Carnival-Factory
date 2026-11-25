@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderKeepPosted } from './keep-posted';
 import { route, startRouter } from './router';
 import { renderSeason } from './season-card';
+import { switchFlags } from './test-support/feature-flags';
 import { huds, lastHud, lastMap, maps, newPage, resetFakes } from './test-support/page-fakes';
 
 vi.mock('./northpole/map', async () => (await import('./test-support/page-fakes')).mapModule);
@@ -87,19 +88,29 @@ describe('route', () => {
     expect(maps[0]?.stop).toHaveBeenCalled();
   });
 
-  it('shows the factory and the advent calendar over the map, starting it when it is not running', () => {
-    const page = newPage('#/season/ana');
+  describe('with the advent calendar switched on', () => {
+    switchFlags({ advent: true });
+    it('shows the factory and the advent calendar over the map, starting it when it is not running', () => {
+      const page = newPage('#/season/ana');
+      route(page);
+      const stopSeason = page.stop;
+      go(page, '#/factory');
+      expect(stopSeason).toHaveBeenCalled();
+      expect([maps.length, lastHud().kind]).toEqual([1, 'factory']);
+      go(page, '#/advent');
+      expect([maps.length, lastHud().kind]).toEqual([1, 'advent']);
+      page.stop?.();
+      page.map = undefined;
+      go(page, '#/advent');
+      expect(maps).toHaveLength(2);
+    });
+  });
+
+  it("shows the plain map at the advent calendar's address while its feature flag is off", () => {
+    const page = newPage('#/advent');
     route(page);
-    const stopSeason = page.stop;
-    go(page, '#/factory');
-    expect(stopSeason).toHaveBeenCalled();
-    expect([maps.length, lastHud().kind]).toEqual([1, 'factory']);
-    go(page, '#/advent');
-    expect([maps.length, lastHud().kind]).toEqual([1, 'advent']);
-    page.stop?.();
-    page.map = undefined;
-    go(page, '#/advent');
-    expect(maps).toHaveLength(2);
+    expect(maps).toHaveLength(1);
+    expect(huds).toHaveLength(0);
   });
 
   it('gives a page of its own to a season card and to Keep me posted, stopping the map', () => {

@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { openVisitHud, type VisitHudOptions } from './visit-hud';
+import { switchFlags } from './test-support/feature-flags';
 
 // Ana holds the Elf Engineer badge and her booth is on the People's Choice ballot; nobody else is.
 vi.mock('./northpole/badges', async (original) => ({
@@ -47,6 +48,7 @@ afterEach(() => {
 });
 
 describe("a booth's panel, for an Elf Engineer on the People's Choice ballot", () => {
+  switchFlags({ elfEngineer: true });
   it("links to the owner's own factory and to the booth's place on the ballot", () => {
     const { card } = open('ana');
     expect(part(card, '.visit-factory').hidden).toBe(false);
@@ -62,6 +64,25 @@ describe("a booth's panel, for an Elf Engineer on the People's Choice ballot", (
     const { card } = open('bob');
     expect(part(card, '.visit-factory').hidden).toBe(true);
     expect(part(card, '.visit-vote').hidden).toBe(true);
+  });
+});
+
+describe("the feature flags in a booth's panel", () => {
+  it("hides the Elf Engineer's factory link and Remix this booth while their flags are off", () => {
+    const { card } = open('ana');
+    expect(part(card, '.visit-factory').hidden).toBe(true);
+    expect(part(card, '.visit-remix-link').hidden).toBe(true);
+  });
+
+  describe('with remixing switched on', () => {
+    switchFlags({ remix: true });
+    it("offers to remix a booth, but never a level's square", () => {
+      const { card } = open('ana');
+      const remix = part(card, '.visit-remix-link') as HTMLAnchorElement;
+      expect(remix.hidden).toBe(false);
+      expect(remix.href).toContain('template=');
+      expect(part(open('ana', { level: 'bo' }).card, '.visit-remix-link').hidden).toBe(true);
+    });
   });
 });
 

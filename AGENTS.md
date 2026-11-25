@@ -140,6 +140,9 @@ src/
                             its markup, map-notes.ts its notes for a missing square)
   level-page.ts             a participant's level page
   route.ts                  reading the hash (plain functions)
+  feature-flags.ts          the build's feature flags, and isOn to read one
+  feature-flag-names.ts     the feature flags' names and reading FEATURE_FLAGS
+                            (plain functions, shared with vite.config.ts and smoke/)
   edition.ts                the site's name and this edition's, in one place
   top-menu.ts               the top bar's menu: building it into the banner, the phone's
                             Menu button, Escape and focus, opening the Booths panel
@@ -498,6 +501,24 @@ separate list of attraction ids, and a list of level logins. A square in either
 of the first two shows "Closed for repairs" and its `draw` never runs. A level
 in the third shows "Closed for repairs" on its platform, and none of its
 squares run. Only maintainers change it.
+
+**Feature flags** hide unfinished parts of the site while keeping their code
+([ADR 0046](docs/adr/0046-launch-behind-feature-flags.md)). There are four,
+all off on the live site: `remix` (**Remix this booth**), `elfEngineer` (the
+Elf Engineer badge's pins, links and `badges/index.html`), `giftShop` (the
+Gift Shop attraction) and `advent` (`#/advent`, its links, the decorations on
+stalls and the season card's count). To switch one on, set the build's
+`FEATURE_FLAGS`, a comma-separated list such as `FEATURE_FLAGS=remix,advent`,
+in the deploy's build step (or before `npm run build`, `npm run dev` or
+`npm run smoke` locally); for `elfEngineer` or `advent`, also move its form
+from `.github/issue-templates-later/` back to `.github/ISSUE_TEMPLATE/`. The
+page reads a flag with `isOn` from `src/feature-flags.ts`, gating a feature
+where it enters the page, never deep in its logic. The unit tests build with
+every flag off and switch one on with `switchFlags` from
+`src/test-support/feature-flags.ts`, so every gate is tested both ways, and a
+smoke check for a hidden feature reads `FLAGS` from
+`smoke/support/feature-flags.ts` and skips while it's off. A booth or level
+request never changes a flag.
 
 ## Levels
 

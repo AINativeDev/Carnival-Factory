@@ -11,7 +11,10 @@ so the deploy counts the votes and the build bakes them in.
   and leaves it unlocked, since a locked issue takes no reactions from people
   without write access. Discussions don't need to be on.
 - While voting is open, each deploy adds one comment for every booth and
-  every Elf Engineer's factory that has none yet.
+  every Elf Engineer's factory that has none yet. While the `elfEngineer`
+  feature flag is off ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)),
+  the badge form waits in `.github/issue-templates-later/`, so no new badge
+  holders, and so no new home factories, join; the Booths list is unchanged.
 - Below the map, a folded list shows the booths with a trophy and the home
   factory leader on one line ("No votes yet" when none), and unfolds to every
   entry's place and votes, with a link to vote on GitHub and when voting closes. Booth

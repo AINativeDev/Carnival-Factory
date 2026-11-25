@@ -1,7 +1,14 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
-import { BOOTH_REQUEST_URL, CHANGE_URL, CLAIM_URL, LEVEL_REQUEST_URL } from './northpole/links';
+import {
+  BADGE_REQUEST_URL,
+  BOOTH_REQUEST_URL,
+  CHANGE_URL,
+  CLAIM_URL,
+  LEVEL_REQUEST_URL,
+} from './northpole/links';
 import { fillVisitHelp } from './visit-help';
+import { switchFlags } from './test-support/feature-flags';
 
 /** A panel's help box, and the season link it holds once it's filled. */
 function helpBox() {
@@ -62,5 +69,33 @@ describe('fillVisitHelp', () => {
     const unknown = helpBox();
     fillVisitHelp(unknown.element, 'attraction', 'storeroom', 'the-factory');
     expect(unknown.box.innerHTML).toContain('North Pole’s own level');
+  });
+});
+
+describe("the factory line in a booth's help, by feature flag", () => {
+  const line = () => {
+    const { box } = helpBox();
+    fillVisitHelp(box, 'booth', 'ana');
+    return box.innerHTML;
+  };
+
+  it('is left out while the Elf Engineer badge and the advent calendar are off', () => {
+    expect(line()).not.toContain('Built your own factory?');
+  });
+
+  describe('with the advent calendar on', () => {
+    switchFlags({ advent: true });
+    it('offers only the advent calendar', () => {
+      expect(line()).toContain('href="#/advent"');
+      expect(line()).not.toContain(BADGE_REQUEST_URL);
+    });
+  });
+
+  describe('with both on', () => {
+    switchFlags({ advent: true, elfEngineer: true });
+    it('offers the badge and the advent calendar', () => {
+      expect(line()).toContain(BADGE_REQUEST_URL);
+      expect(line()).toContain('href="#/advent"');
+    });
   });
 });

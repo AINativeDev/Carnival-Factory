@@ -49,7 +49,12 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   station: the landmark is the way in. Their rooms
   show their level's links out as buttons ([ADR 0038](../adr/0038-north-pole-links.md)).
 - The Gift shop shows the gifts of `plugins/north-pole-gifts/`: small factory
-  loops anyone can install on their own repository.
+  loops anyone can install on their own repository. It waits behind the
+  `giftShop` feature flag ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)), off on the live site: until then the
+  registry leaves it out (`attractionShown` in `src/feature-flag-names.ts`),
+  so it isn't on the map, in the Booths panel's Attractions, at
+  `#/attraction/gift-shop` (which says it isn't there) or among the share
+  pages, and its pinned plot stays empty.
 
 ## Rules
 

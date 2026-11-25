@@ -9,6 +9,8 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node
 import { join } from 'node:path';
 import type { Page } from '../coverage';
 import { isNorthPoleLevel } from '../../src/northpole/north-pole-levels';
+import { attractionShown } from '../../src/feature-flag-names';
+import { FLAGS } from './feature-flags';
 import { buildWorld, type PinnedPlots, type WorldExtras } from '../../src/northpole/world-build';
 
 const root = join(import.meta.dirname, '..', '..');
@@ -32,12 +34,13 @@ const disabled = JSON.parse(readFileSync(join(root, 'src/northpole/disabled.json
   attractions: string[];
   levels: string[];
 };
-/** Every booth and attraction that's open, as the map finds their folders. */
+/** Every booth and attraction that's open, as the map finds their folders, but those a feature flag holds back. */
 const squares = (['booth', 'attraction'] as const).flatMap((kind) => {
   const dir = join(root, 'carnival', `${kind}s`);
   const off = new Set(disabled[`${kind}s`].map((id) => id.toLowerCase()));
   return readdirSync(dir)
     .filter((name) => statSync(join(dir, name)).isDirectory() && !off.has(name))
+    .filter((id) => kind === 'booth' || attractionShown(id, FLAGS))
     .map((id) => ({ kind, id }));
 });
 

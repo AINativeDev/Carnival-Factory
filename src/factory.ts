@@ -5,6 +5,7 @@ import type { FactoryStats } from '../scripts/factory-stats';
 import { SIGNUP_OFFER, showSignupOffer } from './offer';
 import type { VisitHud } from './visit-hud';
 import { focusBack } from './focus-back';
+import { isOn } from './feature-flags';
 
 /**
  * The factory's numbers page, `#/factory`: how many booths and attractions
@@ -38,7 +39,7 @@ export function openFactoryHud(frame: HTMLElement, options: FactoryHudOptions): 
     <p class="factory-intro">Every booth here began as an issue. A software factory built it, checked it and put it on the map.</p>
     <ul class="factory-figures"></ul>
     <p class="factory-note"></p>
-    <p class="factory-how"><a href="${HOW_IT_WORKS_URL}" target="_blank" rel="noopener">How it works</a> <span aria-hidden="true">·</span> <a href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run this on your own repo</a> <span aria-hidden="true">·</span> <a href="#/advent">The advent calendar</a></p>
+    <p class="factory-how"><a href="${HOW_IT_WORKS_URL}" target="_blank" rel="noopener">How it works</a> <span aria-hidden="true">·</span> <a href="${OWN_REPO_URL}" target="_blank" rel="noopener">Run this on your own repo</a>${isOn('advent') ? ' <span aria-hidden="true">·</span> <a href="#/advent">The advent calendar</a>' : ''}</p>
     ${SIGNUP_OFFER}`;
   const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
 

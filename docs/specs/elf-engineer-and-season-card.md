@@ -5,6 +5,15 @@ running a Tessl factory on a repository of their own, and a season card that
 sums up their season. The participant guide for the badge is
 [docs/elf-engineer.md](../elf-engineer.md).
 
+> **Behind a feature flag.** The Elf Engineer badge waits behind the `elfEngineer` feature flag
+> ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)), off on the live site: build with `FEATURE_FLAGS=elfEngineer` to show it.
+
+While the flag is off, no stall wears the elf-hat pin, a booth's panel has no
+"See @login's own factory" link and no "Get the Elf Engineer badge", the build
+writes no `badges/index.html` (the badge images in `public/badges/` stay), and
+the **Elf Engineer** form waits in `.github/issue-templates-later/`. The
+season card isn't flagged.
+
 ## Behaviour
 
 Elf Engineer badge:
