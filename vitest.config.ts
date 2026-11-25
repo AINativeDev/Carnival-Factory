@@ -20,11 +20,12 @@ export default mergeConfig(
         exclude: ['**/*.test.ts', '**/*.d.ts'],
         reporter: ['text-summary', 'json'],
         thresholds: {
-          autoUpdate: (threshold: number) => Math.floor(threshold * 100) / 100,
-          lines: 38.04,
-          statements: 39.31,
-          functions: 54.44,
-          branches: 47.07,
+          // Whole points: runs differ by a fraction of a percent between machines.
+          autoUpdate: (threshold: number) => Math.floor(threshold),
+          lines: 38,
+          statements: 39,
+          functions: 54,
+          branches: 47,
         },
       },
     },
