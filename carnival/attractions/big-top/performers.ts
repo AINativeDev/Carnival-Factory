@@ -4,7 +4,7 @@
  * ring and the tent so attraction.ts stays a list of what stands where.
  */
 import { theme } from '../../../src/northpole/theme';
-import { DRUMROLL, juggledBall } from './show';
+import { juggledBall } from './show';
 
 const { colors } = theme;
 
@@ -89,15 +89,15 @@ export function acrobat(ctx: CanvasRenderingContext2D, x: number, y: number, tur
 }
 
 /**
- * The drum at the ringside, its foot at (x, y), with a gold lamp lit above it
- * for each beat of the drum roll so far. `beat` from 0 to 1 lifts the sticks
- * just after a tap.
+ * The drum at the ringside, its foot at (x, y), with a gold lamp above it for
+ * each beat of the drum roll, each as bright as `lamps` says. `beat` from 0 to 1
+ * lifts the sticks just after a tap.
  */
 export function drumRoll(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
-  beats: number,
+  lamps: readonly number[],
   beat: number,
 ) {
   ctx.fillStyle = colors.berry;
@@ -117,10 +117,17 @@ export function drumRoll(
     ctx.lineTo(x + side * 5, y - 12 - beat * 3);
     ctx.stroke();
   }
-  for (let n = 0; n < DRUMROLL - 1; n++) {
-    ctx.fillStyle = n < beats ? colors.lantern : colors.slabShade;
-    ctx.beginPath();
-    ctx.arc(x - 4.5 + n * 3, y - 16, 1, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  lamps.forEach((bright, n) => {
+    for (const [colour, alpha] of [
+      [colors.slabShade, 1],
+      [colors.lantern, bright],
+    ] as const) {
+      ctx.fillStyle = colour;
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(x - 4.5 + n * 3, y - 16, 1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+  ctx.globalAlpha = 1;
 }

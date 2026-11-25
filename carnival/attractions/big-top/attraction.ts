@@ -5,9 +5,9 @@ import { acrobat, drumRoll, juggler, springboard, standingElf } from './performe
 import {
   acrobatAt,
   BOARD,
-  drumBeats,
   FINALE,
   finaleGlow,
+  lampsAt,
   OPENING,
   RING,
   spotlightOn,
@@ -17,7 +17,7 @@ import {
 
 const { colors } = theme;
 
-/** The show so far: the attraction's one memory of the pointer, kept to three numbers. */
+/** The show so far: the attraction's one memory of the pointer, kept small. */
 let show: Show = OPENING;
 
 /** The tent's two back walls, in red and white stripes, with lantern lights along their tops. */
@@ -103,7 +103,7 @@ const attraction: NorthPoleSquare = {
       const flying = acrobatAt(since);
       if (flying) acrobat(ctx, flying.x, flying.y, flying.turn);
       else standingElf(ctx, BOARD.x - 4, BOARD.y);
-      drumRoll(ctx, 80, 66, drumBeats(show), since >= 0 && since < 200 ? 1 - since / 200 : 0);
+      drumRoll(ctx, 80, 66, lampsAt(show, time), since >= 0 && since < 200 ? 1 - since / 200 : 0);
       bigFinish(ctx, time - show.finale);
     });
   },

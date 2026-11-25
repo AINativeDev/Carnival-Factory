@@ -12,6 +12,8 @@ export const DRUMROLL = 5;
 export const LEAP = 1_400;
 /** How long the big finish lasts, in milliseconds. */
 export const FINALE = 2_400;
+/** How long a drum roll lamp takes to fade fully on or off, in milliseconds. */
+export const LAMP_FADE = 600;
 /** How long one juggled ball takes to go round both hands, in milliseconds. */
 export const JUGGLE = 1_500;
 
@@ -21,14 +23,24 @@ export const RING = { x: 50, y: 68, rx: 24, ry: 12 };
 export const BOARD = { x: 32, y: 70 };
 const LANDING = { x: 66, y: 70 };
 
-/** What the show remembers between frames: the last tap, the taps so far and the last big finish. */
+/**
+ * What the show remembers between frames: the last tap, the taps so far, the
+ * last big finish, and how bright each drum roll lamp was at the last tap, so
+ * the lamps fade from there rather than jump.
+ */
 export interface Show {
   leapt: number;
   taps: number;
   finale: number;
+  lamps: readonly number[];
 }
 
-export const OPENING: Show = { leapt: -Infinity, taps: 0, finale: -Infinity };
+export const OPENING: Show = {
+  leapt: -Infinity,
+  taps: 0,
+  finale: -Infinity,
+  lamps: Array.from({ length: DRUMROLL - 1 }, () => 0),
+};
 
 /**
  * The show after `presses` taps at `time`. Each tap sends the acrobat off the
@@ -41,12 +53,28 @@ export function tapped(show: Show, presses: number, time: number): Show {
   const taps = show.taps + presses;
   const filled = Math.floor(taps / DRUMROLL) > Math.floor(show.taps / DRUMROLL);
   const playing = time - show.finale < FINALE;
-  return { leapt: time, taps, finale: filled && !playing ? time : show.finale };
+  return {
+    leapt: time,
+    taps,
+    finale: filled && !playing ? time : show.finale,
+    lamps: lampsAt(show, time),
+  };
 }
 
 /** How many beats of the drum roll are lit, from 0 to DRUMROLL - 1. */
 export function drumBeats(show: Show): number {
   return show.taps % DRUMROLL;
+}
+
+/**
+ * How bright each drum roll lamp is at `time`, from 0 to 1: fading from where
+ * it was at the last tap towards lit or dark, at most one whole fade every
+ * LAMP_FADE, so however fast the taps come no lamp can blink (docs/style.md).
+ */
+export function lampsAt(show: Show, time: number): number[] {
+  const k = Math.min(1, Math.max(0, (time - show.leapt) / LAMP_FADE));
+  const lit = drumBeats(show);
+  return show.lamps.map((from, n) => from + ((n < lit ? 1 : 0) - from) * k);
 }
 
 /**

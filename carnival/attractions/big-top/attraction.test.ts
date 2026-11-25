@@ -10,6 +10,8 @@ import {
   finaleGlow,
   juggledBall,
   JUGGLE,
+  LAMP_FADE,
+  lampsAt,
   LEAP,
   OPENING,
   RING,
@@ -46,6 +48,38 @@ describe('tapped', () => {
     const first = tapped(OPENING, DRUMROLL, 1_000);
     expect(tapped(first, DRUMROLL, 1_000 + FINALE / 2).finale).toBe(1_000);
     expect(tapped(first, DRUMROLL, 1_000 + FINALE).finale).toBe(1_000 + FINALE);
+  });
+});
+
+describe('lampsAt', () => {
+  it('fades a lamp on over the drum after each beat', () => {
+    const show = tapped(OPENING, 2, 1_000);
+    expect(lampsAt(show, 1_000)).toEqual([0, 0, 0, 0]);
+    expect(lampsAt(show, 1_000 + LAMP_FADE / 2)).toEqual([0.5, 0.5, 0, 0]);
+    expect(lampsAt(show, 1_000 + LAMP_FADE)).toEqual([1, 1, 0, 0]);
+  });
+
+  it('fades the lamps out when the drum roll starts again', () => {
+    const full = tapped(OPENING, DRUMROLL - 1, 1_000);
+    const again = tapped(full, 1, 1_000 + LAMP_FADE);
+    expect(lampsAt(again, 1_000 + LAMP_FADE)).toEqual([1, 1, 1, 1]);
+    expect(lampsAt(again, 1_000 + LAMP_FADE * 2)).toEqual([0, 0, 0, 0]);
+  });
+
+  it('never blinks the lamps, however fast and however many the taps', () => {
+    let show = OPENING;
+    let before = lampsAt(show, 0);
+    for (let n = 1; n <= 40; n++) {
+      const time = n * 50;
+      show = tapped(show, n % 2 ? DRUMROLL - 1 : 1, time);
+      const now = lampsAt(show, time);
+      now.forEach((bright, lamp) => {
+        expect(Math.abs(bright - (before.at(lamp) ?? 0))).toBeLessThanOrEqual(
+          50 / LAMP_FADE + 1e-9,
+        );
+      });
+      before = lampsAt(show, time + 50);
+    }
   });
 });
 
@@ -125,11 +159,15 @@ describe("Santa's Big Top", () => {
   });
 
   it('sends the acrobat flying on a tap, and plays the big finish when the drum roll fills', () => {
-    const still = drawn(20_000);
+    // Only the acrobat turns as it draws, so a rotate in the log is the acrobat in the air.
+    const tumbles = (calls: string[]) => calls.some((call) => call.startsWith('rotate('));
     const tap = { x: 50, y: 50, down: true, presses: 1 };
-    expect(drawn(20_000, tap)).not.toEqual(still);
-    for (let n = 1; n < DRUMROLL; n++) drawn(20_000 + n * 100, tap);
-    const finish = drawn(20_000 + DRUMROLL * 100 + FINALE / 2);
-    expect(finish.length).toBeGreaterThan(drawn(20_000 + DRUMROLL * 100 + FINALE * 2).length);
+    expect(tumbles(drawn(20_000, { ...tap, down: false, presses: 0 }))).toBe(false);
+    expect(tumbles(drawn(20_000, tap))).toBe(true);
+    expect(tumbles(drawn(20_000 + LEAP))).toBe(false);
+    drawn(30_000, tap);
+    for (let n = 1; n < DRUMROLL; n++) drawn(30_000 + n * 100, tap);
+    const finish = drawn(30_000 + DRUMROLL * 100 + FINALE / 2);
+    expect(finish.length).toBeGreaterThan(drawn(30_000 + DRUMROLL * 100 + FINALE * 2).length);
   });
 });
