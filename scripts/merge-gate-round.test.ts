@@ -144,6 +144,19 @@ describe('one bad pull request among good ones', () => {
     ]);
     expect(logs).toContain('published the map');
   });
+
+  it('reads no held pull request’s history once a merge has made the map stale', async () => {
+    const routes = mergeableBooth();
+    routes['GET issues/7/events'] = new HttpFailure(504);
+    const github = scriptedGitHub(routes);
+    const ok = await publishIfBehind(github.client, {
+      merged: true,
+      held: new Set([7]),
+      dryRun: false,
+    });
+    expect(ok).toBe(true);
+    expect(github.requests.map((r) => r.path)).not.toContain('issues/7/events?per_page=100&page=1');
+  });
 });
 
 describe('a request GitHub no longer has', () => {

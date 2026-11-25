@@ -119,6 +119,25 @@ describe('a merge', () => {
   });
 });
 
+describe('a merge whose connection broke for no reason Node names', () => {
+  it.each([
+    ['a plain value', 'down'],
+    ['an error with no cause', new TypeError('fetch failed')],
+    ['a cause that is text', new TypeError('fetch failed', { cause: 'gone' })],
+    ['a cause with no code', new TypeError('fetch failed', { cause: {} })],
+  ])('is not tried again: %s', async (_, failure) => {
+    const tries: string[] = [];
+    vi.stubGlobal('fetch', (url: string) => {
+      tries.push(url);
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- a fetch that rejects with something odd
+      return Promise.reject(failure);
+    });
+    const gate = githubClient(API, REPOSITORY, 'token', () => Promise.resolve());
+    await expect(gate.call('PUT', 'pulls/7/merge')).rejects.toThrow('PUT pulls/7/merge failed');
+    expect(tries).toHaveLength(1);
+  });
+});
+
 describe('the real wait', () => {
   it('waits the time it is given', async () => {
     vi.useFakeTimers();
