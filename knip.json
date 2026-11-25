@@ -4,6 +4,7 @@
     "scripts/*.ts",
     "carnival/booths/*/booth.ts",
     "carnival/attractions/*/attraction.ts",
+    "scripts/craft/check-*.ts",
     "scripts/hooks/check-*.ts",
     "carnival/levels/*/level.ts",
     "carnival/levels/*/squares/*/square.ts",

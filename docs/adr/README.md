@@ -47,6 +47,7 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0026](0026-end-to-end-tests.md)          | What people see is tested end to end                               | Accepted |
 | [0027](0027-strict-typescript.md)         | Strict TypeScript, held by a baseline that only shrinks            | Accepted |
 | [0028](0028-analytics.md)                 | Cookieless analytics with PostHog                                  | Accepted |
+| [0029](0029-booth-craft.md)               | Squares meet the code conventions too, and show it                 | Accepted |
 
 ## Template
 

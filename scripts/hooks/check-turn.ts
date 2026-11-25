@@ -13,7 +13,23 @@ export const PROJECT_CHECKS: [string, string[]][] = [
   ['Tests', ['vitest', 'run']],
 ];
 
-/** Why the agent isn't done yet, or undefined when every project check passes. */
+/** The squares a working tree changes, from `git status --porcelain`. */
+export function touchedSquares(porcelain: string): string[] {
+  const folders = new Set<string>();
+  for (const line of porcelain.split('\n')) {
+    const path = line.slice(3).split(' -> ').at(-1) ?? '';
+    const square = path.match(
+      /^carnival\/(?:booths|attractions)\/[^/]+|^carnival\/levels\/[^/]+\/squares\/[^/]+/,
+    );
+    if (square) folders.add(square[0]);
+  }
+  return [...folders].sort();
+}
+
+/**
+ * Why the agent isn't done yet, or undefined when every project check passes
+ * and every square it changed meets the craft conventions (docs/adr/0029).
+ */
 export function turnFeedback(alreadyBlocked: boolean, run: Runner): string | undefined {
   if (alreadyBlocked) return undefined;
   const failures = PROJECT_CHECKS.flatMap(([name, args]) => {
@@ -21,6 +37,12 @@ export function turnFeedback(alreadyBlocked: boolean, run: Runner): string | und
     const output = `${ran.stdout}${ran.stderr}`.trim().slice(-4000);
     return ran.status === 0 ? [] : [`${name}:\n${output}`];
   });
+  const squares = touchedSquares(run('git', ['status', '--porcelain']).stdout);
+  if (squares.length) {
+    const craft = run('node', ['scripts/craft/check-square.ts', ...squares]);
+    if (craft.status !== 0)
+      failures.push(`Craft of the squares you changed:\n${craft.stdout.trim()}`);
+  }
   return failures.length
     ? `Not done yet: these project checks fail.\n\n${failures.join('\n\n')}`
     : undefined;
