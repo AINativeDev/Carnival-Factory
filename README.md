@@ -122,6 +122,15 @@ repository, voted on the same way.
   factory's leader. The page itself never asks GitHub: the build bakes the
   standings in.
 
+## The Year in Review
+
+A gallery room at the North Pole, reached from its gallery on the map, with a
+question about the year in AI on every display: looking back on '26 and ahead
+to '27. Answer one, or ask and answer your own, with the **Year in review**
+form ("Add your answer" in the room). Friendly answers are shown on the
+question's panel after the next update of the map
+([how it works](docs/specs/year-in-review.md)).
+
 ## Try it on your own
 
 Run your own copy, with you as the maintainer.

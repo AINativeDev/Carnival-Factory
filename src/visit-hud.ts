@@ -25,6 +25,7 @@ import { fillVisitHelp } from './visit-help';
 import { squareOwner } from './northpole/north-pole-levels';
 import { linksHome } from './northpole/north-pole-links';
 import { showLevelLinks } from './level-links';
+import { showYearAnswers } from './year-in-review-panel';
 import { focusBack } from './focus-back';
 
 export interface VisitHudOptions {
@@ -143,6 +144,8 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     share.refresh();
   };
   show();
+  // A Year in Review item's answers, under its question and the link to add yours.
+  showYearAnswers($('.visit-description'), square.id, level);
   // The North Pole's own levels link out, to the Academy or the podcast, right under what they are.
   showLevelLinks($('.visit-description'), linksHome(kind, square.id, level));
   if ('onReady' in square)

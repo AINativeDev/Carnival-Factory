@@ -95,7 +95,7 @@ describe('an indoor level', () => {
     );
     expect(walkable(world, -4, 2)).toBe(true);
     expect(walkable(world, 3, -3)).toBe(true);
-    expect([...FLAT].sort()).toEqual(['cable', 'drift', 'rug']);
+    expect([...FLAT].sort()).toEqual(['cable', 'confetti', 'drift', 'rug']);
   });
 
   it('caches its layers tall enough for its walls', () => {

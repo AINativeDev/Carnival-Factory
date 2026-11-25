@@ -11,6 +11,7 @@ import { cleanCounts } from '../src/northpole/advent.ts';
 import { cleanHolders } from '../src/northpole/badges.ts';
 import { REPO_URL } from '../src/northpole/links.ts';
 import { cleanChoice } from '../src/northpole/peoples-choice.ts';
+import { cleanYearInReview } from '../src/northpole/year-in-review.ts';
 import { craftOf } from './craft/craft.ts';
 import { readSquare, squareFolders } from './craft/check-square.ts';
 
@@ -37,6 +38,22 @@ export function peoplesChoice(file: string | undefined, root: string) {
     booths: string[];
   };
   return cleanChoice(data, disabled.booths, REPO_URL);
+}
+
+/** The Year in Review's accepted answers, cleaned again as the page cleans them (scripts/write-year-in-review.ts). */
+export function yearInReview(file: string | undefined) {
+  return cleanYearInReview(readIfThere(file));
+}
+
+/** What the build defines for the page from the deploy's files, each as JSON: none of it in a preview. */
+export function deployData(env: Partial<Record<string, string>>, root: string) {
+  return {
+    __PEOPLES_CHOICE__: JSON.stringify(peoplesChoice(env.PEOPLES_CHOICE_FILE, root) ?? null),
+    // How many advent challenges each booth's owner has done, for their booth's decorations.
+    __ADVENT_COUNTS__: JSON.stringify(adventCounts(env.ADVENT_FILE)),
+    // The answers visitors gave in the Year in Review (docs/adr/0047-year-in-review-answers.md).
+    __YEAR_IN_REVIEW__: JSON.stringify(yearInReview(env.YEAR_IN_REVIEW_FILE)),
+  };
 }
 
 /**

@@ -30,10 +30,10 @@ describe('attraction registry', () => {
     ).toEqual([...folders].sort());
   });
 
-  // Two rings of plots round the town square: twelve keeps them all in the first two rows.
-  it('seeds the midway with six to twelve attractions', () => {
+  // Two rings of plots round the town square: sixteen keeps them all in the first two rows.
+  it('seeds the midway with six to sixteen attractions', () => {
     expect(attractionRegistry.all().length).toBeGreaterThanOrEqual(6);
-    expect(attractionRegistry.all().length).toBeLessThanOrEqual(12);
+    expect(attractionRegistry.all().length).toBeLessThanOrEqual(16);
   });
 
   it('names every attraction folder in kebab-case', () => {

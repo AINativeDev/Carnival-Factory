@@ -5,7 +5,7 @@ import { defineConfig, type Plugin } from 'vitest/config';
 import { fillEdition } from './src/edition.ts';
 import { BADGE_REQUEST_URL } from './src/northpole/links.ts';
 import { readBoothAddedDates } from './scripts/booth-dates.ts';
-import { adventCounts, badgeHolders, peoplesChoice, squareCraft } from './scripts/build-data.ts';
+import { badgeHolders, deployData, squareCraft } from './scripts/build-data.ts';
 import { badgePage } from './scripts/badge-page.ts';
 import {
   factorySharePage,
@@ -158,11 +158,8 @@ export default defineConfig(({ command }) => ({
     __BUILD_ID__: JSON.stringify(command === 'build' ? BUILD_ID : 'dev'),
     __BADGE_HOLDERS__: JSON.stringify(BADGE_HOLDERS),
     __SEASON__: JSON.stringify(SEASON),
-    __PEOPLES_CHOICE__: JSON.stringify(
-      peoplesChoice(process.env.PEOPLES_CHOICE_FILE, import.meta.dirname) ?? null,
-    ),
-    // How many advent challenges each booth's owner has done, for their booth's decorations.
-    __ADVENT_COUNTS__: JSON.stringify(adventCounts(process.env.ADVENT_FILE)),
+    // People's Choice, the advent decorations and the Year in Review's answers, from the deploy's files.
+    ...deployData(process.env, import.meta.dirname),
     // Each square's craft badges, from its own files (docs/adr/0029-booth-craft.md).
     __SQUARE_CRAFT__: JSON.stringify(squareCraft(import.meta.dirname)),
     // When each booth's folder first appeared, for the Booths panel's Recently added.

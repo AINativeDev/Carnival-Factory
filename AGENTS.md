@@ -170,6 +170,7 @@ src/
   factory-figures.ts        its counts and figures (plain functions)
   peoples-choice-hud.ts     the People's Choice list below the map: the top three, the
                             Home factory's leader and every entry's votes
+  year-in-review-panel.ts   a Year in Review item's answers on its panel, as text
   style.css
   northpole/                the map itself, and the parts every square imports
     square.ts               the NorthPoleSquare shape, the registries and the kill switch
@@ -231,6 +232,11 @@ src/
     peoples-choice.ts       People's Choice: the closing date, cleaning the baked standings,
                             places and trophies (plain functions)
     peoples-choice-standings.ts the standings the build baked into the page
+    year-in-review.ts       the Year in Review's questions, and cleaning its baked
+                            answers (plain functions)
+    year-in-review-answers.ts the answers the build baked into the page
+    landmark-gallery.ts     the Year in Review's gallery on the map
+    gallery-*.ts            the gallery room's art, signs, statues, people and party
     links.ts                links to the repository's issue forms
 docs/
   glossary.md               the words: booth, plot and free spot, being built, and more
@@ -299,6 +305,10 @@ scripts/
                             one vote per account, not the owner's (plain functions)
   write-peoples-choice.ts   adds a comment for each new entry, reads the votes and writes
                             the standings before the deploy's build (previews have none)
+  year-in-review.ts         the Year in Review's accepted answers from its issues, cleaned
+                            (plain functions)
+  write-year-in-review.ts   reads the accepted answers from the GitHub API and writes them
+                            before the deploy's build (previews have none)
 ```
 
 ## Working on an issue
