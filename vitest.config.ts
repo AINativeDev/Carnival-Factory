@@ -25,10 +25,10 @@ export default mergeConfig(
           // Whole points: runs differ by a fraction of a percent between machines.
           autoUpdate:
             process.env.RATCHET === '1' ? (threshold: number) => Math.floor(threshold) : false,
-          lines: 48,
-          statements: 49,
+          lines: 49,
+          statements: 50,
           functions: 63,
-          branches: 57,
+          branches: 58,
         },
       },
     },
