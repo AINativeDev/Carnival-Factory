@@ -37,6 +37,36 @@ The factory's sandbox can't start a browser, so agents there never run
 `npm run smoke` or install Playwright: CI runs the smoke test on every pull
 request.
 
+## Specs and decisions
+
+`docs/specs/` says what each part of the system does; `docs/adr/` says why it
+is that way. Read the spec for the area before you change it.
+
+- A change to the map's code, its checks, the factory or the workflows updates
+  the matching spec in the same pull request, so the spec stays true.
+- A change that makes a choice a future reader would question, or reverses an
+  earlier one, adds the next numbered ADR, and marks any record it replaces
+  **Superseded by** it. Never rewrite an accepted record.
+- Track decisions as they're made: a decision a maintainer takes on an issue
+  or in discussion gets its ADR the same day, and an open question with
+  options gets a **Proposed** one, which becomes **Accepted** when it's settled.
+- Every rule gets something that enforces it, deterministic where a script can
+  decide it and a review lens or skill where it takes judgement
+  ([ADR 0016](docs/adr/0016-enforce-every-rule.md)).
+- A booth or level request never touches `docs/`: it changes only the
+  participant's own folder.
+
+## Code rules
+
+- **Small files.** A code file has at most 200 lines; split by concern before
+  it grows past that ([ADR 0019](docs/adr/0019-small-files.md)).
+- **Meaningful names and comments.** Name things for what they are in the
+  carnival (a booth, a plot, the gate), not how they work, and write comments
+  that say why: purpose, what would break, which ADR or spec they carry out.
+  Never a comment that repeats the code ([ADR 0023](docs/adr/0023-meaningful-names-and-docs.md)).
+- **No dead code.** Remove what a change stops using, in the same change
+  ([ADR 0021](docs/adr/0021-knip.md)).
+
 ## Layout
 
 ```txt
@@ -118,6 +148,8 @@ docs/
   booth-ideas.md            ideas and tips for a booth request
   elf-engineer.md           the Elf Engineer badge, and how to get it
   advent.md                 the advent calendar of factory challenges
+  specs/                    what each part of the system does today, one file per feature
+  adr/                      the decisions behind it, and why (architecture decision records)
 carnival/                   everything on the map that people make, kept apart from
                             the code that runs it
   booths/
