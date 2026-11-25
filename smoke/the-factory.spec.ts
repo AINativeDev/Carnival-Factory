@@ -63,6 +63,8 @@ for (const viewport of VIEWPORTS) {
         const panel = page.locator('.visit');
         await expect(panel.locator('.tour-story')).toHaveText(stop.story);
         await expect(panel.locator('.tour-link')).toHaveAttribute('href', stop.href);
+        // The North Pole's own stalls credit nobody: no participant made them.
+        await expect(panel).not.toContainText('@the-factory');
         await page.keyboard.press('Escape');
         await expect(panel).toHaveCount(0);
         await expect(canvas).not.toHaveAttribute('data-room', /.*/);
@@ -80,3 +82,14 @@ for (const viewport of VIEWPORTS) {
     expect(problems).toEqual([]);
   });
 }
+
+test("The landmark's own room offers the sleigh into the level", async ({ page }) => {
+  const problems = watch(page);
+  await page.goto('#/attraction/the-factory');
+  const panel = page.locator('.visit');
+  await panel.locator('.visit-more summary').click();
+  await panel.getByRole('link', { name: 'Take the sleigh inside' }).click();
+  await expect(page).toHaveURL(/#\/level\/the-factory$/);
+  await expect(page.locator('.hud-level')).toContainText('A level by the North Pole');
+  expect(problems).toEqual([]);
+});

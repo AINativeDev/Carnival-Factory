@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BELT, PUFF, parcelAt, puffAt } from './attraction';
+import { BELT, PUFF, parcelAt, puffAt, puffSpot } from './attraction';
 
 describe('puffAt', () => {
   it('rises from the chimney and starts again, each puff in turn', () => {
@@ -15,5 +15,14 @@ describe('parcelAt', () => {
     expect(parcelAt(0, 0)).toBe(0);
     expect(parcelAt(BELT / 4, 0)).toBeCloseTo(0.25);
     expect(parcelAt(0, 1)).toBeCloseTo(0.5);
+  });
+});
+
+describe('puffSpot', () => {
+  it('keeps every puff inside the square until it has faded', () => {
+    for (let t = 0; t <= 1; t += 0.05) {
+      const { y, r } = puffSpot(t);
+      expect(y - r).toBeGreaterThanOrEqual(0);
+    }
   });
 });
