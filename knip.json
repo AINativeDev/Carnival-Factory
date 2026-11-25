@@ -8,7 +8,8 @@
     "scripts/hooks/check-*.ts",
     "carnival/levels/*/level.ts",
     "carnival/levels/*/squares/*/square.ts",
-    "lint/*.js"
+    "lint/*.js",
+    "scripts/e2e-coverage/report.ts"
   ],
   "project": ["{src,scripts,carnival,lint,smoke}/**/*.{ts,js}", "*.{ts,js}"],
   "ignore": ["lint/*.d.ts"],

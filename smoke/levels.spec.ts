@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './coverage';
 import { levelWorld, validateLevel, type NorthPoleLevel } from '../src/northpole/level';
 import { stillCamera, walkToDoor } from './level-walk';
 

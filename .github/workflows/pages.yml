@@ -33,11 +33,6 @@ on:
 permissions:
   contents: read
 
-# One change to gh-pages at a time, and none is dropped.
-concurrency:
-  group: pages
-  cancel-in-progress: false
-
 jobs:
   # Forks start with Pages switched off. Skip the deploy with a note rather than
   # failing on every merge until someone turns it on.
@@ -92,6 +87,13 @@ jobs:
   update:
     needs: check
     if: needs.check.outputs.enabled == 'true'
+    # One update at a time, queued at the job, not the workflow: GitHub keeps one
+    # pending run per group and drops the older one, so a run that check turns
+    # away (an issue event that changes nothing) must never join the queue, or it
+    # can push out a merge's deploy and then skip itself.
+    concurrency:
+      group: pages-update
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -359,6 +361,9 @@ jobs:
 
   deploy:
     needs: update
+    concurrency:
+      group: pages-deploy
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       pages: write

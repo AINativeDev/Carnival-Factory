@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './coverage';
 
 /**
  * Safari reads a sandboxed frame's content security policy differently from

@@ -176,6 +176,9 @@ export default defineConfig(({ command }) => ({
   // Relative asset paths, so the build works on any fork's GitHub Pages URL.
   base: './',
   build: {
+    // A coverage build keeps readable code and source maps, so the smoke tests'
+    // browser coverage maps back onto src/ (docs/adr/0032-browser-coverage-counts.md).
+    ...(process.env.COVERAGE === '1' ? { sourcemap: true, minify: false } : {}),
     rollupOptions: {
       // The map, and the page each square's sandboxed frame loads.
       input: {

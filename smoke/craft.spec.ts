@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './coverage';
 import { squareCraft } from '../scripts/build-data.ts';
 
 // A square's panel shows the craft badges it earned and nothing it missed

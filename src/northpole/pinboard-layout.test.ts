@@ -58,6 +58,7 @@ describe('noteFor: each step as a note on the board', () => {
       review: { findings: 0, fixed: 0 },
     });
     expect(noteFor(clean).stamp).toBe('Clean');
+    expect(noteFor(step('built', { link: { href: '', text: '#5' } })).stamp).toBe('Clean');
     const open = step('built', {
       link: { href: '', text: '#6' },
       meta: 'Open',

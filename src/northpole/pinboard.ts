@@ -33,7 +33,7 @@ function label(
   bold = false,
 ) {
   ctx.font = `${bold ? 'bold' : 'normal'} ${String(theme.font.title)}px ${theme.font.family}`;
-  const measured = ctx.measureText(text).width || 1;
+  const measured = Math.max(1, ctx.measureText(text).width);
   const scale = Math.min(width / measured, size / theme.font.title);
   ctx.save();
   ctx.translate(x, y);
