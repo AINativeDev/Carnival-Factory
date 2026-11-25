@@ -47,7 +47,7 @@ tests stay deterministic. Everything moves from `time`.
 
 `booth.ts` joins the parts for the map. `table-view.ts` turns either game into
 what the table shows at one moment, `poses.ts` works out the elves' hands and
-the card in the air, and `table-scene.ts` paints it all back to front, from the
+the card in the air, both plain functions tested beside them, and `table-scene.ts` paints it all back to front, from the
 table and lantern in `card-table.ts`, the cards in `cards.ts`, the elves in
 `elves.ts` and the strokes in `brush.ts`.
 
