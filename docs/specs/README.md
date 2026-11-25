@@ -22,6 +22,7 @@ assessment skill or the CSP in `square.html`. A rule nothing enforces yet says
 - [Map and world](map-and-world.md): the isometric world, plots, walking, the camera and the routes.
 - [Squares and the sandbox](squares-and-sandbox.md): the `NorthPoleSquare` contract, the sandboxed frame and worker, the size budget and the kill switch.
 - [Booths](booths.md): a participant's folder, ownership and remixes.
+- [Booth craft](booth-craft.md): the conventions every square is checked against, and its badges.
 - [Attractions](attractions.md): the North Pole's own squares.
 - [Levels](levels.md): a participant's own world, as plain data, reached by sleigh.
 - [Booth and level requests](booth-requests.md): the issue forms, the assessment and the factory's actions.

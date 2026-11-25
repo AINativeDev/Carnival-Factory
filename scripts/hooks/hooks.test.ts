@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { editFeedback } from './check-edited-file';
 import { checksForFile, runChecks, type Ran } from './checks-for-file';
-import { turnFeedback } from './check-turn';
+import { touchedSquares, turnFeedback } from './check-turn';
 
 const ok: Ran = { status: 0, stdout: '', stderr: '' };
 const failed: Ran = { status: 1, stdout: 'line 1: bad\n', stderr: '' };
@@ -68,5 +68,39 @@ describe('turnFeedback', () => {
   it('lets the agent stop when everything passes, or when it was already sent back once', () => {
     expect(turnFeedback(false, () => ok)).toBeUndefined();
     expect(turnFeedback(true, () => failed)).toBeUndefined();
+  });
+});
+
+describe('touchedSquares', () => {
+  it('finds the squares a working tree changes, once each', () => {
+    const porcelain = [
+      ' M carnival/booths/ana/booth.ts',
+      '?? carnival/booths/ana/scene.ts',
+      'R  carnival/attractions/old.ts -> carnival/attractions/big-top/tent.ts',
+      ' M carnival/levels/bo/squares/hut/square.ts',
+      ' M carnival/levels/bo/level.ts',
+      ' M src/main.ts',
+    ].join('\n');
+    expect(touchedSquares(porcelain)).toEqual([
+      'carnival/attractions/big-top',
+      'carnival/booths/ana',
+      'carnival/levels/bo/squares/hut',
+    ]);
+  });
+});
+
+describe('turnFeedback for squares', () => {
+  it('sends the agent back with the craft report of a square it changed', () => {
+    const run = (command: string): Ran =>
+      command === 'git'
+        ? { status: 0, stdout: ' M carnival/booths/ana/booth.ts', stderr: '' }
+        : command === 'node'
+          ? {
+              status: 1,
+              stdout: 'carnival/booths/ana: tested\n  - booth.ts is 300 lines',
+              stderr: '',
+            }
+          : ok;
+    expect(turnFeedback(false, run)).toMatch(/Craft of the squares you changed:[\s\S]*300 lines/);
   });
 });
