@@ -42,22 +42,8 @@ export const GIFTS = [
   },
 ] as const;
 
-/** One gift on the shelf, as the gift tag shows it. */
+/** One of the shop's gifts, as the gift tag shows it. */
 export type Gift = (typeof GIFTS)[number];
-
-/** How long the shop keeps each gift in the spotlight, in milliseconds. */
-export const SHOW = 4_000;
-
-/** Which gift is in the spotlight at `time`: each in turn, for `SHOW` each. */
-export function inSpotlight(time: number): number {
-  const turn = Math.floor(time / SHOW) % GIFTS.length;
-  return (turn + GIFTS.length) % GIFTS.length;
-}
-
-/** The gift whose turn `inSpotlight` says it is, so the tag always has one to show. */
-export function giftInSpotlight(time: number): Gift {
-  return GIFTS[inSpotlight(time)] ?? GIFTS[0];
-}
 
 /** The one command that installs gift `skill` from this repository. */
 export function installCommand(skill: string): string {

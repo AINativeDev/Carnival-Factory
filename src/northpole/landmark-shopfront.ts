@@ -1,14 +1,16 @@
 /**
  * The Gift Shop stands as a two-storey shop in pine green: a big display
- * window on the ground floor, a striped awning over its name board, lit
- * windows upstairs and presents stacked by the door. Its square's drawing is
- * the window display, so what's for sale is what the attraction shows
- * (ADR 0042).
+ * window on the ground floor, a striped awning strung with warm lights over
+ * its name board, lit windows upstairs, pennants waving on the roof, presents
+ * stacked by the door, elves at it and a cart of parcels (landmark-shopfront-life.ts).
+ * Its square's drawing is the window display, so what's for sale is what the
+ * attraction shows (ADR 0042).
  */
 import { block, corners } from './brushes';
 import { band, onFace, type Face } from './faces';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
-import { area, fillShape, litWindow, present, sideOf, spot } from './landmark-kit';
+import { area, fillShape, litWindow, pennant, present, sideOf, spot } from './landmark-kit';
+import { awningLights, doorElves, giftCart } from './landmark-shopfront-life';
 import { inTurn } from './rounds';
 import { SIGN_STYLES } from './sign-styles';
 import { standing } from './stall-plan';
@@ -80,6 +82,7 @@ export const drawShopfront: LandmarkDrawer = (ctx, plot, square, paint, time) =>
   ctx.fill();
   framedArt(ctx, front, square, paint, { from: 0.07, to: 0.93, low: 16 }, SIGN_STYLES.pavilion);
   awning(ctx, front);
+  awningLights(ctx, front, SHOP.awning - SHOP.drop, SHOP.reach, time);
   // Presents stacked by each front corner, two below and one on top.
   for (const [n, along] of [0.06, 0.94].entries()) {
     const stack = [
@@ -92,5 +95,11 @@ export const drawShopfront: LandmarkDrawer = (ctx, plot, square, paint, time) =>
       present(ctx, at, s, wrap, ribbon);
     }
   }
-  return standing(plot, corners(plot).top.y - (corners(body).top.y - SHOP.wall - SHOP.stage) + 10);
+  doorElves(ctx, plot, time);
+  giftCart(ctx, plot, 0.74);
+  // Pennants in the shop's colours on the roof's front corners, waving slowly.
+  const roof = SHOP.wall + SHOP.stage;
+  for (const [n, along] of [0.14, 0.86].entries())
+    pennant(ctx, spot(plot, along, 0.18, roof), 26, inTurn([colors.berry, colors.gold], n), time);
+  return standing(plot, corners(plot).top.y - (corners(body).top.y - roof) + 36);
 };
