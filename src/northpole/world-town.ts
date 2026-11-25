@@ -44,8 +44,8 @@ export function layMainPath(work: Groundwork, avenueEnd: number, extent: number)
   for (let x = PLAZA + 2; x < extent - 3; x += 8)
     work.place('bunting', { x, y: -2, w: 1, h: 5 }, false, hash(x, 8));
   work.place('banner', { x: PLAZA + 1, y: -PLAZA - 1, w: 3, h: 1 }, false, 0);
-  // What's on next, in the open snow off the town square, where the opening view looks.
-  work.place('billboard', { x: PLAZA + 4, y: PLAZA - 1, w: 2, h: 1 }, true, 0);
+  // What's on next: a roadside billboard in open snow beside the main road east, in the opening view.
+  work.place('billboard', { x: 15, y: -4, w: 2, h: 1 }, true, 0);
 }
 
 /**

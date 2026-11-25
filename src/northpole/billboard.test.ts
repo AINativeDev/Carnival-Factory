@@ -24,7 +24,7 @@ describe('the AI DevCon billboard', () => {
     expect(onBillboard(foot, { x: 100, y: 300 - BOARD.post - BOARD.h / 2 })).toBe(true);
     expect(onBillboard(foot, { x: 100, y: 310 })).toBe(false);
     expect(onBillboard(foot, { x: 100 + BOARD.w, y: 250 })).toBe(false);
-    expect(billboardBox(foot)).toEqual({ x: 5, y: 150, w: 190, h: 150 });
+    expect(billboardBox(foot)).toEqual({ x: -10, y: 92, w: 220, h: 208 });
   });
 
   it('breathes its lamps slowly, never flickering', () => {

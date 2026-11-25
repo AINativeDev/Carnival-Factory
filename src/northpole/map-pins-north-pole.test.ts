@@ -56,7 +56,7 @@ describe('the North Pole', () => {
         for (let t = 6000; t < 9000; t += 200) frame(t);
       },
     );
-    expect(pin).toMatchInlineSnapshot(`"9242e8edf97e2823 (602197 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"c1cd73f39149a0e3 (608917 calls)"`);
   });
 
   it('builds construction sites, and updates a booth being changed', () => {
@@ -86,7 +86,7 @@ describe('the North Pole', () => {
         frame(700);
       },
     );
-    expect(pin).toMatchInlineSnapshot(`"2047d5ef42c32238 (165086 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"dc9a549b0958e630 (166206 calls)"`);
   });
 
   it('takes the sleigh from the station, but not to a level closed for repairs', () => {
@@ -101,7 +101,7 @@ describe('the North Pole', () => {
       frame(1500);
       expect(plots.length).toBeGreaterThan(0);
     });
-    expect(pin).toMatchInlineSnapshot(`"2c82bf506c3f62aa (239370 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"342da495d5613117 (241610 calls)"`);
   });
 
   it('draws avatars once they have loaded', () => {
@@ -113,6 +113,6 @@ describe('the North Pole', () => {
       frame(200);
       frame(900);
     });
-    expect(pin).toMatchInlineSnapshot(`"a840b86bda641fe0 (90614 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"8931d4aa4b298df3 (91094 calls)"`);
   });
 });

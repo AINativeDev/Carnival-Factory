@@ -16,9 +16,9 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   at its door first. Esc on the map lets go of the picked square.
 - On a touch screen the first tap on a structure shows its tag, the second
   opens it. One finger drags the map, two fingers pinch the zoom.
-- A billboard in the open snow off the town square, where the opening view
-  looks, drawn over whatever stands near it so nothing hides it, says what's
-  on next: AI DevCon, next in London, 7–8 June 2027 at The
+- A roadside billboard, high on braced steel legs with a catwalk and
+  spotlights, stands in open snow beside the main road east, in the opening
+  view, and says what's on next: AI DevCon, next in London, 7–8 June 2027 at The
   Brewery. A click on it opens the tickets page in a new tab, and the pointer
   turns to a hand over it (`src/northpole/billboard.ts`).
 - "Claim a plot" walks the player to the nearest open plot. "Show the whole
