@@ -22,7 +22,7 @@ export const square = (id: string, draw?: NorthPoleSquare['draw']): NorthPoleSqu
 });
 
 /** A square that throws, for the "Under construction" placeholder. */
-export const broken = square('broken', () => {
+const broken = square('broken', () => {
   throw new Error('a broken square');
 });
 

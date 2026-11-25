@@ -17,17 +17,17 @@ export interface MapHarness {
   /** What starting the map drew: its sky, mountains, island and fence layers. */
   started: CanvasCall[];
   /** Draws the next frame at `time`, with the clock at `time` too, and gives back its calls. */
-  step(time: number): CanvasCall[];
+  step: (time: number) => CanvasCall[];
   /** Runs `act` with the canvases recording, for what it redraws. */
-  record(act: () => void): CanvasCall[];
+  record: (act: () => void) => CanvasCall[];
   /** Sets the clock that `performance.now()` reads. */
-  setClock(time: number): void;
+  setClock: (time: number) => void;
   /** The tag over a plot, as the page shows it. */
-  tag(): HTMLElement | null;
+  tag: () => HTMLElement | null;
   /** Everything the map says on the page itself, in one line, for pinning beside the drawing. */
-  page(): string;
+  page: () => string;
   /** Stops the map and puts back everything the harness stood in for. */
-  stop(): void;
+  stop: () => void;
 }
 
 /** How the page looks to the map: its size, a touch screen, and reduced motion. */

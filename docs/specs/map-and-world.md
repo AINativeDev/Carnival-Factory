@@ -70,11 +70,17 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 
 `src/main.ts`, `src/route.ts`, `src/updates.ts`, `src/northpole/world.ts`,
 `src/northpole/plots.ts`, `src/northpole/plots.json`, `src/northpole/camera.ts`,
-`src/northpole/map.ts`, `src/northpole/render.ts`, `src/northpole/visit.ts`.
+`src/northpole/map.ts` (starting the map and wiring it to the page) with its
+parts in `src/northpole/map-*.ts`, which share one `MapRun`
+(`map-state.ts`), and `src/northpole/draw-square.ts`,
+`src/northpole/render.ts`, `src/northpole/visit.ts`.
 
 ## Tested by
 
 `src/route.test.ts`, `src/updates.test.ts`, `src/northpole/world.test.ts`,
 `src/northpole/plots.test.ts`, `src/northpole/camera.test.ts`,
-`src/northpole/map.test.ts`, `src/northpole/visit.test.ts`, and
+`src/northpole/draw-square.test.ts`, `src/northpole/map-*.test.ts` (the
+map running in happy-dom through `src/test-support/map-harness.ts`, with
+`map-pins-*.test.ts` pinning what it draws frame by frame),
+`src/northpole/visit.test.ts`, and
 `smoke/squares.spec.ts` (walking, deep links, open plots, fitting the window).

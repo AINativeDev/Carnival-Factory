@@ -13,7 +13,11 @@ export const key = (type: 'keydown' | 'keyup', name: string, init: KeyboardEvent
 
 /** Where a tile of the world shows on the screen now, from the camera's last frame. */
 export function screenAt(map: MapHarness, tile: Tile): Tile {
-  const [x = 0, y = 0, zoom = 1] = (map.canvas.dataset.camera ?? '').split(',').map(Number);
+  const [x, y, zoom] = String(map.canvas.dataset.camera).split(',').map(Number) as [
+    number,
+    number,
+    number,
+  ];
   const box = map.canvas.getBoundingClientRect();
   return worldToScreen(toScreen(tile), box.width, box.height, { x, y }, zoom);
 }
