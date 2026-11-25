@@ -58,6 +58,7 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0036](0036-no-oversize-files.md)                | No code file over 200 lines, with no exceptions                    | Accepted |
 | [0037](0037-carnival-factory-and-plain-words.md) | Name the site Carnival Factory, and use plain words for spots      | Accepted |
 | [0039](0039-coaster-ridden-in-list-order.md)     | A level's coaster is ridden in the order its pieces are listed     | Accepted |
+| [0041](0041-ride-levels.md)                      | A ride level is ridden in the coaster's car, station to station    | Accepted |
 
 ## Template
 

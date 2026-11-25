@@ -33,8 +33,12 @@ export interface MapOptions {
   wereSites?: Iterable<string>;
   /** The levels, each with a platform at the sleigh station, and whether it's closed for repairs. */
   levels?: readonly StationEntry[];
-  /** A level to walk instead of the North Pole: its world (`levelWorld` in level.ts), its squares as `attractions`. */
-  level?: { id: string; name: string; world: World; tint: string };
+  /**
+   * A level to walk instead of the North Pole: its world (`levelWorld` in
+   * level.ts), its squares as `attractions`. A ride level's visitors ride its
+   * coaster instead of walking it (ADR 0041).
+   */
+  level?: { id: string; name: string; world: World; tint: string; ride?: boolean };
   /** Takes the sleigh from a platform: to the level of `login`, or, without one, back to the North Pole. */
   onTravel?(login: string | undefined): void;
 }

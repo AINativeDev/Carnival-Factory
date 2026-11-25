@@ -426,6 +426,35 @@ body[data-view='map'] .map {
   display: none;
 }
 
+/*
+ * A ride level's "Ride on" button (ADR 0041): at the foot of the map while the
+ * coaster's car stands at a station, big enough for a thumb on a phone.
+ */
+.ride-on {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 2px solid var(--color-gold);
+  border-radius: var(--radius);
+  background: var(--color-gold);
+  color: var(--color-night);
+  font: bold 16px var(--font-family);
+  white-space: nowrap;
+  cursor: pointer;
+  translate: -50% 0;
+}
+
+.ride-on[hidden],
+.map-frame[data-visiting] .ride-on {
+  display: none;
+}
+
 .booth {
   display: flex;
   flex-direction: column;

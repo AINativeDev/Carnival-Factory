@@ -86,6 +86,11 @@ export interface NorthPoleLevel {
    */
   exits: { x: number; y: number }[];
   squares?: LevelSquarePlace[];
+  /**
+   * Whether visitors ride the level's coaster instead of walking it: they sit
+   * in its car, which stops at a `coaster-station` at every door (ADR 0041).
+   */
+  ride?: boolean;
 }
 
 /** A square's or an exit's plot inside a level, in the level's own tiles. */

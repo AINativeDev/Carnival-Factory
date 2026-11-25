@@ -6,6 +6,7 @@
  */
 import { drawCarousel } from './carousel';
 import { drawCoaster, drawCoasterLoop } from './coaster';
+import { drawCoasterDrop, drawCoasterLift, drawCoasterStation } from './coaster-fittings';
 import { drawFireBreather, drawJuggler, drawStiltWalker } from './performers';
 import { drawBalloon, drawFerrisWheel } from './rides';
 import { drawAcrobats, drawBand, drawStrongman } from './troupe';
@@ -31,6 +32,9 @@ const SHOW = {
   lantern: drawLantern,
   coaster: drawCoaster,
   'coaster-loop': drawCoasterLoop,
+  'coaster-lift': drawCoasterLift,
+  'coaster-drop': drawCoasterDrop,
+  'coaster-station': drawCoasterStation,
 } as const satisfies Record<string, Draw>;
 
 /** A performer, a ride or a piece of factory dressing: the things a level's show is made of. */

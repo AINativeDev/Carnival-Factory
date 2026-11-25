@@ -26,6 +26,9 @@ const SHOW: ShowKind[] = [
   'lantern',
   'coaster',
   'coaster-loop',
+  'coaster-lift',
+  'coaster-drop',
+  'coaster-station',
 ];
 
 /** A show prop as a level lays it out: its catalogue footprint, at (2, -1). */
@@ -54,8 +57,11 @@ describe('the show', () => {
         "band": "cbf157523eefbf22 (1716 calls)",
         "candy-pipe": "0640c4ffcf42f20f (912 calls)",
         "carousel": "09b920c178bb5ec3 (5532 calls)",
-        "coaster": "201c9ff47d458287 (996 calls)",
-        "coaster-loop": "ba27e3935b1e356c (3060 calls)",
+        "coaster": "7dd47a2e33c9aec0 (996 calls)",
+        "coaster-drop": "dd6b33617dafac34 (1164 calls)",
+        "coaster-lift": "0ac4401a7bcc8377 (1080 calls)",
+        "coaster-loop": "e5aa7a1ed6cad1fd (3060 calls)",
+        "coaster-station": "791077fcc8fd4d9d (1968 calls)",
         "cog": "9a60fea6f94e035a (720 calls)",
         "conveyor": "94bfc4c774311e36 (1212 calls)",
         "ferris-wheel": "f0f43285361d0624 (2976 calls)",

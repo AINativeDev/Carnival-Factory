@@ -17,6 +17,8 @@ export interface LevelSummary {
   id: string;
   name: string;
   description: string;
+  /** Whether it's ridden on its coaster instead of walked (ADR 0041). */
+  ride?: boolean;
 }
 
 /** Labels the level's map, and opens its panel beside it, in the map's frame. */

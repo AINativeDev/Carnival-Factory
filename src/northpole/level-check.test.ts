@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { levelWorld, type NorthPoleLevel } from './level';
 import { validateLevel } from './level-check';
+import { RIDE_LEVEL } from '../test-support/ride-fixtures';
 
 /** A small level that passes: one square, one exit, open snow between. */
 const small = (): NorthPoleLevel => ({
@@ -118,5 +119,29 @@ describe('checking visitors can arrive', () => {
     const world = levelWorld(small());
     expect(world.things).toEqual([]);
     expect(world.ground.size).toBe(0);
+  });
+});
+
+describe('checking a ride level', () => {
+  // The cocoa stall's door, at (8, 5), walled in where nobody could walk to it.
+  const walledIn = {
+    blocked: [
+      { x: 8, y: 4 },
+      { x: 8, y: 6 },
+      { x: 9, y: 5 },
+    ],
+  };
+
+  it('rides to every door instead of walking there', () => {
+    expect(validateLevel({ ...RIDE_LEVEL, ...walledIn }, 'rider', ['skates', 'cocoa'])).toEqual([]);
+    expect(
+      validateLevel({ ...RIDE_LEVEL, ...walledIn, ride: false }, 'rider', ['skates', 'cocoa']),
+    ).toEqual(['square "cocoa" can\'t be walked to from the arrival point']);
+  });
+
+  it("says what's wrong with its ride", () => {
+    expect(
+      validateLevel({ ...RIDE_LEVEL, arrival: { x: 0, y: 4 } }, 'rider', ['skates', 'cocoa']),
+    ).toEqual(['visitors must arrive on the first coaster-station']);
   });
 });

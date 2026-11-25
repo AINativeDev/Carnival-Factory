@@ -41,10 +41,15 @@ export const LEVEL_PROPS = {
   'candy-pipe': { thing: 'candy-pipe', w: 2, h: 1, blocks: true },
   lantern: { thing: 'lantern', w: 1, h: 1, blocks: false },
   // The roller coaster, ridden by a golden ticket in the order its pieces are
-  // listed (`coaster-ride.ts`). Its rail runs overhead, so people walk under a
-  // straight; a loop stands on an A-frame over its tile.
+  // listed (`coaster-ride.ts`). Its rail runs overhead on posts, as high as a
+  // piece's variant lifts it, so people walk under it; a loop stands on an
+  // A-frame over its tile. A lift hill climbs on a chain, a drop is quick, and a
+  // station is where a ride level's car stops (`coaster-pieces.ts`, ADR 0041).
   coaster: { thing: 'coaster', w: 1, h: 1, blocks: false },
   'coaster-loop': { thing: 'coaster-loop', w: 1, h: 1, blocks: true },
+  'coaster-lift': { thing: 'coaster-lift', w: 1, h: 1, blocks: false },
+  'coaster-drop': { thing: 'coaster-drop', w: 1, h: 1, blocks: false },
+  'coaster-station': { thing: 'coaster-station', w: 1, h: 1, blocks: false },
 } as const satisfies Record<
   string,
   { thing: ThingKind | undefined; w: number; h: number; blocks: boolean }

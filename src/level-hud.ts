@@ -8,9 +8,14 @@ interface LevelMap {
   setAttribute(name: string, value: string): void;
 }
 
-export function labelLevel(map: LevelMap, level: { name: string }, owner: string): void {
-  map.setAttribute(
-    'aria-label',
-    `${level.name}, a level by ${owner}. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a square to go inside, or at the sleigh to go back to the North Pole.`,
-  );
+export function labelLevel(
+  map: LevelMap,
+  level: { name: string; ride?: boolean },
+  owner: string,
+): void {
+  // A ride level is ridden in the coaster's car, not walked (ADR 0041).
+  const how = level.ride
+    ? 'Ride the coaster: press Space or the right arrow, or tap, to ride on to the next station. Press E at a station to go inside its stall, or at the sleigh to go back to the North Pole.'
+    : "Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a square to go inside, or at the sleigh to go back to the North Pole.";
+  map.setAttribute('aria-label', `${level.name}, a level by ${owner}. ${how}`);
 }

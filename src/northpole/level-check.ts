@@ -1,8 +1,9 @@
 /**
  * Checking a participant's level before anything is drawn: that it's plain
  * data within the size limits, with its name and theme, its every part where it
- * may be (`level-check-places.ts`), and that every square and exit can be
- * walked to from where visitors arrive. A level that fails shows "Closed for
+ * may be (`level-check-places.ts`), its coaster (`coaster-rules.ts`), and that
+ * every square and exit can be walked to from where visitors arrive, or, in a
+ * ride level, ridden to. A level that fails shows "Closed for
  * repairs" on its platform. It's apart from `level.ts`, which lays a checked
  * level out, because a level is untrusted data and its rules live here.
  */
@@ -17,7 +18,7 @@ import {
   type Check,
   type Stand,
 } from './level-check-places';
-import { rideProblems } from './coaster-ride';
+import { rideLevelProblems, rideProblems } from './coaster-rules';
 import { reachable } from './pathfinding';
 import { isBoothOwner } from './square';
 import { walkable } from './walking';
@@ -80,6 +81,8 @@ export function validateLevel(
   if (!arrival || !within(check, arrival))
     problems.push('its arrival point is not inside the level');
   if (problems.length) return problems;
-  const ride = rideProblems(level.props ?? []);
-  return ride.length ? ride : walkProblems(level, stands);
+  const ride = [...rideProblems(level.props ?? []), ...rideLevelProblems(level, stands)];
+  if (ride.length) return ride;
+  // A ride level is ridden, not walked: the car takes visitors to every door (ADR 0041).
+  return level.ride ? [] : walkProblems(level, stands);
 }

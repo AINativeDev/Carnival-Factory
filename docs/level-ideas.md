@@ -30,7 +30,16 @@ describe, so a little detail goes a long way. Borrow freely from anything here.
 - **A roller coaster:** `coaster` track on posts that people walk under, and
   `coaster-loop` loop-the-loops, one tile each. Lay the pieces side by side in
   the order the ride goes, put loops on straight runs, and a golden ticket
-  rides it from the first piece to the last.
+  rides it from the first piece to the last. A `coaster-lift` is a lift hill
+  with a chain that pulls the car up slowly, a `coaster-drop` is quick, and a
+  `coaster-station` is a platform under a canopy. Give a piece a higher
+  variant to lift its rail, up to four times as high, so the track climbs,
+  crests and dips. Track may cross water.
+- **A ride, instead of a walk:** say the whole level should be ridden, and
+  visitors ride the coaster in the golden ticket car instead of walking. The
+  track runs round from a station where they arrive, by the sleigh home, with
+  a station at every square's door; the car stops at each one, and they ride
+  on with Space, the right arrow or a tap. The Factory is one.
 - **Squares of its own,** up to 8: little animated scenes on stalls, each drawn
   like a booth, that visitors walk into.
 - **Where visitors arrive,** and a sleigh back to the North Pole.

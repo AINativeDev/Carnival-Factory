@@ -16,6 +16,7 @@ import {
   type LevelSquarePlace,
   type NorthPoleLevel,
 } from './level';
+import { isTrack } from './coaster-pieces';
 import { LEVEL_PROPS } from './level-props';
 import { isAttractionId } from './square';
 import { key, type Box, type Tile } from './world';
@@ -66,15 +67,15 @@ function list(check: Check, name: string, field: unknown, max: number, required 
   return field.slice(0, max) as unknown[];
 }
 
-/** Stands `what` on a box, unless something else or water is already there. */
-function occupy(check: Check, box: Box, what: string): void {
+/** Stands `what` on a box, unless something else, or water where it can't stand on posts, is already there. */
+function occupy(check: Check, box: Box, what: string, onPosts = false): void {
   for (const t of tilesOf(box)) {
     const there = check.taken.get(key(t.x, t.y));
     if (there) {
       check.problems.push(`${what} stands on ${there} at ${t.x}, ${t.y}`);
       return;
     }
-    if (check.water.has(key(t.x, t.y))) {
+    if (!onPosts && check.water.has(key(t.x, t.y))) {
       check.problems.push(`${what} stands on water or ice at ${t.x}, ${t.y}`);
       return;
     }
@@ -124,7 +125,8 @@ export function checkProps(check: Check, level: NorthPoleLevel): void {
       continue;
     }
     if (look.thing !== undefined) {
-      occupy(check, box, `prop ${n}, a ${prop.kind},`);
+      // Coaster track stands on posts, so it may cross water and ice.
+      occupy(check, box, `prop ${n}, a ${prop.kind},`, isTrack(prop.kind));
       continue;
     }
     if (++ponds > 1) check.problems.push('it has more than one pond');

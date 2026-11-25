@@ -38,6 +38,9 @@ describe('the show in the catalogue', () => {
           'lantern',
           'coaster',
           'coaster-loop',
+          'coaster-lift',
+          'coaster-drop',
+          'coaster-station',
         ] as const
       ).map((kind) => {
         const { w, h, blocks } = LEVEL_PROPS[kind];
@@ -60,6 +63,9 @@ describe('the show in the catalogue', () => {
       lantern: '1x1 open',
       coaster: '1x1 open',
       'coaster-loop': '1x1',
+      'coaster-lift': '1x1 open',
+      'coaster-drop': '1x1 open',
+      'coaster-station': '1x1 open',
     });
   });
 
@@ -102,6 +108,11 @@ describe('the show in the catalogue', () => {
         'someone',
       ),
     ).toEqual(['prop 1, a carousel, stands on prop 0, a juggler, at 7, 7']);
+  });
+
+  it('lets coaster track cross the water on its posts', () => {
+    expect(validateLevel(open([{ kind: 'coaster', x: 14, y: 5 }]), 'someone')).toEqual([]);
+    expect(validateLevel(open([{ kind: 'coaster-loop', x: 14, y: 6 }]), 'someone')).toEqual([]);
   });
 
   it("won't let a ride shut a square away from visitors", () => {
