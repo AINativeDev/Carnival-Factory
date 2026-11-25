@@ -18,7 +18,10 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   - Santa's Big Top: `big-top`, a tall striped tent with two peaks and flags;
   - Sleigh-Ride Coaster: `coaster`, a hill of track on supports with a sleigh running it;
   - Frozen Pond: `ice-rink`, an oval of ice with a low rail and skaters;
-  - Gingerbread Fun House: `gingerbread-house`, icing, gumdrops and a wonky roof;
+  - Gingerbread Fun House: `gingerbread-house`, icing, gumdrops and a wonky roof,
+    its name on a tall board that wraps onto two lines, with elves queueing and
+    waving a ticket, a candy-cane lamp, gumdrop string lights, a pennant and
+    chimney smoke (`src/northpole/landmark-gingerbread-life.ts`);
   - Gift Shop: `shopfront`, a display window, an awning and presents outside;
   - Hot Cocoa Stand: `cocoa-hut`, a round hut with a giant steaming mug on its roof;
   - Snowball Toss: `game-stall`, a counter, targets and a snowball pile;
@@ -39,6 +42,10 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 - Inside, the visit panel has no Remix link. It says attractions belong to the
   North Pole and offers "Get a booth" beside it.
 - The ferris wheel is the Booths panel's Featured square.
+- Inside the Gingerbread Fun House, each tap or click on its drawing sticks a
+  treat on the house where it lands (a gumdrop, an icing swirl and a candy in
+  turn, up to 24, for one visit), and an elf strolling past its two mirror
+  windows shows in them stretched tall or squashed wide.
 - The Factory, The Academy and The Recording Studio are landmarks: opening
   one from the map, by a click, E or Enter, takes the sleigh into the North
   Pole's level of the same id rather than into a room. `#/attraction/<id>`
@@ -85,6 +92,8 @@ attraction's own `attraction.test.ts`, `smoke/squares-play.spec.ts`,
 level), `src/visit-help.test.ts`, `src/visit-hud-links.test.ts`,
 `src/northpole/north-pole-places-pins.test.ts`, `src/northpole/landmarks.test.ts`
 (each landmark pinned, its drawing painted once under its name),
+`src/northpole/landmark-gingerbread.test.ts`, `smoke/square-pointer.spec.ts`
+(decorating the fun house with a mouse and a finger),
 `src/northpole/frame-protocol-stall.test.ts`, `src/northpole/sandbox-messages.test.ts`
 (only an attraction keeps its landmark), `src/map-page.test.ts` (no platform
 for the North Pole's own levels).

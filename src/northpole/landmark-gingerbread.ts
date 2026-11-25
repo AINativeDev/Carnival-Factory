@@ -3,11 +3,13 @@
  * straight: a chocolate roof whose ridge leans and whose front sags, a crooked
  * chimney, icing dripping from its eaves and piped down its corners, and
  * gumdrops along its ridge and its foot. A fun house should look a little
- * wrong. Its square's drawing is its big front window, under a gold board
- * (ADR 0042).
+ * wrong. Its square's drawing is its big front window, under a tall gold
+ * board, and elves, lights and smoke round it bring it to life
+ * (landmark-gingerbread-life.ts, ADR 0042).
  */
 import { block, corners } from './brushes';
 import { onFace, type Face } from './faces';
+import { funHouseLife } from './landmark-gingerbread-life';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
 import { area, gabledRoof, litWindow, sideOf, spot, type Span } from './landmark-kit';
 import { inTurn } from './rounds';
@@ -75,7 +77,15 @@ export const drawGingerbreadHouse: LandmarkDrawer = (ctx, plot, square, paint, t
   }
   icing(ctx, side, HOUSE.stage, eaves, 1);
   icing(ctx, front, HOUSE.stage, eaves, 0);
-  framedArt(ctx, front, square, paint, { from: 0.14, to: 0.86, low: 22 }, SIGN_STYLES.kiosk);
+  // A tall board, so the name reads on two lines at the map's opening zoom.
+  framedArt(
+    ctx,
+    front,
+    square,
+    paint,
+    { from: 0.14, to: 0.86, low: 12, board: 36 },
+    SIGN_STYLES.kiosk,
+  );
   gabledRoof(ctx, plot, [0.06, 0.94], [0.06, 0.92], {
     eaves,
     rise: HOUSE.rise,
@@ -119,6 +129,8 @@ export const drawGingerbreadHouse: LandmarkDrawer = (ctx, plot, square, paint, t
     );
     gumdrop(ctx, { x: at.x, y: at.y + 2 }, 5, inTurn(GUMDROPS, n));
   }
+  const chimney = { x: stack.x + 64 * Math.sin(0.18), y: stack.y - 64 * Math.cos(0.18) };
+  funHouseLife(ctx, plot, time, { front, eaves, peak, chimney });
   const ridge = spot(plot, 0.5, 0.92, eaves + HOUSE.rise);
   return standing(plot, corners(plot).top.y - Math.min(ridge.y, stack.y - 64) + 20);
 };
