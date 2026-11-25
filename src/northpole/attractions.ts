@@ -1,4 +1,6 @@
 import disabled from './disabled.json';
+import { attractionShown } from '../feature-flag-names';
+import { FEATURE_FLAGS } from '../feature-flags';
 import { sandboxedSquare } from './sandbox';
 import { closeForRepairs, createAttractionRegistry, idsFromFolders } from './square';
 
@@ -14,7 +16,10 @@ const folders = Object.keys(import.meta.glob('../../carnival/attractions/*/attra
 const off = new Set((disabled.attractions as string[]).map((id) => id.toLowerCase()));
 
 export const attractionRegistry = createAttractionRegistry(
-  idsFromFolders(folders).map((id) =>
-    off.has(id) ? closeForRepairs({ id, name: id }) : sandboxedSquare('attraction', id),
-  ),
+  // An attraction whose feature flag is off isn't there at all: not on the map, in a list or at its link.
+  idsFromFolders(folders)
+    .filter((id) => attractionShown(id, FEATURE_FLAGS))
+    .map((id) =>
+      off.has(id) ? closeForRepairs({ id, name: id }) : sandboxedSquare('attraction', id),
+    ),
 );

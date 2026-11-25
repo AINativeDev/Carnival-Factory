@@ -132,6 +132,9 @@ describe('decideAdvent', () => {
     expect(
       decideAdvent({ ...facts, item: { kind: 'issue', number: 7, author: 'octocat' } }),
     ).toMatchObject({ check: false });
+    expect(
+      decideAdvent({ ...facts, linkField: 'https://github.com/octocat/hello/issues/9' }),
+    ).toEqual({ check: false, reason: "that issue isn't in octocat/hello" });
   });
 
   it('declines someone else’s repository and pull request', () => {

@@ -12,6 +12,7 @@ import {
   isPhone,
   MARGIN,
   PHONE_ZOOM,
+  LAPTOP_CLOSER,
   WALK_ZOOM,
 } from './camera';
 import { worldToScreen } from './camera-view';
@@ -76,20 +77,19 @@ describe('the island', () => {
 describe('framing', () => {
   const bounds = islandBounds(world);
 
-  it('fills a laptop with the carnival, every plot in view, when the player stands still', () => {
+  it('rests among the stalls on a laptop, nearer than the carnival fits, with the player in view', () => {
     const { zoom, target } = framing(world, 1400, 856, world.start, 0, false);
     const carnival = carnivalBounds(world);
-    expect(zoom).toBeCloseTo(fitZoom(carnival, 1400, 856, CARNIVAL_MARGIN));
-    // Twice as near as the whole island, or more.
-    expect(zoom).toBeGreaterThan(2 * fitZoom(bounds, 1400, 856));
+    expect(zoom).toBeCloseTo(
+      Math.min(1.25, fitZoom(carnival, 1400, 856, CARNIVAL_MARGIN) * LAPTOP_CLOSER),
+    );
+    expect(zoom).toBeGreaterThan(fitZoom(carnival, 1400, 856, CARNIVAL_MARGIN));
     const centre = frameCentre(bounds, 1400, 856, zoom, target);
-    for (const plot of world.plots) {
-      const at = worldToScreen(toScreen(plot.door), 1400, 856, centre, zoom);
-      expect(at.x).toBeGreaterThan(0);
-      expect(at.x).toBeLessThan(1400);
-      expect(at.y).toBeGreaterThan(0);
-      expect(at.y).toBeLessThan(856);
-    }
+    const at = worldToScreen(toScreen(world.start), 1400, 856, centre, zoom);
+    expect(at.x).toBeGreaterThan(0);
+    expect(at.x).toBeLessThan(1400);
+    expect(at.y).toBeGreaterThan(0);
+    expect(at.y).toBeLessThan(856);
   });
 
   it('keeps a player who wanders off into the forest in view', () => {

@@ -8,6 +8,8 @@ import {
   MAX_PER_SECOND,
   type Sample,
 } from '../scripts/flashing.ts';
+import { attractionShown } from '../src/feature-flag-names';
+import { FLAGS } from './support/feature-flags';
 
 /**
  * Seizure safety: plays every booth and attraction on the back wall of its room and measures
@@ -18,6 +20,8 @@ const root = join(import.meta.dirname, '..');
 const squares = (['booth', 'attraction'] as const).flatMap((kind) =>
   readdirSync(join(root, 'carnival', `${kind}s`))
     .filter((name) => statSync(join(root, 'carnival', `${kind}s`, name)).isDirectory())
+    // An attraction a feature flag holds back isn't on the map to play.
+    .filter((id) => kind === 'booth' || attractionShown(id, FLAGS))
     .map((id) => ({ kind, id })),
 );
 

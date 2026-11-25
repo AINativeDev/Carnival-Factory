@@ -29,6 +29,17 @@ describe('installDrift: whether node_modules matches package-lock.json', () => {
     ]);
   });
 
+  it('says which version is unknown when a record has none', () => {
+    const unversioned = { packages: { 'node_modules/left-pad': {} } };
+    expect(installDrift(unversioned, unversioned)).toEqual([]);
+    expect(
+      installDrift(unversioned, { packages: { 'node_modules/left-pad': { version: '1' } } }),
+    ).toEqual(['left-pad (1, needs ?)']);
+    expect(installDrift(lock, { packages: { ...lock.packages, 'node_modules/knip': {} } })).toEqual(
+      ['knip (?, needs 6.48.0)'],
+    );
+  });
+
   it('treats a missing install record as everything missing', () => {
     expect(installDrift(lock, undefined)).toHaveLength(2);
   });
@@ -38,6 +49,8 @@ describe('installFeedback', () => {
   it('tells the agent to run npm install, rather than chase failures a stale install causes', () => {
     expect(installFeedback(['happy-dom (not installed)'])).toMatch(/npm install[\s\S]*happy-dom/);
     expect(installFeedback([])).toBeUndefined();
+    const many = Array.from({ length: 12 }, (_, n) => `package-${n} (not installed)`);
+    expect(installFeedback(many)).toMatch(/package-9 \(not installed\), and 2 more\.$/);
   });
 });
 

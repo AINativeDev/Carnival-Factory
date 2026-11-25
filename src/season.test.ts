@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { seasonHeadline, seasonLines, seasonShareText } from './season';
+import { switchFlags } from './test-support/feature-flags';
 
 describe('seasonLines', () => {
   it('shows only the numbers that apply', () => {
@@ -18,22 +19,29 @@ describe('seasonLines', () => {
     ]);
   });
 
-  it('adds featured, votes and advent challenges once they have numbers', () => {
-    const lines = seasonLines({
-      requests: 1,
-      shipped: 1,
-      findingsFixed: 0,
-      featured: 2,
-      votes: 5,
-      advent: 4,
+  it('leaves the advent challenges out while their feature flag is off', () => {
+    expect(seasonLines({ requests: 0, shipped: 0, findingsFixed: 0, advent: 4 })).toEqual([]);
+  });
+
+  describe('with the advent calendar switched on', () => {
+    switchFlags({ advent: true });
+    it('adds featured, votes and advent challenges once they have numbers', () => {
+      const lines = seasonLines({
+        requests: 1,
+        shipped: 1,
+        findingsFixed: 0,
+        featured: 2,
+        votes: 5,
+        advent: 4,
+      });
+      expect(lines.map((line) => line.label)).toEqual([
+        'request made',
+        'request shipped',
+        'times featured',
+        'votes received',
+        'advent challenges done',
+      ]);
     });
-    expect(lines.map((line) => line.label)).toEqual([
-      'request made',
-      'request shipped',
-      'times featured',
-      'votes received',
-      'advent challenges done',
-    ]);
   });
 
   it('has nothing to show for someone with no season counted', () => {

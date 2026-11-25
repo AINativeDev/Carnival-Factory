@@ -5,6 +5,7 @@ import { click, key, screenAt } from '../test-support/map-events';
 import type { Told } from '../test-support/map-fixtures';
 import { rideOptions } from '../test-support/ride-fixtures';
 import type { MapOptions } from './map-options';
+import { remembered } from './map-state';
 
 let map: MapHarness | undefined;
 let told: Told = [];
@@ -147,12 +148,24 @@ describe('riding a ride level', () => {
     running.controls.jumpTo('attraction', 'skates');
     running.step(300);
     expect(running.canvas.dataset.ride).toBe('1 stopped');
+    running.controls.visit('attraction', 'skates');
+    running.controls.jumpTo('attraction', 'cocoa');
+    expect(told).toContainEqual(['leave']);
   });
 
   it('starts at the station of the square the page opened on', () => {
     const running = start(undefined, { focus: { kind: 'attraction', id: 'cocoa' } });
     running.step(0);
     expect(running.canvas.dataset.ride).toBe('2 stopped');
+  });
+
+  it('boards at the first station when the player was last off the track', () => {
+    told = [];
+    const options = rideOptions(told);
+    remembered.set(options.level?.id ?? '', { x: 6, y: 4 });
+    map = startHarness(options);
+    map.step(0);
+    expect(map.canvas.dataset.ride).toBe('0 stopped');
   });
 
   it('jumps station to station for reduced motion, with no key on a touch screen', () => {

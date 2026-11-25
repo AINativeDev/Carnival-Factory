@@ -24,7 +24,9 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
     chimney smoke (`src/northpole/landmark-gingerbread-life.ts`);
   - Gift Shop: `shopfront`, a display window, an awning and presents outside;
   - Hot Cocoa Stand: `cocoa-hut`, a round hut with a giant steaming mug on its roof;
-  - Snowball Toss: `game-stall`, a counter, targets and a snowball pile;
+  - Snowball Toss: `game-stall`, a counter, targets and a snowball pile, with an
+    elf throwing at the targets, two more queueing with tickets, pennants,
+    candy-cane prizes and a lamp under the hood;
   - The Academy: `schoolhouse`, with a bell tower and lit windows;
   - The Recording Studio: `studio`, with a glowing ON AIR sign, a dish and an antenna;
   - The Factory: `tower`, a tall brick tower with its `letters`, TESSL, down
@@ -56,7 +58,12 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   station: the landmark is the way in. Their rooms
   show their level's links out as buttons ([ADR 0038](../adr/0038-north-pole-links.md)).
 - The Gift shop shows the gifts of `plugins/north-pole-gifts/`: small factory
-  loops anyone can install on their own repository.
+  loops anyone can install on their own repository. It waits behind the
+  `giftShop` feature flag ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)), off on the live site: until then the
+  registry leaves it out (`attractionShown` in `src/feature-flag-names.ts`),
+  so it isn't on the map, in the Booths panel's Attractions, at
+  `#/attraction/gift-shop` (which says it isn't there) or among the share
+  pages, and its pinned plot stays empty.
 
 ## Rules
 

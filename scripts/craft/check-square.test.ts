@@ -1,3 +1,6 @@
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { readSquare, report, squareFolders } from './check-square';
 
@@ -16,7 +19,17 @@ describe('readSquare', () => {
       'README.md',
       'attraction.test.ts',
       'attraction.ts',
+      'ride.ts',
+      'view.ts',
     ]);
+  });
+
+  it('reads the files in folders inside the square too', () => {
+    const square = mkdtempSync(join(tmpdir(), 'square-'));
+    mkdirSync(join(square, 'parts'));
+    writeFileSync(join(square, 'booth.ts'), 'export {};\n');
+    writeFileSync(join(square, 'parts', 'sky.ts'), 'export {};\n');
+    expect(Object.keys(readSquare(square)).sort()).toEqual(['booth.ts', join('parts', 'sky.ts')]);
   });
 
   it("gives a level's square the level's README", () => {

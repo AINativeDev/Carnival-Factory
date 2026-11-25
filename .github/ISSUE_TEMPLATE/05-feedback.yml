@@ -1,0 +1,23 @@
+name: Feedback on the factory
+description: Kudos, something that surprised you, or something that got in your way. We read every one.
+title: 'Feedback: '
+labels: [feedback]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking a moment. Kudos are very welcome, and so is anything
+        that got in your way: the map, a booth request, the factory's pull
+        request, the docs. This stays open for the maintainers to read.
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Your feedback
+      description: |
+        A few sentences are plenty. Things you can mention:
+        - **What you liked**, or what made you smile
+        - **What got in your way**, and where (a page, a link, a step)
+        - **What you expected** to happen instead
+      placeholder: Asked for a booth on my phone and it was on the map before my coffee went cold. The Free spot sign took me a moment to find, though.
+    validations:
+      required: true

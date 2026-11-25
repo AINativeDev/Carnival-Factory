@@ -9,8 +9,7 @@ export const MAX_LINES = 200;
 /** Lines as ESLint's max-lines counts them: a final newline adds none. */
 export function countLines(text) {
   const lines = text.split(/\r\n|\r|\n/);
-  if (lines.at(-1) === '') lines.pop();
-  return lines.length;
+  return lines.at(-1) === '' ? lines.length - 1 : lines.length;
 }
 
 /** The ESLint config block: the one limit for every code file, squares included. */

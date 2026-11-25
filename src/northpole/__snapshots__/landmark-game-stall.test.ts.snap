@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the game stall > draws the same through a throw, and differently at each moment of it 1`] = `
+[
+  "f1913b73359e6ab8 (801 calls)",
+  "4335bab12f5f8a75 (801 calls)",
+  "c4dc3ac1fe713474 (805 calls)",
+  "83bb4c004f312813 (805 calls)",
+]
+`;

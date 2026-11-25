@@ -5,6 +5,15 @@ repository, one a day from 1 to 24 December. Each accepted challenge
 decorates the participant's booth. The participant guide is
 [docs/advent.md](../advent.md).
 
+> **Behind a feature flag.** The advent calendar waits behind the `advent` feature flag
+> ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)), off on the live site: build with `FEATURE_FLAGS=advent` to show it.
+
+While the flag is off, `#/advent` is the plain map, nothing links to it (the
+factory page, a booth's help), no stall hangs decorations, the season card
+leaves out the advent count, and the **Advent challenge** form waits in
+`.github/issue-templates-later/` (`src/route.ts`, `src/factory.ts`,
+`src/visit-help.ts`, `src/northpole/stall.ts`, `src/season.ts`).
+
 ## Behaviour
 
 - The calendar opens over the map, from the visit panel, the factory page or

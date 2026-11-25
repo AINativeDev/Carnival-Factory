@@ -71,14 +71,7 @@ export function drawSky(ctx: CanvasRenderingContext2D, width: number, height: nu
 
 /** The mountains and hills on the horizon, drawn once to their own layer. In screen pixels. */
 export function drawMountains(ctx: CanvasRenderingContext2D, width: number, height: number) {
-  const ridge = (
-    base: number,
-    peak: number,
-    step: number,
-    seed: number,
-    color: string,
-    caps: boolean,
-  ) => {
+  const ridge = (base: number, peak: number, step: number, seed: number, color: string) => {
     const points: Tile[] = [];
     for (let x = -step, n = 0; x <= width + step; x += step, n++)
       points.push({ x, y: base - peak * (0.35 + 0.65 * hash(n, seed)) });
@@ -88,10 +81,10 @@ export function drawMountains(ctx: CanvasRenderingContext2D, width: number, heig
     for (const p of points) ctx.lineTo(p.x, p.y);
     ctx.lineTo(width, height);
     ctx.fill();
-    if (caps) snowCaps(ctx, points, step);
+    snowCaps(ctx, points, step);
   };
-  ridge(height * 0.62, height * 0.3, Math.max(80, width / 9), 31, colors.mountainFar, true);
-  ridge(height * 0.7, height * 0.22, Math.max(60, width / 13), 32, colors.mountain, true);
+  ridge(height * 0.62, height * 0.3, Math.max(80, width / 9), 31, colors.mountainFar);
+  ridge(height * 0.7, height * 0.22, Math.max(60, width / 13), 32, colors.mountain);
   // Rolling snowy hills, nearer.
   ctx.fillStyle = colors.hill;
   ctx.beginPath();

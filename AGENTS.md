@@ -40,9 +40,10 @@ runs `npm run check` and `npm run build`. `npm run check` is:
 - `npm run format:check`: Prettier;
 - `npm run typecheck`: TypeScript, and the strict flags against their baseline
   (`node scripts/strict-types.ts`);
-- `npm test`: the unit tests with coverage, held to the floor in
-  `vitest.config.ts`. Don't raise the floor in a pull request: maintainers raise
-  it on `main` with `npm run coverage:ratchet`.
+- `npm test`: the unit tests with coverage. Every file in `src/`, `scripts/`
+  and `lint/` needs 99% of its lines, branches, functions and statements
+  covered, file by file, with no exceptions
+  ([ADR 0044](docs/adr/0044-coverage-per-file.md)).
 
 On a pull request, CI also runs `npm run test:changed` (99% of the lines it adds
 to `src/`, `scripts/` and `lint/`, and of the branches on them, must run under
@@ -139,7 +140,14 @@ src/
                             its markup, map-notes.ts its notes for a missing square)
   level-page.ts             a participant's level page
   route.ts                  reading the hash (plain functions)
+  feature-flags.ts          the build's feature flags, and isOn to read one
+  feature-flag-names.ts     the feature flags' names and reading FEATURE_FLAGS
+                            (plain functions, shared with vite.config.ts and smoke/)
   edition.ts                the site's name and this edition's, in one place
+  top-menu.ts               the top bar's menu: building it into the banner, the phone's
+                            Menu button, Escape and focus, opening the Booths panel
+  top-menu-items.ts         the menu's places, their icons and which one is current
+                            (plain functions)
   visit-hud.ts              the HUD inside a square: Share, the invitation, how to leave
   visit-help.ts             the next steps at the foot of a square's panel, by whose square it is
   craft-badges.ts           a square's craft badges on its panel, baked in by the build
@@ -254,7 +262,8 @@ carnival/                   everything on the map that people make, kept apart f
   challenges/
     advent.json             the advent calendar's 24 challenges, one a day
 plugins/north-pole/         the factory's own skills: assessing booth and badge
-                            requests and advent challenges, and the house-rules
+                            requests and advent challenges, welcoming feedback
+                            and ideas, and the house-rules
                             review lens
 plugins/north-pole-gifts/   the gift shelf: small factory loops anyone can install
                             on their own repository, shown at the Gift shop
@@ -492,6 +501,24 @@ separate list of attraction ids, and a list of level logins. A square in either
 of the first two shows "Closed for repairs" and its `draw` never runs. A level
 in the third shows "Closed for repairs" on its platform, and none of its
 squares run. Only maintainers change it.
+
+**Feature flags** hide unfinished parts of the site while keeping their code
+([ADR 0046](docs/adr/0046-launch-behind-feature-flags.md)). There are four,
+all off on the live site: `remix` (**Remix this booth**), `elfEngineer` (the
+Elf Engineer badge's pins, links and `badges/index.html`), `giftShop` (the
+Gift Shop attraction) and `advent` (`#/advent`, its links, the decorations on
+stalls and the season card's count). To switch one on, set the build's
+`FEATURE_FLAGS`, a comma-separated list such as `FEATURE_FLAGS=remix,advent`,
+in the deploy's build step (or before `npm run build`, `npm run dev` or
+`npm run smoke` locally); for `elfEngineer` or `advent`, also move its form
+from `.github/issue-templates-later/` back to `.github/ISSUE_TEMPLATE/`. The
+page reads a flag with `isOn` from `src/feature-flags.ts`, gating a feature
+where it enters the page, never deep in its logic. The unit tests build with
+every flag off and switch one on with `switchFlags` from
+`src/test-support/feature-flags.ts`, so every gate is tested both ways, and a
+smoke check for a hidden feature reads `FLAGS` from
+`smoke/support/feature-flags.ts` and skips while it's off. A booth or level
+request never changes a flag.
 
 ## Levels
 
