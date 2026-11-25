@@ -59,7 +59,8 @@ accepted ones.
   open requests of the same kind (`booth-request` or `level-request`, never
   the other) as not planned, with "Superseded by #<n>" (enforced by:
   assess-booth-request skill). The gate only merges a pull request whose
-  request is still open (enforced by: scripts/auto-merge-booths.ts), and
+  request is still open (enforced by: scripts/merge-gate-facts.ts,
+  scripts/auto-merge-booths-needs-human.test.ts), and
   `pending.json` lists only each login's latest request (enforced by:
   scripts/pending.ts, scripts/pending.test.ts).
 - Accept only a sane change to the author's own folder: something to see or
