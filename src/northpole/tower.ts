@@ -11,6 +11,7 @@
 import { block, bulb, corners, glow, middle, shadow, twinkle } from './brushes';
 import { band, faceOf, onFace, paintOnFace, type Face, type PaintSquare } from './faces';
 import { faceSign } from './name-board';
+import { SIGN_STYLES } from './sign-styles';
 import { PAVILION, standing } from './stall-plan';
 import type { NorthPoleSquare } from './square';
 import { canvasFont, theme } from './theme';
@@ -144,7 +145,17 @@ export function drawTower(
   band(ctx, front, 0.17, 0.83, PAVILION.art - 4, PAVILION.art + art + 4);
   ctx.fill();
   paintOnFace(paint, square, front, 0.2, 0.8, PAVILION.art);
-  faceSign(ctx, front, PAVILION.art + art + 8, TOWER.hall - 4, square.name, '');
+  faceSign(
+    ctx,
+    front,
+    PAVILION.art + art + 8,
+    TOWER.hall - 4,
+    square.name,
+    '',
+    0,
+    undefined,
+    SIGN_STYLES.tower,
+  );
   // The tower, rising from the hall's roof.
   const tower = inset(plot, 0.55);
   const rise = PAVILION.stage + TOWER.hall;

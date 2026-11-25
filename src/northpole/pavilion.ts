@@ -7,6 +7,7 @@
 import { block, bulb, corners, middle, quad, shadow, twinkle } from './brushes';
 import { band, faceOf, onFace, paintOnFace, type PaintSquare } from './faces';
 import { faceSign } from './name-board';
+import { SIGN_STYLES } from './sign-styles';
 import { inTurn } from './rounds';
 import type { NorthPoleSquare } from './square';
 import { PAVILION, standing } from './stall-plan';
@@ -52,7 +53,17 @@ export function drawAttraction(
   band(ctx, face, 0.05, 0.95, PAVILION.art - 4, PAVILION.art + art + 4);
   ctx.fill();
   paintOnFace(paint, square, face, 0.08, 0.92, PAVILION.art);
-  faceSign(ctx, face, PAVILION.art + art + 8, PAVILION.wall - 4, square.name, '');
+  faceSign(
+    ctx,
+    face,
+    PAVILION.art + art + 8,
+    PAVILION.wall - 4,
+    square.name,
+    '',
+    0,
+    undefined,
+    SIGN_STYLES.pavilion,
+  );
   const eaves = { x: inner.x - 0.25, y: inner.y - 0.25, w: inner.w + 0.5, h: inner.h + 0.5 };
   stripedRoof(ctx, eaves, PAVILION.wall, PAVILION.roof, inTurn(ROOFS, plot.number), time);
   return standing(plot, PAVILION.wall + PAVILION.roof + 20);

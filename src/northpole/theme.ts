@@ -42,12 +42,28 @@ export const theme = {
   },
   font: {
     family: '"Trebuchet MS", "Segoe UI", system-ui, sans-serif',
+    /** The lettering families signs choose from, each a web-safe stack. */
+    signs: {
+      sans: '"Trebuchet MS", "Segoe UI", system-ui, sans-serif',
+      condensed: '"Avenir Next Condensed", "Arial Narrow", "Roboto Condensed", sans-serif',
+      serif: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
+      slab: 'Rockwell, "Roboto Slab", "Courier New", serif',
+      rounded: '"Arial Rounded MT Bold", "Varela Round", "Trebuchet MS", sans-serif',
+    },
     small: 14,
     body: 18,
     title: 32,
   },
   radius: 12,
 } as const;
+
+/** One of the sign lettering families. */
+export type SignFamily = keyof typeof theme.font.signs;
+
+/** A sign's canvas font: its family at `px` pixels, bold or not, italic or not. */
+export function signFont(family: SignFamily, px: number, bold = true, italic = false) {
+  return `${italic ? 'italic ' : ''}${bold ? 'bold' : 'normal'} ${String(px)}px ${theme.font.signs[family]}`;
+}
 
 /** Canvas font string, e.g. canvasFont('title') → 'bold 32px "Trebuchet MS", …'. */
 export function canvasFont(size: 'small' | 'body' | 'title', weight: 'normal' | 'bold' = 'normal') {

@@ -32,7 +32,7 @@ describe('a tower', () => {
     });
     const texts = calls.filter(([name]) => name === 'fillText').map(([, text]) => text);
     for (const letter of 'TESSL') expect(texts).toContain(letter);
-    expect(texts.some((text) => String(text).startsWith('The'))).toBe(true);
+    expect(texts.some((text) => String(text).startsWith('THE'))).toBe(true);
     expect(painted).toBe(1);
   });
 
