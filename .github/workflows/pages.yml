@@ -227,6 +227,20 @@ jobs:
             echo "::warning title=No People's Choice standings::Couldn't read the votes, so this build shows no standings."
           }
 
+      # The Year in Review's accepted answers, from the issues labelled
+      # year-in-review-accepted, for the build to bake into the page
+      # (docs/adr/0047-year-in-review-answers.md). Without them, every item
+      # asks for the first answer.
+      - name: Read the Year in Review's answers
+        working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          timeout 2m node scripts/write-year-in-review.ts "$RUNNER_TEMP/year-in-review.json" || {
+            rm -f "$RUNNER_TEMP/year-in-review.json"
+            echo "::warning title=No Year in Review answers::Couldn't read the answers, so this build shows none."
+          }
+
       # Every run rebuilds the root from main, not only a push: GitHub keeps one
       # pending run per group and drops the rest, so a push's run can be
       # replaced by the next event, and that run must still publish main.
@@ -242,6 +256,7 @@ jobs:
           npm ci
           BADGE_HOLDERS_FILE="$RUNNER_TEMP/badge-holders.json" \
             PEOPLES_CHOICE_FILE="$RUNNER_TEMP/peoples-choice.json" \
+            YEAR_IN_REVIEW_FILE="$RUNNER_TEMP/year-in-review.json" \
             ADVENT_FILE="$RUNNER_TEMP/advent.json" npm run build
           # Pages lets caches keep a page for up to 10 minutes, so a visitor can
           # still be on the last build, asking for its files. Built files have

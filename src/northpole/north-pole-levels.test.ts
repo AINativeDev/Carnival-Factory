@@ -9,7 +9,12 @@ import {
 
 describe('North Pole levels', () => {
   it('knows The Factory is the North Pole’s own level', () => {
-    expect(NORTH_POLE_LEVELS).toEqual(['the-factory', 'the-academy', 'the-studio']);
+    expect(NORTH_POLE_LEVELS).toEqual([
+      'the-factory',
+      'the-academy',
+      'the-studio',
+      'the-year-in-review',
+    ]);
     expect(isNorthPoleLevel('the-factory')).toBe(true);
     expect(isNorthPoleLevel('jedi4ever')).toBe(false);
   });

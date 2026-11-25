@@ -18,11 +18,13 @@ import {
 } from './level';
 import { isTrack } from './coaster-pieces';
 import { hangsOnWall, LEVEL_PROPS, propPlace } from './level-props';
+import { isNorthPoleLevel } from './north-pole-levels';
 import { isAttractionId } from './square';
 import { key, type Box, type Tile } from './world';
 
-/** The most squares of its own a level may have. */
+/** The most squares of its own a level may have, and the most a North Pole level may (ADR 0047). */
 const MAX_LEVEL_SQUARES = 8;
+const MAX_NORTH_POLE_SQUARES = 16;
 const MAX_LEVEL_PROPS = 400;
 const MAX_LEVEL_AREAS = 200;
 
@@ -152,7 +154,9 @@ export function checkStands(
 ): Stand[] {
   const stands: Stand[] = [];
   const ids = new Set<string>();
-  for (const [n, entry] of list(check, 'squares', level.squares, MAX_LEVEL_SQUARES).entries()) {
+  // Its id is checked against its folder, so only a maintainers' folder gets the North Pole's room.
+  const most = isNorthPoleLevel(level.id) ? MAX_NORTH_POLE_SQUARES : MAX_LEVEL_SQUARES;
+  for (const [n, entry] of list(check, 'squares', level.squares, most).entries()) {
     const square = (entry ?? {}) as LevelSquarePlace;
     const what = `square "${square.id}"`;
     if (typeof square.id !== 'string' || !isAttractionId(square.id)) {

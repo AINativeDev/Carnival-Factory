@@ -1,59 +1,31 @@
-import type { NorthPoleSquare } from '../../../src/northpole/square';
-import { glow, iso, scene, shadow } from '../../../src/northpole/diorama';
+/**
+ * The Sleigh-Ride Coaster: a tap launches the sleigh from the station, up the
+ * hill and down the other side, and fills the cheer meter one more. Puts the
+ * track, the meter and the sleigh together, back to front, and keeps the
+ * attraction's one memory of the pointer.
+ */
+import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
+import { scene, shadow } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
+import { drawCheerMeter, drawLever } from './cheer-meter';
+import { handsUp, launch, rideTime, riding, WAITING, type Ride } from './ride';
+import { drawSleigh } from './sleigh';
+import { ridePoint, sleighPose, trackY } from './track';
 
 const { colors } = theme;
 
-/** One ride, from one edge of the attraction to the other, in milliseconds. */
-export const RIDE = 5_000;
-
-/**
- * The height of the track at `x`, both in the attraction's 0 to 100 units: a small
- * bump, then the big snowy hill in the middle, then a dip and a last bump.
- */
-export function trackY(x: number): number {
-  const hill = 38 * Math.exp(-(((x - 50) / 16) ** 2));
-  const bumps = 8 * Math.exp(-(((x - 16) / 7) ** 2)) + 10 * Math.exp(-(((x - 84) / 7) ** 2));
-  return 78 - hill - bumps;
-}
-
-/** Where the sleigh is at `time`, and the angle of the track under it, in radians. */
-export function sleighAt(time: number): { x: number; y: number; angle: number } {
-  // It slows near the top of the hill and speeds down it, like a real coaster.
-  const t = (time % RIDE) / RIDE;
-  const x = 100 * (t + Math.sin(t * Math.PI * 2) / (Math.PI * 4));
-  const y = trackY(x);
-  const angle = Math.atan2(trackY(x + 0.5) - trackY(x - 0.5), 1);
-  return { x, y, angle };
-}
-
-/**
- * A point on the ride at `x`, `across` the track (from the far side to the
- * near one) and `drop` below the rail. The track runs across the slab from its
- * left corner to its right one, so it reads left to right as it always has.
- */
-export function ridePoint(x: number, across: number, drop = 0) {
-  const z = (78 - trackY(x)) * 0.72 + 4;
-  return iso(-20 + x * 0.4 + across, 20 - x * 0.4 + across, Math.max(0, z - drop));
-}
-
-/** Where the sleigh is drawn at `time`, on the track's near rail, and its tilt in radians. */
-export function sleighPose(time: number, near: number): { x: number; y: number; angle: number } {
-  const { x } = sleighAt(time);
-  const p = ridePoint(x, near);
-  const ahead = ridePoint(Math.min(x + 1, 100), near);
-  const behind = ridePoint(Math.max(x - 1, 0), near);
-  return { ...p, angle: Math.atan2(ahead.y - behind.y, ahead.x - behind.x) };
-}
+/** When the sleigh last left the station, and how full the cheer meter is. */
+let ride: Ride = WAITING;
 
 /** A sleigh-ride roller coaster that loops over a snowy hill. */
 const attraction: NorthPoleSquare = {
   id: 'sleigh-coaster',
   name: 'Sleigh-Ride Coaster',
-  description: "Santa's sleigh rattles up the hill and whooshes down the other side.",
+  description: "Tap to launch Santa's sleigh up the hill and whoosh it down the other side.",
   // How it stands on the home map: what it is, not a pavilion (ADR 0042).
   stall: { shape: 'shed', roof: 'berry', trim: 'gold', landmark: 'coaster' },
-  draw(ctx, size, time) {
+  draw(ctx, size, time, pointer?: SquarePointer) {
+    ride = launch(ride, time, pointer?.presses ?? 0);
     scene(ctx, size, time, () => {
       const near = 3;
       const far = -3;
@@ -138,36 +110,9 @@ const attraction: NorthPoleSquare = {
       }
       ctx.setLineDash([]);
 
-      // The sleigh, tilted with the track, with a sack of presents and a lantern.
-      const pose = sleighPose(time, near);
-      ctx.save();
-      ctx.translate(pose.x, pose.y);
-      ctx.rotate(pose.angle);
-      ctx.scale(0.8, 0.8);
-      glow(ctx, 6, -8, 10, 0.8);
-      ctx.fillStyle = colors.gold;
-      ctx.fillRect(-7, -1.5, 14, 1.5);
-      ctx.fillStyle = colors.berry;
-      ctx.beginPath();
-      ctx.moveTo(-7, -2);
-      ctx.lineTo(6, -2);
-      ctx.quadraticCurveTo(9, -6, 6, -9);
-      ctx.lineTo(-5, -9);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = colors.shadow;
-      ctx.globalAlpha = 0.3;
-      ctx.fillRect(-7, -5, 15, 3);
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = colors.wood;
-      ctx.beginPath();
-      ctx.arc(-3, -11, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = colors.pine;
-      ctx.fillRect(1, -13, 4, 4);
-      ctx.fillStyle = colors.gold;
-      ctx.fillRect(2.6, -13, 0.8, 4);
-      ctx.restore();
+      drawLever(ctx, ridePoint(12, near + 3, 99), !riding(ride, time), time);
+      drawCheerMeter(ctx, ride.cheers, time);
+      drawSleigh(ctx, sleighPose(rideTime(ride, time), near), handsUp(ride, time));
     });
   },
 };

@@ -70,6 +70,11 @@ their sign.
 We love kudos and ideas. Open **Issues → New issue → Feedback on the factory**
 or **An idea**: they stay open, and the maintainers read every one.
 
+Looking back on the year? The **Year in Review** gallery at the North Pole asks
+13 questions about AI in '26 and '27: answer one, or ask your own, with
+**Issues → New issue → Year in review**. Friendly answers hang in the room
+after the next update of the map.
+
 ## The rules of the map
 
 - **Your booth is yours alone.** A change for you only ever touches your own

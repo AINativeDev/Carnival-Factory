@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { RIDE, ridePoint, sleighAt, sleighPose, trackY } from './attraction';
+import { CHEERS, handsUp, launch, rideTime, riding, WAITING } from './ride';
+import { RIDE, ridePoint, sleighAt, sleighPose, trackY } from './track';
 
 describe('trackY', () => {
   it('is highest at the top of the hill, in the middle', () => {
@@ -75,5 +76,51 @@ describe('sleighPose', () => {
   it('tilts up the hill and down the other side, as the track does', () => {
     expect(sleighPose(RIDE * 0.4, 3).angle).toBeLessThan(0);
     expect(sleighPose(RIDE * 0.6, 3).angle).toBeGreaterThan(0);
+  });
+});
+
+describe('launch', () => {
+  it('waits at the station until a tap launches it, and fills the cheer meter one more', () => {
+    expect(riding(WAITING, 1_000)).toBe(false);
+    expect(launch(WAITING, 1_000, 0)).toBe(WAITING);
+    const ride = launch(WAITING, 1_000, 1);
+    expect(ride).toEqual({ launchedAt: 1_000, cheers: 1 });
+    expect(riding(ride, 1_000 + RIDE / 2)).toBe(true);
+    expect(riding(ride, 1_000 + RIDE)).toBe(false);
+  });
+
+  it('ignores taps while the sleigh is out on the track', () => {
+    const ride = launch(WAITING, 1_000, 1);
+    expect(launch(ride, 2_000, 3)).toBe(ride);
+    expect(launch(ride, 1_000 + RIDE, 1)).toEqual({ launchedAt: 1_000 + RIDE, cheers: 2 });
+  });
+
+  it('starts the meter again from one once it is full', () => {
+    let ride = WAITING;
+    for (let n = 0; n < CHEERS; n++) ride = launch(ride, n * RIDE, 1);
+    expect(ride.cheers).toBe(CHEERS);
+    expect(launch(ride, CHEERS * RIDE, 1).cheers).toBe(1);
+  });
+});
+
+describe('rideTime', () => {
+  it('keeps the sleigh at the station before and after a ride', () => {
+    const ride = launch(WAITING, 10_000, 1);
+    expect(rideTime(WAITING, 500)).toBe(0);
+    expect(rideTime(ride, 9_000)).toBe(0);
+    expect(rideTime(ride, 12_000)).toBe(2_000);
+    expect(rideTime(ride, 10_000 + RIDE)).toBe(0);
+    expect(sleighAt(rideTime(ride, 9_000)).x).toBe(0);
+  });
+});
+
+describe('handsUp', () => {
+  const ride = launch(WAITING, 0, 1);
+
+  it('puts the riders’ hands up on the drop, and only there', () => {
+    expect(handsUp(ride, RIDE * 0.62)).toBe(true);
+    expect(handsUp(ride, RIDE * 0.4)).toBe(false);
+    expect(handsUp(ride, RIDE * 0.05)).toBe(false);
+    expect(handsUp(WAITING, RIDE * 0.62)).toBe(false);
   });
 });

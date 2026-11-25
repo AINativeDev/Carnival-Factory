@@ -7,7 +7,8 @@ import { boxOf, cameraFrom, stageOf } from './support/map-canvas';
 /**
  * Hover and taps reaching a square: on the map through its stall's front,
  * where a click still goes inside, and inside on the back wall, with a mouse
- * and with a finger at phone width. Apart from the visit tests because these
+ * and with a finger at phone width, and decorating the Gingerbread Fun House
+ * from inside. Apart from the visit tests because these
  * aim the pointer at a square's drawing rather than walk the player.
  */
 
@@ -66,18 +67,22 @@ test('the map gives the pointer to the square under it, and a click still opens 
   expect(problems).toEqual([]);
 });
 
-for (const viewport of [
+// The Sleigh-Ride Coaster too: a tap inside launches its sleigh.
+for (const [viewport, kind, id] of [
   { width: 1200, height: 1000, touch: false },
   { width: 390, height: 844, touch: true },
-]) {
-  test(`inside a booth, its drawing gets the pointer and taps at ${viewport.width} wide`, async ({
+].flatMap((viewport) => [
+  [viewport, 'booth', 'jedi4ever'] as const,
+  [viewport, 'attraction', 'sleigh-coaster'] as const,
+])) {
+  test(`inside the ${kind} ${id}, its drawing gets the pointer and taps at ${viewport.width} wide`, async ({
     browser,
   }) => {
     const context = await browser.newContext({ hasTouch: viewport.touch, viewport });
     const page = await context.newPage();
     const problems = watch(page);
-    await page.goto('#/booth/jedi4ever');
-    const frame = frameOf(page, 'booth', 'jedi4ever');
+    await page.goto(`#/${kind}/${id}`);
+    const frame = frameOf(page, kind, id);
     await expect(frame).toHaveAttribute('data-state', 'ready');
     const canvas = page.locator('.map-canvas');
     await expect(canvas).toHaveAttribute('data-room', '0.50,0.85');
@@ -86,7 +91,7 @@ for (const viewport of [
       await page.touchscreen.tap(stage.x + stage.w / 2, stage.y + stage.h / 3);
     } else {
       await page.mouse.move(stage.x + stage.w / 2, stage.y + stage.h / 3);
-      await expect(canvas).toHaveAttribute('data-pointer', 'booth:jedi4ever');
+      await expect(canvas).toHaveAttribute('data-pointer', `${kind}:${id}`);
       await page.mouse.down();
       await page.waitForTimeout(200);
       await page.mouse.up();
@@ -97,6 +102,49 @@ for (const viewport of [
     await page.waitForTimeout(500);
     // Playing with the drawing leaves the player where they stood, inside.
     await expect(canvas).toHaveAttribute('data-room', '0.50,0.85');
+    await expect(frame).toHaveAttribute('data-state', 'ready');
+    expect(problems).toEqual([]);
+    await context.close();
+  });
+}
+
+for (const viewport of [
+  { width: 1200, height: 1000, touch: false },
+  { width: 390, height: 844, touch: true },
+]) {
+  test(`inside the Gingerbread Fun House, taps decorate it at ${viewport.width} wide`, async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ hasTouch: viewport.touch, viewport });
+    const page = await context.newPage();
+    const problems = watch(page);
+    await page.goto('#/attraction/gingerbread-fun-house');
+    const frame = frameOf(page, 'attraction', 'gingerbread-fun-house');
+    await expect(frame).toHaveAttribute('data-state', 'ready');
+    const canvas = page.locator('.map-canvas');
+    await expect(canvas).toHaveAttribute('data-room', /^[\d.]+,[\d.]+$/);
+    const room = await canvas.getAttribute('data-room');
+    const stage = await stageOf(page);
+    // A few taps on the house's wall and roof, each sticking a treat on it.
+    for (const [x, y] of [
+      [0.35, 0.45],
+      [0.45, 0.55],
+      [0.6, 0.5],
+    ] as const) {
+      const at = { x: stage.x + stage.w * x, y: stage.y + stage.h * y };
+      if (viewport.touch) {
+        await page.touchscreen.tap(at.x, at.y);
+      } else {
+        await page.mouse.move(at.x, at.y);
+        await expect(canvas).toHaveAttribute('data-pointer', 'attraction:gingerbread-fun-house');
+        await page.mouse.down();
+        await page.mouse.up();
+      }
+      await page.waitForTimeout(150);
+    }
+    await page.waitForTimeout(500);
+    // Decorating leaves the player where they stood, inside, and the house still drawing.
+    await expect(canvas).toHaveAttribute('data-room', present(room, 'room'));
     await expect(frame).toHaveAttribute('data-state', 'ready');
     expect(problems).toEqual([]);
     await context.close();
