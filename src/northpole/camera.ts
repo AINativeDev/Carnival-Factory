@@ -6,6 +6,7 @@
  * Fingers moving the camera, and turning viewport points into the world and
  * back, are in `camera-view.ts`.
  */
+import { restingFocus } from './camera-focus';
 import { toScreen, type Box, type Tile, type World } from './world';
 
 /** How thick the island's snow slab is under its front edges, in world pixels. */
@@ -20,6 +21,8 @@ export const CARNIVAL_MARGIN = 12;
 const CARNIVAL_HEADROOM = 240;
 /** How near the camera ever comes on a laptop. */
 const MAX_ZOOM = 1.25;
+/** How much nearer than the carnival's fit the camera rests on a laptop, so the opening view is among the stalls. */
+export const LAPTOP_CLOSER = 1.35;
 /** How much nearer the camera comes on a laptop while the player walks. */
 export const WALK_ZOOM = 0.35;
 /** How near the camera is on a phone, following the player. */
@@ -50,7 +53,7 @@ export function islandBounds(world: World): Box {
 }
 
 /** The box round the boxes and points in `boxes`. */
-function union(boxes: Box[]): Box {
+export function union(boxes: Box[]): Box {
   const x = Math.min(...boxes.map((b) => b.x));
   const y = Math.min(...boxes.map((b) => b.y));
   const right = Math.max(...boxes.map((b) => b.x + b.w));
@@ -59,7 +62,7 @@ function union(boxes: Box[]): Box {
 }
 
 /** The screen box round a box of tiles, from its top corner to its bottom one. */
-function tilesOnScreen(box: Box): Box {
+export function tilesOnScreen(box: Box): Box {
   const top = toScreen({ x: box.x - 0.5, y: box.y - 0.5 });
   const right = toScreen({ x: box.x + box.w - 0.5, y: box.y - 0.5 });
   const bottom = toScreen({ x: box.x + box.w - 0.5, y: box.y + box.h - 0.5 });
@@ -122,10 +125,12 @@ export interface Framing {
 }
 
 /**
- * How the camera wants to frame the island for a viewport. On a laptop it fits
- * the carnival, and the player wherever they stand, and comes in by up to
- * `WALK_ZOOM` as `walking` goes from 0 to 1, towards the player. On a phone it
- * follows the player close up. Either way, `overview` asks for the whole island.
+ * How the camera wants to frame the island for a viewport. On a laptop it rests
+ * `LAPTOP_CLOSER` nearer than the carnival's fit, but never so near that the
+ * player and their nearest free spot don't both show, looking at them, and it
+ * comes in by up to `WALK_ZOOM` as `walking` goes from 0 to 1, towards the
+ * player. On a phone it follows the player close up. Either way, `overview`
+ * asks for the whole island.
  */
 export function framing(
   world: World,
@@ -139,10 +144,14 @@ export function framing(
   const at = toScreen(player);
   if (overview) return { zoom: fit, target: at };
   if (isPhone(width)) return { zoom: Math.max(fit, PHONE_ZOOM), target: at };
-  const around = union([carnivalBounds(world), { x: at.x - 48, y: at.y - 120, w: 96, h: 150 }]);
-  const still = Math.max(fit, Math.min(MAX_ZOOM, fitZoom(around, width, height, CARNIVAL_MARGIN)));
+  const carnival = fitZoom(carnivalBounds(world), width, height, CARNIVAL_MARGIN);
+  const focus = restingFocus(world, player);
+  const still = Math.max(
+    fit,
+    Math.min(MAX_ZOOM, carnival * LAPTOP_CLOSER, fitZoom(focus, width, height, CARNIVAL_MARGIN)),
+  );
   const t = Math.min(1, Math.max(0, walking));
-  const middle = { x: around.x + around.w / 2, y: around.y + around.h / 2 };
+  const middle = { x: focus.x + focus.w / 2, y: focus.y + focus.h / 2 };
   return {
     zoom: still * (1 + WALK_ZOOM * t),
     target: { x: middle.x + (at.x - middle.x) * t, y: middle.y + (at.y - middle.y) * t },
