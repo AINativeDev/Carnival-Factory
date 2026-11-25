@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { smokeScope } from './smoke-scope';
+import { scopeOutput, smokeScope } from './smoke-scope';
 
 describe('smokeScope', () => {
   it("plays just the booth when only that booth's folder changes", () => {
@@ -23,5 +23,12 @@ describe('smokeScope', () => {
     expect(smokeScope(['carnival/booths/Ana/booth.ts'])).toBeUndefined();
     expect(smokeScope(['carnival/booths/a b/booth.ts'])).toBeUndefined();
     expect(smokeScope(['carnival/booths/-ana/booth.ts'])).toBeUndefined();
+  });
+});
+
+describe('scopeOutput', () => {
+  it("prints the scope on its own line for git diff's list, or nothing for a full run", () => {
+    expect(scopeOutput('carnival/booths/ana/booth.ts\n')).toBe('booth/ana\n');
+    expect(scopeOutput('src/main.ts\n')).toBe('');
   });
 });

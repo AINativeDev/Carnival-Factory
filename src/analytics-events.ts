@@ -46,7 +46,8 @@ const ISSUE_FORM = `${REPO_URL}/issues/new?template=`;
 export function clickEvent(target: Clicked): AnalyticsEvent | undefined {
   const href = target.closest('a[href]')?.href ?? '';
   if (href.startsWith(ISSUE_FORM)) {
-    const form = new URL(href).searchParams.get('template') ?? '';
+    // The link starts with `?template=`, so the parameter is always there.
+    const form = String(new URL(href).searchParams.get('template'));
     return { event: 'request_started', properties: { form } };
   }
   if (target.closest('.visit-copy')) return { event: 'share_copied', properties: {} };

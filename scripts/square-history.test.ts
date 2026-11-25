@@ -123,11 +123,14 @@ describe('shapeHistory', () => {
         issue(1, 'bob', ['booth-request', 'declined'], '2026-11-20T10:00:00Z'),
         issue(2, 'maintainer', ['tessl'], '2026-11-20T10:00:00Z'),
         issue(3, 'maintainer', [], '2026-11-20T10:00:00Z'),
+        // A deleted account's request, whose pull request's files GitHub didn't list.
+        { ...issue(4, 'gone', ['tessl'], '2026-11-20T10:00:00Z'), author: null },
       ],
       [
         pull(10, 'tessl/issue-2', ['src/northpole/map.ts']),
         pull(11, 'some-branch', ['carnival/booths/ana/booth.ts']),
         pull(12, 'tessl/issue-3', ['carnival/booths/ana/booth.ts'], { isCrossRepository: true }),
+        pull(13, 'tessl/issue-4', [], { files: null }),
       ],
     );
     expect(history.squares).toEqual({});

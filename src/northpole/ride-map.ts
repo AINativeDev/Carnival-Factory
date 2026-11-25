@@ -26,14 +26,13 @@ export function makeRideButton(frame: HTMLElement): HTMLButtonElement {
 }
 
 /**
- * Carries the player on in the car for `dt` seconds, and shows the button
- * while it stands at a station. Returns false while they're inside a square,
- * where they walk round its room as in any level.
+ * Carries the player on in the car for `dt` seconds, and shows `button`, the
+ * ride's own, while it stands at a station. Returns false while they're inside
+ * a square, where they walk round its room as in any level.
  */
-export function rideAlong(m: MapRun, ride: Ride, dt: number): boolean {
-  const button = m.rideButton;
+export function rideAlong(m: MapRun, ride: Ride, button: HTMLButtonElement, dt: number): boolean {
   if (m.visiting) {
-    if (button) button.hidden = true;
+    button.hidden = true;
     return false;
   }
   const before = m.player;
@@ -47,7 +46,7 @@ export function rideAlong(m: MapRun, ride: Ride, dt: number): boolean {
   m.near = stopped ? plotAtDoor(m.world, m.player) : undefined;
   const state = `${String(m.ride.stop)} ${stopped ? 'stopped' : 'riding'}`;
   if (m.canvas.dataset.ride !== state) m.canvas.dataset.ride = state;
-  if (button) showButton(m, button, m.ride.stop === 0 ? 'Start the ride' : 'Ride on', stopped);
+  showButton(m, button, m.ride.stop === 0 ? 'Start the ride' : 'Ride on', stopped);
   return true;
 }
 

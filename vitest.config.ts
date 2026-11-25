@@ -3,12 +3,12 @@ import viteConfig from './vite.config.ts';
 
 /**
  * The unit tests, with the page's own build settings so they see what the page
- * sees. Coverage is a ratchet towards 99% (docs/adr/0025-test-coverage.md):
- * the thresholds below are the floor every run is held to, so coverage never
- * quietly falls. They're raised only on main, by `npm run coverage:ratchet`
- * (RATCHET=1), never inside a pull request, so two pull requests never fight
- * over the same line (docs/adr/0034-ratchet-on-main.md).
- * New and changed lines are held to 99% on their own by scripts/diff-coverage.ts.
+ * sees. Every file in src/, scripts/ and lint/ is held to 99% of its lines,
+ * branches, functions and statements, file by file, with no exceptions and no
+ * floor to raise (docs/adr/0044-coverage-per-file.md), the way every code file
+ * is held to 200 lines. Squares in carnival/ are the participants' own and are
+ * played end to end by the browser tests, so they count in the combined
+ * coverage instead (docs/adr/0032-browser-coverage-counts.md).
  */
 export default mergeConfig(
   viteConfig({ command: 'serve', mode: 'test' }),
@@ -22,13 +22,14 @@ export default mergeConfig(
         exclude: ['**/*.test.ts', '**/*.d.ts'],
         reporter: ['text-summary', 'json'],
         thresholds: {
-          // Whole points: runs differ by a fraction of a percent between machines.
-          autoUpdate:
-            process.env.RATCHET === '1' ? (threshold: number) => Math.floor(threshold) : false,
-          lines: 87,
-          statements: 87,
-          functions: 91,
-          branches: 86,
+          // Each file on its own: a well-tested file can't hide one that isn't.
+          perFile: true,
+          '{src,scripts,lint}/**/*.{ts,js}': {
+            lines: 99,
+            branches: 99,
+            functions: 99,
+            statements: 99,
+          },
         },
       },
     },

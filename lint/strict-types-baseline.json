@@ -17,7 +17,7 @@
   "scripts/pending.test.ts": 2,
   "scripts/peoples-choice.ts": 1,
   "scripts/season.test.ts": 2,
-  "scripts/season.ts": 4,
+  "scripts/season.ts": 3,
   "scripts/share-pages.ts": 3,
   "scripts/square-lint.test.ts": 1,
   "scripts/strict-types.ts": 2,
@@ -36,6 +36,6 @@
   "src/northpole/sandbox.ts": 1,
   "src/northpole/square.test.ts": 3,
   "src/northpole/visit.test.ts": 1,
-  "src/northpole/visit.ts": 3,
+  "src/northpole/visit.ts": 2,
   "src/route.ts": 4
 }

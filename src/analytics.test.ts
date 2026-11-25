@@ -81,7 +81,9 @@ describe('startAnalytics', () => {
     listeners.hashchange?.({ target: null });
     listeners.click?.({ target: { closest: () => null } });
     listeners.click?.({ target: null });
-    expect(events).toEqual(['square_opened', 'factory_viewed']);
+    const copy = { closest: (selector: string) => (selector === '.visit-copy' ? {} : null) };
+    listeners.click?.({ target: copy });
+    expect(events).toEqual(['square_opened', 'factory_viewed', 'share_copied']);
   });
 
   it('counts the intro opening and how it closed, and nothing else it might be sent', () => {

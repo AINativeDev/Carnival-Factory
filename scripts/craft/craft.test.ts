@@ -58,6 +58,16 @@ describe('craftOf: the badges a square earns', () => {
       'scene.ts: export drawSky has no doc comment saying what it is for.',
       'scene.ts: export Sleigh has no doc comment saying what it is for.',
     ]);
+    const anonymous = { ...good(), 'scene.ts': 'drawSky();\nexport default function () {}\n' };
+    expect(craftOf(anonymous).problems).toEqual([
+      'scene.ts: export default has no doc comment saying what it is for.',
+    ]);
+  });
+
+  it('counts a square without a README as saying too little', () => {
+    const noReadme = good();
+    delete noReadme['README.md'];
+    expect(craftOf(noReadme).badges).not.toContain('documented');
   });
 
   it('withholds clear-names for generic names and file names that are not kebab-case', () => {
@@ -67,5 +77,9 @@ describe('craftOf: the badges a square earns', () => {
     );
     const shouty = { ...good(), 'MyScene.ts': `${doc('Sky.')}export const sky = 1;\n` };
     expect(craftOf(shouty).badges).not.toContain('clear-names');
+    const nested = { ...good(), 'parts/Sky.ts': `${doc('Sky.')}export const sky = 1;\n` };
+    expect(craftOf(nested).problems).toContain(
+      'parts/Sky.ts: name files in kebab-case, such as penguin-pond.ts.',
+    );
   });
 });

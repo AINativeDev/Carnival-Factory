@@ -37,10 +37,10 @@ export interface SandboxedSquare extends NorthPoleSquare {
 export function sandboxedSquare(kind: SquareKind, id: string, level?: string): SandboxedSquare {
   const address = kind === 'level' ? `${level}/${id}` : id;
   const run = newRun(kind, id);
-  const self: LiveFrame = { lastDrawn: 0, release: () => undefined };
+  // The running frame's record, made when its frame starts, so it never needs a stand-in release.
+  let live: LiveFrame | undefined;
 
   const start = () => {
-    startRunning(self);
     const iframe = openFrame(kind, address, run.state);
     const onMessage = (event: MessageEvent) => {
       if (event.source === iframe.contentWindow) hearFrame(run, iframe, event.data);
@@ -48,12 +48,17 @@ export function sandboxedSquare(kind: SquareKind, id: string, level?: string): S
     window.addEventListener('message', onMessage);
     run.iframe = iframe;
     // Stops this frame, keeping the square's name and last picture.
-    self.release = () => {
-      window.removeEventListener('message', onMessage);
-      iframe.remove();
-      stopRunning(self);
-      forgetFrame(run);
+    const frame: LiveFrame = {
+      lastDrawn: performance.now(),
+      release: () => {
+        window.removeEventListener('message', onMessage);
+        iframe.remove();
+        stopRunning(frame);
+        forgetFrame(run);
+      },
     };
+    live = frame;
+    startRunning(frame);
     setTimeout(() => {
       // Only while this very frame runs: a released or restarted one has its own clock.
       if (run.iframe === iframe && run.state === 'loading') {
@@ -82,7 +87,7 @@ export function sandboxedSquare(kind: SquareKind, id: string, level?: string): S
       else run.listeners.push(listener);
     },
     draw(ctx: CanvasRenderingContext2D, size: number, time: number, pointer?: SquarePointer) {
-      self.lastDrawn = performance.now();
+      if (live) live.lastDrawn = performance.now();
       if (run.state === 'broken') {
         // Its frame already said why, once: draw the placeholder, quietly.
         drawPlaceholder(ctx, size, 'surface', 'Under construction');

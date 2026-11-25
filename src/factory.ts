@@ -4,6 +4,7 @@ import { factoryFigures, factoryNote, type SquareCounts } from './factory-figure
 import type { FactoryStats } from '../scripts/factory-stats';
 import { SIGNUP_OFFER, showSignupOffer } from './offer';
 import type { VisitHud } from './visit-hud';
+import { focusBack } from './focus-back';
 
 /**
  * The factory's numbers page, `#/factory`: how many booths and attractions
@@ -83,13 +84,7 @@ export function openFactoryHud(frame: HTMLElement, options: FactoryHudOptions): 
       delete frame.dataset.factory;
       const hadFocus = card.contains(document.activeElement);
       card.remove();
-      if (hadFocus) {
-        const back =
-          before && before !== document.body && before.isConnected
-            ? before
-            : frame.querySelector<HTMLElement>('canvas');
-        back?.focus({ preventScroll: true });
-      }
+      if (hadFocus) focusBack(before, frame);
     },
   };
 }

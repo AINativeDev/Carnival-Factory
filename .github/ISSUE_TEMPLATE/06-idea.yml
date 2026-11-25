@@ -1,0 +1,23 @@
+name: An idea
+description: Something you'd love to see at Carnival Factory, or in how it's built.
+title: 'Idea: '
+labels: [idea]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are how the carnival grows. Say what you'd love to see and why; a
+        maintainer reads each one and may hand it to the factory. For your own
+        booth or level, use those forms instead.
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: |
+        A few sentences are plenty. Things you can mention:
+        - **What** you'd add or change
+        - **Why**: who it's for, or what it makes better
+        - **Where** it lives: the map, an attraction, a level, the factory
+      placeholder: A night mode where the carnival lights up and the booths glow, with a toggle in the top bar.
+    validations:
+      required: true

@@ -31,6 +31,7 @@ describe('searching the Booths panel', () => {
     expect(matches(squares[1], '@ZOE')).toBe(true);
     expect(matches(squares[0], 'toy f')).toBe(true);
     expect(matches(squares[0], 'rink')).toBe(false);
+    expect(matches(booth('ana', 'Ice Rink'), ' ')).toBe(true);
   });
 
   it('finds nothing for an empty search', () => {
@@ -47,6 +48,16 @@ describe('sorting and paging', () => {
   it('sorts A to Z by name, ignoring case and accents', () => {
     const sorted = byName([booth('b', 'éclair'), booth('a', 'Apple'), booth('c', 'dough')]);
     expect(sorted.map((square) => square.name)).toEqual(['Apple', 'dough', 'éclair']);
+  });
+
+  it('breaks a tie of names by login, then by kind, so the order never changes', () => {
+    const wheel: PanelEntry = { kind: 'attraction', id: 'wheel', name: 'Wheel' };
+    const sorted = byName([wheel, booth('wheel', 'Wheel'), booth('ana', 'Wheel')]);
+    expect(sorted.map((square) => `${square.kind}/${square.id}`)).toEqual([
+      'booth/ana',
+      'attraction/wheel',
+      'booth/wheel',
+    ]);
   });
 
   it('shows a page at a time and says when there are more', () => {
@@ -78,6 +89,12 @@ describe('Recently added', () => {
     };
     expect(recentlyAdded(booths, added).map((b) => b.id)).toEqual(['new', 'mid', 'old']);
     expect(recentlyAdded(booths, added, 1).map((b) => b.id)).toEqual(['new']);
+  });
+
+  it('lists booths added at the same moment by login', () => {
+    const booths = ['zoe', 'ana'].map((id) => booth(id, id));
+    const added = { zoe: '2026-11-20T10:00:00Z', ana: '2026-11-20T10:00:00Z' };
+    expect(recentlyAdded(booths, added).map((b) => b.id)).toEqual(['ana', 'zoe']);
   });
 });
 
