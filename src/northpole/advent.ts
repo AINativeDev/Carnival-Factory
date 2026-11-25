@@ -90,10 +90,11 @@ export const MAX_ORNAMENTS = 6;
 
 /**
  * A booth's decorations for `count` accepted challenges: ornaments first, then
- * a string of lights, then a star after 12, then a glowing sign after 24.
+ * a string of lights, then a star after 12, then a glowing sign after 24. A
+ * missing or unreadable count decorates nothing.
  */
-export function decorationsFor(count: number): AdventDecorations {
-  const n = Math.max(0, Math.min(ADVENT_DAYS, Math.floor(count) || 0));
+export function decorationsFor(count: number | undefined): AdventDecorations {
+  const n = Math.max(0, Math.min(ADVENT_DAYS, Math.floor(Number(count)) || 0));
   return {
     ornaments: Math.min(n, MAX_ORNAMENTS),
     lights: n > MAX_ORNAMENTS,

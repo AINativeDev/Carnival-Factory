@@ -9,7 +9,7 @@
  * left wall and forward from the back wall.
  */
 import { isPhone } from './camera';
-import { drawPerson, portrait, type Look } from './render';
+import { drawPerson, portrait, type Look } from './people';
 import type { Box, Tile } from './world';
 import { canvasFont, theme } from './theme';
 

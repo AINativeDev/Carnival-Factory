@@ -18,36 +18,24 @@ import {
   worldToScreen,
   type Framing,
 } from './camera';
+import { middle } from './brushes';
+import { faceOf, type Mapping } from './faces';
+import { drawLightPools, drawRipples } from './ground';
+import { drawFrontFence, drawIsland, drawStringLights } from './island';
+import type { Owner } from './name-board';
+import { drawPerson, drawReindeer, type Look } from './people';
+import { setSpriteResolution } from './pines';
+import { drawPlatform, drawUpdateSign } from './platform';
 import {
-  drawAurora,
-  drawClouds,
-  drawFrontFence,
-  drawIsland,
-  drawLightPools,
-  drawMountains,
-  drawPerson,
-  drawPlot,
-  drawPlatform,
   drawPlotGlow,
-  drawReindeer,
-  drawRipples,
   drawSelectionBeam,
   drawSelectionRing,
-  drawSky,
-  drawSite,
-  drawSnowfall,
   drawSparkles,
-  drawStringLights,
-  drawUpdateSign,
-  drawThing,
-  faceOf,
-  middle,
-  setSpriteResolution,
   SPARKLE_TIME,
-  type Look,
-  type Mapping,
-  type Owner,
-} from './render';
+} from './plot-marks';
+import { drawPlot, drawThing } from './render';
+import { drawSite } from './site';
+import { drawAurora, drawClouds, drawMountains, drawSky, drawSnowfall } from './sky';
 import {
   arrowBounce,
   avatarPath,

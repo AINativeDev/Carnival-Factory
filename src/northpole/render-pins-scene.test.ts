@@ -6,7 +6,11 @@
 import { describe, expect, it } from 'vitest';
 import { pinDrawing } from '../test-support/recording-canvas';
 import { buildWorld, type ThingKind } from './world';
-import * as render from './render';
+import { drawLightPools, drawRipples } from './ground';
+import { drawFrontFence, drawIsland, drawStringLights } from './island';
+import { drawPerson, drawReindeer, portrait } from './people';
+import { drawThing } from './render';
+import { drawAurora, drawClouds, drawMountains, drawSky, drawSnowfall } from './sky';
 
 const TIMES = [0, 4321];
 const world = buildWorld(['ferris-wheel', 'gift-shop'], ['ann', 'bob', 'cat'], undefined, {
@@ -52,14 +56,14 @@ describe('the scene, pinned before the renderer split', () => {
       for (const flag of [false, true]) {
         const at = `${String(facing)} ${String(flag)}`;
         prints[`person ${at}`] = atTimes((ctx, t) => {
-          render.drawPerson(ctx, { x: 1, y: 2 }, look, facing, flag, t);
+          drawPerson(ctx, { x: 1, y: 2 }, look, facing, flag, t);
         });
         prints[`reindeer ${at}`] = atTimes((ctx, t) => {
-          render.drawReindeer(ctx, { x: 3, y: 1 }, facing, flag, t);
+          drawReindeer(ctx, { x: 3, y: 1 }, facing, flag, t);
         });
       }
     prints.portrait = atTimes((ctx, t) => {
-      render.portrait(ctx, 12, t ? avatar : undefined);
+      portrait(ctx, 12, t ? avatar : undefined);
     });
     expect(prints).toMatchSnapshot();
   });
@@ -67,34 +71,34 @@ describe('the scene, pinned before the renderer split', () => {
   it('draws the sky and the island the same', () => {
     expect({
       sky: atTimes((ctx) => {
-        render.drawSky(ctx, 800, 600);
+        drawSky(ctx, 800, 600);
       }),
       mountains: atTimes((ctx) => {
-        render.drawMountains(ctx, 800, 600);
+        drawMountains(ctx, 800, 600);
       }),
       clouds: atTimes((ctx, t) => {
-        render.drawClouds(ctx, 800, 600, t);
+        drawClouds(ctx, 800, 600, t);
       }),
       snowfall: atTimes((ctx, t) => {
-        render.drawSnowfall(ctx, 800, 600, t);
+        drawSnowfall(ctx, 800, 600, t);
       }),
       aurora: atTimes((ctx, t) => {
-        render.drawAurora(ctx, 800, t, t ? 1 : 0.4);
+        drawAurora(ctx, 800, t, t ? 1 : 0.4);
       }),
       island: atTimes((ctx) => {
-        render.drawIsland(ctx, world, island, 40);
+        drawIsland(ctx, world, island, 40);
       }),
       'front fence': atTimes((ctx) => {
-        render.drawFrontFence(ctx, island);
+        drawFrontFence(ctx, island);
       }),
       lights: atTimes((ctx, t) => {
-        render.drawStringLights(ctx, island, t > 0, t);
+        drawStringLights(ctx, island, t > 0, t);
       }),
       pools: atTimes((ctx, t) => {
-        render.drawLightPools(ctx, world, t);
+        drawLightPools(ctx, world, t);
       }),
       ripples: atTimes((ctx, t) => {
-        render.drawRipples(ctx, world, t);
+        drawRipples(ctx, world, t);
       }),
     }).toMatchSnapshot();
   });
@@ -104,7 +108,7 @@ describe('the scene, pinned before the renderer split', () => {
     for (const kind of KINDS)
       for (const seed of [0.2, 0.8])
         prints[`${kind} ${String(seed)}`] = atTimes((ctx, t) => {
-          render.drawThing(ctx, { kind, x: 3, y: -2, w: 2, h: 3, seed, blocks: true }, t);
+          drawThing(ctx, { kind, x: 3, y: -2, w: 2, h: 3, seed, blocks: true }, t);
         });
     expect(prints).toMatchSnapshot();
   });

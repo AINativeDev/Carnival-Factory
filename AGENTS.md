@@ -171,9 +171,13 @@ src/
                             (plain functions)
     camera.ts               framing the island: its outline, the zoom and where the
                             camera looks on a laptop and a phone (plain functions)
-    render.ts               drawing the diorama: sky, island, fence and lights, cabins,
-                            tents, the ferris wheel, stalls in each booth's chosen
-                            shape, pavilions, people
+    render.ts               drawing the diorama: hands each thing and plot to the small
+                            file that draws it: sky.ts, island.ts, ground.ts, pines.ts,
+                            houses.ts, street-things.ts, midway.ts, entrance.ts,
+                            people.ts; stall.ts and the stall-*.ts files for each
+                            booth's chosen shape, pavilion.ts, tower.ts, open-plot.ts,
+                            site.ts, platform.ts and plot-marks.ts; faces.ts and
+                            name-board.ts for the signs and drawings on their fronts
     map.ts                  the walkable map (camera, keys, clicks, hover tags,
                             and going inside a square)
     interior.ts             the room inside a square: its layout, walking in it and

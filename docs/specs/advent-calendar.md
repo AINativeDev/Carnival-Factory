@@ -48,7 +48,7 @@ decorates the participant's booth. The participant guide is
 
 `carnival/challenges/advent.json`, `src/advent.ts`, `src/northpole/advent.ts`,
 `scripts/advent.ts`, `scripts/check-advent.ts`, `scripts/write-advent.ts`,
-`src/northpole/render.ts` (decorations),
+`src/northpole/advent-decorations.ts` (decorations),
 `plugins/north-pole/skills/assess-advent-challenge/SKILL.md`.
 
 ## Tested by

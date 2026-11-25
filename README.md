@@ -269,7 +269,8 @@ native dependencies, so `npm ci` is the whole setup. Node 22.13 or later.
   copies.
 - `src/northpole/`: the map: the `NorthPoleSquare` shape and registries, the
   isometric world you walk round (`world.ts`), how the camera frames its
-  island (`camera.ts`), its drawing (`render.ts` and `map.ts`), which plot
+  island (`camera.ts`), its drawing (`render.ts`, the files it hands each
+  thing to, and `map.ts`), which plot
   each square keeps (`plots.json`) and the theme.
 - `carnival/booths/<login>/`: one folder per participant. `carnival/booths/jedi4ever/` is the
   pattern to copy.

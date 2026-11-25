@@ -8,7 +8,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { pinDrawing } from '../test-support/recording-canvas';
 import { STALL_SHAPES, type NorthPoleSquare, type StallStyle } from './square';
 import type { Plot } from './world';
-import * as render from './render';
+import type { Owner } from './name-board';
+import { drawPlatform, drawUpdateSign } from './platform';
+import { drawPlotGlow, drawSelectionBeam, drawSelectionRing, drawSparkles } from './plot-marks';
+import { drawPlot } from './render';
+import { drawSite } from './site';
 
 // The honours come from data the build bakes in: here one booth holds them all.
 vi.mock('./badges', async (load) => ({
@@ -17,7 +21,8 @@ vi.mock('./badges', async (load) => ({
 }));
 vi.mock('./advent', async (load) => ({
   ...(await load<typeof import('./advent')>()),
-  adventCountFor: (login: string) => ({ honoured: 24, some: 13 })[login] ?? 0,
+  // A login with no count at all decorates nothing, like one with none.
+  adventCountFor: (login: string) => ({ honoured: 24, some: 13, plain: 0 })[login],
 }));
 vi.mock('./peoples-choice', async (load) => ({
   ...(await load<typeof import('./peoples-choice')>()),
@@ -45,7 +50,7 @@ const attraction: Plot = {
   door: { x: 5, y: 5 },
 };
 const avatar = { width: 1, height: 1 } as unknown as CanvasImageSource;
-const OWNERS: (render.Owner | undefined)[] = [
+const OWNERS: (Owner | undefined)[] = [
   undefined,
   { color: '#ff0000', you: false },
   { color: '#00ff00', you: true, avatar },
@@ -61,10 +66,8 @@ const square = (id: string, stall?: StallStyle): NorthPoleSquare => ({
 });
 
 /** Draws `plot` at every time in `TIMES`, with `square` on it. */
-const atTimes = (plot: Plot, sq: NorthPoleSquare | undefined, near = false, owner?: render.Owner) =>
-  pinDrawing((ctx, paint) =>
-    TIMES.map((t) => render.drawPlot(ctx, plot, sq, paint, t, near, owner)),
-  );
+const atTimes = (plot: Plot, sq: NorthPoleSquare | undefined, near = false, owner?: Owner) =>
+  pinDrawing((ctx, paint) => TIMES.map((t) => drawPlot(ctx, plot, sq, paint, t, near, owner)));
 
 describe('the plots, pinned before the renderer split', () => {
   it('draws every stall shape the same, on either face, for every owner and honour', () => {
@@ -111,30 +114,30 @@ describe('the plots, pinned before the renderer split', () => {
       for (const t of TIMES) {
         const at = `${String(near)} ${String(t)}`;
         prints[`site ${at}`] = pinDrawing((ctx) =>
-          render.drawSite(ctx, side, { login: 'elf', stage: 'Building' }, t, near),
+          drawSite(ctx, side, { login: 'elf', stage: 'Building' }, t, near),
         );
         for (const closed of [false, true])
           prints[`platform ${at} ${String(closed)}`] = pinDrawing((ctx) =>
-            render.drawPlatform(ctx, front, { ...label, closed }, t, near),
+            drawPlatform(ctx, front, { ...label, closed }, t, near),
           );
       }
     prints.update = pinDrawing((ctx) => {
-      render.drawUpdateSign(ctx, side);
+      drawUpdateSign(ctx, side);
     });
     for (const age of [-1, 0, 900, 2599, 2600])
       prints[`sparkles ${String(age)}`] = pinDrawing((ctx) => {
-        render.drawSparkles(ctx, front, age);
+        drawSparkles(ctx, front, age);
       });
     for (const kind of ['attraction', 'booth', 'open'] as const)
       prints[`glow ${kind}`] = pinDrawing((ctx) => {
-        render.drawPlotGlow(ctx, { ...front, kind }, 0.7);
+        drawPlotGlow(ctx, { ...front, kind }, 0.7);
       });
     for (const strength of [0, 0.5, 1]) {
       prints[`ring ${String(strength)}`] = pinDrawing((ctx) => {
-        render.drawSelectionRing(ctx, front, strength);
+        drawSelectionRing(ctx, front, strength);
       });
       prints[`beam ${String(strength)}`] = pinDrawing((ctx) => {
-        render.drawSelectionBeam(ctx, side, -120, strength, 4);
+        drawSelectionBeam(ctx, side, -120, strength, 4);
       });
     }
     expect(prints).toMatchSnapshot();

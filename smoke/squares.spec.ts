@@ -3,7 +3,9 @@ import { join } from 'node:path';
 import { expect, test, type Page } from './coverage';
 import { CLAIM_URL, REPO_URL } from '../src/northpole/links';
 import { worldToScreen } from '../src/northpole/camera';
-import { CLAIM_SIGN, faceOf, middle, onFace } from '../src/northpole/render';
+import { middle } from '../src/northpole/brushes';
+import { faceOf, onFace } from '../src/northpole/faces';
+import { CLAIM_SIGN } from '../src/northpole/open-plot';
 import { buildWorld, toScreen, type PinnedPlots } from '../src/northpole/world';
 import { STALL_SHAPES, type StallShape, type StallStyle } from '../src/northpole/square';
 
@@ -585,14 +587,8 @@ test('an accepted booth request shows a construction site, its stage and a link,
   expect(site.number).toBe(first.number);
   const [x, y, zoom] = (await canvas.getAttribute('data-camera'))!.split(',').map(Number);
   const box = (await canvas.boundingBox())!;
-  const centre = middle(site);
-  const at = worldToScreen(
-    { x: centre.x, y: centre.y - 50 },
-    box.width,
-    box.height,
-    { x, y },
-    zoom,
-  );
+  const { x: cx, y: cy } = middle(site);
+  const at = worldToScreen({ x: cx, y: cy - 50 }, box.width, box.height, { x, y }, zoom);
   await page.mouse.move(box.x + at.x, box.y + at.y);
   const tag = page.locator('.map-tag');
   await expect(tag).toHaveAttribute('data-plot', 'site:snowelf');

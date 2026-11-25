@@ -5,7 +5,7 @@
  * pointer goes back through the same transform. Plain functions, so the maths
  * is tested without a browser.
  */
-import type { Mapping } from './render';
+import type { Mapping } from './faces';
 import type { SquarePointer } from './square';
 import type { Tile } from './world';
 

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { drawingOf } from '../test-support/recording-canvas';
 import { cogTurn, drawTower, TOWER } from './tower';
-import { drawPlot, PAVILION } from './render';
+import { drawPlot } from './render';
+import { PAVILION } from './stall-plan';
 import type { NorthPoleSquare } from './square';
 import type { Plot } from './world';
 

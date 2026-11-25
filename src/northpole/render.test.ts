@@ -1,13 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { decorationsFor } from './advent';
-import {
-  adventCrown,
-  ADVENT_SIGN,
-  STALL_SHAPES_DRAWN,
-  stallLook,
-  stallOutline,
-  stallReach,
-} from './render';
+import { adventCrown, ADVENT_SIGN } from './advent-decorations';
+import { STALL_SHAPES_DRAWN, stallLook, stallOutline, stallReach } from './stall-plan';
 import { STALL_SHAPES } from './square';
 import { theme } from './theme';
 

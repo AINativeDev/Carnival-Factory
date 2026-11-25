@@ -84,6 +84,10 @@ describe('decorationsFor', () => {
     expect(decorationsFor(0)).toEqual({ ornaments: 0, lights: false, star: false, sign: false });
   });
 
+  it('hangs nothing for a missing count', () => {
+    expect(decorationsFor(undefined)).toEqual(decorationsFor(0));
+  });
+
   it('hangs an ornament for each of the first six challenges', () => {
     expect(decorationsFor(1).ornaments).toBe(1);
     expect(decorationsFor(6)).toEqual({ ornaments: 6, lights: false, star: false, sign: false });

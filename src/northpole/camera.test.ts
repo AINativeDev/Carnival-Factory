@@ -20,7 +20,7 @@ import {
   WALK_ZOOM,
   worldToScreen,
 } from './camera';
-import { faceOf, onFace } from './render';
+import { faceOf, onFace } from './faces';
 import { buildWorld, toScreen } from './world';
 
 const ATTRACTIONS = ['big-top', 'cocoa-stand', 'ferris-wheel', 'frozen-pond', 'sleigh-coaster'];
