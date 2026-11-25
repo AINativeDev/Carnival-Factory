@@ -94,7 +94,7 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
 ## Where it lives
 
 `src/visit-hud.ts`, `src/level-panel.ts`, `src/build-story.ts`, `src/build-story-view.ts`,
-`src/visit-share.ts`, `src/visit-template.ts`, `src/visit-help.ts`, `src/craft-badges.ts`, `src/history.ts`, `scripts/square-history.ts`,
+`src/visit-share.ts`, `src/visit-template.ts`, `src/visit-help.ts`, `src/craft-badges.ts`, `src/history.ts`, `scripts/square-history.ts`, `scripts/github-requests.ts`,
 `scripts/square-credits.ts`, `scripts/history-squares.ts`, `scripts/write-square-history.ts`, `scripts/share-pages.ts`,
 `src/northpole/visit.ts`, `src/northpole/links.ts`, `src/northpole/interior.ts`,
 `src/northpole/room-dressing.ts`, `src/northpole/room-walls.ts`,
@@ -103,7 +103,7 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
 ## Tested by
 
 `src/history.test.ts`, `src/build-story.test.ts`, `src/build-story-view.test.ts`,
-`src/visit-hud.test.ts`, `src/level-panel.test.ts`, `src/visit-share.test.ts`, `src/history-load.test.ts`, `scripts/square-history.test.ts`,
+`src/visit-hud.test.ts`, `src/level-panel.test.ts`, `src/visit-share.test.ts`, `src/history-load.test.ts`, `scripts/square-history.test.ts`, `scripts/github-requests.test.ts`,
 `scripts/square-credits.test.ts`, `scripts/history-squares.test.ts`,
 `scripts/share-pages.test.ts`, `src/northpole/visit.test.ts`,
 `src/northpole/links.test.ts`, `src/northpole/interior.test.ts`,

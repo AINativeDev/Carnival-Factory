@@ -2,12 +2,7 @@
   "scripts/advent.test.ts": 225,
   "scripts/elf-engineer.test.ts": 288,
   "scripts/elf-engineer.ts": 240,
-  "scripts/square-history.test.ts": 271,
-  "scripts/square-history.ts": 232,
   "smoke/squares.spec.ts": 883,
-  "src/booths-hud.ts": 399,
-  "src/factory.ts": 227,
-  "src/main.ts": 501,
   "src/northpole/camera.test.ts": 238,
   "src/northpole/camera.ts": 253,
   "src/northpole/diorama.ts": 430,
@@ -17,6 +12,5 @@
   "src/northpole/plots.ts": 211,
   "src/northpole/render.ts": 2573,
   "src/northpole/world.test.ts": 407,
-  "src/northpole/world.ts": 717,
-  "src/season-card.ts": 256
+  "src/northpole/world.ts": 717
 }

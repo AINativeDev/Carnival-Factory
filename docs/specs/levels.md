@@ -124,7 +124,7 @@ North Pole has levels of its own too, such as The Factory,
 `src/northpole/show.ts` (and the files it draws with), `src/northpole/levels.ts`,
 `src/northpole/north-pole-levels.ts`, `src/factory-tour.ts`, `src/level-hud.ts`,
 `src/level-panel.ts`,
-`src/northpole/world.ts` (`platformPlot`), `src/main.ts` (`renderLevel`),
+`src/northpole/world.ts` (`platformPlot`), `src/level-page.ts` (`renderLevel`),
 `eslint.config.js`.
 
 ## Tested by

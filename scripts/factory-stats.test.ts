@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { factoryStats, labelledAt, median, minutesToMap } from './factory-stats.ts';
-import type { RawIssue, RawPull } from './square-history.ts';
+import type { RawIssue, RawPull } from './github-requests.ts';
 
 const REPO = 'https://github.com/o/r';
 

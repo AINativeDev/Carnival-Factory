@@ -166,20 +166,6 @@
       "count": 1
     }
   },
-  "src/booths-hud.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 3
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 10
-    },
-    "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unnecessary-type-parameters": {
-      "count": 1
-    }
-  },
   "src/factory.ts": {
     "@typescript-eslint/no-confusing-void-expression": {
       "count": 1
@@ -194,14 +180,6 @@
   "src/history.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
       "count": 1
-    }
-  },
-  "src/main.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 11
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 30
     }
   },
   "src/northpole/attractions.test.ts": {
@@ -386,20 +364,6 @@
   },
   "src/route.ts": {
     "@typescript-eslint/no-unnecessary-condition": {
-      "count": 1
-    }
-  },
-  "src/season-card.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 4
-    },
-    "@typescript-eslint/no-misused-promises": {
-      "count": 1
-    },
-    "@typescript-eslint/no-non-null-assertion": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unnecessary-type-parameters": {
       "count": 1
     }
   },

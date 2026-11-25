@@ -68,13 +68,17 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 
 ## Where it lives
 
-`src/main.ts`, `src/route.ts`, `src/updates.ts`, `src/northpole/world.ts`,
+`src/main.ts`, `src/router.ts`, `src/page.ts`, `src/map-page.ts`,
+`src/map-page-markup.ts`, `src/map-notes.ts`, `src/dom.ts`, `src/route.ts`,
+`src/updates.ts`, `src/northpole/world.ts`,
 `src/northpole/plots.ts`, `src/northpole/plots.json`, `src/northpole/camera.ts`,
 `src/northpole/map.ts`, `src/northpole/render.ts`, `src/northpole/visit.ts`.
 
 ## Tested by
 
-`src/route.test.ts`, `src/updates.test.ts`, `src/northpole/world.test.ts`,
+`src/route.test.ts`, `src/router.test.ts`, `src/router-levels.test.ts`,
+`src/page.test.ts`, `src/map-page.test.ts`, `src/dom.test.ts`,
+`src/updates.test.ts`, `src/northpole/world.test.ts`,
 `src/northpole/plots.test.ts`, `src/northpole/camera.test.ts`,
 `src/northpole/map.test.ts`, `src/northpole/visit.test.ts`, and
 `smoke/squares.spec.ts` (walking, deep links, open plots, fitting the window).

@@ -1,5 +1,4 @@
 import { boothRegistry } from './northpole/booths';
-import { backdrop } from './northpole/diorama';
 import {
   CLAIM_URL,
   KEEP_POSTED_URL,
@@ -8,141 +7,33 @@ import {
   signupOffer,
 } from './northpole/links';
 import type { SandboxedSquare } from './northpole/sandbox';
+import type { NorthPoleSquare } from './northpole/square';
 import { seasonStats } from '../scripts/season';
-import { canvasFont, theme } from './northpole/theme';
+import { the } from './dom';
 import { deepLink } from './route';
-import { SEASON, seasonHeadline, seasonLines, seasonShareText, type SeasonLine } from './season';
+import { SEASON, seasonLines, seasonShareText } from './season';
+import { CARD, SCALE, drawCard } from './season-card-drawing';
+import { offerCopy, offerDownload } from './season-share';
 
-const { colors } = theme;
-
-/** The card's own units: drawn at `SCALE` times this, so its PNG is 1200 by 630. */
-const CARD = { width: 600, height: 315 };
-const SCALE = 2;
 /** The longest a booth's name may be on the card and in the share text. */
 const MAX_NAME = 60;
 
-/** Lines of `text` that fit in `width`, broken at spaces. */
-function wrap(ctx: CanvasRenderingContext2D, text: string, width: number): string[] {
-  const lines: string[] = [];
-  let line = '';
-  for (const word of text.split(' ')) {
-    const next = line ? `${line} ${word}` : word;
-    if (line && ctx.measureText(next).width > width) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = next;
-    }
-  }
-  if (line) lines.push(line);
-  return lines;
-}
-
-/**
- * Paints the season card in the card's own units: the dusk sky, the booth as
- * it is now in a cream frame on the left, and on the right who it belongs to
- * and the numbers that apply, or a welcome when there are none yet.
- */
-function drawCard(
-  ctx: CanvasRenderingContext2D,
-  login: string,
-  boothName: string,
-  booth: (ctx: CanvasRenderingContext2D, size: number) => void,
-  lines: readonly SeasonLine[],
-) {
-  const { width, height } = CARD;
-  ctx.save();
-  ctx.scale(width / 100, height / 100);
-  backdrop(ctx);
-  ctx.restore();
-  ctx.fillStyle = colors.night;
-  ctx.globalAlpha = 0.55;
-  ctx.fillRect(0, 0, width, height);
-  ctx.globalAlpha = 1;
-
-  // The booth, framed.
-  const size = height - 56;
-  ctx.fillStyle = colors.cream;
-  ctx.beginPath();
-  ctx.roundRect(20, 20, size + 16, size + 16, theme.radius);
-  ctx.fill();
-  ctx.save();
-  ctx.translate(28, 28);
-  ctx.beginPath();
-  ctx.roundRect(0, 0, size, size, theme.radius / 2);
-  ctx.clip();
-  booth(ctx, size);
-  ctx.restore();
-
-  // Who, and their season.
-  const left = size + 60;
-  const room = width - left - 20;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = colors.gold;
-  ctx.font = canvasFont('small', 'bold');
-  ctx.fillText('NORTH POLE CARNIVAL', left, 50, room);
-  ctx.fillStyle = colors.text;
-  ctx.font = canvasFont('title', 'bold');
-  ctx.fillText(`@${login}`, left, 88, room);
-  ctx.fillStyle = colors.muted;
-  ctx.font = canvasFont('small');
-  ctx.fillText(seasonHeadline(lines), left, 110, room);
-  ctx.fillStyle = colors.glow;
-  ctx.font = canvasFont('body', 'bold');
-  ctx.fillText(boothName, left, 136, room);
-
-  const top = 172;
-  if (lines.length > 0) {
-    const step = Math.min(28, (height - 30 - top) / lines.length);
-    lines.forEach((line, i) => {
-      const y = top + i * step;
-      ctx.fillStyle = colors.gold;
-      ctx.font = canvasFont('body', 'bold');
-      ctx.fillText(String(line.value), left, y, 36);
-      ctx.fillStyle = colors.text;
-      ctx.font = canvasFont('small');
-      ctx.fillText(line.label, left + 32, y, room - 32);
-    });
-  } else {
-    ctx.fillStyle = colors.text;
-    ctx.font = canvasFont('small');
-    const welcome = `A booth of my own on the North Pole map, described in one issue and built by an agent. The first of many.`;
-    wrap(ctx, welcome, room).forEach((line, i) => ctx.fillText(line, left, top + i * 20, room));
-  }
-
-  ctx.fillStyle = colors.muted;
-  ctx.font = canvasFont('small');
-  ctx.textAlign = 'right';
-  ctx.fillText('Built with Tessl', width - 20, height - 16);
-}
-
-/**
- * A participant's season card at `#/season/<login>`: the card on a canvas,
- * Download to save it as a PNG made in the page, Copy link for their booth on
- * the map, a share text they can change, and the gentle last line. Nothing is
- * posted anywhere, and every name is only ever set as text. Returns how to stop
- * the card drawing.
- */
-export function renderSeason(app: HTMLElement, login: string): () => void {
-  document.body.dataset.view = 'booth';
-  const square = boothRegistry.get(login);
-  if (!square) {
-    app.innerHTML = `
-      <section class="booth">
-        <div class="booth-header">
-          <a href="#/">← Back to the map</a>
-          <h1>No season yet</h1>
-          <p class="description"></p>
-          <p class="booth-help"><a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim your booth</a> to start one.</p>
-        </div>
-      </section>`;
-    app.querySelector('.description')!.textContent = `@${login} doesn't have a booth yet.`;
-    return () => {};
-  }
-
-  const offer = signupOffer();
+/** The page for a login with no booth, so no season either. */
+function renderNoSeason(app: HTMLElement, login: string) {
   app.innerHTML = `
+    <section class="booth">
+      <div class="booth-header">
+        <a href="#/">← Back to the map</a>
+        <h1>No season yet</h1>
+        <p class="description"></p>
+        <p class="booth-help"><a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim your booth</a> to start one.</p>
+      </div>
+    </section>`;
+  the(app, '.description', HTMLElement).textContent = `@${login} doesn't have a booth yet.`;
+}
+
+/** The season page's markup. Every name and login goes in later, as text. */
+const seasonPage = () => `
     <section class="booth season">
       <div class="booth-header">
         <a class="season-back"></a>
@@ -170,34 +61,79 @@ export function renderSeason(app: HTMLElement, login: string): () => void {
         </p>
       </div>
     </section>`;
-  const $ = <T extends Element>(selector: string) => app.querySelector<T>(selector)!;
 
-  const back = $<HTMLAnchorElement>('.season-back');
+/** The way back to the booth, Keep me posted off the site in a new tab, and the sign-up offer when there is one. */
+function fillLinks(app: HTMLElement, login: string) {
+  const back = the(app, '.season-back', HTMLAnchorElement);
   back.href = `#/booth/${encodeURIComponent(login)}`;
   back.textContent = `← Back to @${login}'s booth`;
   if (KEEP_POSTED_URL) {
-    $<HTMLAnchorElement>('.season-keep-posted').target = '_blank';
-    $<HTMLAnchorElement>('.season-keep-posted').rel = 'noopener';
+    const keepPosted = the(app, '.season-keep-posted', HTMLAnchorElement);
+    keepPosted.target = '_blank';
+    keepPosted.rel = 'noopener';
   }
+  const offer = signupOffer();
   if (offer) {
-    const link = $<HTMLAnchorElement>('.season-offer-link');
+    const link = the(app, '.season-offer-link', HTMLAnchorElement);
     link.href = offer.url;
     link.textContent = offer.text;
-    $<HTMLElement>('.season-offer').hidden = false;
+    the(app, '.season-offer', HTMLElement).hidden = false;
   }
+}
+
+/** Draws the card on its canvas every frame, the booth as it is now. Returns how to stop. */
+function paintCard(
+  canvas: HTMLCanvasElement,
+  login: string,
+  card: { square: NorthPoleSquare; name: () => string; lines: ReturnType<typeof seasonLines> },
+) {
+  canvas.width = CARD.width * SCALE;
+  canvas.height = CARD.height * SCALE;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return () => undefined;
+  let frame = 0;
+  const paint = (time: number) => {
+    ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
+    const booth = (c: CanvasRenderingContext2D, size: number) => {
+      card.square.draw(c, size, time / 1000);
+    };
+    drawCard(ctx, login, card.name(), booth, card.lines);
+    frame = requestAnimationFrame(paint);
+  };
+  frame = requestAnimationFrame(paint);
+  return () => {
+    cancelAnimationFrame(frame);
+  };
+}
+
+/**
+ * A participant's season card at `#/season/<login>`: the card on a canvas,
+ * Download to save it as a PNG made in the page, Copy link for their booth on
+ * the map, a share text they can change, and the gentle last line. Nothing is
+ * posted anywhere, and every name is only ever set as text. Returns how to stop
+ * the card drawing.
+ */
+export function renderSeason(app: HTMLElement, login: string): () => void {
+  document.body.dataset.view = 'booth';
+  const square = boothRegistry.get(login);
+  if (!square) {
+    renderNoSeason(app, login);
+    return () => undefined;
+  }
+  app.innerHTML = seasonPage();
+  fillLinks(app, login);
 
   const stats = seasonStats(SEASON, login);
   const lines = seasonLines(stats);
   const mapLink = new URL(deepLink('booth', login), document.baseURI).href;
   const name = () => square.name.slice(0, MAX_NAME);
 
-  const canvas = $<HTMLCanvasElement>('.season-card');
-  canvas.width = CARD.width * SCALE;
-  canvas.height = CARD.height * SCALE;
-  const ctx = canvas.getContext('2d')!;
-  const text = $<HTMLTextAreaElement>('.season-share-text');
+  const canvas = the(app, '.season-card', HTMLCanvasElement);
+  const text = the(app, '.season-share-text', HTMLTextAreaElement);
   let edited = false;
-  text.addEventListener('input', () => (edited = true));
+  text.addEventListener('input', () => {
+    edited = true;
+  });
   const show = () => {
     if (!edited) text.value = seasonShareText(login, name(), stats, mapLink);
     const numbers = lines.map((line) => `${line.value} ${line.label}`).join(', ');
@@ -207,50 +143,16 @@ export function renderSeason(app: HTMLElement, login: string): () => void {
     );
   };
   show();
-  if ('onReady' in square) (square as SandboxedSquare).onReady(() => canvas.isConnected && show());
+  if ('onReady' in square)
+    (square as SandboxedSquare).onReady(() => {
+      if (canvas.isConnected) show();
+    });
 
-  let frame = 0;
-  const paint = (time: number) => {
-    ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
-    drawCard(ctx, login, name(), (c, size) => square.draw(c, size, time / 1000), lines);
-    frame = requestAnimationFrame(paint);
-  };
-  frame = requestAnimationFrame(paint);
-
-  const download = $<HTMLButtonElement>('.season-download');
-  download.addEventListener('click', () => {
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const save = document.createElement('a');
-      save.href = url;
-      save.download = `north-pole-season-${login}.png`;
-      save.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }, 'image/png');
-  });
-
-  const copy = $<HTMLButtonElement>('.season-copy');
-  let reset = 0;
-  copy.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(mapLink);
-      copy.textContent = 'Copied!';
-    } catch {
-      // No clipboard: show the link in the share text, selected, to copy by hand,
-      // putting it back first if the visitor edited it out.
-      if (!text.value.includes(mapLink)) text.value = `${text.value.trimEnd()}\n${mapLink}`.trim();
-      const start = text.value.lastIndexOf(mapLink);
-      text.focus();
-      text.setSelectionRange(start, start + mapLink.length);
-      copy.textContent = 'Copy it from the share text';
-    }
-    window.clearTimeout(reset);
-    reset = window.setTimeout(() => (copy.textContent = 'Copy link'), 2000);
-  });
-
+  const stopPainting = paintCard(canvas, login, { square, name, lines });
+  offerDownload(the(app, '.season-download', HTMLButtonElement), canvas, login);
+  const stopCopy = offerCopy(the(app, '.season-copy', HTMLButtonElement), text, mapLink);
   return () => {
-    cancelAnimationFrame(frame);
-    window.clearTimeout(reset);
+    stopPainting();
+    stopCopy();
   };
 }

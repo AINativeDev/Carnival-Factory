@@ -1,10 +1,5 @@
-import type {
-  Credits,
-  Decision,
-  HistoryKind,
-  HistoryPull,
-  SquareHistory,
-} from '../scripts/square-history';
+import type { Decision } from '../scripts/github-requests';
+import type { Credits, HistoryKind, HistoryPull, SquareHistory } from '../scripts/square-history';
 import { squareOwner } from './northpole/north-pole-levels';
 
 /**

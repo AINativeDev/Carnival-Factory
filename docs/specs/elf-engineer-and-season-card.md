@@ -58,11 +58,13 @@ Season card, `#/season/<login>`:
 
 `src/northpole/badges.ts`, `scripts/elf-engineer.ts`,
 `scripts/check-elf-engineer.ts`, `scripts/badge-holders.ts`, `public/badges/`,
-`src/season.ts`, `src/season-card.ts`, `scripts/season.ts`,
+`src/season.ts`, `src/season-card.ts`, `src/season-card-drawing.ts`,
+`src/season-share.ts`, `scripts/season.ts`,
 `scripts/season-data.ts`, `plugins/north-pole/skills/assess-badge-request/SKILL.md`.
 
 ## Tested by
 
 `src/northpole/badges.test.ts`, `scripts/elf-engineer.test.ts`,
-`src/season.test.ts`, `scripts/season.test.ts`, `smoke/squares.spec.ts` (the
+`src/season.test.ts`, `src/season-card.test.ts`, `src/season-card-drawing.test.ts`,
+`src/season-share.test.ts`, `scripts/season.test.ts`, `smoke/squares.spec.ts` (the
 season card downloads and copies its link; badges are plain files).

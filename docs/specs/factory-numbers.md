@@ -26,15 +26,17 @@ see the loop behind the booths.
   scripts/factory-stats.test.ts).
 - Security: only numbers and an ISO time reach the page. `readFactoryStats`
   keeps whole numbers of at least 0 and a well-formed time, and drops the
-  whole set if any count is missing (enforced by: src/factory.test.ts).
+  whole set if any count is missing (enforced by: src/factory-figures.test.ts).
   Every number is set as text (not enforced yet).
 
 ## Where it lives
 
-`src/factory.ts`, `scripts/factory-stats.ts`,
+`src/factory.ts`, `src/factory-figures.ts`, `scripts/factory-stats.ts`,
+`scripts/github-requests.ts`,
 `scripts/write-square-history.ts`, `scripts/share-pages.ts`.
 
 ## Tested by
 
-`src/factory.test.ts`, `scripts/factory-stats.test.ts`,
+`src/factory-figures.test.ts`, `scripts/factory-stats.test.ts`,
+`scripts/github-requests.test.ts`,
 `smoke/squares.spec.ts` (`#/factory` at 390 and wider, Esc goes back).
