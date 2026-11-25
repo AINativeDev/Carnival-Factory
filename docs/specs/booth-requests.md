@@ -8,7 +8,16 @@ accepted ones.
 
 - Issue forms (blank issues are off): **Your booth** (`booth-request`, title
   "My booth: "), **Your level** (`level-request`, "My level: "), **Elf
-  Engineer badge** (`badge-request`) and **Advent challenge** (`advent-done`).
+  Engineer badge** (`badge-request`), **Advent challenge** (`advent-done`),
+  **Feedback on the factory** (`feedback`, "Feedback: ") and **An idea**
+  (`idea`, "Idea: ").
+- The `welcome-feedback` skill thanks the author of a `feedback` or `idea`
+  issue, adds `kudos` to praise, and leaves it open for the maintainers. It
+  closes one, as not planned with `declined`, only when it's spam, abuse,
+  unsafe or nothing to do with Carnival Factory, and asks for `needs-human`
+  when unsure. It never adds `tessl`: building an idea is a maintainer's call
+  ([ADR 0045](../adr/0045-feedback-and-ideas-stay-open.md)) (enforced by: the
+  skill, and the `welcome-*-opened` triggers in tessl.json).
 - One form serves a new booth and a change alike: the factory builds the
   booth if `carnival/booths/<author>/` doesn't exist, and changes it if it does.
   The same holds for levels.

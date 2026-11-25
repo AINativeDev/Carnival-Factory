@@ -1,10 +1,12 @@
 import { SITE_NAME } from './edition';
-import { EMPTY_SEASON, readSeason, type SeasonData, type SeasonStats } from '../scripts/season';
+import { readSeason, type SeasonData, type SeasonStats } from '../scripts/season';
 
 declare const __SEASON__: unknown;
-/** Every participant's season, built into the page (see vite.config.ts), so the card makes no request. */
-export const SEASON: SeasonData =
-  typeof __SEASON__ === 'object' ? readSeason(__SEASON__) : EMPTY_SEASON;
+/**
+ * Every participant's season, built into the page (see vite.config.ts, which
+ * defines it in every mode, tests included), so the card makes no request.
+ */
+export const SEASON: SeasonData = readSeason(__SEASON__);
 
 /** One number on the card, and what it counts. */
 export interface SeasonLine {

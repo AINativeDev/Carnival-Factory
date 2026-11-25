@@ -103,12 +103,17 @@ describe('readSeason', () => {
   });
 
   it('keeps the optional numbers once they have a source', () => {
-    const season = { countedAt: AT, participants: { a: { requests: 1, votes: 3 } } };
+    const season = {
+      countedAt: AT,
+      participants: { a: { requests: 1, votes: 3, featured: 2, advent: -1 } },
+    };
     expect(readSeason(season).participants.a).toEqual({
       requests: 1,
       shipped: 0,
       findingsFixed: 0,
       votes: 3,
+      featured: 2,
+      advent: 0,
     });
   });
 

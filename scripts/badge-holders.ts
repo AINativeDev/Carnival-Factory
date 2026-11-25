@@ -8,24 +8,35 @@
  */
 import { writeFileSync } from 'node:fs';
 import { badgeHolders, type BadgeRequestRecord } from './badge-grants.ts';
-import { getAll, repoPath } from './github-api.ts';
+import { github, repoPath, type GitHubReader } from './github-api.ts';
+import type { BadgeHolder } from '../src/northpole/badges.ts';
 
-const repository = process.env.GITHUB_REPOSITORY;
-const out = process.argv[2];
-if (!repository || !out) throw new Error('Set GITHUB_REPOSITORY, and name the file to write');
-
-const issues = await getAll<BadgeRequestRecord['issue'] & { pull_request?: unknown }>(
-  `${repoPath(repository)}/issues?labels=badge-request,badge-granted&state=all`,
-);
-const records: BadgeRequestRecord[] = [];
-for (const issue of issues) {
-  if (issue.pull_request) continue;
-  const comments = await getAll<BadgeRequestRecord['comments'][number]>(
-    `${repoPath(repository)}/issues/${issue.number}/comments`,
+/** The badge holders, from every accepted request in `repository` and its comments. */
+export async function readBadgeHolders(
+  reader: GitHubReader,
+  repository: string,
+): Promise<BadgeHolder[]> {
+  const issues = await reader.getAll<BadgeRequestRecord['issue'] & { pull_request?: unknown }>(
+    `${repoPath(repository)}/issues?labels=badge-request,badge-granted&state=all`,
   );
-  records.push({ issue, comments });
+  const records: BadgeRequestRecord[] = [];
+  // The issues endpoint lists pull requests too, which are never requests.
+  for (const issue of issues.filter((listed) => !listed.pull_request)) {
+    const comments = await reader.getAll<BadgeRequestRecord['comments'][number]>(
+      `${repoPath(repository)}/issues/${issue.number}/comments`,
+    );
+    records.push({ issue, comments });
+  }
+  return badgeHolders(records);
 }
 
-const holders = badgeHolders(records);
-writeFileSync(out, JSON.stringify(holders, null, 2) + '\n');
-console.log(`${holders.length} Elf Engineer badge holder(s).`);
+/* v8 ignore start -- the deploy's entry point: reading the environment, then writing the file */
+if (process.argv[1]?.endsWith('badge-holders.ts')) {
+  const repository = process.env.GITHUB_REPOSITORY;
+  const out = process.argv[2];
+  if (!repository || !out) throw new Error('Set GITHUB_REPOSITORY, and name the file to write');
+  const holders = await readBadgeHolders(github, repository);
+  writeFileSync(out, JSON.stringify(holders, null, 2) + '\n');
+  console.log(`${holders.length} Elf Engineer badge holder(s).`);
+}
+/* v8 ignore stop */

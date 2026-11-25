@@ -71,4 +71,13 @@ describe('fingerprint', () => {
     expect(fingerprint(one)).not.toBe(fingerprint(moved));
     expect(fingerprint(one)).toMatch(/^[0-9a-f]{16} \(1 calls\)$/);
   });
+
+  it('answers the questions a drawing may ask, so it can draw on', () => {
+    const calls = drawingOf((ctx) => {
+      expect(ctx.isPointInPath(1, 1)).toBe(false);
+      expect(ctx.isPointInStroke(1, 1)).toBe(false);
+      ctx.fillStyle = ctx.createConicGradient(0, 5, 5);
+    });
+    expect(calls.at(-1)).toEqual(['=fillStyle', 'gradient-0']);
+  });
 });

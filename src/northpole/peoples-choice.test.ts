@@ -54,6 +54,25 @@ describe('cleanChoice', () => {
     expect(cleanChoice({ booths: [] }, [], REPO)).toBeUndefined();
     expect(cleanChoice({ ballot: at(1), booths: [] }, [], REPO)).toBeUndefined();
   });
+
+  it('skips entries that are not objects, and lists nothing that is not a list', () => {
+    const choice = cleanChoice(
+      { ballot: BALLOT, booths: [null, 'ana', entry('ana', 1)], factories: 'none' },
+      [],
+      REPO,
+    );
+    expect(choice?.booths).toEqual([entry('ana', 1)]);
+    expect(choice?.factories).toEqual([]);
+  });
+
+  it('puts booths with the same votes in order of login', () => {
+    const choice = cleanChoice(
+      { ballot: BALLOT, booths: [entry('zed', 2), entry('amy', 2)], factories: [] },
+      [],
+      REPO,
+    );
+    expect(choice?.booths.map((e) => e.login)).toEqual(['amy', 'zed']);
+  });
 });
 
 describe('places', () => {
@@ -89,6 +108,10 @@ describe('trophies and leaders', () => {
     const top = leaders(choice);
     expect(top.booths.map((e) => e.login)).toEqual(['a', 'b', 'c']);
     expect(top.factories.map((e) => e.login)).toEqual(['f']);
+  });
+
+  it('has no leaders without a ballot', () => {
+    expect(leaders(undefined)).toEqual({ booths: [], factories: [] });
   });
 
   it('links a booth to its comment', () => {

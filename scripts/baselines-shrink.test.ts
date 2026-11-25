@@ -11,6 +11,10 @@ describe('baselines only shrink', () => {
     );
   });
 
+  it('counts no debt in anything but numbers', () => {
+    expect(debts({ 'a.ts': 'a note', 'b.ts': null, 'c.ts': true })).toEqual(new Map());
+  });
+
   it('lets a number fall or an entry go', () => {
     expect(grown({ 'a.ts': 300, 'b.ts': 250 }, { 'a.ts': 280 })).toEqual([]);
   });
@@ -35,5 +39,10 @@ describe('baselines only shrink', () => {
       'lint/strict-types-baseline.json: a.ts: raised from 1 to 2',
       'eslint-suppressions.json: a new baseline',
     ]);
+  });
+
+  it('lets a baseline go altogether, once its debt is paid', () => {
+    const base: Record<string, unknown> = { 'eslint-suppressions.json': { 'b.ts': 1 } };
+    expect(problems({ now: () => undefined, atBase: (file) => base[file] })).toEqual([]);
   });
 });

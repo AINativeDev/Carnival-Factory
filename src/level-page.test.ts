@@ -38,6 +38,7 @@ describe('renderLevel', () => {
       expect(lastMap().options.level).toMatchObject({ id: 'ana', ride: true });
       const controls = page.app.querySelector('.hud-controls p')?.textContent;
       expect(controls).toContain('to ride on to the next station');
+      expect(controls).toContain('drag to look around');
       expect(controls).not.toContain('Walk with');
     } finally {
       delete level.ride;
