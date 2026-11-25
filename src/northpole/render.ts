@@ -6,10 +6,12 @@
  */
 import type { NorthPoleSquare, StallShape, StallStyle } from './square';
 import { adventCountFor, decorationsFor, MAX_ORNAMENTS, type AdventDecorations } from './advent';
-import { badgeFor, type BadgeTier } from './badges';
+import { badgeFor } from './badges';
+import { drawElfHatPin, drawTrophy } from './stall-honours';
 import { trophyFor } from './peoples-choice';
 import { PEOPLES_CHOICE } from './peoples-choice-standings';
 import { alongEdge } from './camera';
+import { drawFactoryTower, FACTORY_ID } from './factory-tower';
 import { canvasFont, theme } from './theme';
 import {
   hash,
@@ -28,7 +30,7 @@ import {
 const { colors } = theme;
 
 /** Where a box's ground diamond has its corners on screen. */
-function corners(box: Box) {
+export function corners(box: Box) {
   const at = (x: number, y: number) => toScreen({ x: x - 0.5, y: y - 0.5 });
   return {
     top: at(box.x, box.y),
@@ -53,7 +55,7 @@ function diamond(ctx: CanvasRenderingContext2D, c: ReturnType<typeof corners>, l
 }
 
 /** A box standing `height` high on its footprint: its two front faces and its top. */
-function block(
+export function block(
   ctx: CanvasRenderingContext2D,
   box: Box,
   height: number,
@@ -83,7 +85,7 @@ function block(
 }
 
 /** A soft round glow, as a lamp or a window throws. */
-function glow(
+export function glow(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -185,7 +187,7 @@ function drawDrift(ctx: CanvasRenderingContext2D, thing: Thing) {
 }
 
 /** A shadow on the snow under something standing. */
-function shadow(ctx: CanvasRenderingContext2D, x: number, y: number, width: number) {
+export function shadow(ctx: CanvasRenderingContext2D, x: number, y: number, width: number) {
   ctx.fillStyle = colors.night;
   ctx.globalAlpha = 0.18;
   ctx.beginPath();
@@ -566,10 +568,7 @@ export interface Face {
   out: Tile;
 }
 
-/**
- * The face of a plot its square's drawing goes on: the one its door is on, or,
- * when the door is round the back, the face we see on the same side.
- */
+/** The face a plot's drawing goes on: its door's, or with the door round the back, the one we see on that side. */
 export function faceOf(plot: Box & { door: Tile }): Face {
   const c = corners(plot);
   const sideways = plot.door.x >= plot.x + plot.w || plot.door.x < plot.x;
@@ -593,7 +592,7 @@ function quad(ctx: CanvasRenderingContext2D, points: Tile[]) {
 }
 
 /** A strip of a face from `from` to `to` across it, `low` to `high` up it, `outward` tiles out. */
-function band(
+export function band(
   ctx: CanvasRenderingContext2D,
   face: Face,
   from: number,
@@ -669,6 +668,8 @@ export interface Owner {
   color: string;
   avatar?: CanvasImageSource;
   you: boolean;
+  /** What the sign says under the name in place of "by @id", for a stall nobody owns; such a stall wears no badges. */
+  by?: string;
 }
 
 /**
@@ -714,7 +715,7 @@ export function portrait(ctx: CanvasRenderingContext2D, r: number, avatar?: Canv
  * alone when `by` is empty. A booth's board has its owner's portrait at the
  * left and a trim in their colour.
  */
-function faceSign(
+export function faceSign(
   ctx: CanvasRenderingContext2D,
   face: Face,
   low: number,
@@ -739,7 +740,7 @@ function faceSign(
   const line = (high - low) / 2;
   // With a portrait, the words move right of it.
   const r = Math.min(line - 3.5, width * 0.09);
-  const pictured = owner && r > 2;
+  const pictured = owner?.by === undefined && owner && r > 2;
   const along = pictured ? 0.58 : 0.5;
   const room = pictured ? width * 0.62 : width * 0.8;
   if (pictured) {
@@ -776,7 +777,7 @@ function faceSign(
 }
 
 /** Maps a square onto a face, from `from` to `to` across it and `low` up it, as tall as it is wide on screen. */
-function paintOnFace(
+export function paintOnFace(
   paint: PaintSquare,
   square: NorthPoleSquare,
   face: Face,
@@ -795,13 +796,12 @@ function paintOnFace(
   });
 }
 
-/** How tall each part of a booth's stall is, in world pixels. */
+/** How tall each part of a booth's stall, and of an attraction's pavilion, is, in world pixels. */
 const STALL = { counter: 16, art: 18, wall: 104 };
-/** How tall each part of an attraction's pavilion is. */
-const PAVILION = { stage: 10, art: 24, wall: 150, roof: 64 };
+export const PAVILION = { stage: 10, art: 24, wall: 150, roof: 64 };
 
 /** Where a click opens a plot: round everything standing on it. */
-function standing(plot: Box, height: number): Box {
+export function standing(plot: Box, height: number): Box {
   const c = corners(plot);
   return {
     x: c.left.x,
@@ -964,7 +964,16 @@ function stallFront(
   ctx.fill();
   paintOnFace(paint, square, face, 0.08, 0.92, STALL.art);
   const signLow = stallSignLow(face);
-  faceSign(ctx, face, signLow, STALL.wall - 2, square.name, `by @${square.id}`, 0, owner);
+  faceSign(
+    ctx,
+    face,
+    signLow,
+    STALL.wall - 2,
+    square.name,
+    owner.by ?? `by @${square.id}`,
+    0,
+    owner,
+  );
 }
 
 /** Where a stall's name board starts, just over the drawing on its front. */
@@ -1107,21 +1116,22 @@ function drawStall(
     }
   }
   // An Elf Engineer's pin, on the right end of the name board, over whatever shape the stall is.
-  const badge = badgeFor(square.id);
+  const who = owner.by === undefined ? square.id : '';
+  const badge = badgeFor(who);
   if (badge) {
     const signLow = stallSignLow(face);
     const pin = onFace(face, 0.94, (signLow + STALL.wall - 2) / 2, 0.1);
     drawElfHatPin(ctx, pin.x, pin.y, (STALL.wall - 2 - signLow) * 0.42, badge.tier);
   }
   // A People's Choice trophy for the top three, standing on the name board's left end, clear of the portrait.
-  const place = trophyFor(square.id, PEOPLES_CHOICE);
+  const place = trophyFor(who, PEOPLES_CHOICE);
   if (place) {
     const r = (STALL.wall - 2 - stallSignLow(face)) * 0.42;
     const cup = onFace(face, 0.12, STALL.wall - 2 + r, 0.1);
     drawTrophy(ctx, cup.x, cup.y, r, place);
   }
   // The owner's advent challenges, as decorations the map hangs on whatever shape the stall is.
-  const decorations = decorationsFor(adventCountFor(square.id));
+  const decorations = decorationsFor(adventCountFor(who));
   const crown = stallReach(look.shape) + 6;
   drawAdventDecorations(
     ctx,
@@ -1386,90 +1396,6 @@ function drawAdventDecorations(
   }
 }
 
-/** The pom-pom of an Elf Engineer's hat, by tier. */
-const POM_POMS: Record<BadgeTier | 'none', string> = {
-  none: colors.snow,
-  bronze: colors.gingerbread,
-  silver: colors.snowShade,
-  gold: colors.gold,
-};
-
-/** An Elf Engineer's pin: a round gold badge with an elf's hat on it, `radius` across from its middle. */
-function drawElfHatPin(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  radius: number,
-  tier?: BadgeTier,
-) {
-  const r = radius;
-  ctx.save();
-  ctx.fillStyle = colors.cocoa;
-  ctx.beginPath();
-  ctx.arc(x, y, r + 1.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = colors.pine;
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fill();
-  // The hat: a red cone curling to the right, a snowy brim and a pom-pom.
-  ctx.fillStyle = colors.berry;
-  ctx.beginPath();
-  ctx.moveTo(x - r * 0.62, y + r * 0.35);
-  ctx.quadraticCurveTo(x - r * 0.2, y - r * 0.95, x + r * 0.5, y - r * 0.55);
-  ctx.lineTo(x + r * 0.62, y + r * 0.35);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = colors.snow;
-  ctx.fillRect(x - r * 0.72, y + r * 0.25, r * 1.44, r * 0.34);
-  ctx.fillStyle = POM_POMS[tier ?? 'none'];
-  ctx.beginPath();
-  ctx.arc(x + r * 0.55, y - r * 0.55, r * 0.22, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-/** A trophy's metal, by place. */
-const TROPHIES: Record<1 | 2 | 3, string> = {
-  1: colors.gold,
-  2: colors.snowShade,
-  3: colors.gingerbread,
-};
-
-/** A People's Choice trophy: a cup with two handles on a stand, `radius` across from its middle. */
-function drawTrophy(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  radius: number,
-  place: 1 | 2 | 3,
-) {
-  const r = radius;
-  ctx.save();
-  ctx.fillStyle = colors.cocoa;
-  ctx.beginPath();
-  ctx.arc(x, y, r + 1.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = TROPHIES[place];
-  ctx.strokeStyle = TROPHIES[place];
-  ctx.lineWidth = Math.max(1, r * 0.16);
-  // The cup, its handles, the stem and the base.
-  ctx.beginPath();
-  ctx.moveTo(x - r * 0.55, y - r * 0.6);
-  ctx.lineTo(x + r * 0.55, y - r * 0.6);
-  ctx.quadraticCurveTo(x + r * 0.5, y + r * 0.1, x, y + r * 0.15);
-  ctx.quadraticCurveTo(x - r * 0.5, y + r * 0.1, x - r * 0.55, y - r * 0.6);
-  ctx.fill();
-  for (const side of [-1, 1]) {
-    ctx.beginPath();
-    ctx.arc(x + side * r * 0.55, y - r * 0.3, r * 0.22, -Math.PI / 2, Math.PI / 2, side < 0);
-    ctx.stroke();
-  }
-  ctx.fillRect(x - r * 0.08, y + r * 0.1, r * 0.16, r * 0.3);
-  ctx.fillRect(x - r * 0.35, y + r * 0.4, r * 0.7, r * 0.2);
-  ctx.restore();
-}
-
 const ROOFS = [
   [colors.berry, colors.snow],
   [colors.pine, colors.cream],
@@ -1534,12 +1460,12 @@ function stripedRoof(
 }
 
 /** How bright a string light is at `time`: most of them glow, and now and then one dips. */
-function twinkle(time: number, seed: number) {
+export function twinkle(time: number, seed: number) {
   return 0.65 + 0.35 * Math.sin(time / 420 + seed * 1.7) * Math.sin(time / 1300 + seed * 0.3);
 }
 
 /** One warm light bulb with its glow. */
-function bulb(
+export function bulb(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -1932,8 +1858,13 @@ export function drawPlot(
   owner?: Owner,
 ): Box {
   if (plot.kind === 'open' || !square) return drawOpenPlot(ctx, plot, time, near);
-  if (plot.kind === 'attraction') return drawAttraction(ctx, plot, square, paint, time);
-  return drawStall(ctx, plot, square, paint, time, owner ?? { color: colors.gold, you: false });
+  const attraction = plot.kind === 'attraction';
+  if (attraction && square.id === FACTORY_ID)
+    return drawFactoryTower(ctx, plot, square, paint, time);
+  // An attraction is a pavilion, unless it chose a stall, as a level's squares do: then it's that stall, signed by nobody.
+  if (attraction && !square.stall) return drawAttraction(ctx, plot, square, paint, time);
+  const nobody: Owner = { color: colors.gold, you: false, ...(attraction ? { by: '' } : {}) };
+  return drawStall(ctx, plot, square, paint, time, owner ?? nobody);
 }
 
 /** A glow round a plot, for the one you are standing at or the one a link opened on. */

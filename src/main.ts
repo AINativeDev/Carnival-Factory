@@ -77,6 +77,7 @@ let panel: BoothsPanel | undefined;
 const STATION: StationEntry[] = levels.map((entry) => ({
   login: entry.login,
   name: entry.name,
+  owner: entry.owner,
   color: entry.level ? LEVEL_THEMES[entry.level.theme].sign : theme.colors.muted,
   closed: !entry.level,
 }));
@@ -324,11 +325,7 @@ function renderUnknown(note: HTMLElement, focus: { kind: SquareKind; id: string 
 /** The map running now, the HUD of the square the player is inside or of the factory's numbers, and how they came in. */
 let map: MapControls | undefined;
 let card: VisitHud | undefined;
-/**
- * Whether the address behind this visit's in history is the map's, so going
- * back leaves it: true only when the visit began with a change of address
- * made from the map, not from another square.
- */
+/** Whether going back leaves this visit for the map: only when it began with a change of address made on the map. */
 let cardFromHistory = false;
 /** A hash change this page made itself, while leaving a square, for `route` to let pass. */
 let ignoreNextRoute = false;

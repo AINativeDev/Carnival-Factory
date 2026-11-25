@@ -32,7 +32,7 @@ function envelope(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
 /** The letter box: a red post box on the snow, letters with wishes flying into its slot. */
 const letterBox: NorthPoleSquare = {
   id: 'letter-box',
-  name: 'The Letter Box',
+  name: 'Letters',
   description: 'Every booth starts here, as a letter: a booth request filed on GitHub.',
   stall: { shape: 'kiosk', roof: 'berry', trim: 'snow' },
   draw(ctx, size, time) {

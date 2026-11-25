@@ -22,7 +22,7 @@ export function partsBuilt(time: number): number {
 /** The workshop: a workbench where a little booth is built part by part, its hammer tapping. */
 const workshop: NorthPoleSquare = {
   id: 'workshop',
-  name: 'The Workshop',
+  name: 'Workshop',
   description: 'An accepted request is built here, in a folder of its own.',
   stall: { shape: 'cabin', roof: 'pine', trim: 'gold' },
   draw(ctx, size, time) {

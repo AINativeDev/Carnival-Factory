@@ -41,7 +41,7 @@ function leaf(ctx: CanvasRenderingContext2D, side: -1 | 1, open: number) {
 /** The gate: two lamp posts and a gate that swings open for a change, or stays shut while it waits for a person. */
 const gate: NorthPoleSquare = {
   id: 'gate',
-  name: 'The Gate',
+  name: 'Gate',
   description: 'The merge gate: every check must pass, and some changes wait for a person.',
   stall: { shape: 'stall', roof: 'gold', trim: 'berry' },
   draw(ctx, size, time) {

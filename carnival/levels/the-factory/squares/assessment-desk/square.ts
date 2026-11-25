@@ -26,7 +26,7 @@ const TRAY_COLORS = [colors.pine, colors.gold, colors.berry];
 /** The assessment desk: a lamp-lit desk where a stamp marks each request accepted, asked or declined. */
 const assessmentDesk: NorthPoleSquare = {
   id: 'assessment-desk',
-  name: 'The Assessment Desk',
+  name: 'Assessment',
   description: 'Each request is read first: accepted, asked about, or declined.',
   stall: { shape: 'shed', roof: 'violet', trim: 'gold' },
   draw(ctx, size, time) {

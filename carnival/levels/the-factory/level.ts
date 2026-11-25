@@ -12,7 +12,7 @@ const level: NorthPoleLevel = {
   name: 'The Factory',
   description:
     'Walk the build loop one stall at a time: from a letter with a wish to a booth on the map.',
-  theme: 'dusk',
+  theme: 'aurora-night',
   size: 21,
   ground: [
     { tile: 'path', area: { x: 6, y: 2, w: 1, h: 18 } },
@@ -22,8 +22,6 @@ const level: NorthPoleLevel = {
     { tile: 'bridge', area: { x: 17, y: 10 } },
   ],
   props: [
-    { kind: 'banner', x: 8, y: 4 },
-    { kind: 'town-tree', x: 10, y: 10 },
     { kind: 'cabin', x: 8, y: 14 },
     { kind: 'cart', x: 7, y: 17 },
     { kind: 'lamp', x: 7, y: 6 },

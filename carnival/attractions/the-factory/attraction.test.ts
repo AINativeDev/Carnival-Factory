@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BELT, PUFF, parcelAt, puffAt, puffSpot } from './attraction';
+import theFactory, { BELT, cogTurn, LETTERS, PUFF, parcelAt, puffAt, puffSpot } from './attraction';
 
 describe('puffAt', () => {
   it('rises from the chimney and starts again, each puff in turn', () => {
@@ -24,5 +24,52 @@ describe('puffSpot', () => {
       const { y, r } = puffSpot(t);
       expect(y - r).toBeGreaterThanOrEqual(0);
     }
+  });
+});
+
+describe('cogTurn', () => {
+  it('turns once every twelve seconds', () => {
+    expect(cogTurn(6_000)).toBeCloseTo(Math.PI);
+  });
+});
+
+describe('the drawing', () => {
+  it('spells TESSL down the tower in gold letters', () => {
+    const texts: unknown[] = [];
+    const gradient = { addColorStop: () => undefined };
+    const noop = () => undefined;
+    const ctx = {
+      ...Object.fromEntries(
+        [
+          'save',
+          'restore',
+          'scale',
+          'translate',
+          'rotate',
+          'fillRect',
+          'beginPath',
+          'closePath',
+          'arc',
+          'ellipse',
+          'fill',
+          'stroke',
+          'moveTo',
+          'lineTo',
+          'quadraticCurveTo',
+          'bezierCurveTo',
+          'rect',
+          'clip',
+          'strokeRect',
+          'setTransform',
+          'transform',
+        ].map((name) => [name, noop]),
+      ),
+      fillText: (text: unknown) => texts.push(text),
+      measureText: () => ({ width: 10 }),
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+    } as unknown as CanvasRenderingContext2D;
+    theFactory.draw(ctx, 200, 1_000);
+    expect(texts).toEqual(expect.arrayContaining(LETTERS));
   });
 });

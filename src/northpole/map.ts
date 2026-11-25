@@ -158,10 +158,7 @@ export interface MapOptions {
   wereSites?: Iterable<string>;
   /** The levels, each with a platform at the sleigh station, and whether it's closed for repairs. */
   levels?: readonly StationEntry[];
-  /**
-   * A participant's level to walk instead of the North Pole: its laid-out
-   * world (`levelWorld` in level.ts), with its squares as `attractions`.
-   */
+  /** A level to walk instead of the North Pole: its world (`levelWorld` in level.ts), its squares as `attractions`. */
   level?: { id: string; name: string; world: World; tint: string };
   /** Takes the sleigh from a platform: to the level of `login`, or, without one, back to the North Pole. */
   onTravel?(login: string | undefined): void;
@@ -173,6 +170,8 @@ export interface StationEntry {
   name: string;
   color: string;
   closed: boolean;
+  /** Who its sign says it belongs to: `@login`, or the North Pole for its own. */
+  owner?: string;
 }
 
 /** Where the player stood when they last opened a square, in each world, so coming back puts them there. */
@@ -411,7 +410,7 @@ export function startMap(
     const entry = stations.get(plot.id!);
     return {
       name: entry?.name ?? plot.id!,
-      by: `@${plot.id}`,
+      by: entry?.owner ?? `@${plot.id}`,
       color: entry?.color ?? colors.gold,
       closed: entry?.closed ?? true,
     };

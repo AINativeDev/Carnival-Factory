@@ -22,7 +22,7 @@ export function checksPassed(time: number): number {
 /** The inspection bench: a magnifying lens sweeps over a booth while the checks light up one by one. */
 const inspectionBench: NorthPoleSquare = {
   id: 'inspection-bench',
-  name: 'The Inspection Bench',
+  name: 'Inspection',
   description: 'Review lenses and checks look the booth over, and the fixes go in.',
   stall: { shape: 'shed', roof: 'mint', trim: 'snow' },
   draw(ctx, size, time) {
