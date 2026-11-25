@@ -16,7 +16,7 @@ import { SEASON, seasonHeadline, seasonLines, seasonShareText, type SeasonLine }
 const { colors } = theme;
 
 /** The card's own units: drawn at `SCALE` times this, so its PNG is 1200 by 630. */
-export const CARD = { width: 600, height: 315 };
+const CARD = { width: 600, height: 315 };
 const SCALE = 2;
 /** The longest a booth's name may be on the card and in the share text. */
 const MAX_NAME = 60;

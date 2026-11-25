@@ -76,7 +76,7 @@ export const emptyHistoryText = (data: SquareHistory | undefined) =>
     : 'Timelines appear once this is on the live map.';
 
 /** What the assessment decided, in words. */
-export const DECISIONS: Record<Decision, string> = {
+const DECISIONS: Record<Decision, string> = {
   accepted: 'Accepted',
   question: 'Asked a question',
   declined: 'Declined',

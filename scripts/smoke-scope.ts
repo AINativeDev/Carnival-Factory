@@ -34,7 +34,9 @@ export function smokeScope(files: readonly string[]): string | undefined {
 
 if (process.argv[1]?.endsWith('smoke-scope.ts')) {
   const chunks: Buffer[] = [];
-  for await (const chunk of process.stdin) chunks.push(chunk as Buffer);
-  const scope = smokeScope(Buffer.concat(chunks).toString('utf8').split('\n'));
-  if (scope) process.stdout.write(`${scope}\n`);
+  process.stdin.on('data', (chunk: Buffer) => chunks.push(chunk));
+  process.stdin.on('end', () => {
+    const scope = smokeScope(Buffer.concat(chunks).toString('utf8').split('\n'));
+    if (scope) process.stdout.write(`${scope}\n`);
+  });
 }

@@ -54,8 +54,8 @@ export function shorten(text: string, max: number): string {
 }
 
 /** How long a picked square stays highlighted, and how long its highlight takes to fade, in milliseconds. */
-export const SELECT_TIME = 6000;
-export const SELECT_FADE = 1500;
+const SELECT_TIME = 6000;
+const SELECT_FADE = 1500;
 
 /**
  * How strongly a picked square is highlighted, from 1 down to 0, `elapsed`
@@ -73,8 +73,8 @@ export function arrowBounce(time: number, still: boolean): number {
 }
 
 /** How long the call to action waits before it fades in, and how long the fade takes, in milliseconds. */
-export const INVITE_DELAY = 400;
-export const INVITE_FADE = 300;
+const INVITE_DELAY = 400;
+const INVITE_FADE = 300;
 
 /**
  * How visible the call to action over a door is, `elapsed` milliseconds after

@@ -119,7 +119,7 @@ export function cleanCounts(data: unknown): Record<string, number> {
 declare const __ADVENT_COUNTS__: unknown;
 
 /** How many accepted challenges each participant has, as the build found them. */
-export const ADVENT_COUNTS: Readonly<Record<string, number>> = cleanCounts(
+const ADVENT_COUNTS: Readonly<Record<string, number>> = cleanCounts(
   typeof __ADVENT_COUNTS__ === 'undefined' ? {} : __ADVENT_COUNTS__,
 );
 

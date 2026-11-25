@@ -33,3 +33,7 @@ lenses:
     globs:
       - carnival/booths/**
       - carnival/attractions/**
+  - ref: ./plugins/north-pole/skills/review-craft/SKILL.md
+    globs:
+      - '**'
+      - '!carnival/**'

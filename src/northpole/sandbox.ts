@@ -16,7 +16,7 @@ import { rescale, withOwedPress } from './pointer';
 import { MAX_PRESSES, type NorthPoleSquare, type SquarePointer, type StallStyle } from './square';
 
 /** How long a square may take to open, its download included. */
-export const READY_TIMEOUT = 10_000;
+const READY_TIMEOUT = 10_000;
 /** Frames left out of the slowest-frame record while a square warms up. */
 const WARM_UP_FRAMES = 5;
 /** A frame not drawn for this long is released, and restarts when it's drawn again. */
@@ -60,14 +60,14 @@ function sweep(adding = 0) {
 }
 
 /** Errors in a row after which a square counts as broken. */
-export const MAX_ERRORS = 3;
+const MAX_ERRORS = 3;
 /** How long a frame may take to answer before it counts as an error. */
-export const FRAME_TIMEOUT = 2000;
+const FRAME_TIMEOUT = 2000;
 
 type State = 'loading' | 'ready' | 'broken';
 
 /** The square's name, description and stall, as its frame reported them once ready. */
-export interface SquareInfo {
+interface SquareInfo {
   name: string;
   description: string;
   stall?: StallStyle;

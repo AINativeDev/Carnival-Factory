@@ -180,7 +180,7 @@ const remembered = new Map<string, Tile>();
 /** How fast the player walks, in tiles a second. */
 const SPEED = 4.5;
 /** The size a square draws at on the back wall of its room, in pixels. */
-export const VISIT_SIZE = 480;
+const VISIT_SIZE = 480;
 /** How long footprints stay in the snow, in milliseconds, and how far apart they are, in tiles. */
 const FOOTPRINT_TIME = 9000;
 const FOOTPRINT_GAP = 0.45;

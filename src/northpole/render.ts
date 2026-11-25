@@ -118,7 +118,7 @@ const GROUND: Record<Ground, string> = {
 };
 
 /** The ground: snow, the cleared paths, the town square, the ice and the stream. The stream's ripples run in `drawRipples`. */
-export function drawGround(ctx: CanvasRenderingContext2D, world: World, range: TileRange) {
+function drawGround(ctx: CanvasRenderingContext2D, world: World, range: TileRange) {
   const half = { w: TILE_W / 2, h: TILE_H / 2 };
   for (let x = range.minX; x <= range.maxX; x++)
     for (let y = range.minY; y <= range.maxY; y++) {
@@ -170,7 +170,7 @@ export function drawGround(ctx: CanvasRenderingContext2D, world: World, range: T
 }
 
 /** Snowdrifts lie on the ground, under everything standing. */
-export function drawDrift(ctx: CanvasRenderingContext2D, thing: Thing) {
+function drawDrift(ctx: CanvasRenderingContext2D, thing: Thing) {
   const { x, y } = toScreen(thing);
   const width = 14 + 8 * thing.seed;
   ctx.fillStyle = colors.snowShade;
@@ -195,7 +195,7 @@ function shadow(ctx: CanvasRenderingContext2D, x: number, y: number, width: numb
 }
 
 /** A pine tree with snow on its branches, `scale` times the usual size. */
-export function drawPine(ctx: CanvasRenderingContext2D, x: number, y: number, scale: number) {
+function drawPine(ctx: CanvasRenderingContext2D, x: number, y: number, scale: number) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(scale, scale);
@@ -1395,7 +1395,7 @@ const POM_POMS: Record<BadgeTier | 'none', string> = {
 };
 
 /** An Elf Engineer's pin: a round gold badge with an elf's hat on it, `radius` across from its middle. */
-export function drawElfHatPin(
+function drawElfHatPin(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -1437,7 +1437,7 @@ const TROPHIES: Record<1 | 2 | 3, string> = {
 };
 
 /** A People's Choice trophy: a cup with two handles on a stand, `radius` across from its middle. */
-export function drawTrophy(
+function drawTrophy(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -1534,7 +1534,7 @@ function stripedRoof(
 }
 
 /** How bright a string light is at `time`: most of them glow, and now and then one dips. */
-export function twinkle(time: number, seed: number) {
+function twinkle(time: number, seed: number) {
   return 0.65 + 0.35 * Math.sin(time / 420 + seed * 1.7) * Math.sin(time / 1300 + seed * 0.3);
 }
 
@@ -1672,7 +1672,7 @@ export interface SiteLabel {
 }
 
 /** The construction site's scaffolding height, and its sign's post and board, in world pixels. */
-export const SITE = { scaffold: 84, post: 34, w: 132, h: 44 };
+const SITE = { scaffold: 84, post: 34, w: 132, h: 44 };
 
 /** A wooden pole from `foot` up `height`. */
 function pole(ctx: CanvasRenderingContext2D, foot: Tile, height: number) {
@@ -1802,7 +1802,7 @@ export interface PlatformLabel {
 }
 
 /** The sleigh platform's sign: how tall its post is, and its board's size, in world pixels. */
-export const PLATFORM_SIGN = { post: 70, w: 140, h: 40 };
+const PLATFORM_SIGN = { post: 70, w: 140, h: 40 };
 
 /**
  * A sleigh platform: a low wooden deck with a sleigh waiting on it and a sign

@@ -9,15 +9,15 @@ import { toScreen, type Box, type Tile, type World } from './world';
 /** How thick the island's snow slab is under its front edges, in world pixels. */
 export const SLAB = 56;
 /** How far the tallest things, the ferris wheel and the trees at the back, rise over the island. */
-export const HEADROOM = 140;
+const HEADROOM = 140;
 /** The room left round the whole island on a laptop, in CSS pixels. */
 export const MARGIN = 32;
 /** The room left round the carnival on a laptop, in CSS pixels. */
 export const CARNIVAL_MARGIN = 12;
 /** How far the pavilions' roofs rise over their plots, in world pixels. */
-export const CARNIVAL_HEADROOM = 240;
+const CARNIVAL_HEADROOM = 240;
 /** How near the camera ever comes on a laptop. */
-export const MAX_ZOOM = 1.25;
+const MAX_ZOOM = 1.25;
 /** How much nearer the camera comes on a laptop while the player walks. */
 export const WALK_ZOOM = 0.35;
 /** How near the camera is on a phone, following the player. */
@@ -25,7 +25,7 @@ export const PHONE_ZOOM = 0.75;
 /** How near two fingers can pinch the camera in. */
 export const MAX_PINCH_ZOOM = 1.5;
 /** Viewports narrower than this, in CSS pixels, are framed as a phone's. */
-export const PHONE_WIDTH = 720;
+const PHONE_WIDTH = 720;
 
 /** The four corners of the island's ground on screen, at the outer edges of its outer tiles. */
 export function islandCorners(world: World) {

@@ -59,7 +59,7 @@ export interface Thing extends Box {
  * station, a platform whose sleigh goes to one participant's level, and inside
  * a level, the sleigh back to the North Pole.
  */
-export type PlotKind = 'attraction' | 'booth' | 'site' | 'open' | 'platform' | 'exit';
+type PlotKind = 'attraction' | 'booth' | 'site' | 'open' | 'platform' | 'exit';
 
 export interface Plot extends Box {
   kind: PlotKind;
@@ -108,7 +108,7 @@ export const TILE_H = 32;
 /** The open plots waiting for a booth, on top of the booths and the sites: there's always at least one. */
 export const OPEN_PLOTS = 3;
 /** The world's fixed seed: the same squares always make the same world. */
-export const SEED = 1225;
+const SEED = 1225;
 
 /** Half the town square's width, in tiles. */
 const PLAZA = 3;
@@ -116,7 +116,7 @@ const PLAZA = 3;
 const FIRST_LANE = 18;
 const LANE_STEP = 8;
 /** Plots along one lane, half on each side. */
-export const PLOTS_PER_LANE = 6;
+const PLOTS_PER_LANE = 6;
 /** How far a lane runs from its avenue, in tiles: four for each row of plots. */
 const LANE_LENGTH = (PLOTS_PER_LANE / 2) * 4;
 /** Attractions in one ring round the town square. */
@@ -142,14 +142,14 @@ export function hash(...values: number[]): number {
 export const key = (x: number, y: number) => `${x},${y}`;
 
 /** Turns a tile a quarter turn clockwise round the town square, `quarter` times. */
-export function turn(tile: Tile, quarter: number): Tile {
+function turn(tile: Tile, quarter: number): Tile {
   let { x, y } = tile;
   for (let n = 0; n < ((quarter % 4) + 4) % 4; n++) [x, y] = [-y, x];
   return { x: x + 0, y: y + 0 };
 }
 
 /** Turns a box of tiles a quarter turn clockwise `quarter` times. */
-export function turnBox(box: Box, quarter: number): Box {
+function turnBox(box: Box, quarter: number): Box {
   const a = turn(box, quarter);
   const b = turn({ x: box.x + box.w - 1, y: box.y + box.h - 1 }, quarter);
   const x = Math.min(a.x, b.x);
@@ -231,9 +231,6 @@ export function boothPlot(number: number): Pick<Plot, 'x' | 'y' | 'w' | 'h' | 'd
   return { ...turnBox(box, quarter), door: turn({ x: right ? x + 1 : x - 1, y: box.y }, quarter) };
 }
 
-const inside = (box: Box, x: number, y: number) =>
-  x >= box.x && x < box.x + box.w && y >= box.y && y < box.y + box.h;
-
 /** What else decides where booths stand: their own `plot.json`s, and the booths being built. */
 export interface WorldExtras {
   /** Each booth's own `plot.json`, by login. */
@@ -251,7 +248,7 @@ const PLATFORM_STEP = 3;
  * The sleigh station's platform `number`: 2 by 2, along the south side of the
  * main path from the east avenue's end to the entrance, with its door on the path.
  */
-export function platformPlot(
+function platformPlot(
   number: number,
   avenueEnd: number,
 ): Pick<Plot, 'x' | 'y' | 'w' | 'h' | 'door'> {
@@ -703,11 +700,6 @@ export function plotAtDoor(world: World, position: Tile): Plot | undefined {
     if (gap < nearest) [best, nearest] = [plot, gap];
   }
   return best;
-}
-
-/** The plot covering tile (x, y), if any. */
-export function plotOn(world: World, x: number, y: number): Plot | undefined {
-  return world.plots.find((plot) => inside(plot, x, y));
 }
 
 /** A visitor's place on their stroll at `time`: walking there and back at an easy pace. */

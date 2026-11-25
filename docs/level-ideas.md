@@ -28,6 +28,8 @@ Say **what the place is, what's in it, and how it should feel**. Compare:
 
 > A cool winter level with lots of stuff.
 
+with:
+
 > A frozen-lake fair. A big pond in the middle with skaters going round, a
 > skate rental hut on one side and a cocoa hut on the other, and an
 > ice-fishing hole on the shore. Lamps along the paths, pines round the edge,

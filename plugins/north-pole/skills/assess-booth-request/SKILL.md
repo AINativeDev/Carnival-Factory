@@ -163,7 +163,7 @@ open a new request.`, then close the issue as not planned.
 Every comment starts with the marker line, is short and kind, and never quotes
 the parts you declined for:
 
-```
+```text
 <!-- assess-booth-request -->
 <the body above>
 ```

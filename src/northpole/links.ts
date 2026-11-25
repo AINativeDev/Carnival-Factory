@@ -18,10 +18,14 @@ export const BADGE_REQUEST_URL = `${REPO_URL}/issues/new?template=02-elf-enginee
  */
 export const ADVENT_REQUEST_URL = `${REPO_URL}/issues/new?template=03-advent-challenge.yml`;
 
-/** Where "claim a booth" links go: the same form, for someone without a booth. */
+/** Where "claim a booth" links go: the same form, for someone without a booth.
+ * @alias the same form under the name its links use
+ */
 export const CLAIM_URL = BOOTH_REQUEST_URL;
 
-/** Where "Build your own" links go: the same form, empty. */
+/** Where "Build your own" links go: the same form, empty.
+ * @alias the same form under the name its links use
+ */
 export const BUILD_YOUR_OWN_URL = BOOTH_REQUEST_URL;
 
 /** The longest booth name a remix link carries. */
@@ -60,7 +64,9 @@ export function profileUrl(login: string): string | undefined {
     : undefined;
 }
 
-/** Where "ask for a change" links go: the same form, for someone with a booth. */
+/** Where "ask for a change" links go: the same form, for someone with a booth.
+ * @alias the same form under the name its links use
+ */
 export const CHANGE_URL = BOOTH_REQUEST_URL;
 
 /**
@@ -85,8 +91,8 @@ export const OWN_REPO_URL = `${REPO_URL}#try-it-on-your-own`;
  * "own repo" link: where it goes, and its one short line. Both empty until a
  * maintainer fills them in, and until then the offer stays hidden.
  */
-export const TESSL_SIGNUP_URL = '';
-export const TESSL_SIGNUP_OFFER = '';
+const TESSL_SIGNUP_URL = '';
+const TESSL_SIGNUP_OFFER = '';
 
 /** The offer to show, or nothing while either half is missing or the link isn't https. */
 export function signupOffer(

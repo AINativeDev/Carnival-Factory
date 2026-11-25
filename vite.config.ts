@@ -221,8 +221,4 @@ export default defineConfig(({ command }) => ({
   // and no other website, to read what they serve.
   server: { cors: { origin: 'null' } },
   preview: { cors: { origin: 'null' } },
-  test: {
-    environment: 'node',
-    include: ['{src,carnival,scripts}/**/*.test.ts'],
-  },
 }));

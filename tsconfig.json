@@ -13,7 +13,18 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true
   },
-  "include": ["src", "carnival", "scripts", "vite.config.ts", "eslint.config.js"]
+  "include": [
+    "src",
+    "carnival",
+    "scripts",
+    "vite.config.ts",
+    "eslint.config.js",
+    "smoke",
+    "playwright.config.ts",
+    "vitest.config.ts"
+  ]
 }

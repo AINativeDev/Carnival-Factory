@@ -248,7 +248,7 @@ it closes. Tessl Code Review's lenses are set in `.tessl-code-review.yml`. To pu
 | Command          | What it does                                              |
 | ---------------- | --------------------------------------------------------- |
 | `npm ci`         | Install dependencies                                      |
-| `npm run dev`    | Run the map locally at http://localhost:5173              |
+| `npm run dev`    | Run the map locally at <http://localhost:5173>            |
 | `npm run format` | Format the repo with Prettier, skipping `.prettierignore` |
 | `npm run check`  | Lint, check formatting, type-check and test everything    |
 | `npm run build`  | Build the site into `dist/`                               |

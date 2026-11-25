@@ -14,7 +14,7 @@ declare const __BUILD_ID__: string;
 export const BUILD_ID = typeof __BUILD_ID__ === 'string' ? __BUILD_ID__ : 'dev';
 
 /** How often an open page checks for a new build. */
-export const CHECK_EVERY_MS = 5 * 60 * 1000;
+const CHECK_EVERY_MS = 5 * 60 * 1000;
 /** A page this young reloads quietly: nobody has started looking around yet. */
 export const QUIET_RELOAD_MS = 10 * 1000;
 
@@ -41,14 +41,14 @@ export function decideUpdate(
  * Goes to the new build at an address no cache has seen: the same page with
  * `?v=<build>`, keeping the hash, so the request reaches the newest page.
  */
-export function moveTo(latest: string) {
+function moveTo(latest: string) {
   const url = new URL(location.href);
   url.searchParams.set('v', latest);
   location.replace(url.href);
 }
 
 /** Reads the published build's id, bypassing every cache; undefined if it can't. */
-export async function latestBuild(base = document.baseURI): Promise<string | undefined> {
+async function latestBuild(base = document.baseURI): Promise<string | undefined> {
   try {
     const url = new URL(`version.json?t=${Date.now()}`, base);
     const response = await fetch(url, { cache: 'no-store' });
