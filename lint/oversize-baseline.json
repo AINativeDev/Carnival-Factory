@@ -13,7 +13,7 @@
   "src/northpole/diorama.ts": 430,
   "src/northpole/interior.ts": 395,
   "src/northpole/level.ts": 367,
-  "src/northpole/map.ts": 1472,
+  "src/northpole/map.ts": 1470,
   "src/northpole/plots.ts": 211,
   "src/northpole/render.ts": 2750,
   "src/northpole/world.test.ts": 407,

@@ -74,6 +74,7 @@ describe('storySteps: how a square was built, oldest first', () => {
       link: { href: 'https://github.com/o/r/pull/72', text: '#72' },
       detail: '2 review findings, 2 fixed, 3 commits',
       meta: 'Merged 24 Nov 2026',
+      review: { findings: 2, fixed: 2 },
     });
     expect(steps[2]?.label).toBe('Improved by the factory');
     expect(steps[4]?.detail).toBe('no review findings, 3 commits');

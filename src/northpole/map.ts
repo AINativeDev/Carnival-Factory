@@ -71,6 +71,7 @@ import {
   roomLayout,
   stepInRoom,
 } from './interior';
+import { dressRoom } from './room-dressing';
 import { nearestOpenPlot, nearYou, placeTag, platformTag, tagText, targetAt } from './visit';
 import {
   buildWorld,
@@ -1067,11 +1068,7 @@ export function startMap(
     ctx.globalAlpha = 1;
   };
 
-  /**
-   * Draws the room the player is inside: its walls and sign, the square's own
-   * drawing large on the back wall, and the player. The map says where the
-   * stage is, in the canvas's pixels, for the smoke test to read it.
-   */
+  /** The room the player is inside, dressed as its own, with the square's drawing on the stage. */
   const drawInside = (plot: Plot, width: number, height: number, time: number, dark: number) => {
     const started = performance.now();
     const square = squareOf(plot)!;
@@ -1086,6 +1083,7 @@ export function startMap(
       plot.kind === 'booth' ? `by @${plot.id}` : '',
       plot.kind === 'booth' ? avatarOf(plot.id!) : undefined,
     );
+    dressRoom(ctx, room, square, plot, time);
     const { stage } = room;
     // The stage is the square's drawing scaled, so the pointer scales with it.
     const pressed = pointer.now();
