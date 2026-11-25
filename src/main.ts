@@ -55,7 +55,7 @@ function renderGuide(
   for (const square of squares) {
     const item = document.createElement('li');
     item.innerHTML = `<a><span class="name"></span> <span class="owner"></span></a>`;
-    item.querySelector('a')!.href = squareLink(href as SquareKind, square.id);
+    item.querySelector('a')!.href = `#/${href}/${square.id}`;
     whenNamed(square, () => (item.querySelector('.name')!.textContent = square.name));
     item.querySelector('.owner')!.textContent = by(square.id);
     list.append(item);

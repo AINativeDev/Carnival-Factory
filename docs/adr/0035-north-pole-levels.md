@@ -26,7 +26,7 @@ level checks all key a level by that folder name.
   their booth folder, never the level.
 - Its landmark is an attraction with the same id,
   `carnival/attractions/the-factory/`. On the home map, opening it (a click,
-  E or Enter, or its link in the guide) goes to `#/level/<id>` rather than
+  E or Enter) goes to `#/level/<id>` rather than
   its room. Its own `#/attraction/<id>` still shows its room, like every
   attraction's, so the smoke and flashing checks play its drawing, and that
   room's panel offers the sleigh inside.

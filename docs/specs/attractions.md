@@ -16,7 +16,7 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   North Pole and offers to claim a booth beside it.
 - The ferris wheel is the Booths panel's Featured square.
 - The Factory is a landmark: opening it from the map, by a click, E or Enter,
-  or from the guide's list, takes the sleigh into the North Pole's level of
+  takes the sleigh into the North Pole's level of
   the same id rather than into a room. `#/attraction/the-factory` still shows
   its room, whose panel has a link to take the sleigh inside
   ([ADR 0035](../adr/0035-north-pole-levels.md)).
