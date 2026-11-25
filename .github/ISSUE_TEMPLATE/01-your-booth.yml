@@ -38,7 +38,7 @@ body:
     id: what
     attributes:
       label: What should your booth show?
-      description: The scene, in a few sentences. Who or what is in it, and what are they doing? For a change, what should be different.
+      description: The scene, in a few sentences. Who or what is in it, and what are they doing? For a change, what should be different. You can also attach a picture to draw from, such as your logo or a sketch; the factory redraws it in shapes.
       placeholder: |
         A frozen pond at dusk. Two penguins in scarves skate figure eights, and a
         third wobbles at the edge holding a cup of cocoa. Pine trees behind, a
