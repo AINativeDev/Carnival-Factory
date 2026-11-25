@@ -1,7 +1,8 @@
 /**
  * The auto-merge gate. For each open factory pull request built from a booth
- * or level request (ADR 0030), it gathers the facts, runs the deterministic checks, keeps one
- * checklist comment up to date, and merges only when `evaluateGate` says so.
+ * or level request (ADR 0031), it gathers the facts, runs the deterministic
+ * checks, keeps one checklist comment up to date, and merges only when
+ * `evaluateGate` says so.
  *
  * Run by .github/workflows/auto-merge-booths.yml from main's own code, with
  * GITHUB_TOKEN and GITHUB_REPOSITORY set. It reads the pull request's files as

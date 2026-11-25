@@ -239,7 +239,7 @@ scripts/
                             and writes their counts before the deploy's build
   elf-engineer.ts           the Elf Engineer badge's rules: the form, the check,
                             the tiers and the holders (plain functions)
-  peoples-choice.ts         the People's Choice standings from its discussion's comments:
+  peoples-choice.ts         the People's Choice standings from its ballot issue's comments:
                             one vote per account, not the owner's (plain functions)
   write-peoples-choice.ts   adds a comment for each new entry, reads the votes and writes
                             the standings before the deploy's build (previews have none)
@@ -497,7 +497,7 @@ sandboxed squares. The latest request wins: accepting one closes the author's
 older open `level-request` issues as superseded. Accepted level requests are
 built by the `implement-level` action, whether the assessment or a maintainer
 adds `tessl`, and a level's pull request goes through the same auto-merge gate
-as a booth's ([ADR 0030](docs/adr/0030-levels-through-the-gate.md)): it merges
+as a booth's ([ADR 0031](docs/adr/0031-levels-through-the-gate.md)): it merges
 on its own when every check passes, and waits for a maintainer otherwise. [Level ideas](docs/level-ideas.md)
 helps participants write one. `carnival/levels/jedi4ever/` is the starter level to copy.
 

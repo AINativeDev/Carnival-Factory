@@ -5,7 +5,7 @@ description: "Judge whether a factory pull request for one participant's booth o
 
 # Assess a booth or level pull request's risk and taste
 
-A level request is judged exactly like a booth request (ADR 0030): what
+A level request is judged exactly like a booth request (ADR 0031): what
 this skill says of a booth holds for a level and each of its squares, with
 the differences named below.
 

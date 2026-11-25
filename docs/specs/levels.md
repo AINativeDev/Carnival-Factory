@@ -23,7 +23,7 @@ A level is a whole patch of the North Pole of a participant's own,
   `gingerbread`) tints the sky and colours the signs.
 - A level's pull request merges on its own through the auto-merge gate when
   every check passes, and waits for a maintainer otherwise, exactly like a
-  booth's ([ADR 0030](../adr/0030-levels-through-the-gate.md)).
+  booth's ([ADR 0031](../adr/0031-levels-through-the-gate.md)).
 - A `level-request` labelled `tessl`, by the assessment or a maintainer, is
   built by the `implement-level` action: Sonnet on the `dev` machines, in the
   level's own folder only.

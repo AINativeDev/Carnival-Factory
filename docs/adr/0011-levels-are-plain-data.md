@@ -1,7 +1,7 @@
 # 0011. A level is plain data plus sandboxed squares
 
 - Status: Accepted. Its last sentence, that level pull requests wait for a
-  maintainer, is **Superseded by** [0030](0030-levels-through-the-gate.md).
+  maintainer, is **Superseded by** [0031](0031-levels-through-the-gate.md).
 - Date: 2026-11-24
 - Pull requests: #122
 - Spec: [levels.md](../specs/levels.md)

@@ -1,6 +1,6 @@
 /**
  * What the auto-merge gate needs to know about a request, booth or level
- * alike (ADR 0030): which kind it is, which files its folder may hold without
+ * alike (ADR 0031): which kind it is, which files its folder may hold without
  * a person, the static checks on its code, and the note when it lands. Plain
  * functions, so scripts/auto-merge-booths.ts, which talks to GitHub, stays
  * thin and these rules are tested.

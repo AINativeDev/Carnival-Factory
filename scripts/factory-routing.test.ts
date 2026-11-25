@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
  * Which builder a labelled request reaches, read from tessl.json's own
  * triggers: a booth request goes to implement-booth and a level request to
  * implement-level, whether the assessment or a maintainer adds `tessl`
- * (ADR 0030), and anything else to the general implement action.
+ * (ADR 0031), and anything else to the general implement action.
  */
 interface Trigger {
   on: string[];

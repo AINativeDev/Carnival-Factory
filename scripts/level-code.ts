@@ -1,6 +1,6 @@
 /**
  * The auto-merge gate's static check on one participant's level folder,
- * `carnival/levels/<login>/` (ADR 0030). Its squares are code, so each one,
+ * `carnival/levels/<login>/` (ADR 0031). Its squares are code, so each one,
  * `squares/<id>/`, goes through the same check as a booth, from its own
  * folder. Its level.ts is plain data the page reads, so it may hold nothing
  * but the one NorthPoleLevel object, as ESLint holds it in CI. Anything else

@@ -1,6 +1,7 @@
 /**
  * The auto-merge gate for a factory pull request that changes one booth or
- * one level (ADR 0030: a level merges through the same gate as a booth). Given the facts about a pull request, it decides whether it merges on its
+ * one level (ADR 0031: a level merges through the same gate as a booth).
+ * Given the facts about a pull request, it decides whether it merges on its
  * own, waits for something still running, or needs a person. Plain functions,
  * so the rules can be tested without GitHub; `auto-merge-booths.ts` gathers
  * the facts and acts on the decision.

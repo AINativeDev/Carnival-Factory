@@ -2,7 +2,7 @@
 
 A factory pull request for one participant's booth, or their level, merges on
 its own once every check passes on its head commit. Any doubt sends it to a
-person ([ADR 0030](../adr/0030-levels-through-the-gate.md) brought levels in).
+person ([ADR 0031](../adr/0031-levels-through-the-gate.md) brought levels in).
 
 ## Behaviour
 

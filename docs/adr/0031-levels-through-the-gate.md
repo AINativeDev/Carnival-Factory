@@ -1,4 +1,4 @@
-# 0030. Level pull requests merge through the gate, like booths
+# 0031. Level pull requests merge through the gate, like booths
 
 - Status: Accepted
 - Date: 2026-11-25
