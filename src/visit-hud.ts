@@ -2,10 +2,7 @@ import { badgeFor, factoryUrl } from './northpole/badges';
 import { voteUrl } from './northpole/peoples-choice';
 import { PEOPLES_CHOICE } from './northpole/peoples-choice-standings';
 import {
-  BADGE_REQUEST_URL,
   BUILD_YOUR_OWN_URL,
-  CHANGE_URL,
-  CLAIM_URL,
   HOW_IT_WORKS_URL,
   KEEP_POSTED_URL,
   OWN_REPO_URL,
@@ -25,7 +22,9 @@ import {
   renderHistory,
 } from './history';
 import { SIGNUP_OFFER, showSignupOffer } from './offer';
-import { deepLink, levelLink, seasonLink } from './route';
+import { deepLink, levelLink } from './route';
+import { SQUARE_CRAFT, craftKey, earnedBadges, renderCraft } from './craft-badges';
+import { fillVisitHelp } from './visit-help';
 
 export interface VisitHudOptions {
   kind: SquareKind;
@@ -76,6 +75,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>
     <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
     <p class="visit-owner"></p>
+    <p class="visit-craft" hidden></p>
     <p class="visit-remix">
       <a class="visit-remix-link" target="_blank" rel="noopener">Remix this booth</a>
       <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Build your own</a>
@@ -159,17 +159,12 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   $<HTMLDetailsElement>('.visit-history').open = !matchMedia('(max-width: 719px)').matches;
   showSignupOffer(card);
 
-  const help = $('.visit-help');
-  if (level) {
-    help.innerHTML = `<p>This square belongs to a participant's own level. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> in the North Pole.</p>`;
-  } else if (kind === 'booth') {
-    help.innerHTML = `<p><span class="visit-ask">Is this yours?</span> <a href="${CHANGE_URL}" target="_blank" rel="noopener">Ask for a change</a> <span aria-hidden="true">·</span> <button class="visit-mine" type="button">Share it as yours</button></p>
-      <p><span class="visit-ask">Built your own factory?</span> <a href="${BADGE_REQUEST_URL}" target="_blank" rel="noopener">Get the Elf Engineer badge</a> <span aria-hidden="true">·</span> <a href="#/advent">Open the advent calendar</a></p>
-      <p><a class="visit-season">Your season</a></p>`;
-    help.querySelector<HTMLAnchorElement>('.visit-season')!.href = seasonLink(square.id);
-  } else {
-    help.innerHTML = `<p>Attractions belong to the North Pole, so only its maintainers change them. <a href="${CLAIM_URL}" target="_blank" rel="noopener">Claim a booth of your own</a> beside it.</p>`;
-  }
+  fillVisitHelp($('.visit-help'), kind, square.id, level);
+  renderCraft(
+    $('.visit-craft'),
+    earnedBadges(SQUARE_CRAFT, craftKey(kind, square.id, level)),
+    (tag) => document.createElement(tag),
+  );
 
   // A level's square has no share page of its own: its link opens the level in front of it.
   const link = level

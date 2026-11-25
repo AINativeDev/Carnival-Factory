@@ -836,6 +836,35 @@ kbd {
   font-weight: bold;
 }
 
+/* A square's craft badges: small gold-edged tags, only for what it earned (docs/adr/0029). */
+.visit-craft {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 4px 0 8px;
+  font-size: 12px;
+}
+
+.visit-craft[hidden] {
+  display: none;
+}
+
+.visit-craft-badge {
+  padding: 2px 8px;
+  border: 1px solid var(--color-gold);
+  border-radius: 999px;
+  color: var(--color-cocoa);
+  font-weight: 700;
+  cursor: help;
+}
+
+.visit-craft-about {
+  color: var(--color-muted);
+  font-size: 11px;
+}
+
 .visit-remix {
   display: flex;
   flex-wrap: wrap;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gleam, PUFF, rise } from './booth';
+import { gleam, PUFF, rise } from './motion';
 
 describe('rise', () => {
   it('stays between 0 and 1 and repeats every puff', () => {
