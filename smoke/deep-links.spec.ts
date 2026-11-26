@@ -1,5 +1,6 @@
 import { expect, test } from './coverage';
 import { frameOf, played, watch } from './support/carnival';
+import { isOffMap } from '../src/northpole/off-map';
 
 /**
  * Links straight to a square on the map, `#/?booth=<login>` or
@@ -12,7 +13,8 @@ for (const viewport of [
   { width: 390, height: 844 },
   { width: 1200, height: 1000 },
 ]) {
-  for (const { kind, id } of played) {
+  // An off-map attraction, AI DevCon, has no stall to draw: its billboard is its way in.
+  for (const { kind, id } of played.filter((square) => !isOffMap(square.id))) {
     test(`#/?${kind}=${id} opens the map on it at ${viewport.width} wide`, async ({ page }) => {
       const problems = watch(page);
       await page.setViewportSize(viewport);

@@ -12,8 +12,9 @@ const billboard: Thing = { kind: 'billboard', x: 4, y: -4, w: 2, h: 1, seed: 0, 
 const size = { width: 800, height: 600 };
 
 /** Just enough of a running map for a click: a canvas, the camera, and the world's things. */
-function running(things: Thing[]): MapRun {
+function running(things: Thing[], onOpen = vi.fn()): MapRun {
   return {
+    options: { onOpen },
     canvas: { getBoundingClientRect: () => ({ left: 0, top: 0, ...size }), style: { cursor: '' } },
     pointer: { tapped: () => true },
     visiting: undefined,
@@ -51,10 +52,12 @@ describe('the billboard on the map', () => {
     expect(billboardUnder(running([billboard]), { x: foot.x, y: foot.y + 40 })).toBe(false);
   });
 
-  it('opens the tickets page in a new tab when clicked', () => {
+  it("opens AI DevCon's room when clicked, never a new tab", () => {
     const opened = vi.spyOn(window, 'open').mockReturnValue(null);
-    onClick(running([billboard]), new MouseEvent('click', onBoard()));
-    expect(opened).toHaveBeenCalledWith(BILLBOARD.tickets, '_blank', 'noopener');
+    const onOpen = vi.fn();
+    onClick(running([billboard], onOpen), new MouseEvent('click', onBoard()));
+    expect(onOpen).toHaveBeenCalledWith('attraction', BILLBOARD.room);
+    expect(opened).not.toHaveBeenCalled();
   });
 
   it('shows a pointing hand over it, as over a square', () => {

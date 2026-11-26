@@ -4,6 +4,7 @@
  * `badge-request` issues (scripts/badge-holders.ts) and bakes the list into
  * the page, so the page never asks the network for it.
  */
+import { SETTINGS } from '../settings.ts';
 
 /** A badge's tier: bronze, silver and gold for 1, 5 and 25 factory pull requests merged. */
 export type BadgeTier = 'bronze' | 'silver' | 'gold';
@@ -59,7 +60,7 @@ export const badgeFor = (login: string, holders: readonly BadgeHolder[] = BADGE_
 
 /** Where "See @login's own factory" goes: the holder's repository. */
 export const factoryUrl = (holder: BadgeHolder) =>
-  `https://github.com/${holder.repo.split('/').map(encodeURIComponent).join('/')}`;
+  `${SETTINGS.github.web}/${holder.repo.split('/').map(encodeURIComponent).join('/')}`;
 
 /** The badge image's path on the site, from its root. */
 export const badgeImage = (tier?: BadgeTier) => `badges/elf-engineer${tier ? `-${tier}` : ''}.svg`;

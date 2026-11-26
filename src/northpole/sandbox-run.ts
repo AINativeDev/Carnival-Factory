@@ -27,6 +27,8 @@ export interface SquareRun {
   info: SquareInfo;
   /** The page's listeners still waiting for the square's name. */
   readonly listeners: ((info: SquareInfo) => void)[];
+  /** The page's listeners for the links out the square's drawing asks for (square-ask.ts). */
+  readonly linkListeners: ((link: number) => void)[];
   iframe?: HTMLIFrameElement | undefined;
   latest?: ImageBitmap | undefined;
   /** The size of the frame asked for and not yet sent, if one is. */
@@ -49,6 +51,7 @@ export const newRun = (kind: SquareKind, id: string): SquareRun => ({
   state: 'loading',
   info: { name: id, description: '' },
   listeners: [],
+  linkListeners: [],
   waitingSince: 0,
   owedPresses: 0,
   errors: 0,

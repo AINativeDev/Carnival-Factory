@@ -58,7 +58,7 @@ export function fillVisitHelp(
       ${factoryLine()}
       <p><a class="visit-season">Your season</a></p>`;
     the(help, '.visit-season', HTMLAnchorElement).href = seasonLink(id);
-  } else if (landmarkLevel(kind, id)) {
+  } else if (landmarkLevel(kind, id) && isOn('levels')) {
     help.innerHTML = `<p>This landmark is the way into a level of the North Pole's own. <a href="${levelLink(id)}">Take the sleigh inside</a> <span aria-hidden="true">·</span> ${GET_A_BOOTH}.</p>`;
   } else {
     help.innerHTML = `<p>Attractions belong to the North Pole, so only its maintainers change them. ${GET_A_BOOTH} beside it.</p>`;

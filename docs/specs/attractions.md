@@ -50,9 +50,12 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   treat on the house where it lands (a gumdrop, an icing swirl and a candy in
   turn, up to 24, kept only while its frame runs), and an elf strolling past its two mirror
   windows shows in them stretched tall or squashed wide.
-- The Factory, The Academy, The Recording Studio and The Year in Review are landmarks: opening
-  one from the map, by a click, E or Enter, takes the sleigh into the North
-  Pole's level of the same id rather than into a room. `#/attraction/<id>`
+- The Factory, The Academy, The Recording Studio and The Year in Review are landmarks: with
+  `levels` on, opening one from the map, by a click, E or Enter, takes the
+  sleigh into the North Pole's level of the same id rather than into a room.
+  With `levels` off, as on the live site, the Factory, the Academy and the
+  Studio open their own rooms like any booth, each an interactive piece whose
+  panel has its links out ([ADR 0058](../adr/0058-tessl-places-open-as-booths.md)). `#/attraction/<id>`
   still shows its room, whose panel has a link to take the sleigh inside
   ([ADR 0035](../adr/0035-north-pole-levels.md)). The Academy (spot 10) is a
   schoolhouse with a swinging bell, and The Recording Studio (spot 11) a
@@ -63,7 +66,10 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   Each link out to another site is tagged `utm_source=carnival-factory`,
   `utm_campaign=christmas-edition` and `utm_medium=<the place's id>`, such as
   `the-studio`; the Year in Review's GitHub form is left as it is
-  (`northPoleLinks` and `landmarkLinkOut` in `src/northpole/north-pole-links.ts`).
+  (`northPoleLinks` in `src/northpole/north-pole-links.ts`). The Factory's
+  panel has "Sign up for Tessl", and AI DevCon's room "Get tickets".
+- AI DevCon is an attraction with no stall: the billboard by the road is its
+  way in, and a click on it opens its room (`src/northpole/off-map.ts`).
 - The Gift shop shows the gifts of `plugins/north-pole-gifts/`: small factory
   loops anyone can install on their own repository. It waits behind the
   `giftShop` feature flag ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)), off on the live site: until then the

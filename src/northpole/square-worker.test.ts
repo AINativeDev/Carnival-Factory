@@ -7,6 +7,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
  * sjmaple's exports nothing the map can use. The worker keeps its square once
  * loaded, so each test loads it afresh.
  */
+/** What the stand-in booth asks of the page after its latest frame. */
+let asked: unknown;
+
 vi.mock('../../carnival/booths/jedi4ever/booth.ts', () => ({
   default: {
     id: 'jedi4ever',
@@ -15,7 +18,9 @@ vi.mock('../../carnival/booths/jedi4ever/booth.ts', () => ({
     stall: { shape: 'shed', roof: 'gold', extra: 'dropped' },
     draw: (_ctx: unknown, _size: number, time: number) => {
       if (time === 13) throw new Error('melted');
+      asked = time === 7 ? { open: 0 } : time === 8 ? { open: 2.5 } : undefined;
     },
+    ask: () => asked,
   },
 }));
 vi.mock('../../carnival/booths/sjmaple/booth.ts', () => ({ default: { id: 'someone-else' } }));
@@ -145,6 +150,20 @@ describe('drawing a square', () => {
       { type: 'frame', bitmap: { from: 64 }, drawMs: expect.any(Number) as number },
       [{ from: 64 }],
     );
+  });
+
+  it("passes on a link the drawing asks for with its frame, and drops an ask it can't read", async () => {
+    await loaded();
+    const drawMs = expect.any(Number) as number;
+    say({ type: 'draw', size: 64, time: 7 });
+    expect(frame).toHaveBeenLastCalledWith(
+      { type: 'frame', bitmap: { from: 64 }, drawMs, open: 0 },
+      [{ from: 64 }],
+    );
+    say({ type: 'draw', size: 64, time: 8 });
+    expect(frame).toHaveBeenLastCalledWith({ type: 'frame', bitmap: { from: 64 }, drawMs }, [
+      { from: 64 },
+    ]);
   });
 
   it('keeps its canvas while the size stays, and makes a new one when it changes', async () => {

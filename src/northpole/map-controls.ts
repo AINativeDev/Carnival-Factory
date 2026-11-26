@@ -8,7 +8,7 @@ import { islandBounds, islandCorners } from './camera';
 import { resize } from './map-layers';
 import { spotOf } from './map-labels';
 import { named, select } from './map-open';
-import type { MapControls } from './map-options';
+import type { MapControls, SquareKind } from './map-options';
 import { islandBox, replan } from './map-plan';
 import type { MapRun } from './map-state';
 import { walkToward } from './map-walk';
@@ -131,9 +131,9 @@ function backToCarnival(m: MapRun) {
 
 /** Takes the player inside a square, with a short fade. Returns whether it's there. */
 function visit(m: MapRun, kind: string, id: string) {
-  const spot = m.world.spots.find((p) => p.kind === kind && p.id === id);
+  const spot = spotOf(m, kind as SquareKind, id);
   if (!spot) return false;
-  if (m.visiting === spot) return true;
+  if (m.visiting?.kind === kind && m.visiting.id === id) return true;
   // The player goes in at the door, and whatever walk they were on ends there.
   if (spotAtDoor(m.world, m.player) !== spot) m.player = { ...spot.door };
   // In a ride level the car takes them to the square's station, where they come out again.

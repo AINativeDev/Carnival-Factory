@@ -4,6 +4,7 @@
  * decide with `evaluateGate`, keep the checklist comment up to date, and merge
  * only when every step passes. Then publish the map if it's behind.
  */
+import { SETTINGS } from '../src/settings.ts';
 import { evaluateGate, gateComment } from './booth-gate.ts';
 import { closeRequest, holdForPerson, mergePull, upsertChecklist } from './merge-gate-actions.ts';
 import { holdsForPerson } from './merge-gate-decision.ts';
@@ -59,7 +60,7 @@ export async function runMergeGate(
     github,
     repository,
     dryRun,
-    guide: `https://github.com/${repository}/blob/main/docs/how-it-works.md`,
+    guide: `${SETTINGS.github.web}/${repository}/blob/main/docs/how-it-works.md`,
     merged: false,
     held: new Set(),
   };

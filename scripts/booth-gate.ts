@@ -8,6 +8,7 @@
  * The rule of thumb: every check must pass on the pull request's current head
  * commit, and any doubt sends it to a person.
  */
+import { SETTINGS } from '../src/settings.ts';
 import { safeInline } from './safe-text.ts';
 import type { CodeProblem } from './square-code.ts';
 import type { TextFinding } from './injection-scan.ts';
@@ -174,6 +175,6 @@ export function gateComment(result: GateDecision, guideUrl: string): string {
     '',
     next,
     '',
-    `Each step is a loop in a [Tessl](https://tessl.io) software factory. [How your request is built](${guideUrl}) explains them, and how to run one on your own repository.`,
+    `Each step is a loop in a [Tessl](${SETTINGS.tessl.home}) software factory. [How your request is built](${guideUrl}) explains them, and how to run one on your own repository.`,
   ].join('\n');
 }

@@ -2,6 +2,7 @@
  * The booth owners' avatars, downloaded at build time so visitors make no
  * requests to GitHub (scripts/download-avatars.ts). Plain functions.
  */
+import { SETTINGS } from '../src/settings.ts';
 
 /** A GitHub login: letters, digits and single hyphens, at most 39 characters. */
 const LOGIN = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
@@ -14,7 +15,7 @@ export const AVATAR_MAX_BYTES = 200 * 1024;
 
 /** Where GitHub serves a login's avatar, 128 pixels square. */
 export const avatarUrl = (login: string) =>
-  `https://github.com/${encodeURIComponent(login)}.png?size=128`;
+  `${SETTINGS.github.web}/${encodeURIComponent(login)}.png?size=128`;
 
 /** Whether the bytes GitHub answered with are a PNG, a JPEG or a GIF, and small enough to keep. */
 export function isAvatar(bytes: Uint8Array): boolean {

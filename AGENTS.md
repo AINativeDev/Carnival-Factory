@@ -147,6 +147,8 @@ src/
   feature-flag-names.ts     the feature flags' names and reading FEATURE_FLAGS
                             (plain functions, shared with vite.config.ts and smoke/)
   edition.ts                the site's name and this edition's, in one place
+  settings.ts               the settings everything shares: the site's name, the repository,
+                            UTM tags, and Tessl's, AI DevCon's and GitHub's addresses
   top-menu.ts               the top bar's menu: building it into the banner, the phone's
                             Menu button, Escape and focus, opening the Booths panel
   top-menu-items.ts         the menu's places, their icons and which one is current
@@ -419,7 +421,11 @@ uses any of it:
    it, so play with `down` and `presses` inside, where the drawing fills the
    screen beside the panel. Ignoring `pointer` is fine. What a booth remembers of the pointer, such as when a snowball was
    thrown or a score, is the one state it keeps between calls: keep it small,
-   and still move from `time`.
+   and still move from `time`. A square may also have an `ask()`, which the
+   map calls after each frame: it returns `{ open: n }` on the frame a tap
+   hits a button that should open the square's `n`th link out
+   (`src/northpole/square-ask.ts`). Only the North Pole's own places have
+   links, so a booth's ask does nothing ([ADR 0058](docs/adr/0058-tessl-places-open-as-booths.md)).
 3. Colours and fonts from `theme` and `canvasFont` in `src/northpole/theme.ts`.
    No hex colours or font strings in a square. Unless the request asks for
    another style, draw it in the diorama style in [`docs/style.md`](docs/style.md):

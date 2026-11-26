@@ -3,6 +3,7 @@
  * `badges/index.html` (vite.config.ts). It is static HTML for people to copy a
  * README snippet from, apart from the badge's rules in scripts/elf-engineer.ts.
  */
+import { SETTINGS } from '../src/settings.ts';
 import { SITE_NAME, SITE_TITLE } from '../src/edition.ts';
 import { BADGE_TIERS, badgeImage, badgeSnippet, type BadgeTier } from '../src/northpole/badges.ts';
 import { escapeHtml } from './share-pages.ts';
@@ -39,7 +40,7 @@ export function badgePage(site: string, requestUrl: string): string {
   </head>
   <body>
     <h1>The Elf Engineer badge</h1>
-    <p>For people who set up a <a href="https://tessl.io">Tessl</a> factory on a repository of their own.
+    <p>For people who set up a <a href="${SETTINGS.tessl.home}">Tessl</a> factory on a repository of their own.
     <a href="${escapeHtml(requestUrl)}">Ask for it</a> with the Elf Engineer form, and once it's granted,
     paste the snippet into your README. Bronze, silver and gold are for 1, 5 and 25 factory pull requests
     merged on your repository: ask again with the same form to move up.</p>

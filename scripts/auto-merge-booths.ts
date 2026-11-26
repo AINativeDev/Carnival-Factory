@@ -9,13 +9,14 @@
  * text through the API and never checks out or runs its code. DRY_RUN=1 only
  * prints what it would do.
  */
+import { SETTINGS } from '../src/settings.ts';
 import { githubClient } from './merge-gate-github.ts';
 import { runMergeGate } from './merge-gate-round.ts';
 
 const token = process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY;
 if (!token || !repository) throw new Error('Set GITHUB_TOKEN and GITHUB_REPOSITORY');
-const api = process.env.GITHUB_API_URL ?? 'https://api.github.com';
+const api = process.env.GITHUB_API_URL ?? SETTINGS.github.api;
 
 const ok = await runMergeGate(githubClient(api, repository, token), {
   repository,

@@ -13,6 +13,7 @@ import pinned from './spots.json';
 import { type PendingBooth } from './construction-sites';
 import { type Box, type World } from './world';
 import { buildWorld } from './world-build';
+import { isOffMap } from './off-map';
 
 /** The world for these options and booth requests: a level's own, or the North Pole's. */
 export function layWorld(options: MapOptions, list: readonly PendingBooth[]): World {
@@ -20,7 +21,8 @@ export function layWorld(options: MapOptions, list: readonly PendingBooth[]): Wo
   return (
     options.level?.world ??
     buildWorld(
-      options.attractions.map((square) => square.id),
+      // An off-map attraction has its way in already on the map, not a stall (off-map.ts).
+      options.attractions.map((square) => square.id).filter((id) => !isOffMap(id)),
       options.booths.map((square) => square.id),
       pinned,
       { files: boothSpotFiles, pending: list, ...(levels && { levels }) },

@@ -4,9 +4,10 @@
  * GraphQL queries. The token and the address are read on every request, not
  * once at import, so a test can set them.
  */
+import { SETTINGS } from '../src/settings.ts';
 
 /** The REST API's address, GitHub's own unless GITHUB_API_URL names another. */
-const restApi = () => process.env.GITHUB_API_URL ?? 'https://api.github.com';
+const restApi = () => process.env.GITHUB_API_URL ?? SETTINGS.github.api;
 
 function headers(): Record<string, string> {
   const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;

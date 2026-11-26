@@ -11,10 +11,10 @@ describe('the edition', () => {
   it("fills a page's placeholders, every one of them", () => {
     expect(
       fillEdition(
-        '<title>%SITE_TITLE%</title><a>%SITE_NAME% <span>%EDITION%</span></a>%SITE_NAME%',
+        '<title>%SITE_TITLE%</title><a href="%REPO_URL%">%SITE_NAME% <span>%EDITION%</span></a>%SITE_NAME%',
       ),
     ).toBe(
-      '<title>Carnival Factory – Christmas edition</title><a>Carnival Factory <span>Christmas edition</span></a>Carnival Factory',
+      '<title>Carnival Factory – Christmas edition</title><a href="https://github.com/AINativeDev/Carnival-Factory">Carnival Factory <span>Christmas edition</span></a>Carnival Factory',
     );
   });
 });
