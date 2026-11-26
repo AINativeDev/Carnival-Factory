@@ -1,0 +1,22 @@
+# Dependabot keeps the packages and the workflows' actions up to date
+# (docs/adr/0060-dependabot.md). Its pull requests pass the ownership check
+# only when they change just those files, and never merge on their own: a
+# maintainer reviews each one.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # Minor and patch updates come together, in one pull request a week.
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']

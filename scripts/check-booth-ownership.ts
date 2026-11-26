@@ -8,6 +8,7 @@
 import { need, repoPath } from './github-api.ts';
 import {
   filesOutsideBooth,
+  isDependencyUpdate,
   isFactory,
   linkedIssue,
   boothFolder,
@@ -101,6 +102,15 @@ export async function ownershipVerdict(
   ) {
     return {
       lines: [`A maintainer approved #${issueNumber} for the factory, so it may change any file.`],
+      failed: false,
+    };
+  }
+
+  if (isDependencyUpdate(prAuthor, files)) {
+    return {
+      lines: [
+        'Dependabot changes only the packages and the workflows, for a maintainer to review.',
+      ],
       failed: false,
     };
   }
