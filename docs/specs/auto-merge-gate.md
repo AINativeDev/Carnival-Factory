@@ -47,8 +47,11 @@ scripts/auto-merge-booths-needs-human.test.ts):
    request's title, or the code (enforced by: scripts/injection-scan.ts,
    scripts/injection-scan.test.ts).
 5. **Checks pass** (soft): `check`, `ownership`, `build` and `smoke` succeed
-   (enforced by: .github/workflows/ci.yml, booth-ownership.yml,
-   preview-build.yml).
+   on the head commit, each read from its latest run that ran. A skipped run,
+   such as CI starting again for the `low-risk` label with no job for it,
+   counts only when no run of that name ran (enforced by:
+   .github/workflows/ci.yml, booth-ownership.yml, preview-build.yml,
+   scripts/merge-gate-facts.ts, scripts/merge-gate-round.test.ts).
 6. **Code review approves** (soft): the latest `tessl-reviewer[bot]` review
    with a result, on the head commit, says `approved=true` (enforced by:
    Tessl Code Review, .tessl-code-review.yml).
