@@ -16,12 +16,30 @@ jobs:
         with:
           # Keep the token out of .git/config, where the code that runs next could read it.
           persist-credentials: false
+          # The merge commit's first parent is the base: enough to see what changed.
+          fetch-depth: 2
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run check
+      # A pull request that only changes one booth's or one level's folder checks
+      # that folder (scripts/square-check.ts, docs/adr/0053); anything else, and
+      # every push to main, runs the full check.
+      - name: Check
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          scope=""
+          if [ "$EVENT" = pull_request ]; then
+            scope=$(git diff --name-only HEAD^1 HEAD | node scripts/square-check.ts)
+          fi
+          if [ -n "$scope" ]; then
+            echo "Checking only $scope."
+            node scripts/square-check.ts run "$scope"
+          else
+            npm run check
+          fi
       # New and changed lines need 99% unit-test coverage (docs/adr/0025).
       # The pull request's merge commit is compared with its base branch.
       - name: Coverage of changed lines

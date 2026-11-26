@@ -18,6 +18,7 @@ import type { CodeProblem, SourceFile, SquareFile } from './square-code/problems
 import { checkReach } from './square-code/reach.ts';
 import { squareProgram } from './square-code/square-program.ts';
 import { checkSyntax } from './square-code/syntax.ts';
+import { toolConfigProblems } from './square-code/tool-config.ts';
 
 export { BANNED_GLOBALS, BANNED_PROPERTIES } from './square-code/banned-names.ts';
 export { isSpotFile, spotFileProblems } from './square-code/spot-file.ts';
@@ -32,6 +33,7 @@ export function checkSquareCode(folder: string, files: readonly SourceFile[]): C
   const problems: CodeProblem[] = [
     ...hiddenTextProblems(files),
     ...jsonFileProblems(folder, files),
+    ...toolConfigProblems(files),
   ];
   const sources = files.filter((file) => file.path.endsWith('.ts'));
   const program = squareProgram(sources);

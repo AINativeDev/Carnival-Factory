@@ -12,7 +12,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "lint": "eslint --pass-on-unpruned-suppressions . && markdownlint-cli2 && node scripts/check-json.ts && knip",
+    "lint": "eslint --config eslint.config.js --pass-on-unpruned-suppressions . && markdownlint-cli2 && node scripts/check-json.ts && knip",
     "typecheck": "tsc --noEmit && node scripts/strict-types.ts",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
