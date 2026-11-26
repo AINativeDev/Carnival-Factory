@@ -11,7 +11,9 @@ import { drawPenguin, hopHeight, penguinAt, PENGUINS } from './penguins';
 import { drawRoom } from './room';
 import { drawSleigh } from './sleigh';
 import { onLogo, REST, stepSpin, type Spin } from './spin';
+
 import { drawSnowGlobe, onGlobe } from './snow-globe';
+import { drawSnowman } from './snowman';
 import { drawCheckLamp, drawToySign } from './tallies';
 
 /** When each penguin was last tapped, so it can hop: the booth's one memory of the pointer. */
@@ -38,6 +40,7 @@ const booth: NorthPoleSquare = {
     drawElves(ctx, u, time, letters);
     drawBelt(ctx, u, time);
     drawSleigh(ctx, u, time);
+    drawSnowman(ctx, u, time);
     drawLetters(ctx, u, letters);
     drawSparks(ctx, u, time, letters);
 
