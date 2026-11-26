@@ -59,9 +59,9 @@ test('pressing E at a booth goes inside it, keys walk nowhere there, and Esc or 
   await expect(page.locator('.map-frame')).toHaveAttribute('data-visiting', 'booth:jedi4ever');
   // After the fade, the booth's drawing fills the screen beside the panel.
   await expect(canvas).toHaveAttribute('data-stage', /^\d+,\d+,\d+,\d+$/);
-  // The panel's head names it and its maker.
-  await expect(card.locator('.visit-title')).toHaveText(JEDI4EVER_NAME);
-  await expect(card.locator('.visit-by')).toHaveText('by @jedi4ever');
+  // Left of the drawing, its name and maker.
+  await expect(page.locator('.visit-left .visit-title')).toHaveText(JEDI4EVER_NAME);
+  await expect(page.locator('.visit-left .visit-by')).toHaveText('by @jedi4ever');
   await expect(page.locator('.hud-booths')).toBeHidden();
   await expect(frameOf(page, 'booth', 'jedi4ever')).toHaveAttribute('data-state', 'ready');
   // A link to the map counts as a shared link: the invitation shows, once a visit.
@@ -136,7 +136,7 @@ test("a square's build story lists each step as a block, not in columns", async 
   const steps = page.locator('.visit .story-step');
   await expect(steps.first()).toBeVisible();
   await expect(steps.first()).toHaveCSS('display', 'block');
-  await expect(page.locator('.visit .visit-title')).toBeVisible();
+  await expect(page.locator('.visit-title')).toBeVisible();
 });
 
 test('Full screen shows the drawing alone, and Esc comes back to the panel', async ({ page }) => {

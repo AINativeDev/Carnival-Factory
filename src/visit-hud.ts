@@ -1,7 +1,3 @@
-import { badgeFor, factoryUrl } from './northpole/badges';
-import { voteUrl } from './northpole/peoples-choice';
-import { shownChoice } from './northpole/peoples-choice-standings';
-import { remixUrl } from './northpole/links';
 import type { SquareKind } from './northpole/map-options';
 import type { SandboxedSquare } from './northpole/sandbox';
 import type { NorthPoleSquare } from './northpole/square';
@@ -28,7 +24,7 @@ import { showLevelLinks } from './level-links';
 import { showYearAnswers } from './year-in-review-panel';
 import { focusBack } from './focus-back';
 import { fullScreenPill } from './visit-full-screen';
-import { isOn } from './feature-flags';
+import { showBoothLinks } from './visit-links';
 
 export interface VisitHudOptions {
   /** A square's kind, or `level` for the panel beside a level's own map (level-panel.ts). */
@@ -76,13 +72,13 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   card.dataset.kind = kind;
   card.dataset.id = square.id;
   card.innerHTML = VISIT_PANEL;
-  const $ = <T extends Element>(selector: string) => card.querySelector<T>(selector)!;
+  // The name and description may stand left of the drawing, outside the panel (visit-columns.ts).
+  const $ = <T extends Element>(selector: string) =>
+    (card.querySelector<T>(selector) ?? frame.querySelector<T>(`.visit-left ${selector}`))!;
   // Whose square it is: a booth's owner, a participant's level's, or nobody for the North Pole's own.
   const login = squareOwner(kind, square.id, level);
   const owner = login ? `@${login}` : '';
-  const remix = $<HTMLAnchorElement>('.visit-remix-link');
-  // Remix this booth waits for its feature flag (docs/adr/0046-launch-behind-feature-flags.md).
-  remix.hidden = kind !== 'booth' || !!level || !isOn('remix');
+  const links = showBoothLinks(card, kind, square.id, level);
   const map = $<HTMLAnchorElement>('.visit-map');
   map.href = level
     ? levelLink(level, square.id)
@@ -90,20 +86,6 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       ? levelLink(square.id)
       : deepLink(kind, square.id);
   if (level) map.textContent = 'See it in the level';
-  // An Elf Engineer's booth links to the factory on their own repository.
-  const badge = kind === 'booth' && isOn('elfEngineer') ? badgeFor(square.id) : undefined;
-  if (badge) {
-    const factory = $<HTMLAnchorElement>('.visit-factory a');
-    factory.href = factoryUrl(badge);
-    factory.textContent = `See ${owner}'s own factory`;
-    $<HTMLElement>('.visit-factory').hidden = false;
-  }
-
-  // A booth's place on the People's Choice ballot, where a 👍 on its comment is a vote.
-  const vote = kind === 'booth' ? voteUrl(square.id, shownChoice()) : undefined;
-  const voteLink = $<HTMLAnchorElement>('.visit-vote');
-  if (vote) [voteLink.href, voteLink.hidden] = [vote, false];
-
   // How it was built: a level's square credits the level's owner, with no history of its own.
   const tellStory = (data: SquareHistory | undefined) => {
     const steps = level
@@ -138,7 +120,12 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   const tools = $<HTMLElement>('.visit-tools');
   const full = walking ? undefined : fullScreenPill(frame, tools);
   const share = wireShare(
-    { ...roomPills(card, walking), full, text: $('.visit-share-text'), options: $('.visit-more') },
+    {
+      ...roomPills(card, walking, frame),
+      full,
+      text: $('.visit-share-text'),
+      options: $('.visit-more'),
+    },
     { kind, id: square.id, name: () => square.name },
     link,
   );
@@ -146,7 +133,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   const show = () => {
     $('.visit-title').textContent = square.name;
     $('.visit-description').textContent = square.description;
-    remix.href = remixUrl(square.id, square.name);
+    links.remix(square.name);
     share.refresh();
   };
   show();
@@ -189,9 +176,12 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   return {
     card,
     close() {
+      // Its name may have the focus left of the drawing, until share.stop takes that column away.
+      const hadFocus =
+        card.contains(document.activeElement) ||
+        !!frame.querySelector('.visit-left')?.contains(document.activeElement);
       share.stop();
       document.removeEventListener('keydown', onKeyDown);
-      const hadFocus = card.contains(document.activeElement);
       card.remove();
       if (hadFocus) focusBack(before, frame);
     },

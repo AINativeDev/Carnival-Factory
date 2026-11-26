@@ -85,7 +85,7 @@ describe('walking a level', () => {
       map.controls.leave();
       for (let t = 6000; t < 7000; t += 200) frame(t);
     });
-    expect(pin).toMatchInlineSnapshot(`"c16b080a80796ab3 (111560 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"d0eb21015b920e26 (111574 calls)"`);
   });
 
   it('keeps still for reduced motion, on a phone with a touch screen', () => {

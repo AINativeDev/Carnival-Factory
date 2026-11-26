@@ -132,7 +132,8 @@ test("The landmarks' own rooms show their links out", async ({ page }) => {
   const problems = watch(page);
   for (const { level } of PLACES) {
     await page.goto(`#/attraction/${level.id}`);
-    await expectLinks(page, '.visit', level.id);
+    // On a wide screen the links stand under the description, left of the drawing.
+    await expectLinks(page, '.map-frame', level.id);
   }
   expect(problems).toEqual([]);
 });

@@ -7,14 +7,15 @@
  */
 import type { SquareKind } from './northpole/map-options';
 import { shareText } from './northpole/visit';
+import { visitColumns } from './visit-columns';
 import { visitSheet } from './visit-sheet';
 
 export interface ShareParts {
   copy: HTMLButtonElement;
   text: HTMLTextAreaElement;
   options: HTMLDetailsElement;
-  /** The phone's sheet the panel sits in, which ends with the visit too (visit-sheet.ts). */
-  sheet?: { stop(): void } | undefined;
+  /** How the panel is laid out, a sheet on a phone and columns on a wide screen, which ends with the visit too. */
+  layout?: { stop(): void } | undefined;
   /** The Full screen button on the sign's corner, which ends with the visit too (visit-full-screen.ts). */
   full?: { stop(): void } | undefined;
 }
@@ -40,14 +41,22 @@ export function sharePill(frame: HTMLElement, level = false): HTMLButtonElement 
 }
 
 /**
- * A visit's Share, at the top of the panel beside the square's name. A
- * booth's panel is also a sheet on a phone held upright (visit-sheet.ts).
+ * A visit's Share, on the panel's top row. A square's panel is also a sheet
+ * on a phone held upright (visit-sheet.ts), and on a wide screen its name and
+ * description stand left of the drawing (visit-columns.ts).
  */
-export function roomPills(panel: HTMLElement, level: boolean) {
+export function roomPills(panel: HTMLElement, level: boolean, frame: HTMLElement = panel) {
   const copy = sharePill(panel.querySelector<HTMLElement>('.visit-tools') ?? panel, level);
-  // A level's own panel stands beside its map, not under a drawing.
-  if (level) return { copy };
-  return { copy, sheet: visitSheet(panel) };
+  // A level's own panel stands beside its map, not round a drawing.
+  const intro = panel.querySelector<HTMLElement>('.visit-intro');
+  if (level || !intro) return { copy };
+  const sheet = visitSheet(panel);
+  const columns = visitColumns(frame, panel, intro);
+  const stop = () => {
+    sheet.stop();
+    columns.stop();
+  };
+  return { copy, layout: { stop } };
 }
 
 /** A phone with its own share sheet: a touch screen whose browser can share. */
@@ -115,7 +124,7 @@ export function wireShare(
     stop: () => {
       window.clearTimeout(reset);
       parts.copy.remove();
-      parts.sheet?.stop();
+      parts.layout?.stop();
       parts.full?.stop();
     },
   };

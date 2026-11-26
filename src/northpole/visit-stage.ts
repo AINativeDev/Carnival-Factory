@@ -6,6 +6,23 @@
  */
 import type { Box } from './world';
 
+/** The narrowest the columns either side of a centred drawing get, in CSS pixels. */
+export const COLUMN = 280;
+
+/** The smallest drawing worth centring between two columns, in CSS pixels. */
+const CENTRED_AT_LEAST = 480;
+
+/**
+ * On a wide screen: the drawing in the middle, as tall as fits, with a
+ * column of at least `COLUMN` either side of it, its name on the left and its
+ * panel on the right (visit-columns.ts). Undefined on a screen too narrow.
+ */
+export function centredBox(width: number, height: number): Box | undefined {
+  const side = Math.min(height, width - 2 * COLUMN);
+  if (side < CENTRED_AT_LEAST) return undefined;
+  return { x: (width - side) / 2, y: (height - side) / 2, w: side, h: side };
+}
+
 /**
  * On a laptop: the biggest square in `area`, the space left of the panel,
  * from the top to the bottom, flush against the panel so the two read as one.

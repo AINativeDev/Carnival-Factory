@@ -1,6 +1,13 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
-import { boothBox, fullBox, isFullScreen, isPhoneUpright, wideBox } from './visit-stage';
+import {
+  boothBox,
+  centredBox,
+  fullBox,
+  isFullScreen,
+  isPhoneUpright,
+  wideBox,
+} from './visit-stage';
 
 describe("where a square's drawing stands inside it", () => {
   it('fills the space left of the panel from top to bottom, flush against the panel', () => {
@@ -26,5 +33,11 @@ describe("where a square's drawing stands inside it", () => {
     (canvas.parentElement as HTMLElement).dataset.full = '';
     expect(isFullScreen(canvas)).toBe(true);
     document.body.replaceChildren();
+  });
+
+  it('centres the drawing between two columns on a wide screen, and not on a narrow one', () => {
+    expect(centredBox(1440, 856)).toEqual({ x: 292, y: 0, w: 856, h: 856 });
+    expect(centredBox(1100, 856)).toEqual({ x: 280, y: 158, w: 540, h: 540 });
+    expect(centredBox(900, 856)).toBeUndefined();
   });
 });

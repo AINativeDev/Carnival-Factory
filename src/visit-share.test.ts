@@ -151,16 +151,17 @@ describe("a level's Share pill", () => {
 
 describe("a visit's buttons", () => {
   it("put Share at the top of the panel, and make a square's panel a sheet on a phone, but not a level's", () => {
-    document.body.innerHTML = '<section><div class="visit-tools"></div></section>';
+    document.body.innerHTML =
+      '<section><div class="visit-tools"></div><div class="visit-intro"></div></section>';
     const panel = document.querySelector('section') as HTMLElement;
     const square = roomPills(panel, false);
     expect(square.copy.parentElement?.className).toBe('visit-tools');
     expect(panel.querySelector('.visit-sheet-handle')).not.toBeNull();
-    square.sheet?.stop();
+    square.layout?.stop();
     expect(panel.querySelector('.visit-sheet-handle')).toBeNull();
     const level = roomPills(panel, true);
     expect(level.copy.parentElement?.className).toBe('visit-tools');
-    expect('sheet' in level).toBe(false);
+    expect('layout' in level).toBe(false);
   });
 
   it("puts a level's Share in the panel itself when it has no footer", () => {

@@ -1332,13 +1332,69 @@ kbd {
   font-size: 22px;
 }
 
-/* The panel's head: the square's name and maker, with Share and Full screen beside them. */
+/* The panel's top row: Esc and Leave, then Full screen and Share. */
 .visit-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 10px;
+}
+
+.visit-head .visit-leave {
+  flex: 1;
+}
+
+/* The square's name, maker and description: at the top of the panel, or left of the drawing on a wide screen. */
+.visit-intro {
+  margin-top: 12px;
+}
+
+/* On a wide screen, the drawing in the middle and a column either side, as wide as each other (visit-columns.ts). */
+.map-frame[data-columns] .visit {
+  width: var(--visit-column);
+}
+
+.visit-left {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  box-sizing: border-box;
+  width: var(--visit-column);
+  overflow: auto;
+  padding: 72px 28px 28px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--color-night) 75%, transparent),
+    color-mix(in srgb, var(--color-night) 35%, transparent)
+  );
+  color: var(--color-snow);
+  animation: visit-in 0.5s ease-out;
+}
+
+.visit-left .visit-intro {
+  margin: 0;
+}
+
+.visit-left .visit-title {
+  font-size: 32px;
+}
+
+.visit-left .visit-by {
+  margin-top: 6px;
+  color: var(--color-gold);
+  font-size: 15px;
+}
+
+.visit-left .visit-description {
+  margin-top: 18px;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.visit-left a {
+  color: var(--color-gold);
 }
 
 .visit .visit-title {
@@ -1923,4 +1979,60 @@ kbd {
 
 .choice-votes {
   opacity: 0.75;
+}
+
+/* Inside a square on a laptop, both columns take on the drawing's own colour (`--visit-tint`,
+   src/northpole/visit-tint.ts), deepened with night so light text reads on it: the page round
+   the drawing blends into it. */
+.map-frame[data-visiting] {
+  --visit-shade: color-mix(in srgb, var(--visit-tint, var(--color-night)) 32%, var(--color-night));
+}
+
+/* The way back stays above the left column. */
+.map-frame[data-visiting] .hud-back {
+  z-index: 6;
+}
+
+.map-frame[data-visiting] .visit-left {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--visit-shade) 94%, transparent),
+    color-mix(in srgb, var(--visit-shade) 55%, transparent)
+  );
+  transition: background 1s;
+}
+
+@media (min-width: 720px) {
+  .map-frame[data-visiting] > .visit {
+    border-left: 0;
+    background: color-mix(in srgb, var(--visit-shade) 94%, transparent);
+    color: var(--color-snow);
+    transition: background 1s;
+  }
+
+  .map-frame[data-visiting] > .visit a:not(.visit-build),
+  .map-frame[data-visiting] > .visit .visit-mine,
+  .map-frame[data-visiting] > .visit .visit-by {
+    color: var(--color-gold);
+  }
+
+  .map-frame[data-visiting] > .visit .visit-close {
+    border-color: color-mix(in srgb, var(--color-snow) 55%, transparent);
+    color: var(--color-snow);
+  }
+
+  .map-frame[data-visiting] > .visit .visit-tools .visit-full {
+    background: color-mix(in srgb, var(--color-snow) 16%, transparent);
+  }
+
+  .map-frame[data-visiting] > .visit .visit-footer {
+    border-top-color: color-mix(in srgb, var(--color-snow) 14%, transparent);
+    background: var(--visit-shade);
+  }
+
+  .map-frame[data-visiting] > .visit .visit-share-text {
+    border-color: var(--color-muted);
+    background: var(--color-night);
+    color: var(--color-snow);
+  }
 }

@@ -13,7 +13,15 @@ import { timeFrame } from './map-timing';
 import { onRect } from './pointer';
 import type { NorthPoleSquare } from './square';
 import { drawScene } from './visit-scenes';
-import { boothBox, fullBox, isFullScreen, isPhoneUpright, wideBox } from './visit-stage';
+import { tintFrame } from './visit-tint';
+import {
+  boothBox,
+  centredBox,
+  fullBox,
+  isFullScreen,
+  isPhoneUpright,
+  wideBox,
+} from './visit-stage';
 import type { Spot } from './world';
 
 /** What a visit's frame is drawn with. */
@@ -40,7 +48,7 @@ export function drawInside(m: MapRun, spot: Spot, square: NorthPoleSquare, frame
     ? fullBox(width, height)
     : isPhoneUpright(width, height)
       ? wideBox(width)
-      : boothBox(roomArea(width, height));
+      : (centredBox(width, height) ?? boothBox(roomArea(width, height)));
   const size = Math.min(MAX_SIZE, Math.round(stage.w * scale));
   // The stage is the square's drawing scaled, so the pointer scales with it.
   const pressed = m.pointer.now();
@@ -56,6 +64,7 @@ export function drawInside(m: MapRun, spot: Spot, square: NorthPoleSquare, frame
   drawSquare(ctx, m.scratch, square, 0, 0, size, time, pointer);
   ctx.restore();
   drawScene(square.stall?.scene, { ctx, width, height, stage, scratch: m.scratch, size });
+  tintFrame(m.frame, m.scratch, size, started);
   darken(ctx, frame.dark, width, height);
   const at = [stage.x, stage.y, stage.w, stage.h].map((n) => Math.round(n * scale)).join(',');
   if (canvas.dataset.stage !== at) canvas.dataset.stage = at;

@@ -25,9 +25,10 @@ so the page blends into it; a square may choose another mood instead,
 `stall.scene`, such as `chiaroscuro`: darkness and one warm pool of light
 from the upper left. A mood never shades the drawing itself, which would dim
 a game's own score; a square that wants drama lights its own drawing. Nobody walks inside: a click or a drag is the
-square's. The panel is a full-height column flush against the drawing, the
-two reading as one: its head names the square and its maker, with Share and
-Full screen beside them. The way back to the map is a round arrow. The room's code, its walls,
+square's. On a wide screen the drawing stands in the middle between two
+columns, its name, maker and description on the left and the panel on the
+right, both tinted with the drawing's own colour; on a narrower one it stands
+flush against the panel, which then leads with its name. The way back to the map is a round arrow. The room's code, its walls,
 pinboard and walking, is removed.
 
 ## Consequences

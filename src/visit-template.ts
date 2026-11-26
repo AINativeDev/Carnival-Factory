@@ -1,6 +1,7 @@
 /**
- * The markup of a square's visit panel (visit-hud.ts fills it in): its name
- * and maker with Share and Full screen beside them, the description, the build story first, one quiet row of actions, one ask (or,
+ * The markup of a square's visit panel (visit-hud.ts fills it in): Leave,
+ * Full screen and Share on its top row, its name, maker and description
+ * (which move left of the drawing on a wide screen, visit-columns.ts), the build story first, one quiet row of actions, one ask (or,
  * for a booth's owner, the level that comes next), and
  * everything else folded under More. Only fixed text and the repository's own
  * links are written here; every name and description is set as text later.
@@ -24,15 +25,15 @@ export const keepPostedLink = (formUrl: string, href: string) =>
 const KEEP_POSTED_LINK = keepPostedLink(KEEP_POSTED_URL, keepPostedHref());
 
 export const VISIT_PANEL = `
-    <p class="visit-leave"><span>Esc to leave</span> <button class="visit-close" type="button">Leave</button></p>
     <div class="visit-head">
-      <div class="visit-named">
-        <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
-        <p class="visit-by"></p>
-      </div>
+      <p class="visit-leave"><span>Esc to leave</span> <button class="visit-close" type="button">Leave</button></p>
       <div class="visit-tools"></div>
     </div>
-    <p class="visit-description" id="visit-description"></p>
+    <div class="visit-intro">
+      <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
+      <p class="visit-by"></p>
+      <p class="visit-description" id="visit-description"></p>
+    </div>
     <section class="visit-story" aria-labelledby="visit-story-title">
       <h3 id="visit-story-title" class="visit-eyebrow">How it was built</h3>
       <ol class="story-list"></ol>

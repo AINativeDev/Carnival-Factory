@@ -16,10 +16,17 @@ one ask ([ADR 0057](../adr/0057-a-visit-is-the-booth-not-a-room.md)). A level sh
   play with. Booths need no change: each draws to whatever size it's given
   (`src/northpole/map-room.ts`, `src/northpole/visit-stage.ts`; enforced by:
   src/northpole/visit-stage.test.ts, src/northpole/map-inside.test.ts).
-- **The panel** is a full-height column on the right, flush against the
-  drawing so the two read as one. Its head names the square, "by @<login>"
-  under a booth's name, with Share and Full screen beside them; then its
-  description. A level's panel shows
+- **Three columns on a wide screen.** The drawing stands in the middle, as
+  tall as fits, with a column at least 280 pixels wide either side. The left
+  column holds the square's name, "by @<login>" for a booth, and its
+  description; the right one is the panel, with Leave, Full screen and Share
+  on its top row. Both columns take on the drawing's own colour, read from it
+  a few times a second and deepened with night, so the page blends into the
+  booth. On a narrower screen the drawing stands flush against the panel,
+  and the name and description head the panel instead (`src/visit-columns.ts`,
+  `centredBox` in `src/northpole/visit-stage.ts`, `src/northpole/visit-tint.ts`;
+  enforced by: src/visit-columns.test.ts, src/northpole/visit-stage.test.ts,
+  src/northpole/visit-tint.test.ts). A level's panel shows
   its name, "A level by @<login>" (or "the North Pole") and its description,
   and its **How it was built** tells the level's own requests.
 - **How it was built** leads the panel, on every screen size: a timeline, oldest
@@ -42,7 +49,7 @@ one ask ([ADR 0057](../adr/0057-a-visit-is-the-booth-not-a-room.md)). A level sh
   @<login>."
 - An Elf Engineer's booth links to their own factory. A booth with a People's
   Choice comment links to it with "Vote for this booth".
-- **Share** stands at the top of the panel, an icon beside the square's name,
+- **Share** stands on the panel's top row, an icon beside Full screen,
   so a long build story never hides it; a level's own panel has it there too, and it
   steps aside while the player is inside one of the level's squares. It opens
   the phone's share sheet on a phone; elsewhere it copies the line, and its
