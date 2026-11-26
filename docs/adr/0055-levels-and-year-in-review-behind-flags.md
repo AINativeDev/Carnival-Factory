@@ -1,6 +1,6 @@
 # 0055. Levels and the Year in Review wait behind feature flags
 
-- Status: Accepted
+- Status: Accepted; its landmarks' links out superseded by [ADR 0058](0058-tessl-places-open-as-booths.md)
 - Date: 2026-11-26
 - Spec: [ADR 0046](0046-launch-behind-feature-flags.md)
 

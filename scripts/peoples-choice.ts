@@ -5,6 +5,7 @@
  * GitHub account, because a reaction is. An owner's own vote doesn't count,
  * nor does one given after voting closed, and the kill switch's booths drop out.
  */
+import { SETTINGS } from '../src/settings.ts';
 import type { BadgeHolder } from '../src/northpole/badges.ts';
 import type {
   ChoiceCategory,
@@ -67,7 +68,7 @@ export function entryBody(
         ]
       : [
           `**Home factory: ${who}**`,
-          repo && `See it: https://github.com/${path}`,
+          repo && `See it: ${SETTINGS.github.web}/${path}`,
           'Vote for this home factory with a 👍 on this comment.',
         ];
   return [title, ...(link ? [link] : []), '', vote, '', marker(category, login, ownerId)].join(

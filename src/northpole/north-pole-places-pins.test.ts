@@ -38,8 +38,8 @@ describe("the North Pole's Academy and Recording Studio", () => {
   it('draw every square the same as when they were pinned', () => {
     expect(pins()).toMatchInlineSnapshot(`
       [
-        "attractions/the-academy/attraction.ts: 626ff888b10c1753 (347 calls) / f4691dd6c622e353 (347 calls)",
-        "attractions/the-studio/attraction.ts: 24f7971271aec455 (312 calls) / f4c7c779a8986e2f (312 calls)",
+        "attractions/the-academy/attraction.ts: 5777451de0ae682c (1021 calls) / 8a17d4ebdb0ffb58 (1065 calls)",
+        "attractions/the-studio/attraction.ts: 9b47a52256972cd6 (1867 calls) / ceac19f384db06b3 (2012 calls)",
         "attractions/the-year-in-review/attraction.ts: c5852681c47536a0 (426 calls) / a34a380ad211fac9 (426 calls)",
         "levels/the-academy/squares/code-review-loops/square.ts: 4be7628ea8bcfbac (337 calls) / 811526edeac339a1 (351 calls)",
         "levels/the-academy/squares/quickstart/square.ts: 147db2b6a9a5b617 (433 calls) / 9cd09cbd585e1e39 (433 calls)",

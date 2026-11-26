@@ -51,35 +51,23 @@ test("no way to ask for a level: no form link on the map or a booth's panel", as
   await expect(page.locator('a[href*="02-your-level"]:visible')).toHaveCount(0);
 });
 
-test("the Factory's, the Academy's and the Studio's landmarks open their sites in a new tab", async ({
+test("the Factory's, the Academy's and the Studio's landmarks open their own rooms, not a new tab", async ({
   page,
   context,
 }) => {
   test.skip(FLAGS.levels, 'levels are switched on in this build');
-  await context.route('https://tessl.io/**', (route) => route.fulfill({ body: 'tessl' }));
   const canvas = page.locator('.map-canvas');
-  for (const [id, url] of [
-    [
-      'the-factory',
-      'https://tessl.io/?utm_source=carnival-factory&utm_medium=the-factory&utm_campaign=christmas-edition',
-    ],
-    [
-      'the-academy',
-      'https://tessl.io/academy?utm_source=carnival-factory&utm_medium=the-academy&utm_campaign=christmas-edition',
-    ],
-    [
-      'the-studio',
-      'https://tessl.io/podcast/?utm_source=carnival-factory&utm_medium=the-studio&utm_campaign=christmas-edition',
-    ],
-  ] as const) {
+  let opened = 0;
+  context.on('page', () => (opened += 1));
+  for (const id of ['the-factory', 'the-academy', 'the-studio']) {
     await page.goto(`#/?attraction=${id}`);
     await expect(canvas).toHaveAttribute('data-selected', `attraction:${id}`);
     await canvas.focus();
-    const site = context.waitForEvent('page');
     await page.keyboard.press('e');
-    expect((await site).url()).toBe(url);
-    await expect(page).not.toHaveURL(/#\/level\//);
+    await expect(page).toHaveURL(new RegExp(`#/attraction/${id}$`));
+    await expect(page.locator('.map-frame')).toHaveAttribute('data-visiting', `attraction:${id}`);
   }
+  expect(opened).toBe(0);
 });
 
 test('no Year in Review on the map, in the Attractions list or at its link', async ({ page }) => {

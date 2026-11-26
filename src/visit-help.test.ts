@@ -51,10 +51,20 @@ describe('fillVisitHelp', () => {
     expect(northPole.box.innerHTML).toContain(CLAIM_URL);
   });
 
-  it("takes the sleigh in from a landmark's room", () => {
+  it("offers no sleigh from a landmark's room while levels are off, as for any attraction", () => {
     const landmark = helpBox();
     fillVisitHelp(landmark.element, 'attraction', 'the-factory');
-    expect(landmark.box.innerHTML).toContain('href="#/level/the-factory"');
+    expect(landmark.box.innerHTML).not.toContain('#/level/');
+    expect(landmark.box.innerHTML).toContain('only its maintainers change them');
+  });
+
+  describe('with levels switched on', () => {
+    switchFlags({ levels: true });
+    it("takes the sleigh in from a landmark's room", () => {
+      const landmark = helpBox();
+      fillVisitHelp(landmark.element, 'attraction', 'the-factory');
+      expect(landmark.box.innerHTML).toContain('href="#/level/the-factory"');
+    });
   });
 
   it("tells a Factory stall's step of the tour, with its link", () => {

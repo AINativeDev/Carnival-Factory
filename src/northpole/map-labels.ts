@@ -4,6 +4,7 @@
  * and avatar a booth shows. The scene, the tags and the prompt all ask these,
  * so they live in one place apart from the drawing.
  */
+import { offMapSpot } from './off-map';
 import type { SquareKind } from './map-options';
 import type { MapRun } from './map-state';
 import { avatarPath, ownerColor } from './owners';
@@ -21,9 +22,10 @@ export const squareOf = (m: MapRun, spot: Spot) =>
     ? m.squares[spot.kind].get(spot.id ?? '')
     : undefined;
 
-/** The spot a square stands on. */
+/** The spot a square stands on, or an off-map attraction's way in (off-map.ts). */
 export const spotOf = (m: MapRun, kind: SquareKind, id: string) =>
-  m.world.spots.find((spot) => spot.kind === kind && spot.id === id);
+  m.world.spots.find((spot) => spot.kind === kind && spot.id === id) ??
+  offMapSpot(m.world, kind, id);
 
 /** The spot whose structure or sign is under a point of the world, frontmost first. */
 export const spotUnder = (m: MapRun, point: Tile) => targetAt(m.targets, point)?.spot;

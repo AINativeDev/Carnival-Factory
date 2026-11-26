@@ -13,6 +13,7 @@
  * GITHUB_TOKEN and GITHUB_REPOSITORY set. The badge holders come from
  * BADGE_HOLDERS_FILE, which scripts/badge-holders.ts writes first.
  */
+import { SETTINGS } from '../src/settings.ts';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanHolders } from '../src/northpole/badges.ts';
@@ -31,7 +32,7 @@ if (!token || !repository || !out) {
   throw new Error('Set GITHUB_TOKEN and GITHUB_REPOSITORY, and name the file to write');
 }
 const [owner = '', name = ''] = repository.split('/');
-const api = process.env.GITHUB_API_URL ?? 'https://api.github.com';
+const api = process.env.GITHUB_API_URL ?? SETTINGS.github.api;
 
 async function graphql<T>(query: string, variables: Record<string, unknown>): Promise<T> {
   const response = await fetch(`${api}/graphql`, {

@@ -38,7 +38,7 @@ export function pointAt(m: MapRun, event: MouseEvent): Tile {
   );
 }
 
-/** Whether `point` is on the billboard: a click there opens its tickets page in a new tab. */
+/** Whether `point` is on the billboard: a click there opens AI DevCon's room. */
 export const billboardUnder = (m: MapRun, point: Tile) =>
   m.world.things.some((thing) => thing.kind === 'billboard' && onBillboard(middle(thing), point));
 
@@ -83,7 +83,8 @@ export function onClick(m: MapRun, event: MouseEvent) {
   if (m.visiting) return;
   const point = pointAt(m, event);
   if (billboardUnder(m, point)) {
-    window.open(BILLBOARD.tickets, '_blank', 'noopener');
+    // The billboard is AI DevCon's way in: its room has the tickets (ADR 0058).
+    m.options.onOpen('attraction', BILLBOARD.room);
     return;
   }
   const spot = spotUnder(m, point);

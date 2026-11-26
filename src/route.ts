@@ -84,9 +84,10 @@ export function levelLink(login: string, square?: string): string {
 
 /**
  * The hash that opens a square from the map: its room, or, for a landmark, its
- * level. A landmark's own `#/attraction/<id>` still shows its room (ADR 0035).
+ * level. A landmark's own `#/attraction/<id>` still shows its room (ADR 0035),
+ * which is where it opens while `levels` is off (ADR 0058).
  */
-export function squareLink(kind: SquareKind, id: string): string {
-  const level = landmarkLevel(kind, id);
+export function squareLink(kind: SquareKind, id: string, levels = true): string {
+  const level = levels ? landmarkLevel(kind, id) : undefined;
   return level ? levelLink(level) : `#/${kind}/${encodeURIComponent(id)}`;
 }
