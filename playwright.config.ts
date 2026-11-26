@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { BOOTH_ONLY_SPECS, boothOnly as playsOneBooth } from './scripts/smoke-scope.ts';
 
 /**
  * The smoke test: every booth and attraction in a real browser, inside its
@@ -12,6 +13,12 @@ const INTRO_SEEN = {
   origin: 'http://localhost:4173',
   localStorage: [{ name: 'north-pole-intro-seen', value: '1' }],
 };
+
+/**
+ * A pull request that only changes one booth's folder (scripts/smoke-scope.ts).
+ * A level-only run still runs the whole suite, walking just that level.
+ */
+const boothOnly = playsOneBooth(process.env.SMOKE_ONLY);
 
 export default defineConfig({
   testDir: 'smoke',
@@ -27,14 +34,17 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: /safari\.spec\.ts/,
+      // A booth-only pull request (SMOKE_ONLY) runs just the specs that play its booth.
+      ...(boothOnly ? { testMatch: BOOTH_ONLY_SPECS } : { testIgnore: /safari\.spec\.ts/ }),
       use: {
         channel: process.env.PLAYWRIGHT_CHANNEL || undefined,
         viewport: { width: 1200, height: 1000 },
       },
     },
-    // Safari's engine, as an iPhone, for what only Safari does differently.
-    { name: 'webkit', testMatch: /safari\.spec\.ts/, use: { ...devices['iPhone 13'] } },
+    // Safari's engine, as an iPhone, for what only Safari does differently: the site's, not a booth's.
+    ...(boothOnly
+      ? []
+      : [{ name: 'webkit', testMatch: /safari\.spec\.ts/, use: { ...devices['iPhone 13'] } }]),
   ],
   webServer: {
     command: 'npm run build && npx vite preview --port 4173 --strictPort',
