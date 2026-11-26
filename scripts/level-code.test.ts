@@ -39,16 +39,25 @@ const walk = (dir: string): string[] =>
   );
 
 describe('checkLevelCode', () => {
-  // One test a level, as for booths: compiling every square of every level in one test outlasts its time.
+  // One test a square, as for booths: compiling every square of a level in one
+  // test outlasts its time under coverage, as the-year-in-review's ten did.
   for (const login of readdirSync(join(root, 'carnival/levels'))) {
-    it(`passes carnival/levels/${login}/`, () => {
-      const folder = `carnival/levels/${login}/`;
-      const files = walk(folder).map((path) => ({
-        path,
-        text: readFileSync(join(root, path), 'utf8'),
-      }));
-      expect(checkLevelCode(folder, files)).toEqual([]);
-    });
+    const folder = `carnival/levels/${login}/`;
+    const files = walk(folder).map((path) => ({
+      path,
+      text: readFileSync(join(root, path), 'utf8'),
+    }));
+    const square = (path: string) =>
+      /^squares\/([a-z0-9-]+)\//.exec(path.slice(folder.length))?.[1];
+    const ids = [...new Set(files.map((file) => square(file.path)))];
+    for (const id of ids) {
+      it(`passes ${folder}${id ? `squares/${id}/` : ''}`, () => {
+        const part = files.filter(
+          (file) => file.path === `${folder}level.ts` || square(file.path) === id,
+        );
+        expect(checkLevelCode(folder, part)).toEqual([]);
+      });
+    }
   }
 
   it('passes plain level data and a square that only draws', () => {
