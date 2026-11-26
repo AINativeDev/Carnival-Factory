@@ -4,6 +4,7 @@
  */
 import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
 import { drawBelt, drawLetters, drawSparks, drawTick } from './belt';
+import { drawCat } from './cat';
 import { drawElves } from './elves';
 import { drawLogo } from './logo';
 import { lettersAt } from './letters';
@@ -39,6 +40,7 @@ const booth: NorthPoleSquare = {
     drawBelt(ctx, u, time);
     drawSleigh(ctx, u, time);
     drawLetters(ctx, u, letters);
+    drawCat(ctx, u, time);
     drawSparks(ctx, u, time, letters);
 
     // The logo spins while a press that began on it is held, and slows once let go.

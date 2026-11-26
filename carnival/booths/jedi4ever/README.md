@@ -51,6 +51,8 @@ beside it:
 - `penguins.ts` is the penguins (`shuffleOf`, `blinking`, `hopHeight`,
   `penguinAt`), and `snow-globe.ts` the globe (`swirlOf`, `onGlobe`,
   `globeFlake`).
+- `cat.ts` is the ginger cat asleep on the crate by the mail slot, whose ear
+  twitches and tail flicks as each letter lands (`flickOf`).
 - `motion.ts` and `brushes.ts` are the easing and the shapes and words they
   all share.
 
