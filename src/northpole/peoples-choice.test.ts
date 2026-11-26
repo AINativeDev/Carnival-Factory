@@ -10,7 +10,7 @@ import {
   type ChoiceEntry,
 } from './peoples-choice';
 
-const REPO = 'https://github.com/AINativeDev/Northpole-Carnival-Factory';
+const REPO = 'https://github.com/AINativeDev/Carnival-Factory';
 const BALLOT = `${REPO}/issues/7`;
 const at = (n: number) => `${BALLOT}#issuecomment-${n}`;
 const entry = (login: string, votes: number): ChoiceEntry => ({ login, url: at(votes), votes });

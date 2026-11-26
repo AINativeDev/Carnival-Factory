@@ -21,7 +21,7 @@ installs it.
 Install any of them from this repository on GitHub, by its skill name:
 
 ```sh
-tessl install github:AINativeDev/Northpole-Carnival-Factory --skill stocking-stuffer
+tessl install github:AINativeDev/Carnival-Factory --skill stocking-stuffer
 ```
 
 Each gift's README has its `tessl.json` trigger to copy.

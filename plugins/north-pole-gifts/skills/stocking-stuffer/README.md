@@ -12,7 +12,7 @@ beyond the factory's GitHub access.
 ## Install
 
 ```sh
-tessl install github:AINativeDev/Northpole-Carnival-Factory --skill stocking-stuffer
+tessl install github:AINativeDev/Carnival-Factory --skill stocking-stuffer
 ```
 
 ## Trigger to copy

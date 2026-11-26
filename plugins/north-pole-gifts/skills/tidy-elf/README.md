@@ -12,7 +12,7 @@ access.
 ## Install
 
 ```sh
-tessl install github:AINativeDev/Northpole-Carnival-Factory --skill tidy-elf
+tessl install github:AINativeDev/Carnival-Factory --skill tidy-elf
 ```
 
 ## Trigger to copy

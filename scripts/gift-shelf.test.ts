@@ -18,7 +18,7 @@ describe('the gift shelf', () => {
     for (const skill of skills) {
       const readme = readFileSync(join(plugin, 'skills', skill, 'README.md'), 'utf8');
       expect(readme, skill).toContain(
-        `tessl install github:AINativeDev/Northpole-Carnival-Factory --skill ${skill}`,
+        `tessl install github:AINativeDev/Carnival-Factory --skill ${skill}`,
       );
       expect(readme, skill).toContain(`north-pole-gifts#${skill}`);
       expect(readFileSync(join(plugin, 'skills', skill, 'example.md'), 'utf8')).toMatch(

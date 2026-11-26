@@ -1,6 +1,7 @@
 {
-  "name": "carnival-christmas-public/carnival-christmas-public",
+  "name": "carnival-factory/carnival-factory",
   "dependencies": {},
+  "environment": "carnival-factory-env",
   "actions": {
     "follow-ticket-changes": {
       "tags": [
@@ -71,7 +72,7 @@
       "model": "claude-sonnet-5-5",
       "skill": "tessl/factory#merge-conflict-sweep",
       "timeout": "2h",
-      "environment": "northpole-carnival-factory-merge-conflict-sweep",
+      "environment": "carnival-factory-merge-conflict-sweep",
       "inputs": {
         "FIXER_ACTION": "shepherd",
         "GITHUB_AUTHOR_IDS": "{{ github.tesslApp.userId }}",
@@ -799,6 +800,5 @@
         }
       }
     }
-  },
-  "environment": "northpole-carnival-factory-env"
+  }
 }

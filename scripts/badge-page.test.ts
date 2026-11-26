@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { badgePage } from './badge-page.ts';
 
 describe('badgePage', () => {
-  const site = 'https://ainativedev.github.io/Northpole-Carnival-Factory/';
+  const site = 'https://ainativedev.github.io/Carnival-Factory/';
   const page = badgePage(site, 'https://github.com/x/y/issues/new?template=03-elf-engineer.yml');
 
   it('shows every badge with a snippet that links back to the map', () => {

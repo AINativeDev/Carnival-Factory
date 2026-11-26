@@ -79,7 +79,7 @@ describe('the badge on the site', () => {
   });
 
   it('gives a snippet that shows the badge and links back to the map', () => {
-    const site = 'https://ainativedev.github.io/Northpole-Carnival-Factory/';
+    const site = 'https://ainativedev.github.io/Carnival-Factory/';
     expect(badgeSnippet(site, 'silver')).toBe(
       `[![Elf Engineer: silver](${site}badges/elf-engineer-silver.svg)](${site})`,
     );

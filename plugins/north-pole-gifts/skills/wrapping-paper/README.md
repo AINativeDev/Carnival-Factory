@@ -12,7 +12,7 @@ access.
 ## Install
 
 ```sh
-tessl install github:AINativeDev/Northpole-Carnival-Factory --skill wrapping-paper
+tessl install github:AINativeDev/Carnival-Factory --skill wrapping-paper
 ```
 
 ## Trigger to copy

@@ -10,7 +10,7 @@ import {
   type StandingsInput,
 } from './peoples-choice';
 
-const BALLOT = 'https://github.com/AINativeDev/Northpole-Carnival-Factory/issues/7';
+const BALLOT = 'https://github.com/AINativeDev/Carnival-Factory/issues/7';
 const CLOSES = '2026-12-31T23:59:59Z';
 
 const OWNERS: Record<string, number> = { jedi4ever: 1, sjmaple: 2, hamzaoza: 3, pstember: 4 };

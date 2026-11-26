@@ -90,8 +90,5 @@ test('the banner links to the repository, where every booth starts', async ({ pa
   await page.goto('#/');
   const link = page.getByRole('link', { name: "See how it's built on GitHub" });
   await expect(link).toBeVisible();
-  await expect(link).toHaveAttribute(
-    'href',
-    'https://github.com/AINativeDev/Northpole-Carnival-Factory',
-  );
+  await expect(link).toHaveAttribute('href', 'https://github.com/AINativeDev/Carnival-Factory');
 });

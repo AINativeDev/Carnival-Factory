@@ -6,18 +6,18 @@
 </p>
 
 <h3 align="center">
-  <a href="https://ainativedev.github.io/Northpole-Carnival-Factory/">ainativedev.github.io/Northpole-Carnival-Factory</a>
+  <a href="https://ainativedev.github.io/Carnival-Factory/">ainativedev.github.io/Carnival-Factory</a>
 </h3>
 
 <p align="center">
-  <a href="https://ainativedev.github.io/Northpole-Carnival-Factory/"><img alt="Play the map" src="https://img.shields.io/badge/Play-the%20North%20Pole-d7263d" /></a>
-  <a href="https://github.com/AINativeDev/Northpole-Carnival-Factory/issues/new?template=01-your-booth.yml"><img alt="Ask for your booth" src="https://img.shields.io/badge/Ask%20for-your%20booth-1f6b45" /></a>
+  <a href="https://ainativedev.github.io/Carnival-Factory/"><img alt="Play the map" src="https://img.shields.io/badge/Play-the%20North%20Pole-d7263d" /></a>
+  <a href="https://github.com/AINativeDev/Carnival-Factory/issues/new?template=01-your-booth.yml"><img alt="Ask for your booth" src="https://img.shields.io/badge/Ask%20for-your%20booth-1f6b45" /></a>
   <a href="https://tessl.io"><img alt="Built with Tessl" src="https://img.shields.io/badge/Built%20with-Tessl-0f1b33" /></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-a98bff" /></a>
 </p>
 
 <p align="center">
-  <a href="https://ainativedev.github.io/Northpole-Carnival-Factory/">
+  <a href="https://ainativedev.github.io/Carnival-Factory/">
     <img alt="The Carnival Factory map of the North Pole at dusk, in isometric 3D: striped carnival tents round a decorated tree, wooden booth stalls with their owners' pennants, a ferris wheel, snowy log cabins, a frozen pond with skating elves, and free spots waiting for a booth" src="docs/north-pole.png" width="880" />
   </a>
 </p>

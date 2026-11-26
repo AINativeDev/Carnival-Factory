@@ -11,10 +11,10 @@ body:
         or changes the one you have. Your latest request is the one that counts.
 
         **Levels unlock once you have a booth on the map.** No booth yet?
-        [Get a booth](https://github.com/AINativeDev/Northpole-Carnival-Factory/issues/new?template=01-your-booth.yml)
+        [Get a booth](https://github.com/AINativeDev/Carnival-Factory/issues/new?template=01-your-booth.yml)
         first: a level request from someone without one waits until their booth lands.
-        [How your request is built](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/how-it-works.md)
-        · [Level ideas](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/level-ideas.md)
+        [How your request is built](https://github.com/AINativeDev/Carnival-Factory/blob/main/docs/how-it-works.md)
+        · [Level ideas](https://github.com/AINativeDev/Carnival-Factory/blob/main/docs/level-ideas.md)
   - type: textarea
     id: what
     attributes:

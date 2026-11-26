@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
  * way in. Loaded without a build, as the smoke test loads the map's drawing in
  * Node, nothing is baked in, and each module starts empty.
  */
-const REPO = 'https://github.com/AINativeDev/Northpole-Carnival-Factory';
+const REPO = 'https://github.com/AINativeDev/Carnival-Factory';
 
 afterEach(() => {
   vi.unstubAllGlobals();
