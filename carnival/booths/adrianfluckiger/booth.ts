@@ -5,15 +5,20 @@
  */
 import { scene } from '../../../src/northpole/diorama';
 import type { NorthPoleSquare } from '../../../src/northpole/square';
-import { drawCarrot, drawChild, drawChildOnLap, drawDog, drawElf, drawReindeer } from './figures';
+import { drawChild, drawChildOnLap, drawDog, drawElf } from './figures';
+import { drawCarrot, drawReindeer } from './reindeer';
 import { drawClearing, drawSanta } from './santa';
 import { hasDog, momentAt, SPOTS, type ChildAt } from './story';
 
-/** A child on the ground, with the family dog trotting behind if they have one. */
-function drawWalker(ctx: CanvasRenderingContext2D, child: ChildAt, time: number) {
+/**
+ * A child, with the family dog trotting at their side if they have one. The dog
+ * stays by them while they sit on Santa's lap, so it never vanishes mid-visit.
+ */
+function drawVisitor(ctx: CanvasRenderingContext2D, child: ChildAt, time: number) {
   const walk = time / 120 + child.index;
-  if (hasDog(child.index)) drawDog(ctx, child.x + 7, child.y, walk * 1.4);
-  drawChild(ctx, child.x, child.y, child.index, walk);
+  if (hasDog(child.index)) drawDog(ctx, child.x - 3, child.y + 3, walk * 1.4, child.alpha);
+  if (child.sitting) drawChildOnLap(ctx, child.x, child.y, child.index);
+  else drawChild(ctx, child.x, child.y, child.index, walk, child.alpha);
 }
 
 /** The Visit Santa booth: a gazebo whose front shows the line to Santa's chair. */
@@ -27,12 +32,12 @@ const booth: NorthPoleSquare = {
     scene(ctx, size, time, (art) => {
       const now = momentAt(time);
       drawClearing(art, time);
-      drawReindeer(art, SPOTS.reindeer, 70, now.munch, time);
+      drawReindeer(art, SPOTS.reindeer, SPOTS.reindeerGround, now.munch, time);
       drawSanta(art, time);
-      if (now.child.sitting) drawChildOnLap(art, now.child.x, now.child.y, now.child.index);
+      if (now.child.sitting) drawVisitor(art, now.child, time);
       drawElf(art, now.elfX, 72, now.elfLeading, time / 120);
-      for (const child of [...now.waiting].reverse()) drawWalker(art, child, time);
-      if (!now.child.sitting) drawWalker(art, now.child, time);
+      for (const child of [...now.waiting].reverse()) drawVisitor(art, child, time);
+      if (!now.child.sitting) drawVisitor(art, now.child, time);
       if (now.carrot) drawCarrot(art, now.carrot.x, now.carrot.y);
     });
   },

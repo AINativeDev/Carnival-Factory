@@ -11,14 +11,16 @@ reindeer with a glowing red nose on the other.
   forward as they go.
 - **The visit**: the child sits on Santa's lap and asks for presents.
 - **The carrot**: when the child hops down, Santa hands the reindeer a carrot
-  that arcs through the air, the reindeer munches, and the child waves and
-  walks off.
-- **The family dog**: every fourth child arrives with a dog trotting behind.
+  that arcs through the air into the reindeer's mouth, the reindeer munches,
+  and the child walks off, fading away before the edge of the square.
+- **The family dog**: every fourth child arrives with a dog trotting at their
+  side, which waits by Santa's chair while they sit on his lap.
 - **The stall**: a gazebo with a berry-red roof and snow trim.
 
 Everything is drawn from `time` alone, so nothing is remembered between frames.
 
 - `story.ts` is the timeline of one child's turn (pure functions, tested).
-- `figures.ts` draws the kids, the elf, the dog, the reindeer and the carrot.
+- `figures.ts` draws the kids, the elf and the dog.
+- `reindeer.ts` draws the reindeer and the carrot.
 - `santa.ts` draws the chair, Santa, the sign and the clearing.
 - `booth.ts` puts it together back to front.

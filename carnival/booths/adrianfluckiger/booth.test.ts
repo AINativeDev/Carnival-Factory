@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import booth from './booth';
-import { hasDog, lerp, momentAt, SPOTS, TURN_SECONDS } from './story';
+import { hasDog, lerp, momentAt, MOUTH, SPOTS, TURN_SECONDS } from './story';
 
 /** A canvas that accepts every drawing call and counts the ones made. */
 class DrawingLog {
@@ -84,6 +84,26 @@ describe('Visit Santa', () => {
     expect(after).toBeLessThan(before);
     expect(at(TURN_SECONDS).child.index).toBe(1);
     expect(momentAt(-5).child.index).toBe(0);
+  });
+
+  it("lands the carrot in the reindeer's mouth", () => {
+    const last = at(9.99).carrot;
+    expect(last?.x).toBeCloseTo(MOUTH.x, 0);
+    expect(last?.y).toBeCloseTo(MOUTH.y, 0);
+  });
+
+  it('keeps every child inside the square, fading in at the back and out at the exit', () => {
+    for (let s = 0; s < TURN_SECONDS; s += 0.1) {
+      const now = at(s);
+      for (const child of [now.child, ...now.waiting]) {
+        if (child.alpha > 0) expect(child.x - 9).toBeGreaterThanOrEqual(0);
+        expect(child.x + 4.2).toBeLessThanOrEqual(100);
+      }
+    }
+    expect(at(0).waiting[2]?.alpha).toBe(0);
+    expect(at(3).waiting[2]?.alpha).toBe(1);
+    expect(at(9).child.alpha).toBe(1);
+    expect(at(11.25).child.alpha).toBeCloseTo(0.5);
   });
 
   it('gives one family a dog', () => {
