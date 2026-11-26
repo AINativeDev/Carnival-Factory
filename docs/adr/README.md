@@ -101,3 +101,4 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0053](0053-square-only-check.md) | A booth-only or level-only pull request checks just that folder | Accepted |
 | [0054](0054-history-only-after-a-merge.md) | Read the squares' history only after a merge | Accepted |
 | [0055](0055-levels-and-year-in-review-behind-flags.md) | Levels and the Year in Review wait behind feature flags | Accepted |
+| [0056](0056-peoples-choice-behind-a-flag.md) | People's Choice waits behind a feature flag | Accepted |

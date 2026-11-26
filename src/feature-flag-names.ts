@@ -7,7 +7,7 @@
 
 /**
  * Every feature flag: Remix this booth, the Elf Engineer badges, the Gift Shop,
- * the advent calendar, participants' levels and the Year in Review.
+ * the advent calendar, participants' levels, the Year in Review and People's Choice.
  */
 const FEATURE_FLAG_NAMES = [
   'remix',
@@ -16,6 +16,7 @@ const FEATURE_FLAG_NAMES = [
   'advent',
   'levels',
   'yearInReview',
+  'peoplesChoice',
 ] as const;
 
 export type FeatureFlag = (typeof FEATURE_FLAG_NAMES)[number];

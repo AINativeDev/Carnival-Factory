@@ -81,3 +81,13 @@ test('no Year in Review on the map, in the Attractions list or at its link', asy
   await expect(page.locator('.hud-attractions li').first()).toBeAttached();
   await expect(page.locator('.hud-attractions')).not.toContainText('Year in Review');
 });
+
+test("no People's Choice below the map or on a booth's panel", async ({ page }) => {
+  test.skip(FLAGS.peoplesChoice, "People's Choice is switched on in this build");
+  await page.goto('#/');
+  await expect(page.locator('.map-canvas')).toBeVisible();
+  await expect(page.locator('.choice')).toBeHidden();
+  await page.goto('#/booth/jedi4ever');
+  await expect(page.locator('.hud.visit')).toBeVisible();
+  await expect(page.locator('.visit-vote')).toBeHidden();
+});
