@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>A Christmas carnival that a software factory builds, one booth at a time.</strong><br />
-  Describe your booth in an issue. An agent builds it, checks it and opens the pull request.
+  Ask for a booth in a GitHub issue. A software factory builds it, tests it, reviews it and puts it on the map, with no one merging it.
 </p>
 
 <h3 align="center">
@@ -18,7 +18,7 @@
 
 <p align="center">
   <a href="https://ainativedev.github.io/Carnival-Factory/">
-    <img alt="The Carnival Factory map of the North Pole at dusk, in isometric 3D: striped carnival tents round a decorated tree, wooden booth stalls with their owners' pennants, a ferris wheel, snowy log cabins, a frozen pond with skating elves, and free spots waiting for a booth" src="docs/north-pole.png" width="880" />
+    <img alt="The Carnival Factory map of the North Pole at dusk, in isometric 3D: the Factory's tower with TESSL down its front, a roller coaster, a ferris wheel, the Academy, a big top and a carousel round a decorated tree, the AI DevCon billboard, participants' booths with their drawings on their fronts, a frozen pond with skating elves, three free spots waiting for a booth, and the Carnival Factory arch at the entrance" src="docs/north-pole.png" width="880" />
   </a>
 </p>
 
