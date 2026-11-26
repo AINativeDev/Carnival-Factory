@@ -1,75 +1,82 @@
 import { describe, expect, it } from 'vitest';
-import theFactory, { BELT, cogTurn, LETTERS, PUFF, parcelAt, puffAt, puffSpot } from './attraction';
+import theFactory from './attraction';
+import { needFor, SIGN_UP, CARDS, cardTop } from './rules';
 
-describe('puffAt', () => {
-  it('rises from the chimney and starts again, each puff in turn', () => {
-    expect(puffAt(0, 0)).toBe(0);
-    expect(puffAt(PUFF / 2, 0)).toBeCloseTo(0.5);
-    expect(puffAt(PUFF, 0)).toBeCloseTo(0);
-    expect(puffAt(0, 1)).toBeCloseTo(1 / 3);
-  });
+const SIZE = 200;
+
+/** A canvas that does nothing but keep the words drawn on it. */
+function fakeCanvas() {
+  const texts: string[] = [];
+  const gradient = { addColorStop: () => undefined };
+  const noop = () => undefined;
+  const ctx = {
+    ...Object.fromEntries(
+      [
+        'save',
+        'restore',
+        'scale',
+        'translate',
+        'rotate',
+        'fillRect',
+        'beginPath',
+        'closePath',
+        'arc',
+        'ellipse',
+        'fill',
+        'stroke',
+        'moveTo',
+        'lineTo',
+        'quadraticCurveTo',
+        'roundRect',
+        'clip',
+        'drawImage',
+      ].map((name) => [name, noop]),
+    ),
+    fillText: (text: string) => texts.push(text),
+    createLinearGradient: () => gradient,
+  } as unknown as CanvasRenderingContext2D;
+  return { ctx, texts };
+}
+
+/** A press at `x`, `y` in the drawing's 0 to 100 units. */
+const press = (x: number, y: number) => ({
+  x: (x * SIZE) / 100,
+  y: (y * SIZE) / 100,
+  down: true,
+  presses: 1,
 });
 
-describe('parcelAt', () => {
-  it('rides the belt from the door to the end, two parcels apart', () => {
-    expect(parcelAt(0, 0)).toBe(0);
-    expect(parcelAt(BELT / 4, 0)).toBeCloseTo(0.25);
-    expect(parcelAt(0, 1)).toBeCloseTo(0.5);
+describe('The Factory', () => {
+  it('stands on the map as its tower, spelling TESSL', () => {
+    expect(theFactory.stall?.landmark).toBe('tower');
+    expect(theFactory.stall?.letters).toBe('TESSL');
   });
-});
 
-describe('puffSpot', () => {
-  it('keeps every puff inside the square until it has faded', () => {
-    for (let t = 0; t <= 1; t += 0.05) {
-      const { y, r } = puffSpot(t);
-      expect(y - r).toBeGreaterThanOrEqual(0);
-    }
+  it('runs its demo with nobody playing, inviting a tap', () => {
+    const { ctx, texts } = fakeCanvas();
+    for (let t = 0; t <= 12_000; t += 40) theFactory.draw(ctx, SIZE, t);
+    expect(texts).toEqual(expect.arrayContaining(['T', 'E', 'S', 'L', 'TAP TO PLAY', 'REQUEST']));
+    expect(texts).toEqual(expect.arrayContaining(['MERGE', 'BOOTH!', 'Sign up for Tessl']));
+    expect(theFactory.ask?.()).toBeUndefined();
   });
-});
 
-describe('cogTurn', () => {
-  it('turns once every twelve seconds', () => {
-    expect(cogTurn(6_000)).toBeCloseTo(Math.PI);
+  it('plays a round to its last card, with the score and the big sign-up button', () => {
+    const { ctx, texts } = fakeCanvas();
+    // Time runs back to 0, which starts a fresh game; the first tap starts a round.
+    theFactory.draw(ctx, SIZE, 0);
+    theFactory.draw(ctx, SIZE, 10, press(CARDS.x + 1, cardTop(0) + 1));
+    const right = needFor(0);
+    theFactory.draw(ctx, SIZE, 50, press(CARDS.x + 1, cardTop(right) + 1));
+    for (let t = 90; t <= 20_000; t += 40) theFactory.draw(ctx, SIZE, t);
+    expect(texts).toEqual(expect.arrayContaining(['SCORE', '+20', 'JAM!', 'LOOP COMPLETE']));
+    expect(texts).toEqual(expect.arrayContaining(['Tap anywhere else to play again']));
   });
-});
 
-describe('the drawing', () => {
-  it('spells TESSL down the tower in gold letters', () => {
-    const texts: unknown[] = [];
-    const gradient = { addColorStop: () => undefined };
-    const noop = () => undefined;
-    const ctx = {
-      ...Object.fromEntries(
-        [
-          'save',
-          'restore',
-          'scale',
-          'translate',
-          'rotate',
-          'fillRect',
-          'beginPath',
-          'closePath',
-          'arc',
-          'ellipse',
-          'fill',
-          'stroke',
-          'moveTo',
-          'lineTo',
-          'quadraticCurveTo',
-          'bezierCurveTo',
-          'rect',
-          'clip',
-          'strokeRect',
-          'setTransform',
-          'transform',
-        ].map((name) => [name, noop]),
-      ),
-      fillText: (text: unknown) => texts.push(text),
-      measureText: () => ({ width: 10 }),
-      createLinearGradient: () => gradient,
-      createRadialGradient: () => gradient,
-    } as unknown as CanvasRenderingContext2D;
-    theFactory.draw(ctx, 200, 1_000);
-    expect(texts).toEqual(expect.arrayContaining(LETTERS));
+  it('asks the page to open its sign-up link once, on the frame its button is tapped', () => {
+    const { ctx } = fakeCanvas();
+    theFactory.draw(ctx, SIZE, 0);
+    theFactory.draw(ctx, SIZE, 20, press(SIGN_UP.corner.x + 3, SIGN_UP.corner.y + 3));
+    expect(theFactory.ask?.()).toEqual({ open: 0 });
+    expect(theFactory.ask?.()).toBeUndefined();
   });
 });

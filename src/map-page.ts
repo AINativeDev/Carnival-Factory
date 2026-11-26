@@ -72,6 +72,7 @@ function followBuilding(map: MapControls) {
  * panel or the billboard. While levels wait behind their flag, the Factory,
  * the Academy and the Studio open their own rooms, not their levels (ADR 0058).
  */
+/* v8 ignore next 3 -- the page's wiring: squareLink is unit tested, and smoke/the-factory.spec.ts and smoke/booths-panel.spec.ts open squares here */
 function openSquare(kind: SquareKind, id: string) {
   location.hash = squareLink(kind, id, isOn('levels'));
 }

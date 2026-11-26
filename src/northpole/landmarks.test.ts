@@ -4,6 +4,7 @@
  * showing its attraction's own drawing under its name, which is what opens the
  * square's frame on the map.
  */
+import { isOffMap } from './off-map';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -112,12 +113,15 @@ describe('the landmarks', () => {
 
 describe("the North Pole's attractions", () => {
   const root = join(import.meta.dirname, '..', '..', 'carnival', 'attractions');
-  const chosen = readdirSync(root).map((id) => {
-    const code = readFileSync(join(root, id, 'attraction.ts'), 'utf8');
-    return /landmark: '([a-z-]+)'/.exec(code)?.[1];
-  });
+  // An off-map attraction, such as AI DevCon, has no stall at all: its way in is already on the map.
+  const chosen = readdirSync(root)
+    .filter((id) => !isOffMap(id))
+    .map((id) => {
+      const code = readFileSync(join(root, id, 'attraction.ts'), 'utf8');
+      return /landmark: '([a-z-]+)'/.exec(code)?.[1];
+    });
 
-  it('each stand as a landmark of their own, no two alike', () => {
+  it('each stand as a landmark of their own, no two alike, but those with no stall', () => {
     expect(chosen.every((landmark) => (LANDMARKS as readonly unknown[]).includes(landmark))).toBe(
       true,
     );
