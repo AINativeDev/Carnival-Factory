@@ -27,7 +27,7 @@ import { linksHome } from './northpole/north-pole-links';
 import { showLevelLinks } from './level-links';
 import { showYearAnswers } from './year-in-review-panel';
 import { focusBack } from './focus-back';
-import { bannerTitle } from './visit-banner';
+import { fullScreenPill } from './visit-full-screen';
 import { isOn } from './feature-flags';
 
 export interface VisitHudOptions {
@@ -133,17 +133,18 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     level || walking
       ? new URL(level ? levelLink(level, square.id) : levelLink(square.id), document.baseURI).href
       : shareLink(kind, square.id, document.baseURI);
+  $('.visit-by').textContent = owner && `by ${owner}`;
+  // Full screen is a square's: a level's own panel stands beside its map, which has none.
+  const tools = $<HTMLElement>('.visit-tools');
+  const full = walking ? undefined : fullScreenPill(frame, tools);
   const share = wireShare(
-    { ...roomPills(card, walking), text: $('.visit-share-text'), options: $('.visit-more') },
+    { ...roomPills(card, walking), full, text: $('.visit-share-text'), options: $('.visit-more') },
     { kind, id: square.id, name: () => square.name },
     link,
   );
 
-  // A level's own panel stands beside its map, which names it: only a square's name goes in the top bar.
-  const banner = walking ? undefined : bannerTitle(owner);
   const show = () => {
     $('.visit-title').textContent = square.name;
-    banner?.name(square.name);
     $('.visit-description').textContent = square.description;
     remix.href = remixUrl(square.id, square.name);
     share.refresh();
@@ -189,7 +190,6 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     card,
     close() {
       share.stop();
-      banner?.stop();
       document.removeEventListener('keydown', onKeyDown);
       const hadFocus = card.contains(document.activeElement);
       card.remove();

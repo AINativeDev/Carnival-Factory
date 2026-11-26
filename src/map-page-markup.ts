@@ -19,7 +19,7 @@ export const NORTH_POLE_MAP = `
         <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
         <a class="hud hud-tessl" href="#/factory">Built with Tessl</a>
-        <button class="hud hud-back" type="button"><span aria-hidden="true">←</span> Back to the map</button>
+        <button class="hud hud-back" type="button" title="Back to the map"><span aria-hidden="true">←</span><span class="hud-back-label">Back to the map</span></button>
         ${BOOTHS_PANEL}
         <details class="hud hud-controls">
           <summary>Controls</summary>
@@ -56,7 +56,7 @@ export const LEVEL_MAP = `
         <canvas class="map-canvas" tabindex="0"></canvas>
         <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
-        <button class="hud hud-back" type="button"><span aria-hidden="true">←</span> Back to the map</button>
+        <button class="hud hud-back" type="button" title="Back to the map"><span aria-hidden="true">←</span><span class="hud-back-label">Back to the map</span></button>
         <a class="hud hud-home" href="#/"><span aria-hidden="true">←</span> Back to the North Pole</a>
         <details class="hud hud-controls" open>
           <summary>Controls</summary>

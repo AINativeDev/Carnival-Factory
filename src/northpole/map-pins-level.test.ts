@@ -85,7 +85,7 @@ describe('walking a level', () => {
       map.controls.leave();
       for (let t = 6000; t < 7000; t += 200) frame(t);
     });
-    expect(pin).toMatchInlineSnapshot(`"befecd602b526fbe (111560 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"c16b080a80796ab3 (111560 calls)"`);
   });
 
   it('keeps still for reduced motion, on a phone with a touch screen', () => {
@@ -101,7 +101,7 @@ describe('walking a level', () => {
       },
       { width: 390, height: 700, coarse: true, reduced: true },
     );
-    expect(pin).toMatchInlineSnapshot(`"8729b75c76222f3f (9779 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"5ebad18510c7f861 (9779 calls)"`);
   });
 
   it('drags and pinches the camera with fingers on a phone', () => {

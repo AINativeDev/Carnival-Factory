@@ -1,6 +1,6 @@
 /**
- * Sharing a square: a Share button in the panel's sticky footer, beside the
- * ask, so a long build story never pushes it out of sight. On a laptop it copies a ready-made
+ * Sharing a square: a Share button at the top of the panel, beside the
+ * square's name, so a long build story never pushes it out of sight. On a laptop it copies a ready-made
  * line with the square's link; on a phone it opens the phone's own share
  * sheet. The panel's More lets the visitor edit the line or open it on the
  * map, and a booth's owner can share it as theirs, which changes the line.
@@ -15,6 +15,8 @@ export interface ShareParts {
   options: HTMLDetailsElement;
   /** The phone's sheet the panel sits in, which ends with the visit too (visit-sheet.ts). */
   sheet?: { stop(): void } | undefined;
+  /** The Full screen button on the sign's corner, which ends with the visit too (visit-full-screen.ts). */
+  full?: { stop(): void } | undefined;
 }
 
 /** The share icon people know: a box with an arrow up out of it (Lucide's "share"). */
@@ -22,7 +24,7 @@ const SHARE_ICON =
   '<svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
 
 /**
- * The Share button, added to the visit panel's footer. A level's
+ * The Share button, added to the top of the visit's panel. A level's
  * own pill is marked, so it steps aside while the player is inside one of its
  * squares, whose panel brings its own.
  */
@@ -38,11 +40,11 @@ export function sharePill(frame: HTMLElement, level = false): HTMLButtonElement 
 }
 
 /**
- * A visit's Share, in the panel's footer beside the ask, always in sight. A
+ * A visit's Share, at the top of the panel beside the square's name. A
  * booth's panel is also a sheet on a phone held upright (visit-sheet.ts).
  */
 export function roomPills(panel: HTMLElement, level: boolean) {
-  const copy = sharePill(panel.querySelector<HTMLElement>('.visit-footer') ?? panel, level);
+  const copy = sharePill(panel.querySelector<HTMLElement>('.visit-tools') ?? panel, level);
   // A level's own panel stands beside its map, not under a drawing.
   if (level) return { copy };
   return { copy, sheet: visitSheet(panel) };
@@ -114,6 +116,7 @@ export function wireShare(
       window.clearTimeout(reset);
       parts.copy.remove();
       parts.sheet?.stop();
+      parts.full?.stop();
     },
   };
 }

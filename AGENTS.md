@@ -449,8 +449,8 @@ uses any of it:
    colour's name, and `trim`, a second one for the stripes or the awning, is
    optional. Any square may set a `scene`, one of `SCENES`, for the mood round
    its drawing while someone is inside: `glow` (the default) or `chiaroscuro`
-   (darkness and one warm light from the upper left; mind that it shades the
-   drawing's lower right). An attraction may also set a `landmark`, one of `LANDMARKS`, to
+   (darkness and one warm pool of light from the upper left). A mood only
+   changes what's round the drawing; a dramatic drawing lights itself. An attraction may also set a `landmark`, one of `LANDMARKS`, to
    stand on the home map as what it is (a big wheel, a big top, an ice rink,
    The Factory's `tower` with its `letters` down its front: see
    [ADR 0042](docs/adr/0042-attractions-stand-as-what-they-are.md)); the map

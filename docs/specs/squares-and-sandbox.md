@@ -24,8 +24,8 @@ page never runs a square's code: each runs in its own sandboxed frame and worker
   from a booth's or a level's square (`stallFor`). `scene`, any square's
   choice, is the mood round its drawing while someone is inside it, one of
   `SCENES`: `glow` (the default, a soft glow of its own colours) or
-  `chiaroscuro` (darkness, one warm light from the upper left, its edges in
-  shadow) (`src/northpole/visit-scenes.ts`; enforced by:
+  `chiaroscuro` (darkness all round, with one warm pool of light from the
+  upper left); a mood never shades the drawing itself (`src/northpole/visit-scenes.ts`; enforced by:
   src/northpole/visit-scenes.test.ts, src/northpole/frame-protocol-stall.test.ts).
 - Each square's frame starts on its first draw. Until a frame arrives it shows
   "Opening…". A frame not drawn for 20 seconds is released and restarts when

@@ -50,27 +50,6 @@ a {
   text-decoration: none;
 }
 
-/* The square someone is inside, beside the site's name: its own dark pill, shortened when it can't fit. */
-.banner-square {
-  min-width: 0;
-  margin: 0;
-  padding: 3px 14px;
-  overflow: hidden;
-  border-radius: var(--radius);
-  background: var(--color-night);
-  color: var(--color-snow);
-  font-size: 17px;
-  font-weight: bold;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.banner-square-by {
-  color: var(--color-gold);
-  font-size: 13px;
-  font-weight: normal;
-}
-
 /* This edition's tag beside the site's name (src/edition.ts): smaller, and left out on a narrow phone. */
 .brand-edition {
   margin-left: 4px;
@@ -624,16 +603,35 @@ body[data-view='map'] .map {
   top: 12px;
   left: 12px;
   display: none;
+  width: 40px;
+  height: 40px;
   border: 0;
-  border-radius: 999px;
-  padding: 6px 14px;
-  font: bold 14px var(--font-family);
+  border-radius: 50%;
+  padding: 0;
+  font: bold 20px var(--font-family);
   cursor: pointer;
+}
+
+/* Its words are for screen readers and the tooltip: the arrow says it. */
+.hud-back-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.hud-back:hover,
+.hud-back:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
 }
 
 .map-frame[data-visiting] .hud-back,
 .map-frame[data-factory] .hud-back {
-  display: block;
+  display: grid;
+  place-items: center;
 }
 
 /* On a level, the same corner takes you home to the North Pole, until you go inside one of its squares. */
@@ -1228,18 +1226,19 @@ kbd {
   font-weight: bold;
 }
 
+/* A full-height column flush against the square's drawing (visit-stage.ts puts it there), the two read as one. */
 .visit {
-  top: 12px;
-  right: 12px;
-  bottom: 12px;
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 5;
   box-sizing: border-box;
-  width: 344px;
-  height: fit-content;
-  max-height: calc(100% - 24px);
+  width: 380px;
   overflow: auto;
-  padding: 12px 18px 16px;
-  border: 3px solid var(--color-gold);
+  padding: 16px 20px 16px;
+  border-left: 3px solid var(--color-gold);
+  border-radius: 0;
+  box-shadow: none;
   animation: visit-in 0.5s ease-out;
 }
 
@@ -1261,6 +1260,7 @@ kbd {
     height: 34%;
     max-height: none;
     padding-top: 0;
+    border: 3px solid var(--color-gold);
     border-radius: 18px 18px var(--radius) var(--radius);
   }
 }
@@ -1332,14 +1332,101 @@ kbd {
   font-size: 22px;
 }
 
-/* The top bar names the square (visit-banner.ts), so the panel keeps its heading for screen readers only. */
+/* The panel's head: the square's name and maker, with Share and Full screen beside them. */
+.visit-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
 .visit .visit-title {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.visit-by {
+  margin: 2px 0 0;
+  color: var(--color-cocoa);
+  font-size: 14px;
+}
+
+.visit-by:empty {
+  display: none;
+}
+
+.visit-tools {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.visit-tools .visit-copy,
+.visit-tools .visit-full {
+  position: relative;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.visit-tools .visit-copy {
+  background: var(--color-berry);
+  color: var(--color-snow);
+}
+
+.visit-tools .visit-full {
+  background: var(--color-night);
+  color: var(--color-snow);
+}
+
+.visit-tools svg {
+  width: 20px;
+  height: 20px;
+}
+
+.visit-tools button:hover,
+.visit-tools button:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Full screen: only the drawing fills the page, with Full screen in the corner to come back. */
+.map-frame[data-full] {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.map-frame[data-full] > :not(.map-canvas, .visit),
+.map-frame[data-full] .visit > :not(.visit-head),
+.map-frame[data-full] .visit-head > :not(.visit-tools),
+.map-frame[data-full] .visit-tools > :not(.visit-full) {
+  display: none !important;
+}
+
+.map-frame[data-full] .visit {
+  top: 16px;
+  right: 16px;
+  bottom: auto;
+  left: auto;
+  width: auto;
+  height: auto;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: none;
+}
+
+.map-frame[data-full] .visit-head {
+  margin: 0;
 }
 
 .visit .visit-title:focus,
@@ -1484,7 +1571,8 @@ kbd {
 }
 
 /* The words, out of sight but read out, and shown as a tooltip. */
-.visit-copy-label {
+.visit-copy-label,
+.visit-full-label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1495,7 +1583,8 @@ kbd {
 
 /* After a copy, "Copied" shows for a moment beside the icon. */
 .visit-copy[data-said] .visit-copy-label {
-  right: 48px;
+  top: 46px;
+  right: 0;
   width: auto;
   height: auto;
   clip-path: none;
@@ -1524,18 +1613,6 @@ kbd {
 .visit-footer .visit-want,
 .visit-footer .visit-next {
   margin: 0;
-}
-
-/* Share stands beside the ask, as an icon, always in sight. */
-.visit-footer .visit-copy {
-  position: relative;
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border-radius: 50%;
 }
 
 /* The main ask is a button, not a link in a sentence. */

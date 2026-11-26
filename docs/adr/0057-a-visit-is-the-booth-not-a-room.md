@@ -18,14 +18,16 @@ the booth square with the content, no more of the room part".
 ## Decision
 
 Inside a square there is no room. On a laptop its drawing is the biggest
-square left of the panel, from the top bar to the bottom, at the screen's own
+square left of the panel, from top to bottom and flush against it, at the screen's own
 pixels; on a phone held upright it fills the width above the panel's sheet.
 The rest of the screen is a soft, dimmed glow of the drawing's own colours,
 so the page blends into it; a square may choose another mood instead,
-`stall.scene`, such as `chiaroscuro`: darkness and one warm light from the
-upper left, for the dramatic ones. Nobody walks inside: a click or a drag is the
-square's. The top bar shows the square's name, since no sign does any more,
-and Share stands in its footer beside the ask. The room's code, its walls,
+`stall.scene`, such as `chiaroscuro`: darkness and one warm pool of light
+from the upper left. A mood never shades the drawing itself, which would dim
+a game's own score; a square that wants drama lights its own drawing. Nobody walks inside: a click or a drag is the
+square's. The panel is a full-height column flush against the drawing, the
+two reading as one: its head names the square and its maker, with Share and
+Full screen beside them. The way back to the map is a round arrow. The room's code, its walls,
 pinboard and walking, is removed.
 
 ## Consequences

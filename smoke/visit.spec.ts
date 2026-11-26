@@ -59,10 +59,9 @@ test('pressing E at a booth goes inside it, keys walk nowhere there, and Esc or 
   await expect(page.locator('.map-frame')).toHaveAttribute('data-visiting', 'booth:jedi4ever');
   // After the fade, the booth's drawing fills the screen beside the panel.
   await expect(canvas).toHaveAttribute('data-stage', /^\d+,\d+,\d+,\d+$/);
-  // The top bar names it, since nothing round the drawing does.
-  await expect(page.locator('.banner .banner-square')).toHaveText(
-    `${JEDI4EVER_NAME} by @jedi4ever`,
-  );
+  // The panel's head names it and its maker.
+  await expect(card.locator('.visit-title')).toHaveText(JEDI4EVER_NAME);
+  await expect(card.locator('.visit-by')).toHaveText('by @jedi4ever');
   await expect(page.locator('.hud-booths')).toBeHidden();
   await expect(frameOf(page, 'booth', 'jedi4ever')).toHaveAttribute('data-state', 'ready');
   // A link to the map counts as a shared link: the invitation shows, once a visit.
@@ -72,7 +71,6 @@ test('pressing E at a booth goes inside it, keys walk nowhere there, and Esc or 
   await expect(page).toHaveURL(/#\/\?booth=jedi4ever$/);
   await expect(page.locator('.map-frame')).not.toHaveAttribute('data-visiting', /.*/);
   await expect(canvas).not.toHaveAttribute('data-stage', /.*/);
-  await expect(page.locator('.banner-square')).toHaveCount(0);
   await expect(canvas).toHaveAttribute('data-player', at);
   await expect(canvas).toBeFocused();
 
@@ -138,5 +136,22 @@ test("a square's build story lists each step as a block, not in columns", async 
   const steps = page.locator('.visit .story-step');
   await expect(steps.first()).toBeVisible();
   await expect(steps.first()).toHaveCSS('display', 'block');
-  await expect(page.locator('.visit .visit-title')).toHaveCSS('position', 'absolute');
+  await expect(page.locator('.visit .visit-title')).toBeVisible();
+});
+
+test('Full screen shows the drawing alone, and Esc comes back to the panel', async ({ page }) => {
+  await page.goto('#/booth/jedi4ever');
+  const canvas = page.locator('.map-canvas');
+  const frame = page.locator('.map-frame');
+  await expect(frame).toHaveAttribute('data-visiting', 'booth:jedi4ever');
+  await expect(canvas).toHaveAttribute('data-stage', /^\d+,\d+,\d+,\d+$/);
+  const beside = await canvas.getAttribute('data-stage');
+  await page.getByRole('button', { name: 'Full screen' }).click();
+  await expect(frame).toHaveAttribute('data-full', '');
+  await expect(page.locator('.visit-description')).toBeHidden();
+  await expect(canvas).not.toHaveAttribute('data-stage', beside ?? '');
+  await page.keyboard.press('Escape');
+  await expect(frame).not.toHaveAttribute('data-full');
+  await expect(frame).toHaveAttribute('data-visiting', 'booth:jedi4ever');
+  await expect(page.locator('.visit-description')).toBeVisible();
 });

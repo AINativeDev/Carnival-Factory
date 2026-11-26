@@ -150,16 +150,16 @@ describe("a level's Share pill", () => {
 });
 
 describe("a visit's buttons", () => {
-  it("put Share beside the ask, and make a square's panel a sheet on a phone, but not a level's", () => {
-    document.body.innerHTML = '<section><div class="visit-footer"></div></section>';
+  it("put Share at the top of the panel, and make a square's panel a sheet on a phone, but not a level's", () => {
+    document.body.innerHTML = '<section><div class="visit-tools"></div></section>';
     const panel = document.querySelector('section') as HTMLElement;
     const square = roomPills(panel, false);
-    expect(square.copy.parentElement?.className).toBe('visit-footer');
+    expect(square.copy.parentElement?.className).toBe('visit-tools');
     expect(panel.querySelector('.visit-sheet-handle')).not.toBeNull();
     square.sheet?.stop();
     expect(panel.querySelector('.visit-sheet-handle')).toBeNull();
     const level = roomPills(panel, true);
-    expect(level.copy.parentElement?.className).toBe('visit-footer');
+    expect(level.copy.parentElement?.className).toBe('visit-tools');
     expect('sheet' in level).toBe(false);
   });
 

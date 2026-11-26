@@ -13,7 +13,7 @@ import { timeFrame } from './map-timing';
 import { onRect } from './pointer';
 import type { NorthPoleSquare } from './square';
 import { drawScene } from './visit-scenes';
-import { boothBox, isPhoneUpright, wideBox } from './visit-stage';
+import { boothBox, fullBox, isFullScreen, isPhoneUpright, wideBox } from './visit-stage';
 import type { Spot } from './world';
 
 /** What a visit's frame is drawn with. */
@@ -34,7 +34,13 @@ export function drawInside(m: MapRun, spot: Spot, square: NorthPoleSquare, frame
   // Cleared, not filled: the glow goes in behind the drawing once it's drawn.
   ctx.clearRect(0, 0, width, height);
   // A phone held upright has the panel as a sheet below: the booth fills its width.
-  const stage = isPhoneUpright(width, height) ? wideBox(width) : boothBox(roomArea(width, height));
+  // Full screen, the drawing takes the whole screen; a phone held upright has
+  // the panel as a sheet below, so the booth fills its width.
+  const stage = isFullScreen(canvas)
+    ? fullBox(width, height)
+    : isPhoneUpright(width, height)
+      ? wideBox(width)
+      : boothBox(roomArea(width, height));
   const size = Math.min(MAX_SIZE, Math.round(stage.w * scale));
   // The stage is the square's drawing scaled, so the pointer scales with it.
   const pressed = m.pointer.now();

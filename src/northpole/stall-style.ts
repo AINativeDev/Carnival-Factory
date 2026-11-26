@@ -65,8 +65,8 @@ export interface StallStyle {
 /**
  * The moods a square's drawing can stand in while someone is inside it:
  * `glow`, a soft, dimmed glow of its own colours all round (the default), or
- * `chiaroscuro`, darkness all round and one warm light from the upper left,
- * its edges falling into shadow (docs/adr/0057-a-visit-is-the-booth-not-a-room.md).
+ * `chiaroscuro`, darkness all round and one warm pool of light from the
+ * upper left. Neither touches the drawing itself (docs/adr/0057-a-visit-is-the-booth-not-a-room.md).
  */
 export const SCENES = ['glow', 'chiaroscuro'] as const;
 export type Scene = (typeof SCENES)[number];

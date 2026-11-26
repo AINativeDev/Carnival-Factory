@@ -97,9 +97,11 @@ describe("a square's panel", () => {
     expect(card.querySelector<HTMLElement>('.history-empty')?.hidden).toBe(false);
   });
 
-  it('puts Share beside the ask, and the map link and message under More', () => {
+  it('heads the panel with its name, its maker, Full screen and Share, and folds the map link and message under More', () => {
     const { card } = open({ kind: 'booth', square: square('ana', "Ana's booth") });
-    expect(card.querySelector('.visit-footer .visit-copy')?.textContent).toBe('Share');
+    expect(card.querySelector('.visit-by')?.textContent).toBe('by @ana');
+    const tools = [...card.querySelectorAll('.visit-tools button')].map((b) => b.textContent);
+    expect(tools).toEqual(['Full screen', 'Share']);
     const options = the(card, '.visit-more');
     expect(options.querySelector('summary')?.textContent).toBe('More');
     expect(options.querySelector<HTMLAnchorElement>('.visit-map')?.getAttribute('href')).toBe(
@@ -111,11 +113,8 @@ describe("a square's panel", () => {
 
   it("lets a booth's owner share it as theirs, opening the message to edit", () => {
     let mine = false;
-    const { card } = open({
-      kind: 'booth',
-      square: square('ana', "Ana's booth"),
-      onMine: () => (mine = true),
-    });
+    const onMine = () => (mine = true);
+    const { card } = open({ kind: 'booth', square: square('ana', "Ana's booth"), onMine });
     the(card, '.visit-mine').click();
     expect(mine).toBe(true);
     expect((the(card, '.visit-more') as HTMLDetailsElement).open).toBe(true);

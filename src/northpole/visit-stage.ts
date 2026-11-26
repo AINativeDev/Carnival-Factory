@@ -8,11 +8,21 @@ import type { Box } from './world';
 
 /**
  * On a laptop: the biggest square in `area`, the space left of the panel,
- * running from just under the top bar to the bottom, in the middle across.
+ * from the top to the bottom, flush against the panel so the two read as one.
  */
 export function boothBox(area: Box): Box {
   const side = Math.max(0, Math.min(area.w, area.h));
-  return { x: area.x + (area.w - side) / 2, y: area.y, w: side, h: side };
+  return { x: area.x + area.w - side, y: area.y, w: side, h: side };
+}
+
+/** Whether the map frame round `canvas` shows its square full screen (visit-full-screen.ts marks it). */
+export const isFullScreen = (canvas: HTMLElement): boolean =>
+  canvas.closest<HTMLElement>('.map-frame')?.dataset.full !== undefined;
+
+/** Full screen: the biggest square that fits a `width` by `height` screen, centred, inside the margin. */
+export function fullBox(width: number, height: number): Box {
+  const side = Math.max(0, Math.min(width, height) - 2 * MARGIN);
+  return { x: (width - side) / 2, y: (height - side) / 2, w: side, h: side };
 }
 
 /** A phone held upright: the booth fills the width, above the panel's sheet. */
@@ -22,7 +32,7 @@ export const isPhoneUpright = (width: number, height: number) => width < 720 && 
 const MARGIN = 16;
 
 /** Room for the way back to the map above the drawing, on a phone upright, in CSS pixels. */
-const BELOW_BACK = 56;
+const BELOW_BACK = 64;
 
 /** On a phone held upright, the booth across the screen's width, under the way back. */
 export function wideBox(width: number): Box {

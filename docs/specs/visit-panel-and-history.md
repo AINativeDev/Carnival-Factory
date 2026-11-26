@@ -7,7 +7,7 @@ one ask ([ADR 0057](../adr/0057-a-visit-is-the-booth-not-a-room.md)). A level sh
 ## Behaviour
 
 - **The drawing fills the screen.** On a laptop it's the biggest square left
-  of the panel, from just under the top bar to the bottom, sharp at the
+  of the panel, from top to bottom and flush against it, sharp at the
   screen's own pixels. Round it, the rest of the screen is a soft, dimmed glow
   of the drawing's own colours, so the page blends into the booth, or the
   mood the square chose instead (`stall.scene`, see
@@ -16,10 +16,10 @@ one ask ([ADR 0057](../adr/0057-a-visit-is-the-booth-not-a-room.md)). A level sh
   play with. Booths need no change: each draws to whatever size it's given
   (`src/northpole/map-room.ts`, `src/northpole/visit-stage.ts`; enforced by:
   src/northpole/visit-stage.test.ts, src/northpole/map-inside.test.ts).
-- The top bar names the square beside the site's name, "<name> by @<login>"
-  for a booth (`src/visit-banner.ts`; enforced by: src/visit-banner.test.ts). The
-  panel opens with its description, with its name as a heading for screen
-  readers. A level's panel shows
+- **The panel** is a full-height column on the right, flush against the
+  drawing so the two read as one. Its head names the square, "by @<login>"
+  under a booth's name, with Share and Full screen beside them; then its
+  description. A level's panel shows
   its name, "A level by @<login>" (or "the North Pole") and its description,
   and its **How it was built** tells the level's own requests.
 - **How it was built** leads the panel, on every screen size: a timeline, oldest
@@ -42,13 +42,20 @@ one ask ([ADR 0057](../adr/0057-a-visit-is-the-booth-not-a-room.md)). A level sh
   @<login>."
 - An Elf Engineer's booth links to their own factory. A booth with a People's
   Choice comment links to it with "Vote for this booth".
-- **Share** stands in the panel's footer, an icon beside the ask, so a long
-  build story never hides it; a level's own panel has it there too, and it
+- **Share** stands at the top of the panel, an icon beside the square's name,
+  so a long build story never hides it; a level's own panel has it there too, and it
   steps aside while the player is inside one of the level's squares. It opens
   the phone's share sheet on a phone; elsewhere it copies the line, and its
   hidden label shows "Copied" for a moment, or opens the line to copy by hand
   without a clipboard (`src/visit-share.ts`; enforced by:
   src/visit-share.test.ts, smoke/sharing.spec.ts).
+- **Full screen**, the icon beside Share, shows the drawing alone, as big as
+  the whole screen allows, in the browser's own full screen where it has one
+  and filling the page where it hasn't (Safari on an iPhone), with only Full
+  screen in the corner to come back. Esc, or the icon again, comes back to
+  the panel, not out of the square (`src/visit-full-screen.ts`, `fullBox` in
+  `src/northpole/visit-stage.ts`; enforced by: src/visit-full-screen.test.ts,
+  src/northpole/map-inside.test.ts, smoke/visit.spec.ts).
 - **On a phone held upright** the drawing fills the screen's width under the
   way back to the map, and the panel is a sheet below it. The sheet's grip drags it between a sliver and most of the
   screen, resting at a quarter, half or most of it when let go; the arrow keys

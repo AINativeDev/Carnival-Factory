@@ -4,7 +4,7 @@ import { startHarness, type MapHarness } from '../test-support/map-harness';
 import { click, key } from '../test-support/map-events';
 import { LEVEL, levelOptions, type Told } from '../test-support/map-fixtures';
 import { roomArea } from './interior';
-import { boothBox, wideBox } from './visit-stage';
+import { boothBox, fullBox, wideBox } from './visit-stage';
 import { levelWorld } from './level';
 
 let map: MapHarness | undefined;
@@ -29,6 +29,17 @@ describe('inside a square', () => {
   it('draws the square as big as the space left of the panel allows, top to bottom', () => {
     const { running } = inside();
     const box = boothBox(roomArea(1200, 800));
+    expect(running.canvas.dataset.stage).toBe(
+      [box.x, box.y, box.w, box.h].map((n) => Math.round(n)).join(','),
+    );
+  });
+
+  it('draws the square alone in the middle of the whole screen, full screen', () => {
+    const { running } = inside();
+    (running.canvas.parentElement as HTMLElement).classList.add('map-frame');
+    (running.canvas.parentElement as HTMLElement).dataset.full = '';
+    running.step(1000);
+    const box = fullBox(1200, 800);
     expect(running.canvas.dataset.stage).toBe(
       [box.x, box.y, box.w, box.h].map((n) => Math.round(n)).join(','),
     );

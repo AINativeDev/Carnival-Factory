@@ -32,13 +32,11 @@ describe('the mood round a drawing inside', () => {
     expect(names(calls).filter((name) => name === 'fillRect')).toHaveLength(2);
   });
 
-  it('falls into shadow for chiaroscuro: shade over the drawing, then a warm pool behind it', () => {
-    const calls = names(sceneCalls('chiaroscuro'));
-    const over = calls.indexOf('fillRect');
-    const behind = calls.indexOf('=globalCompositeOperation');
-    expect(over).toBeGreaterThan(-1);
-    expect(over).toBeLessThan(behind);
-    expect(calls.filter((name) => name === 'createRadialGradient')).toHaveLength(2);
-    expect(calls).not.toContain('drawImage');
+  it('darkens all round for chiaroscuro, with a warm pool of light, and never shades the drawing', () => {
+    const calls = sceneCalls('chiaroscuro');
+    const behind = names(calls).indexOf('=globalCompositeOperation');
+    expect(names(calls).indexOf('fillRect')).toBeGreaterThan(behind);
+    expect(names(calls).filter((name) => name === 'createRadialGradient')).toHaveLength(1);
+    expect(names(calls)).not.toContain('drawImage');
   });
 });

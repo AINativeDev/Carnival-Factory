@@ -1,8 +1,8 @@
 /**
  * The mood round a square's drawing while someone is inside it, the square's
- * own choice (`stall.scene`, ADR 0057). Each is drawn in two parts: `behind`,
- * once the drawing is on the canvas, slips under it with `destination-over`;
- * `over` lays light and shadow on the drawing itself.
+ * own choice (`stall.scene`, ADR 0057). It's drawn once the drawing is on
+ * the canvas, slipped under it with `destination-over`: a scene never touches
+ * the drawing itself, so a game's score stays as the square drew it.
  */
 import type { Scene } from './square';
 import { theme } from './theme';
@@ -68,32 +68,10 @@ function shadowBehind({ ctx, width, height, stage }: SceneFrame) {
   ctx.fillRect(0, 0, width, height);
 }
 
-/** Chiaroscuro on the drawing: lit at the upper left, falling into deep shadow toward its edges. */
-function shadowOver({ ctx, stage }: SceneFrame) {
-  const light = lightOf(stage);
-  const shade = ctx.createRadialGradient(
-    light.x,
-    light.y,
-    stage.w * 0.1,
-    light.x,
-    light.y,
-    stage.w * 1.15,
-  );
-  shade.addColorStop(0, 'transparent');
-  shade.addColorStop(0.25, 'transparent');
-  shade.addColorStop(0.7, colors.night);
-  shade.addColorStop(1, colors.night);
-  ctx.globalAlpha = 0.92;
-  ctx.fillStyle = shade;
-  ctx.fillRect(stage.x, stage.y, stage.w, stage.h);
-  ctx.globalAlpha = 1;
-}
-
-/** Draws `scene` round and over the drawing just drawn at `frame.stage`. */
+/** Draws `scene` round the drawing just drawn at `frame.stage`. */
 export function drawScene(scene: Scene | undefined, frame: SceneFrame) {
   const { ctx } = frame;
   ctx.save();
-  if (scene === 'chiaroscuro') shadowOver(frame);
   ctx.globalCompositeOperation = 'destination-over';
   if (scene === 'chiaroscuro') shadowBehind(frame);
   else glowBehind(frame);
