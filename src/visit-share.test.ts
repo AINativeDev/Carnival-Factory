@@ -149,16 +149,16 @@ describe("a level's Share pill", () => {
   });
 });
 
-describe('the pills over the room', () => {
-  it("stack Share and Full screen on a square's drawing, and give a level's panel Share alone", () => {
+describe("a visit's buttons", () => {
+  it("put Share beside the ask and Full screen on a square's drawing, and give a level's panel Share alone", () => {
     document.body.innerHTML =
       '<div class="map-frame"><canvas></canvas><section><div class="visit-footer"></div></section></div>';
     const frame = document.querySelector('.map-frame') as HTMLElement;
     const panel = document.querySelector('section') as HTMLElement;
     const square = roomPills(frame, panel, false);
     const tools = frame.querySelector('.booth-tools');
-    expect(square.copy.parentElement).toBe(tools);
-    expect(tools?.querySelector('.visit-full')?.textContent).toBe('Full screen');
+    expect(square.copy.parentElement?.className).toBe('visit-footer');
+    expect(tools?.firstElementChild?.textContent).toBe('Full screen');
     square.full?.stop();
     expect(frame.querySelector('.booth-tools')).toBeNull();
     const level = roomPills(frame, panel, true);

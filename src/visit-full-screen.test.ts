@@ -12,7 +12,7 @@ afterEach(() => {
 });
 
 describe('the Full screen pill', () => {
-  it('stands over the room with its icon and its word, and leaves with the visit', () => {
+  it('shows its icon, with its word for screen readers,, and leaves with the visit', () => {
     const map = frame();
     const full = fullScreenPill(map);
     expect(full.pill.parentElement).toBe(map);
@@ -22,30 +22,15 @@ describe('the Full screen pill', () => {
     expect(full.pill.isConnected).toBe(false);
   });
 
-  it('shows the booth full screen, asks the browser for it, and comes back on a second press', () => {
+  it('makes the booth big beside the panel, and comes back on a second press', () => {
     const map = frame();
-    const ask = vi.fn(() => Promise.resolve());
-    map.requestFullscreen = ask;
-    const resized = vi.fn();
-    window.addEventListener('resize', resized);
     const full = fullScreenPill(map);
     full.pill.click();
     expect(map.dataset.full).toBe('');
-    expect(ask).toHaveBeenCalled();
-    expect(full.pill.textContent).toBe('Exit full screen');
-    expect(resized).toHaveBeenCalled();
+    expect(full.pill.textContent).toBe('Back to the room');
     full.pill.click();
     expect(map.dataset.full).toBeUndefined();
     expect(full.pill.textContent).toBe('Full screen');
-    full.stop();
-  });
-
-  it('still fills the page where the browser has no full screen, such as Safari on an iPhone', () => {
-    const map = frame();
-    Object.defineProperty(map, 'requestFullscreen', { value: undefined });
-    const full = fullScreenPill(map);
-    full.pill.click();
-    expect(map.dataset.full).toBe('');
     full.stop();
   });
 
@@ -64,15 +49,6 @@ describe('the Full screen pill', () => {
     full.stop();
   });
 
-  it("comes back when the browser's own full screen ends, as with its own Esc", () => {
-    const map = frame();
-    const full = fullScreenPill(map);
-    full.pill.click();
-    document.dispatchEvent(new Event('fullscreenchange'));
-    expect(map.dataset.full).toBeUndefined();
-    full.stop();
-  });
-
   it('ends full screen when the visit ends', () => {
     const map = frame();
     const full = fullScreenPill(map);
@@ -82,25 +58,7 @@ describe('the Full screen pill', () => {
   });
 });
 
-describe("the browser's own full screen", () => {
-  it('leaves it when the visit comes back from full screen, and shrugs off a refusal either way', async () => {
-    const map = frame();
-    map.requestFullscreen = vi.fn(() => Promise.reject(new Error('not allowed')));
-    const exit = vi.fn(() => Promise.reject(new Error('already out')));
-    Object.defineProperty(document, 'exitFullscreen', { value: exit, configurable: true });
-    Object.defineProperty(document, 'fullscreenElement', { get: () => map, configurable: true });
-    const full = fullScreenPill(map);
-    full.pill.click();
-    // Still in its full screen: the browser's change doesn't end ours.
-    document.dispatchEvent(new Event('fullscreenchange'));
-    expect(map.dataset.full).toBe('');
-    full.pill.click();
-    expect(exit).toHaveBeenCalled();
-    await Promise.resolve();
-    Object.defineProperty(document, 'fullscreenElement', { value: null, configurable: true });
-    full.stop();
-  });
-
+describe('keys while full screen', () => {
   it('lets other keys through while full screen', () => {
     const map = frame();
     const full = fullScreenPill(map);

@@ -148,7 +148,7 @@ test("a square's build story lists each step as a block, not in columns", async 
   await expect(page.locator('.visit .visit-title')).toHaveCSS('position', 'absolute');
 });
 
-test('Full screen shows the booth edge to edge, and Esc comes back to its room', async ({
+test('Full screen makes the booth big beside its panel, and Esc comes back to its room', async ({
   page,
 }) => {
   await page.goto('#/booth/jedi4ever');
@@ -158,7 +158,7 @@ test('Full screen shows the booth edge to edge, and Esc comes back to its room',
   const room = await canvas.getAttribute('data-stage');
   await page.getByRole('button', { name: 'Full screen' }).click();
   await expect(frame).toHaveAttribute('data-full', '');
-  await expect(page.locator('.hud.visit')).toBeHidden();
+  await expect(page.locator('.hud.visit')).toBeVisible();
   await expect(canvas).not.toHaveAttribute('data-stage', room ?? '');
   await page.keyboard.press('Escape');
   await expect(frame).not.toHaveAttribute('data-full');

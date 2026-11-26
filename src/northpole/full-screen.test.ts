@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
-import { edgeToEdge, fullBox, isFullScreen, isPhoneUpright, wideBox } from './full-screen';
+import { areaBox, edgeToEdge, fullBox, isFullScreen, isPhoneUpright, wideBox } from './full-screen';
 
 describe('a booth full screen', () => {
   it('is on while the map frame is marked full', () => {
@@ -42,5 +42,10 @@ describe('a booth full screen', () => {
     size(1400, 900);
     (canvas.parentElement as HTMLElement).dataset.full = '';
     expect(edgeToEdge(canvas)).toBe(true);
+  });
+
+  it('fills the room beside the panel under the banner and the way back, when full screen', () => {
+    expect(areaBox({ x: 0, y: 0, w: 1060, h: 900 })).toEqual({ x: 144, y: 96, w: 772, h: 772 });
+    expect(areaBox({ x: 10, y: 20, w: 1000, h: 1200 }).x).toBe(16 + 10);
   });
 });

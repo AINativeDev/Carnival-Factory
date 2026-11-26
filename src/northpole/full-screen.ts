@@ -1,6 +1,6 @@
 /**
- * A booth full screen: its drawing as big as the screen allows, with nothing
- * else round it, for the games and scenes that play better big. Booths need no
+ * A booth full screen: its drawing as big as the space beside the panel
+ * allows, with no room round it, for the games and scenes that play better big. Booths need no
  * change for it: every square draws to whatever size it's given. The visit's
  * Full screen pill marks the map's frame (`data-full`), and the room reads it.
  */
@@ -13,10 +13,19 @@ const MARGIN = 16;
 export const isFullScreen = (canvas: HTMLElement): boolean =>
   canvas.closest<HTMLElement>('.map-frame')?.dataset.full !== undefined;
 
-/** The biggest square that fits a `width` by `height` screen, centred, inside the margin. */
+/** The biggest square that fits a `width` by `height` area from the top left, centred, inside the margin. */
 export function fullBox(width: number, height: number): Box {
   const side = Math.max(0, Math.min(width, height) - 2 * MARGIN);
   return { x: (width - side) / 2, y: (height - side) / 2, w: side, h: side };
+}
+
+/** Room for the banner and the way back to the map above a booth full screen, in CSS pixels. */
+const UNDER_THE_BANNER = 96;
+
+/** Full screen beside the panel: the biggest square in the room's `area` under the banner and the way back. */
+export function areaBox(area: Box): Box {
+  const box = fullBox(area.w, area.h - UNDER_THE_BANNER);
+  return { ...box, x: area.x + box.x, y: area.y + UNDER_THE_BANNER + box.y - MARGIN };
 }
 
 /** A phone held upright: the booth fills the width, above the panel's sheet. */

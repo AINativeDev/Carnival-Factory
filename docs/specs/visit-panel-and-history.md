@@ -41,28 +41,29 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
   @<login>."
 - An Elf Engineer's booth links to their own factory. A booth with a People's
   Choice comment links to it with "Vote for this booth".
-- **Share** and **Full screen** stand on the square's drawing itself, two
-  round icons stacked at its top-right corner, so they sit next to what they
-  act on and a long build story never hides them. They follow the drawing
-  wherever the room puts it (`src/booth-tools.ts`, from the canvas's
-  `data-stage`). A level's own panel has no drawing to stand on: its Share
-  stays in the panel's footer, and steps aside while the player is inside one
-  of its squares.
-- **Share** opens the phone's share sheet on a phone; elsewhere it copies the
-  line, and its hidden label shows "Copied" for a moment (`src/visit-share.ts`;
-  enforced by: src/visit-share.test.ts, smoke/sharing.spec.ts).
-- **Full screen** shows a booth's or attraction's drawing edge to edge: the
-  biggest square that fits, sharp at the screen's own pixels, on a night
-  background, with only the two icons on its corner. It uses the browser's
-  full screen where it has one and fills the page where it hasn't (Safari on
-  an iPhone). Esc, or the icon again, comes back to the room, not out of the
-  booth; walking keys and room clicks do nothing meanwhile. Booths need no
-  change: each draws to whatever size it's given (`src/visit-full-screen.ts`,
+- **Full screen** stands on the square's drawing itself, a round icon at its
+  top-right corner, next to what it acts on. It follows the drawing wherever
+  the room puts it (`src/booth-tools.ts`, from the canvas's `data-stage`).
+- **Share** stands in the panel's footer, an icon beside the ask, so a long
+  build story never hides it; a level's own panel has it there too, and it
+  steps aside while the player is inside one of the level's squares. It opens
+  the phone's share sheet on a phone; elsewhere it copies the line, and its
+  hidden label shows "Copied" for a moment, or opens the line to copy by hand
+  without a clipboard (`src/visit-share.ts`; enforced by:
+  src/visit-share.test.ts, smoke/sharing.spec.ts).
+- **Full screen** makes a booth's or attraction's drawing as big as the space
+  beside the panel allows, under the banner and the way back: the biggest
+  square that fits, sharp at the screen's own pixels, on a night background,
+  with no room round it. The panel stays where it is. Esc, or the icon again
+  ("Back to the room"), comes back to the room, not out of the booth; walking
+  keys and room clicks do nothing meanwhile. Booths need no change: each
+  draws to whatever size it's given (`src/visit-full-screen.ts`, `areaBox` in
   `src/northpole/full-screen.ts`; enforced by: src/visit-full-screen.test.ts,
   src/northpole/map-full-screen.test.ts, smoke/visit.spec.ts).
 - **On a phone held upright** there's no room: the drawing fills the screen's
   width under the way back to the map, with its two icons, and the panel is a
-  sheet below it. The sheet's grip drags it between a sliver and most of the
+  sheet below it, with no Full screen, since the drawing is already as wide
+  as it goes. The sheet's grip drags it between a sliver and most of the
   screen, resting at a quarter, half or most of it when let go; the arrow keys
   step through those on the grip. Walking and room clicks do nothing there
   (`src/visit-sheet.ts`, `isPhoneUpright` and `wideBox` in

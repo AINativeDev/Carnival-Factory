@@ -6,7 +6,7 @@
  */
 import { drawSquare } from './draw-square';
 import { MAX_SIZE } from './frame-protocol';
-import { fullBox, isFullScreen, isPhoneUpright, wideBox } from './full-screen';
+import { areaBox, isFullScreen, isPhoneUpright, wideBox } from './full-screen';
 import { roomArea, roomLayout } from './interior';
 import { drawRoom } from './interior-room';
 import { drawRoomPerson } from './interior-room';
@@ -43,11 +43,11 @@ export function drawInside(m: MapRun, spot: Spot, square: NorthPoleSquare, frame
   const booth = spot.kind === 'booth';
   // A square's spot always has its id: its owner's login, or the attraction's.
   const login = String(spot.id);
-  // Full screen, the drawing takes the whole screen at the screen's own pixels;
-  // otherwise it hangs on the back wall of its room.
+  // Full screen, the drawing takes the space beside the panel at the screen's
+  // own pixels; otherwise it hangs on the back wall of its room.
   const full = isFullScreen(canvas);
   // A phone held upright has no room to spare for walls: the booth fills its width.
-  const wide = !full && isPhoneUpright(width, height);
+  const wide = isPhoneUpright(width, height);
   if (full || wide) {
     ctx.fillStyle = theme.colors.night;
     ctx.fillRect(0, 0, width, height);
@@ -63,7 +63,8 @@ export function drawInside(m: MapRun, spot: Spot, square: NorthPoleSquare, frame
     );
     dressRoom(ctx, room, square, spot, time);
   }
-  const stage = full ? fullBox(width, height) : wide ? wideBox(width) : room.stage;
+  // Full screen fills the room's own area, beside the panel, which stays put.
+  const stage = wide ? wideBox(width) : full ? areaBox(roomArea(width, height)) : room.stage;
   const size = full || wide ? Math.min(MAX_SIZE, Math.round(stage.w * scale)) : VISIT_SIZE;
   // The stage is the square's drawing scaled, so the pointer scales with it.
   const pressed = m.pointer.now();

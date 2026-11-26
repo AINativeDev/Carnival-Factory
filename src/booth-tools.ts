@@ -1,7 +1,7 @@
 /**
- * The booth's own tools, Share and Full screen, stacked on the top-right corner
- * of the square's drawing, so they sit on the thing they act on wherever the
- * room puts it, full screen too. The room writes where the drawing is to the
+ * The booth's own tools, for now Full screen, on the top-right corner of the
+ * square's drawing, so they sit on the thing they act on wherever the room
+ * puts it, full screen too. The room writes where the drawing is to the
  * canvas (`data-stage`, in device pixels); this follows it.
  */
 

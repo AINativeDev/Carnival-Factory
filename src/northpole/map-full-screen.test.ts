@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { startHarness, type MapHarness } from '../test-support/map-harness';
 import { click, key } from '../test-support/map-events';
 import { LEVEL, levelOptions, type Told } from '../test-support/map-fixtures';
-import { fullBox, wideBox } from './full-screen';
+import { areaBox, wideBox } from './full-screen';
+import { roomArea } from './interior';
 import { levelWorld } from './level';
 
 let map: MapHarness | undefined;
@@ -29,9 +30,9 @@ function insideFullScreen() {
 }
 
 describe('a square full screen', () => {
-  it('draws the square as big as the screen allows, in the middle, with no room round it', () => {
+  it('draws the square as big as the space beside the panel allows, with no room round it', () => {
     const { running } = insideFullScreen();
-    const box = fullBox(1200, 800);
+    const box = areaBox(roomArea(1200, 800));
     expect(running.canvas.dataset.stage).toBe(
       [box.x, box.y, box.w, box.h].map((n) => Math.round(n)).join(','),
     );
