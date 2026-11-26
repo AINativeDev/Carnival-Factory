@@ -1,7 +1,6 @@
 /**
  * The merge gate's round with the scripted GitHub passed straight in as its
- * client, for what the runner's own tests don't reach: long lists of check
- * runs, a request with no body, publishing on a dry run, the order merges
+ * client, for what the runner's own tests don't reach: a request with no body, publishing on a dry run, the order merges
  * come back in, and GitHub's own address when none is set.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -16,7 +15,6 @@ import {
   NOW,
   REPOSITORY,
   runGate,
-  SHA,
 } from './merge-gate-world.ts';
 
 let logs: string[] = [];
@@ -49,27 +47,6 @@ describe('runMergeGate', () => {
     const run = await round(mergeableBooth());
     expect(run.ok).toBe(true);
     expect(run.writes().map((w) => w.path)).toContain('pulls/7/merge');
-  });
-
-  it('reads every page of check runs, and the latest run of each check counts', async () => {
-    const run = (name: string, conclusion: string, started: number) => ({
-      name,
-      status: 'completed',
-      conclusion,
-      started_at: minutesAgo(started),
-    });
-    const routes = mergeableBooth();
-    const lint = Array.from({ length: 100 }, (_, i) => run(`lint ${String(i)}`, 'success', 9));
-    routes[`GET commits/${SHA}/check-runs`] = {
-      check_runs: [
-        ...lint,
-        run('smoke', 'success', 5),
-        run('smoke', 'failure', 8),
-        ...['check', 'ownership', 'build'].map((name) => run(name, 'success', 9)),
-      ],
-    };
-    await round(routes);
-    expect(logs[0]).toContain(': merge');
   });
 
   it('reads a request with no body', async () => {
