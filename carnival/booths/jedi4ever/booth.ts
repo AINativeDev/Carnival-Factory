@@ -9,6 +9,7 @@ import { drawDashboard } from './dashboard';
 import { autopilotTarget } from './autopilot';
 import { advance, newRun, restart, type Run } from './game';
 import { drawSky, drawSkyline } from './sky';
+import { snowmen } from './snowman';
 import { drawPuff, drawSnowfall, drawSparkles } from './snow';
 import { drawRoad, drawTrails, roadside, type Roadside } from './street';
 import { drawDeliveryVan, drawParcel, drawTraffic } from './vehicles';
@@ -63,7 +64,7 @@ export function frameSteps(ms: number): number[] {
 
 /** The traffic, parcels and roadside, sorted far to near. */
 function sorted(size: number, state: Run): Roadside[] {
-  const scenery = roadside(size, state.dist);
+  const scenery = [...roadside(size, state.dist), ...snowmen(size, state.dist, state.time)];
   for (const car of state.traffic) {
     const d = VAN_DEPTH + car.z;
     if (d < 1 || d > FAR) continue;

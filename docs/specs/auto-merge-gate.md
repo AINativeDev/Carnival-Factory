@@ -6,8 +6,11 @@ every check passes on its head commit. Any doubt sends it to a person.
 ## Behaviour
 
 - The gate runs on CI and Preview build finishing, on labels and pushes to a
-  pull request, when the Tessl Reviewer's check finishes, every 10 minutes,
-  and by hand. It looks at every open pull request by `tessl-app[bot]` from a
+  pull request, when the Tessl Reviewer's check finishes, when the Tessl
+  App posts a risk verdict on a pull request (checked by its numeric id; a
+  verdict on a new commit of a pull request already labelled `low-risk`
+  changes no label, #266), every 10 minutes, and by hand (enforced by:
+  scripts/gate-triggers.test.ts). It looks at every open pull request by `tessl-app[bot]` from a
   `tessl/` branch of this repository whose linked issue is a `booth-request`
   written by a person. Level requests never merge on their own.
 - It keeps one checklist comment (`<!-- booth-gate -->`) on the pull request,

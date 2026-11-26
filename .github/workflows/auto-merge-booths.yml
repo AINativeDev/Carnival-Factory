@@ -22,6 +22,11 @@ on:
   # own workflow.
   check_run:
     types: [completed]
+  # When the risk check posts its verdict. A verdict on a new commit of a pull
+  # request already labelled low-risk changes no label, so without this the gate
+  # waited for its schedule, which GitHub runs late or skips when it's busy (#266).
+  issue_comment:
+    types: [created]
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
@@ -35,8 +40,14 @@ concurrency:
 
 jobs:
   gate:
-    # Of all check runs, only the Tessl Reviewer's finishing is news to the gate.
-    if: github.event_name != 'check_run' || github.event.check_run.name == 'Tessl Reviewer'
+    # Of all check runs, only the Tessl Reviewer's finishing is news to the gate; of all
+    # comments, only the risk check's verdict on a pull request, from the Tessl App by
+    # its numeric id (295179765), never by a name anyone could take.
+    if: >-
+      (github.event_name != 'check_run' || github.event.check_run.name == 'Tessl Reviewer') &&
+      (github.event_name != 'issue_comment' || (github.event.issue.pull_request &&
+      github.event.comment.user.id == 295179765 &&
+      contains(github.event.comment.body, '<!-- assess-booth-risk ')))
     runs-on: ubuntu-latest
     permissions:
       contents: write

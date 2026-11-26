@@ -16,6 +16,8 @@ above it.
   road ahead, so the van and what it's about to meet are the brightest things
   in the picture. The snow
   and the dashboard stay bright on top.
+- **The snowman**: now and then a small snowman in a red scarf stands on the
+  snowbank and waves a twig arm as the van comes by (`snowman.ts`).
 - **Snow**: it falls and streaks past the camera faster as you speed up.
 - **Driving**: steer with the pointer and the van follows it across the road. On
   touch, a tap on the left or right half steers that way. Speed builds slowly
