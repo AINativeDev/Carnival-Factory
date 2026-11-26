@@ -15,7 +15,7 @@ import { the } from './dom';
 export const NORTH_POLE_MAP = `
     <section class="map">
       <div class="map-frame">
-        <canvas class="map-canvas" tabindex="0" aria-label="The North Pole. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a booth or an attraction to go inside, or at a free spot to build your booth there. Plus and minus, or the wheel, zoom, and dragging the map looks around. Inside, Esc or walking out through the doorway leaves."></canvas>
+        <canvas class="map-canvas" tabindex="0" aria-label="The North Pole. Walk with WASD or the arrow keys, or click where you'd like to go. Press E at a booth or an attraction to go inside, or at a free spot to build your booth there. Plus and minus, or the wheel, zoom, and dragging the map looks around. Inside, Esc leaves."></canvas>
         <p class="map-note" role="status" hidden></p>
         <button class="map-prompt" type="button" hidden></button>
         <a class="hud hud-tessl" href="#/factory">Built with Tessl</a>

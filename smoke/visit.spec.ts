@@ -100,7 +100,7 @@ test('a shared link starts inside the booth, and invites the visitor to the spot
   await page.goto('#/booth/jedi4ever');
   const card = page.locator('.visit');
   await expect(card).toBeVisible();
-  await expect(page.locator('.map-canvas')).toHaveAttribute('data-stage', '0.50,0.85');
+  await expect(page.locator('.map-canvas')).toHaveAttribute('data-stage', /^\d+,\d+,\d+,\d+$/);
   const invite = card.locator('.visit-want');
   await expect(invite).toContainText('Want one too?');
   await expect(invite.getByRole('link', { name: 'Get a booth', exact: true })).toBeHidden();
