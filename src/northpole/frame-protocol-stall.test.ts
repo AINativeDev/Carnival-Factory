@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readStall, stallFor } from './frame-protocol';
-import { LANDMARKS, STALL_SHAPES } from './square';
+import { LANDMARKS, SCENES, STALL_SHAPES } from './square';
 
 describe('readStall', () => {
   it('reads every shape the map knows, with theme colours', () => {
@@ -106,5 +106,23 @@ describe('readStall: a display (ADR 0040)', () => {
   it('drops the whole option for anything but a boolean', () => {
     for (const display of ['yes', 1, null, {}])
       expect(readStall({ shape: 'kiosk', roof: 'mint', display })).toBeUndefined();
+  });
+
+  it('keeps the mood any square chooses inside, a booth too', () => {
+    const moody = { shape: 'cabin', roof: 'wood', scene: 'chiaroscuro' } as const;
+    expect(stallFor('booth', moody)).toEqual(moody);
+    expect(stallFor('level', moody)).toEqual(moody);
+  });
+});
+
+describe('readStall: the mood inside', () => {
+  it('keeps a known scene, and drops a stall with an unknown one', () => {
+    for (const scene of SCENES)
+      expect(readStall({ shape: 'shed', roof: 'gold', scene })).toEqual({
+        shape: 'shed',
+        roof: 'gold',
+        scene,
+      });
+    expect(readStall({ shape: 'shed', roof: 'gold', scene: 'disco' })).toBeUndefined();
   });
 });

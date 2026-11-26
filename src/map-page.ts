@@ -68,6 +68,18 @@ function followBuilding(map: MapControls) {
   });
 }
 
+/**
+ * Goes inside a square, from E at its door or a double-click in the Booths
+ * panel. While levels wait behind their flag, the Factory, the Academy and
+ * the Studio open their own sites, like the billboard (ADR 0055).
+ */
+/* v8 ignore next 5 -- the page's wiring: squareLink is unit tested, and smoke/the-factory.spec.ts opens the landmark here */
+function openSquare(kind: SquareKind, id: string) {
+  const out = isOn('levels') ? undefined : landmarkLinkOut(kind, id);
+  if (out) window.open(out, '_blank', 'noopener');
+  else location.hash = squareLink(kind, id);
+}
+
 /** The North Pole's map, perhaps showing one square, and the guide to every square under it. */
 export function renderMap(page: Page, focus?: { kind: SquareKind; id: string }) {
   const { app } = page;
@@ -98,13 +110,7 @@ export function renderMap(page: Page, focus?: { kind: SquareKind; id: string }) 
     {
       attractions: attractionRegistry.all(),
       booths: boothRegistry.all(),
-      onOpen: (kind, id) => {
-        // While levels wait behind their flag, the Factory, the Academy and the
-        // Studio open their own sites, like the billboard (ADR 0055).
-        const out = isOn('levels') ? undefined : landmarkLinkOut(kind, id);
-        if (out) window.open(out, '_blank', 'noopener');
-        else location.hash = squareLink(kind, id);
-      },
+      onOpen: openSquare,
       onLeave: () => {
         closeCard(page, true);
       },
@@ -157,6 +163,7 @@ function renderHud(page: Page, map: MapControls, canvas: HTMLCanvasElement) {
       whenNamed(app, square, show);
     },
     onPicked: showOverview,
+    onOpen: openSquare,
   });
   page.panel.showSelected(map.selected);
 

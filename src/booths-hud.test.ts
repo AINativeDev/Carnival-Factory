@@ -102,6 +102,16 @@ describe('the Booths panel', () => {
     expect(map.clearSelection).toHaveBeenCalled();
   });
 
+  it('goes inside a square on a double-click, and does nothing for a page that never asked', () => {
+    const onOpen = vi.fn();
+    const { entry } = openPanel({ onOpen });
+    entry('.hud-all', 'bob').dispatchEvent(new MouseEvent('dblclick'));
+    expect(onOpen).toHaveBeenCalledWith('booth', 'bob');
+    stopPanels();
+    openPanel().entry('.hud-all', 'bob').dispatchEvent(new MouseEvent('dblclick'));
+    expect(onOpen).toHaveBeenCalledTimes(1);
+  });
+
   it("shows a square's own name once its frame says it, keeping the entry that had the focus", () => {
     const ana = square('ana', 'Cocoa');
     const { names, named, entry } = openPanel({ booths: [ana, square('bob', 'Bakery')] });

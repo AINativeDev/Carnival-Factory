@@ -95,7 +95,7 @@ for (const viewport of VIEWPORTS) {
         await expect(panel).not.toContainText('@the-factory');
         await page.keyboard.press('Escape');
         await expect(panel).toHaveCount(0);
-        await expect(canvas).not.toHaveAttribute('data-room', /.*/);
+        await expect(canvas).not.toHaveAttribute('data-stage', /.*/);
         // Back out, the car still stands at the stall's station.
         await expect(canvas).toHaveAttribute('data-near', `attraction:${id}`);
         await canvas.focus();

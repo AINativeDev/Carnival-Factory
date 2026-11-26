@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sharePill, wireShare } from './visit-share';
+import { roomPills, sharePill, wireShare } from './visit-share';
 
 function parts() {
   document.body.innerHTML =
@@ -146,5 +146,27 @@ describe("a level's Share pill", () => {
     const frame = document.querySelector('div') as HTMLElement;
     expect(sharePill(frame, true).dataset.level).toBe('');
     expect(sharePill(frame).dataset.level).toBeUndefined();
+  });
+});
+
+describe("a visit's buttons", () => {
+  it("put Share at the top of the panel, and make a square's panel a sheet on a phone, but not a level's", () => {
+    document.body.innerHTML =
+      '<section><div class="visit-tools"></div><div class="visit-intro"></div></section>';
+    const panel = document.querySelector('section') as HTMLElement;
+    const square = roomPills(panel, false);
+    expect(square.copy.parentElement?.className).toBe('visit-tools');
+    expect(panel.querySelector('.visit-sheet-handle')).not.toBeNull();
+    square.layout?.stop();
+    expect(panel.querySelector('.visit-sheet-handle')).toBeNull();
+    const level = roomPills(panel, true);
+    expect(level.copy.parentElement?.className).toBe('visit-tools');
+    expect('layout' in level).toBe(false);
+  });
+
+  it("puts a level's Share in the panel itself when it has no footer", () => {
+    document.body.innerHTML = '<section></section>';
+    const panel = document.querySelector('section') as HTMLElement;
+    expect(roomPills(panel, true).copy.parentElement).toBe(panel);
   });
 });

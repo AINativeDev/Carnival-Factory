@@ -24,17 +24,6 @@ const start = (screen?: Screen) => {
 let worlds = 0;
 const LEVEL_PLACE = { name: 'Test Fair', tint: 'tint' };
 
-/** The bottom of the stage inside a room, on the screen. */
-const y0 = (running: MapHarness) => {
-  const [, y = 0, , h = 0] = String(running.canvas.dataset.stage).split(',').map(Number);
-  return y + h;
-};
-
-/** Draws frames from `from` to `to`. */
-const frames = (running: MapHarness, from: number, to: number) => {
-  for (let t = from; t < to; t += 100) running.step(t);
-};
-
 /** Where the player stands after a few frames. */
 const walked = (running: MapHarness, from: number) => {
   for (let t = from; t < from + 600; t += 100) running.step(t);
@@ -90,18 +79,6 @@ describe('keys', () => {
     ]);
   });
 
-  it('walk inside a room', () => {
-    const running = start();
-    running.step(0);
-    running.controls.visit('attraction', 'cocoa');
-    frames(running, 100, 800);
-    const at = running.canvas.dataset.room;
-    key('keydown', 'w');
-    frames(running, 800, 1200);
-    key('keyup', 'w');
-    expect(running.canvas.dataset.room).not.toBe(at);
-  });
-
   it('do nothing with nothing invited into', () => {
     const running = start();
     running.step(0);
@@ -131,7 +108,7 @@ describe('the mouse', () => {
     expect(walked(running, 100)).toBe(at);
   });
 
-  it('hovers nothing while inside, and walks out of the room through its doorway', () => {
+  it('hovers nothing while inside, and leaves a click inside to the square', () => {
     const running = start();
     running.step(0);
     running.controls.visit('attraction', 'cocoa');
@@ -145,13 +122,10 @@ describe('the mouse', () => {
     point(running, 'pointermove', { x: x + w / 2, y: y + h / 2 });
     running.step(900);
     expect(running.canvas.dataset.pointer).toBe('attraction:cocoa');
-    // The doorway is at the middle of the room's front edge, below the stage.
-    let t = 1000;
-    for (let y = y0(running); !told.length && y < 800; y += 10) {
-      click(running, { x: x + w / 2, y });
-      for (const end = t + 1500; t < end; t += 100) running.step(t);
-    }
-    expect(told).toContainEqual(['leave']);
+    // A click inside is the square's: it never walks anyone out.
+    click(running, { x: x + w / 2, y: y + h - 2 });
+    for (let t = 1000; t < 3000; t += 100) running.step(t);
+    expect(told).toEqual([]);
   });
 });
 

@@ -603,16 +603,35 @@ body[data-view='map'] .map {
   top: 12px;
   left: 12px;
   display: none;
+  width: 40px;
+  height: 40px;
   border: 0;
-  border-radius: 999px;
-  padding: 6px 14px;
-  font: bold 14px var(--font-family);
+  border-radius: 50%;
+  padding: 0;
+  font: bold 20px var(--font-family);
   cursor: pointer;
+}
+
+/* Its words are for screen readers and the tooltip: the arrow says it. */
+.hud-back-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.hud-back:hover,
+.hud-back:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
 }
 
 .map-frame[data-visiting] .hud-back,
 .map-frame[data-factory] .hud-back {
-  display: block;
+  display: grid;
+  place-items: center;
 }
 
 /* On a level, the same corner takes you home to the North Pole, until you go inside one of its squares. */
@@ -1207,18 +1226,19 @@ kbd {
   font-weight: bold;
 }
 
+/* A full-height column flush against the square's drawing (visit-stage.ts puts it there), the two read as one. */
 .visit {
-  top: 12px;
-  right: 12px;
-  bottom: 12px;
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 5;
   box-sizing: border-box;
-  width: 344px;
-  height: fit-content;
-  max-height: calc(100% - 24px);
+  width: 380px;
   overflow: auto;
-  padding: 12px 18px 16px;
-  border: 3px solid var(--color-gold);
+  padding: 16px 20px 16px;
+  border-left: 3px solid var(--color-gold);
+  border-radius: 0;
+  box-shadow: none;
   animation: visit-in 0.5s ease-out;
 }
 
@@ -1228,7 +1248,8 @@ kbd {
   }
 }
 
-/* On a phone, below the room. */
+/* On a phone, a sheet under the booth, a quarter or so of the screen to start; its handle
+   (visit-sheet.ts) drags it taller to read the story, or shorter to keep the booth big. */
 @media (max-width: 719px) {
   .visit {
     top: auto;
@@ -1236,7 +1257,52 @@ kbd {
     right: 8px;
     bottom: 8px;
     width: auto;
-    max-height: 43%;
+    height: 34%;
+    max-height: none;
+    padding-top: 0;
+    border: 3px solid var(--color-gold);
+    border-radius: 18px 18px var(--radius) var(--radius);
+  }
+}
+
+/* The sheet's handle: a grip bar across its top, only on a phone. */
+.visit-sheet-handle {
+  display: none;
+}
+
+@media (max-width: 719px) {
+  .visit-sheet-handle {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: block;
+    height: 26px;
+    margin: 0 -18px 4px;
+    background: var(--color-cream);
+    cursor: ns-resize;
+    touch-action: none;
+  }
+
+  .visit-sheet-handle::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 44px;
+    height: 5px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--color-ink) 30%, transparent);
+    transform: translateX(-50%);
+  }
+
+  /* No Esc key on a phone: just Leave. */
+  .visit:has(> .visit-sheet-handle) .visit-leave > span {
+    visibility: hidden;
+  }
+
+  .visit-sheet-handle:focus-visible {
+    outline: 3px solid var(--color-gold);
+    outline-offset: -3px;
   }
 }
 
@@ -1266,14 +1332,157 @@ kbd {
   font-size: 22px;
 }
 
-/* The room's sign already shows the square's name, so the panel keeps its heading for screen readers only. */
-.visit .visit-title {
+/* The panel's top row: Esc and Leave, then Full screen and Share. */
+.visit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.visit-head .visit-leave {
+  flex: 1;
+}
+
+/* The square's name, maker and description: at the top of the panel, or left of the drawing on a wide screen. */
+.visit-intro {
+  margin-top: 12px;
+}
+
+/* On a wide screen, the drawing in the middle and a column either side, as wide as each other (visit-columns.ts). */
+.map-frame[data-columns] .visit {
+  width: var(--visit-column);
+}
+
+.visit-left {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  box-sizing: border-box;
+  width: var(--visit-column);
+  overflow: auto;
+  padding: 72px 28px 28px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--color-night) 75%, transparent),
+    color-mix(in srgb, var(--color-night) 35%, transparent)
+  );
+  color: var(--color-snow);
+  animation: visit-in 0.5s ease-out;
+}
+
+.visit-left .visit-intro {
+  margin: 0;
+}
+
+.visit-left .visit-title {
+  font-size: 32px;
+}
+
+.visit-left .visit-by {
+  margin-top: 6px;
+  color: var(--color-gold);
+  font-size: 15px;
+}
+
+.visit-left .visit-description {
+  margin-top: 18px;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.visit-left a {
+  color: var(--color-gold);
+}
+
+.visit .visit-title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.visit-by {
+  margin: 2px 0 0;
+  color: var(--color-cocoa);
+  font-size: 14px;
+}
+
+.visit-by:empty {
+  display: none;
+}
+
+.visit-tools {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.visit-tools .visit-copy,
+.visit-tools .visit-full {
+  position: relative;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.visit-tools .visit-copy {
+  background: var(--color-berry);
+  color: var(--color-snow);
+}
+
+.visit-tools .visit-full {
+  background: var(--color-night);
+  color: var(--color-snow);
+}
+
+.visit-tools svg {
+  width: 20px;
+  height: 20px;
+}
+
+.visit-tools button:hover,
+.visit-tools button:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Full screen: only the drawing fills the page, with Full screen in the corner to come back. */
+.map-frame[data-full] {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.map-frame[data-full] > :not(.map-canvas, .visit),
+.map-frame[data-full] .visit > :not(.visit-head),
+.map-frame[data-full] .visit-head > :not(.visit-tools),
+.map-frame[data-full] .visit-tools > :not(.visit-full) {
+  display: none !important;
+}
+
+.map-frame[data-full] .visit {
+  top: 16px;
+  right: 16px;
+  bottom: auto;
+  left: auto;
+  width: auto;
+  height: auto;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: none;
+}
+
+.map-frame[data-full] .visit-head {
+  margin: 0;
 }
 
 .visit .visit-title:focus,
@@ -1417,41 +1626,61 @@ kbd {
   font-size: 14px;
 }
 
-/* Share stands over the room, beside the panel, so a long build story never hides it:
-   a berry pill with the share icon people know, at the room's top right. */
-.hud.visit-copy {
-  top: 12px;
-  right: 12px;
-  z-index: 5;
+/* The words, out of sight but read out, and shown as a tooltip. */
+.visit-copy-label,
+.visit-full-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* After a copy, "Copied" shows for a moment beside the icon. */
+.visit-copy[data-said] .visit-copy-label {
+  top: 46px;
+  right: 0;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-night);
+  color: var(--color-snow);
+  font: 600 13px var(--font-family);
+}
+
+/* The ask stays in sight at the panel's foot, however long the build story above it. */
+.visit-footer {
+  position: sticky;
+  bottom: -16px;
+  z-index: 1;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 18px;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-night) 45%, transparent);
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px -18px -16px;
+  padding: 12px 18px 16px;
+  border-top: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  background: var(--color-cream);
 }
 
-.hud.visit-copy:hover,
-.hud.visit-copy:focus-visible {
-  outline: 3px solid var(--color-gold);
-  outline-offset: 2px;
+.visit-footer .visit-want,
+.visit-footer .visit-next {
+  margin: 0;
 }
 
-/* A square's panel stands over the room's right side: the pill sits just left of it. A level's
-   panel stands beside the map instead, so its pill keeps the corner. */
-.map-frame:has(> .visit) > .hud.visit-copy {
-  right: 368px;
-}
-
-/* Inside one of a level's squares, the square's own pill shares it: the level's steps aside. */
-.map-frame[data-visiting] > .hud.visit-copy[data-level] {
-  display: none;
-}
-
-/* On a phone the panel sits under the room, so the pill takes the room's own top right. */
-@media (max-width: 719px) {
-  .map-frame:has(> .visit) > .hud.visit-copy {
-    right: 12px;
-  }
+/* The main ask is a button, not a link in a sentence. */
+.visit-want .visit-build:not([hidden]) {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: var(--color-berry);
+  color: var(--color-snow);
+  font-size: 16px;
+  text-decoration: none;
 }
 
 /* The one ask: a booth of your own, the spot next door for someone who came by a shared link,
@@ -1750,4 +1979,60 @@ kbd {
 
 .choice-votes {
   opacity: 0.75;
+}
+
+/* Inside a square on a laptop, both columns take on the drawing's own colour (`--visit-tint`,
+   src/northpole/visit-tint.ts), deepened with night so light text reads on it: the page round
+   the drawing blends into it. */
+.map-frame[data-visiting] {
+  --visit-shade: color-mix(in srgb, var(--visit-tint, var(--color-night)) 32%, var(--color-night));
+}
+
+/* The way back stays above the left column. */
+.map-frame[data-visiting] .hud-back {
+  z-index: 6;
+}
+
+.map-frame[data-visiting] .visit-left {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--visit-shade) 94%, transparent),
+    color-mix(in srgb, var(--visit-shade) 55%, transparent)
+  );
+  transition: background 1s;
+}
+
+@media (min-width: 720px) {
+  .map-frame[data-visiting] > .visit {
+    border-left: 0;
+    background: color-mix(in srgb, var(--visit-shade) 94%, transparent);
+    color: var(--color-snow);
+    transition: background 1s;
+  }
+
+  .map-frame[data-visiting] > .visit a:not(.visit-build),
+  .map-frame[data-visiting] > .visit .visit-mine,
+  .map-frame[data-visiting] > .visit .visit-by {
+    color: var(--color-gold);
+  }
+
+  .map-frame[data-visiting] > .visit .visit-close {
+    border-color: color-mix(in srgb, var(--color-snow) 55%, transparent);
+    color: var(--color-snow);
+  }
+
+  .map-frame[data-visiting] > .visit .visit-tools .visit-full {
+    background: color-mix(in srgb, var(--color-snow) 16%, transparent);
+  }
+
+  .map-frame[data-visiting] > .visit .visit-footer {
+    border-top-color: color-mix(in srgb, var(--color-snow) 14%, transparent);
+    background: var(--visit-shade);
+  }
+
+  .map-frame[data-visiting] > .visit .visit-share-text {
+    border-color: var(--color-muted);
+    background: var(--color-night);
+    color: var(--color-snow);
+  }
 }

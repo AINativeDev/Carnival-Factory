@@ -1,13 +1,12 @@
 /**
  * What the visitor's keys, mouse and the call to action do on the map: walk
  * with WASD or the arrows, open with E or Enter, let go with Escape, click the
- * ground to walk there and a structure to open it, inside a room click to walk
- * or leave. Fingers dragging and pinching the camera are map-touch.ts.
+ * ground to walk there and a structure to open it; inside a square a click is
+ * the square's. Fingers dragging and pinching the camera are map-touch.ts.
  */
 import { BILLBOARD, onBillboard } from './billboard';
 import { middle } from './brushes';
 import { screenToWorld } from './camera-view';
-import { clickInRoom, roomArea, roomLayout } from './interior';
 import { spotUnder } from './map-labels';
 import { enter, open, select } from './map-open';
 import type { MapRun } from './map-state';
@@ -75,18 +74,13 @@ export function onPrompt(m: MapRun) {
 /**
  * A click walks to the ground clicked, or opens the structure clicked. On a
  * touch screen the first tap on a structure shows its tag, and the second
- * opens it. Inside a room, a click walks the player there, or out through the
- * doorway. A drag is the square's to play with, not a click.
+ * opens it. Inside a square a click is the square's to play with, as is a drag.
  */
 export function onClick(m: MapRun, event: MouseEvent) {
   const box = m.canvas.getBoundingClientRect();
   const at = { x: event.clientX - box.left, y: event.clientY - box.top };
   if (!m.pointer.tapped(at)) return;
-  if (m.visiting) {
-    const goal = clickInRoom(roomLayout(roomArea(box.width, box.height)), at);
-    if (goal) m.insideGoal = goal;
-    return;
-  }
+  if (m.visiting) return;
   const point = pointAt(m, event);
   if (billboardUnder(m, point)) {
     window.open(BILLBOARD.tickets, '_blank', 'noopener');

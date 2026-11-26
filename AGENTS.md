@@ -215,8 +215,9 @@ src/
                             name-board.ts for the signs and drawings on their fronts
     map.ts                  the walkable map (camera, keys, clicks, hover tags,
                             and going inside a square)
-    interior.ts             the room inside a square: its layout, walking in it and
-                            out of its doorway, the fade (plain functions), and drawing it
+    interior.ts             inside a square: the space beside the panel and the fade
+                            (plain functions); visit-stage.ts where its drawing stands,
+                            map-room.ts drawing it with a glow of its colours round it
     owners.ts               who owns what: each owner's colour, their avatar's address,
                             and how a picked square's highlight and call to action fade
                             (plain functions)
@@ -227,7 +228,7 @@ src/
     square-worker.ts        runs the square's own code on a thread of its own
     frame-protocol.ts       the messages between them, and the checks on them
     pointer.ts              where the pointer is inside a square, through its
-                            stall's front or the back wall inside (plain functions)
+                            stall's front or its drawing inside (plain functions)
     theme.ts                colours, fonts and sizes
     advent.ts               the advent calendar: its challenges, its doors by date,
                             each owner's accepted challenges, baked in at build time,
@@ -416,7 +417,7 @@ uses any of it:
    last frame, so a game counts every tap with `presses`; `pointer` is
    `undefined` otherwise. On the map a click on a square still goes inside
    it, so play with `down` and `presses` inside, where the drawing fills the
-   back wall. Ignoring `pointer` is fine. What a booth remembers of the pointer, such as when a snowball was
+   screen beside the panel. Ignoring `pointer` is fine. What a booth remembers of the pointer, such as when a snowball was
    thrown or a score, is the one state it keeps between calls: keep it small,
    and still move from `time`.
 3. Colours and fonts from `theme` and `canvasFont` in `src/northpole/theme.ts`.
@@ -446,7 +447,10 @@ uses any of it:
    the request names one: a booth that leaves `stall` out gets a shape picked
    from its id (`src/northpole/stall-default.ts`). `roof` is a `theme`
    colour's name, and `trim`, a second one for the stripes or the awning, is
-   optional. An attraction may also set a `landmark`, one of `LANDMARKS`, to
+   optional. Any square may set a `scene`, one of `SCENES`, for the mood round
+   its drawing while someone is inside: `glow` (the default) or `chiaroscuro`
+   (darkness and one warm pool of light from the upper left). A mood only
+   changes what's round the drawing; a dramatic drawing lights itself. An attraction may also set a `landmark`, one of `LANDMARKS`, to
    stand on the home map as what it is (a big wheel, a big top, an ice rink,
    The Factory's `tower` with its `letters` down its front: see
    [ADR 0042](docs/adr/0042-attractions-stand-as-what-they-are.md)); the map

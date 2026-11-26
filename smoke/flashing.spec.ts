@@ -12,7 +12,7 @@ import { attractionShown } from '../src/feature-flag-names';
 import { FLAGS } from './support/feature-flags';
 
 /**
- * Seizure safety: plays every booth and attraction on the back wall of its room and measures
+ * Seizure safety: plays every booth and attraction inside it, as big as it shows, and measures
  * how often it flashes (see scripts/flashing.ts). Nothing may flash more than
  * three times a second.
  */
@@ -41,7 +41,7 @@ for (const { kind, id } of played) {
     // regions flashing out of step can't cancel out.
     const GRID = 8;
     const raw = await page.evaluate(async (grid) => {
-      // The square's drawing, on the back wall of the room the player is inside.
+      // The square's drawing, beside the panel, where the player is inside.
       const canvas = document.querySelector<HTMLCanvasElement>('.map-canvas')!;
       const [x, y, w, h] = canvas.dataset.stage!.split(',').map(Number);
       const ctx = canvas.getContext('2d')!;

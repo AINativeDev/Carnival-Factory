@@ -23,7 +23,7 @@ export const BOOTHS_PANEL = `
       <label class="visually-hidden" for="hud-search-input">Find a booth or @login</label>
       <input id="hud-search-input" class="hud-search-input" type="search" placeholder="Find a booth or @login" autocomplete="off" spellcheck="false" maxlength="60" />
     </div>
-    <p class="hud-hint">Click one to go there, or shift-click to walk. Press <kbd>/</kbd> to search.</p>
+    <p class="hud-hint">Click one to go there, double-click to go inside, or shift-click to walk. Press <kbd>/</kbd> to search.</p>
     <div class="hud-results" hidden>
       <h2 class="hud-group hud-results-title"></h2>
       <ul class="hud-list hud-found"></ul>
@@ -58,10 +58,13 @@ export const BOOTHS_PANEL = `
 export interface EntryActions {
   isSelected(kind: SquareKind, id: string): boolean;
   pick(kind: SquareKind, id: string, walk: boolean): void;
+  /** Goes inside the square. */
+  open(kind: SquareKind, id: string): void;
 }
 
 /**
- * A square's entry: its name picks it, and the walk icon walks there. It
+ * A square's entry: its name picks it, a double-click on it goes inside, and
+ * the walk icon walks there. It
  * shows the entry's name again on a `named` event, once the square's frame
  * has said it.
  */
@@ -92,6 +95,9 @@ export function entryItem(entry: HudEntry, actions: EntryActions, label = ''): H
   button.setAttribute('aria-pressed', `${isSelected}`);
   button.addEventListener('click', (event) => {
     actions.pick(entry.kind, entry.id, event.shiftKey);
+  });
+  button.addEventListener('dblclick', () => {
+    actions.open(entry.kind, entry.id);
   });
   walk.addEventListener('click', () => {
     actions.pick(entry.kind, entry.id, true);

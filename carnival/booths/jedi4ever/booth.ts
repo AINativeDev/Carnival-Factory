@@ -3,6 +3,7 @@
  * back to front, steers the van from the pointer (or the autopilot when nobody
  * is), and keeps the run and the best of this visit as the booth's one memory.
  */
+import { drawLighting, drawNoir } from './lighting';
 import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
 import { drawDashboard } from './dashboard';
 import { autopilotTarget } from './autopilot';
@@ -134,9 +135,13 @@ const booth: NorthPoleSquare = {
       piece.paint(ctx);
     }
     if (!vanDrawn) drawDeliveryVan(ctx, here.x, here.y, w, run.van.vx, tilt);
+    // Noir: the street in black and white, and the van alone in its red.
+    drawNoir(ctx, size);
+    drawDeliveryVan(ctx, here.x, here.y, w, run.van.vx, tilt);
     if (run.crashed) drawPuff(ctx, here.x, here.y, size, run.crashTime);
     for (const burst of run.sparks)
       drawSparkles(ctx, here.x, here.y - w, size, run.time - burst.at);
+    drawLighting(ctx, size, here.x, here.y, w);
     drawSnowfall(ctx, size, time, run.dist, run.van.speed);
     drawDashboard(
       ctx,

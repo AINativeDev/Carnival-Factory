@@ -1,6 +1,7 @@
 /**
- * The markup of a square's visit panel (visit-hud.ts fills it in): the
- * description, the build story first, one quiet row of actions, one ask (or,
+ * The markup of a square's visit panel (visit-hud.ts fills it in): Leave,
+ * Full screen and Share on its top row, its name, maker and description
+ * (which move left of the drawing on a wide screen, visit-columns.ts), the build story first, one quiet row of actions, one ask (or,
  * for a booth's owner, the level that comes next), and
  * everything else folded under More. Only fixed text and the repository's own
  * links are written here; every name and description is set as text later.
@@ -24,9 +25,15 @@ export const keepPostedLink = (formUrl: string, href: string) =>
 const KEEP_POSTED_LINK = keepPostedLink(KEEP_POSTED_URL, keepPostedHref());
 
 export const VISIT_PANEL = `
-    <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>
-    <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
-    <p class="visit-description" id="visit-description"></p>
+    <div class="visit-head">
+      <p class="visit-leave"><span>Esc to leave</span> <button class="visit-close" type="button">Leave</button></p>
+      <div class="visit-tools"></div>
+    </div>
+    <div class="visit-intro">
+      <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
+      <p class="visit-by"></p>
+      <p class="visit-description" id="visit-description"></p>
+    </div>
     <section class="visit-story" aria-labelledby="visit-story-title">
       <h3 id="visit-story-title" class="visit-eyebrow">How it was built</h3>
       <ol class="story-list"></ol>
@@ -37,8 +44,12 @@ export const VISIT_PANEL = `
       <a class="visit-vote" target="_blank" rel="noopener" hidden>Vote for this booth</a>
       <a class="visit-remix-link" target="_blank" rel="noopener">Remix this booth</a>
     </div>
-    <p class="visit-want">Want one too? <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Get a booth</a><button class="visit-claim" type="button" hidden>Get the spot next door</button></p>
-    <p class="visit-next" hidden>Next: <a href="${LEVEL_REQUEST_URL}" target="_blank" rel="noopener">get a level of your own</a></p>
+    <div class="visit-footer">
+      <div class="visit-ask">
+        <p class="visit-want">Want one too? <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Get a booth</a><button class="visit-claim" type="button" hidden>Get the spot next door</button></p>
+        <p class="visit-next" hidden>Next: <a href="${LEVEL_REQUEST_URL}" target="_blank" rel="noopener">get a level of your own</a></p>
+      </div>
+    </div>
     <details class="visit-more">
       <summary>More</summary>
       <div class="visit-edit">

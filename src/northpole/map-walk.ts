@@ -1,10 +1,9 @@
 /**
  * The player walking: with the keys or along a planned path round the
- * carnival, leaving footprints on the way to a spot, and inside a room toward
- * where a click sent them and out through its doorway. Kept apart from the
+ * carnival, leaving footprints on the way to a spot. Inside a square nobody
+ * walks: its drawing fills the screen beside the panel. Kept apart from the
  * drawing, since it's the one part of a frame that moves the player.
  */
-import { ROOM_SPEED, stepInRoom } from './interior';
 import { rideAlong } from './ride-map';
 import type { MapRun } from './map-state';
 import { toScreen, type Tile } from './world';
@@ -44,7 +43,7 @@ export function walk(m: MapRun, dt: number) {
     down += y;
   }
   if (m.visiting) {
-    walkInside(m, dt, Math.sign(right), Math.sign(down));
+    m.moving = false;
     return;
   }
   const direction = screenDirection(Math.sign(right), Math.sign(down));
@@ -76,31 +75,6 @@ function leaveFootprints(m: MapRun, before: Tile) {
     });
   // The sign stops bouncing once the player has gone somewhere else.
   if (!m.path.length && m.near !== m.claiming) m.claiming = undefined;
-}
-
-/** Walks the player inside a room, with the keys or toward where a click sent them, and out through its doorway. */
-function walkInside(m: MapRun, dt: number, right: number, down: number) {
-  let dx = right;
-  let dy = down;
-  if (dx || dy) m.insideGoal = undefined;
-  else if (m.insideGoal) {
-    dx = m.insideGoal.to.x - m.inside.x;
-    dy = m.insideGoal.to.y - m.inside.y;
-  }
-  const length = Math.hypot(dx, dy);
-  const step = Math.min(ROOM_SPEED * dt, length);
-  m.moving = length > 0.001 && step > 0;
-  if (!m.moving) {
-    m.insideGoal = undefined;
-    return;
-  }
-  if (Math.abs(dx) > 0.001) m.insideFacing = Math.sign(dx);
-  const walked = stepInRoom(m.inside, (dx / length) * step, (dy / length) * step);
-  m.inside = walked.at;
-  if (walked.out || (m.insideGoal?.out && step >= length)) {
-    m.insideGoal = undefined;
-    m.options.onLeave();
-  }
 }
 
 /** Walks the player to the first of `goals` they can reach. */

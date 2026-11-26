@@ -5,7 +5,6 @@
  * visitor does; these are what the page's panels and routes do.
  */
 import { islandBounds, islandCorners } from './camera';
-import { ENTRANCE } from './interior';
 import { resize } from './map-layers';
 import { spotOf } from './map-labels';
 import { named, select } from './map-open';
@@ -146,9 +145,6 @@ function visit(m: MapRun, kind: string, id: string) {
   if (!m.visiting) m.fading = performance.now();
   m.visiting = spot;
   select(m, undefined);
-  m.inside = { ...ENTRANCE };
-  m.insideGoal = undefined;
-  m.insideFacing = 1;
   m.hovered = undefined;
   m.frame.dataset.visiting = `${kind}:${id}`;
   return true;

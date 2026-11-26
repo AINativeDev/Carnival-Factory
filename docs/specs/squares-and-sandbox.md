@@ -12,8 +12,8 @@ page never runs a square's code: each runs in its own sandboxed frame and worker
   the square, in the square's own coordinates, and `undefined` otherwise.
   `presses` counts presses since the square's last frame. On the map the square
   under the pointer gets it, and a click still goes inside. Inside, the
-  drawing fills the back wall and gets the pointer and taps.
-- `stall` is `{ shape, roof, trim?, landmark?, letters? }`: shape one of
+  drawing fills the screen beside the panel and gets the pointer and taps.
+- `stall` is `{ shape, roof, trim?, landmark?, letters?, scene? }`: shape one of
   `STALL_SHAPES` (`stall`, `shed`, `tent`, `cabin`, `kiosk`, `igloo`,
   `gazebo`, `chalet`, `treehouse`, `windmill`, `lighthouse`, `food-truck`,
   `carousel`, `turret`, `barn`, `pagoda`); roof and trim the names of `theme`
@@ -21,7 +21,12 @@ page never runs a square's code: each runs in its own sandboxed frame and worker
   A square that sets no `stall` gets a shape and colours picked from its id,
   the same every time (`src/northpole/stall-default.ts`). `landmark` and
   `letters` are for attractions only (see attractions.md); the map drops them
-  from a booth's or a level's square (`stallFor`).
+  from a booth's or a level's square (`stallFor`). `scene`, any square's
+  choice, is the mood round its drawing while someone is inside it, one of
+  `SCENES`: `glow` (the default, a soft glow of its own colours) or
+  `chiaroscuro` (darkness all round, with one warm pool of light from the
+  upper left); a mood never shades the drawing itself (`src/northpole/visit-scenes.ts`; enforced by:
+  src/northpole/visit-scenes.test.ts, src/northpole/frame-protocol-stall.test.ts).
 - Each square's frame starts on its first draw. Until a frame arrives it shows
   "Opening…". A frame not drawn for 20 seconds is released and restarts when
   drawn again. At most 24 frames run at once; the least recently drawn goes.

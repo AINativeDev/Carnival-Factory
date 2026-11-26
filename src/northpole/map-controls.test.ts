@@ -130,7 +130,7 @@ describe('construction sites', () => {
     controls.setPending([site]);
     for (let t = 1800; t < 2600; t += 100) step(t);
     expect(controls.visiting).toEqual({ kind: 'booth', id: 'dancer' });
-    expect(canvas.dataset.room).toBeDefined();
+    expect(canvas.dataset.stage).toBeDefined();
   });
 
   it('says who the visitor is', () => {

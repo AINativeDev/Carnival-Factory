@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { chosenStall, defaultStall, idHash } from './stall-default';
 import { STALL_SHAPES, type NorthPoleSquare } from './square';
-import { wallStyle } from './room-walls';
 
 const square = (id: string, stall?: NorthPoleSquare['stall']): NorthPoleSquare => ({
   id,
@@ -31,12 +30,5 @@ describe('the stall a square stands in when it chooses none', () => {
     const chosen = { shape: 'cabin', roof: 'berry', trim: 'gold' } as const;
     expect(chosenStall(square('jedi4ever', chosen))).toBe(chosen);
     expect(chosenStall(square('hamzaoza'))).toEqual(defaultStall('hamzaoza'));
-  });
-
-  it('dresses the room inside after the stall it stands in, picked or chosen', () => {
-    expect(wallStyle(chosenStall(square('x', { shape: 'igloo', roof: 'ice' }))).material).toBe(
-      'blocks',
-    );
-    expect(wallStyle(chosenStall(square('hamzaoza'))).material).toBeDefined();
   });
 });

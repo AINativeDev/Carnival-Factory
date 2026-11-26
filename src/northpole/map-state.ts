@@ -87,15 +87,11 @@ interface MapState {
   claiming: Spot | undefined;
   footprints: Footprint[];
   /**
-   * The spot whose room is drawn, which changes halfway through the fade in or
-   * out, and when that fade began. Inside, where the player stands, where a
-   * click sends them, and which way they face.
+   * The spot whose drawing is shown, which changes halfway through the fade in
+   * or out, and when that fade began.
    */
   entered: Spot | undefined;
   fading: number;
-  inside: Tile;
-  insideGoal: { to: Tile; out: boolean } | undefined;
-  insideFacing: number;
   /** The spot under the mouse, or tapped once on a touch screen, and the tag that names it. */
   hovered: Spot | undefined;
   tagged: Spot | undefined;

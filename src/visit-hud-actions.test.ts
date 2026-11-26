@@ -131,3 +131,48 @@ describe("a booth's panel, with participants' levels switched on", () => {
     expect(part(visitor, '.visit-next').hidden).toBe(false);
   });
 });
+
+describe("a booth's name, once it stands left of the drawing", () => {
+  it('is still filled in when the booth says its name late', async () => {
+    document.body.innerHTML = '<div class="map-frame"><canvas></canvas></div>';
+    const frame = part(document.body, '.map-frame');
+    let ready: () => void = () => undefined;
+    const square = {
+      id: 'ana',
+      name: 'Opening…',
+      description: '',
+      onReady: (listener: () => void) => (ready = listener),
+    };
+    openVisitHud(frame, {
+      kind: 'booth',
+      square,
+      invite: false,
+      onClose: vi.fn(),
+      onClaim: vi.fn(),
+    });
+    part(frame, 'canvas').dataset.stage = '300,0,800,800';
+    await Promise.resolve();
+    square.name = 'Cocoa';
+    ready();
+    expect(part(frame, '.visit-left .visit-title').textContent).toBe('Cocoa');
+  });
+
+  it('gives the focus back to the map when the visit ends with the focus on its name', async () => {
+    document.body.innerHTML =
+      '<div class="map-frame"><canvas class="map-canvas" tabindex="0"></canvas></div>';
+    const frame = part(document.body, '.map-frame');
+    const square = { id: 'ana', name: 'Cocoa', description: '' };
+    const hud = openVisitHud(frame, {
+      kind: 'booth',
+      square,
+      invite: false,
+      onClose: vi.fn(),
+      onClaim: vi.fn(),
+    });
+    part(frame, 'canvas').dataset.stage = '300,0,800,800';
+    await Promise.resolve();
+    part(frame, '.visit-left .visit-title').focus();
+    hud.close();
+    expect(document.activeElement).toBe(part(frame, 'canvas'));
+  });
+});

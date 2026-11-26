@@ -107,7 +107,7 @@ for (const { level, name } of PLACES)
           await expectLinks(page, '.visit', id);
           await page.keyboard.press('Escape');
           await expect(panel).toHaveCount(0);
-          await expect(canvas).not.toHaveAttribute('data-room', /.*/);
+          await expect(canvas).not.toHaveAttribute('data-stage', /.*/);
           await canvas.focus();
         });
       }
@@ -132,7 +132,8 @@ test("The landmarks' own rooms show their links out", async ({ page }) => {
   const problems = watch(page);
   for (const { level } of PLACES) {
     await page.goto(`#/attraction/${level.id}`);
-    await expectLinks(page, '.visit', level.id);
+    // On a wide screen the links stand under the description, left of the drawing.
+    await expectLinks(page, '.map-frame', level.id);
   }
   expect(problems).toEqual([]);
 });

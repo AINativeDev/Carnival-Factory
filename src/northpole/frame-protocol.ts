@@ -10,6 +10,7 @@ import {
   MAX_PRESSES,
   LANDMARK_LETTERS,
   LANDMARKS,
+  SCENES,
   STALL_SHAPES,
   type SquarePointer,
   type StallStyle,
@@ -86,19 +87,21 @@ const isThemeColor = (value: unknown): value is ThemeColor =>
  * Checks a square's stall option: a `shape` from `STALL_SHAPES`, a `roof`
  * that names a `theme` colour, a `trim` that is missing or names one too, a
  * `landmark` that is missing or one of `LANDMARKS`, and `letters` that are
- * missing or one to six capitals, and a `display` that is missing or a
- * boolean, kept only when it's true. Anything else gives undefined, and the
+ * missing or one to six capitals, a `display` that is missing or a
+ * boolean, kept only when it's true, and a `scene` that is missing or one of
+ * `SCENES`. Anything else gives undefined, and the
  * map draws the stall the square's id picks. Only those fields are kept.
  */
 export function readStall(value: unknown): StallStyle | undefined {
   if (typeof value !== 'object' || value === null) return undefined;
-  const { shape, roof, trim, landmark, letters, display } = value as Record<string, unknown>;
+  const { shape, roof, trim, landmark, letters, display, scene } = value as Record<string, unknown>;
   if (!isOneOf(STALL_SHAPES, shape) || !isThemeColor(roof)) return undefined;
   if (trim !== undefined && !isThemeColor(trim)) return undefined;
   if (landmark !== undefined && !isOneOf(LANDMARKS, landmark)) return undefined;
   if (letters !== undefined && (typeof letters !== 'string' || !LANDMARK_LETTERS.test(letters)))
     return undefined;
   if (display !== undefined && typeof display !== 'boolean') return undefined;
+  if (scene !== undefined && !isOneOf(SCENES, scene)) return undefined;
   return {
     shape,
     roof,
@@ -106,6 +109,7 @@ export function readStall(value: unknown): StallStyle | undefined {
     ...(landmark === undefined ? {} : { landmark }),
     ...(letters === undefined ? {} : { letters }),
     ...(display === true ? { display } : {}),
+    ...(scene === undefined ? {} : { scene }),
   };
 }
 
@@ -126,6 +130,8 @@ export function stallFor(kind: SquareKind, stall: StallStyle | undefined): Stall
     roof: stall.roof,
     ...(stall.trim === undefined ? {} : { trim: stall.trim }),
     ...(kind === 'level' && stall.display ? { display: true } : {}),
+    // Every square may choose its mood inside.
+    ...(stall.scene === undefined ? {} : { scene: stall.scene }),
   };
 }
 

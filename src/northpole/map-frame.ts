@@ -51,9 +51,9 @@ function drawFrame(m: MapRun, time: number) {
     return;
   }
   const { canvas, ctx } = m;
-  if (canvas.dataset.room) {
-    delete canvas.dataset.room;
+  if (canvas.dataset.stage) {
     delete canvas.dataset.stage;
+    m.frame.style.removeProperty('--visit-tint');
   }
   const { camera, view } = follow(m, dt, still, width, height);
   drawBackdrop(m, width, height, motion);

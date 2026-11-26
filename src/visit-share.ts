@@ -1,17 +1,23 @@
 /**
- * Sharing a square: a Share pill over the room, beside the panel, so a long
- * build story never pushes it out of sight. On a laptop it copies a ready-made
+ * Sharing a square: a Share button at the top of the panel, beside the
+ * square's name, so a long build story never pushes it out of sight. On a laptop it copies a ready-made
  * line with the square's link; on a phone it opens the phone's own share
  * sheet. The panel's More lets the visitor edit the line or open it on the
  * map, and a booth's owner can share it as theirs, which changes the line.
  */
 import type { SquareKind } from './northpole/map-options';
 import { shareText } from './northpole/visit';
+import { visitColumns } from './visit-columns';
+import { visitSheet } from './visit-sheet';
 
 export interface ShareParts {
   copy: HTMLButtonElement;
   text: HTMLTextAreaElement;
   options: HTMLDetailsElement;
+  /** How the panel is laid out, a sheet on a phone and columns on a wide screen, which ends with the visit too. */
+  layout?: { stop(): void } | undefined;
+  /** The Full screen button on the sign's corner, which ends with the visit too (visit-full-screen.ts). */
+  full?: { stop(): void } | undefined;
 }
 
 /** The share icon people know: a box with an arrow up out of it (Lucide's "share"). */
@@ -19,18 +25,38 @@ const SHARE_ICON =
   '<svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
 
 /**
- * The Share pill, added to the map's frame beside the visit's panel. A level's
+ * The Share button, added to the top of the visit's panel. A level's
  * own pill is marked, so it steps aside while the player is inside one of its
  * squares, whose panel brings its own.
  */
 export function sharePill(frame: HTMLElement, level = false): HTMLButtonElement {
   const pill = document.createElement('button');
   pill.type = 'button';
-  pill.className = 'hud visit-copy';
+  pill.className = 'visit-copy';
   if (level) pill.dataset.level = '';
+  pill.title = 'Share';
   pill.innerHTML = `${SHARE_ICON}<span class="visit-copy-label">Share</span>`;
   frame.append(pill);
   return pill;
+}
+
+/**
+ * A visit's Share, on the panel's top row. A square's panel is also a sheet
+ * on a phone held upright (visit-sheet.ts), and on a wide screen its name and
+ * description stand left of the drawing (visit-columns.ts).
+ */
+export function roomPills(panel: HTMLElement, level: boolean, frame: HTMLElement = panel) {
+  const copy = sharePill(panel.querySelector<HTMLElement>('.visit-tools') ?? panel, level);
+  // A level's own panel stands beside its map, not round a drawing.
+  const intro = panel.querySelector<HTMLElement>('.visit-intro');
+  if (level || !intro) return { copy };
+  const sheet = visitSheet(panel);
+  const columns = visitColumns(frame, panel, intro);
+  const stop = () => {
+    sheet.stop();
+    columns.stop();
+  };
+  return { copy, layout: { stop } };
 }
 
 /** A phone with its own share sheet: a touch screen whose browser can share. */
@@ -70,8 +96,13 @@ export function wireShare(
     navigator.clipboard.writeText(parts.text.value).then(
       () => {
         label.textContent = 'Copied';
+        // Its word is hidden beside the icon, except to say Copied for a moment.
+        parts.copy.dataset.said = '';
         window.clearTimeout(reset);
-        reset = window.setTimeout(() => (label.textContent = 'Share'), 2000);
+        reset = window.setTimeout(() => {
+          label.textContent = 'Share';
+          delete parts.copy.dataset.said;
+        }, 2000);
       },
       () => {
         // No clipboard: the line is shown and selected, to copy by hand.
@@ -93,6 +124,8 @@ export function wireShare(
     stop: () => {
       window.clearTimeout(reset);
       parts.copy.remove();
+      parts.layout?.stop();
+      parts.full?.stop();
     },
   };
 }

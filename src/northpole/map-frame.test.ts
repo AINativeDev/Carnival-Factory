@@ -64,12 +64,12 @@ describe('a frame of the map', () => {
     const running = start(levelOptions([]), { reduced: true });
     running.controls.visit('attraction', 'skates');
     running.step(0);
-    expect(running.canvas.dataset.room).toBeDefined();
+    expect(running.canvas.dataset.stage).toBeDefined();
     map?.stop();
     const partial = start(levelOptions([], { attractions: [square('skates')] }), { reduced: true });
     partial.controls.visit('attraction', 'cocoa');
     partial.step(0);
-    expect(partial.canvas.dataset.room).toBeUndefined();
+    expect(partial.canvas.dataset.stage).toBeUndefined();
   });
 
   it('sparkles a booth that replaced its construction site once, and not for reduced motion', () => {

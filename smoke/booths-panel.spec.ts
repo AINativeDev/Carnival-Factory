@@ -3,7 +3,7 @@ import { booths, watch } from './support/carnival';
 
 /**
  * The Booths panel beside the map: picking a booth or Featured to highlight
- * it, shift-click to walk to its door, and finding a login by search. Its own
+ * it, double-click to go inside, shift-click to walk to its door, and finding a login by search. Its own
  * spec because the panel is its own part of the page (docs/specs/booths-panel.md).
  */
 
@@ -81,5 +81,14 @@ test('the Booths panel finds a login, and Enter jumps to it', async ({ page }) =
   await expect(page.locator('.hud-section[data-section="all"] > summary')).toHaveText(
     `All booths (${booths.length})`,
   );
+  expect(problems).toEqual([]);
+});
+
+test('double-clicking a name in the Booths panel goes inside that booth', async ({ page }) => {
+  const problems = watch(page);
+  await page.goto('#/');
+  await page.locator('.hud-all button[data-kind="booth"][data-id="jedi4ever"]').dblclick();
+  await expect(page).toHaveURL(/#\/booth\/jedi4ever$/);
+  await expect(page.locator('.map-frame')).toHaveAttribute('data-visiting', 'booth:jedi4ever');
   expect(problems).toEqual([]);
 });
