@@ -1,3 +1,4 @@
+import { FLAGS } from './support/feature-flags';
 import { expect, test, type Page } from './coverage';
 import { NO_ANSWERS } from '../src/year-in-review-panel';
 import { YEAR_IN_REVIEW_URL } from '../src/northpole/links';
@@ -37,6 +38,7 @@ for (const viewport of [
   test(`The Year in Review's gallery opens its room and a question's answers (${viewport.name})`, async ({
     page,
   }) => {
+    test.skip(!FLAGS.yearInReview, 'the Year in Review is switched off in this build');
     test.setTimeout(120_000);
     await page.setViewportSize(viewport);
     const problems = watch(page);

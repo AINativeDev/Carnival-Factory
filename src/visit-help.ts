@@ -32,6 +32,8 @@ function factoryLine(): string {
  * their own (ADR 0048): the panel asks for that instead of "Get a booth".
  */
 export function offerLevelNext(card: ParentNode) {
+  // Participants' levels wait behind their feature flag (ADR 0055): until then the owner keeps "Get a booth".
+  if (!isOn('levels')) return;
   the(card, '.visit-want', HTMLElement).hidden = true;
   the(card, '.visit-next', HTMLElement).hidden = false;
 }

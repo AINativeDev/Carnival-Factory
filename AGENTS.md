@@ -516,8 +516,12 @@ in the third shows "Closed for repairs" on its platform, and none of its
 squares run. Only maintainers change it.
 
 **Feature flags** hide unfinished parts of the site while keeping their code
-([ADR 0046](docs/adr/0046-launch-behind-feature-flags.md)). There are four,
-all off on the live site: `remix` (**Remix this booth**), `elfEngineer` (the
+([ADR 0046](docs/adr/0046-launch-behind-feature-flags.md)). There are six,
+all off on the live site: `levels` (participants' levels: the sleigh
+station's platforms, "get a level of your own" and the **Your level** form;
+while it's off the Factory, the Academy and the Studio open their own sites,
+[ADR 0055](docs/adr/0055-levels-and-year-in-review-behind-flags.md)),
+`yearInReview` (the Year in Review attraction and its form), `remix` (**Remix this booth**), `elfEngineer` (the
 Elf Engineer badge's pins, links and `badges/index.html`), `giftShop` (the
 Gift Shop attraction) and `advent` (`#/advent`, its links, the decorations on
 stalls and the season card's count). To switch one on, set the build's

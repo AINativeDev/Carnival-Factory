@@ -5,8 +5,18 @@
  * tests read the same list the page does.
  */
 
-/** Every feature flag: Remix this booth, the Elf Engineer badges, the Gift Shop and the advent calendar. */
-const FEATURE_FLAG_NAMES = ['remix', 'elfEngineer', 'giftShop', 'advent'] as const;
+/**
+ * Every feature flag: Remix this booth, the Elf Engineer badges, the Gift Shop,
+ * the advent calendar, participants' levels and the Year in Review.
+ */
+const FEATURE_FLAG_NAMES = [
+  'remix',
+  'elfEngineer',
+  'giftShop',
+  'advent',
+  'levels',
+  'yearInReview',
+] as const;
 
 export type FeatureFlag = (typeof FEATURE_FLAG_NAMES)[number];
 
@@ -27,6 +37,7 @@ export function readFeatureFlags(list: string | undefined): FeatureFlags {
 /** The attractions a feature flag holds back, by id: hidden from the map, its lists and its links while it's off. */
 const FLAGGED_ATTRACTIONS: Readonly<Partial<Record<string, FeatureFlag>>> = {
   'gift-shop': 'giftShop',
+  'the-year-in-review': 'yearInReview',
 };
 
 /** Whether an attraction stands on the map with these flags. */

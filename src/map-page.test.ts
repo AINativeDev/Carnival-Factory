@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderMap } from './map-page';
+import { switchFlags } from './test-support/feature-flags';
 import { whenNamed } from './map-page-markup';
 import { visit } from './page';
 import {
@@ -51,13 +52,10 @@ describe('renderMap', () => {
     expect([document.body.dataset.view, page.shown]).toEqual(['map', '']);
   });
 
-  it("starts the map with the participants' levels at the sleigh station, and shows the booths being built", () => {
+  it('leaves the sleigh station empty while the levels flag is off, and shows the booths being built', () => {
     const page = newPage();
     renderMap(page, { kind: 'booth', id: 'ana' });
-    expect(lastMap().options.levels?.map((level) => [level.login, level.closed])).toEqual([
-      ['ana', false],
-      ['bob', true],
-    ]);
+    expect(lastMap().options.levels).toEqual([]);
     pending.show?.([]);
     expect(lastMap().setPending).toHaveBeenCalledWith([]);
     expect(pending.saved).toEqual([['carol']]);
@@ -134,5 +132,16 @@ describe('whenNamed', () => {
     page.app.replaceChildren();
     ready();
     expect(show).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("renderMap, with participants' levels switched on", () => {
+  switchFlags({ levels: true });
+  it("puts a platform for each participant's level at the sleigh station", () => {
+    renderMap(newPage(), { kind: 'booth', id: 'ana' });
+    expect(lastMap().options.levels?.map((level) => [level.login, level.closed])).toEqual([
+      ['ana', false],
+      ['bob', true],
+    ]);
   });
 });

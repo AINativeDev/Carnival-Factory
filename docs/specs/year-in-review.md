@@ -81,7 +81,7 @@ visitors gave, moderated and baked in at build
   `src/northpole/gallery-*.ts`
 - `scripts/year-in-review.ts`, `scripts/write-year-in-review.ts`,
   `scripts/build-data.ts`
-- `.github/ISSUE_TEMPLATE/07-year-in-review.yml`,
+- `.github/issue-templates-later/07-year-in-review.yml` (moved back to `.github/ISSUE_TEMPLATE/` when the `yearInReview` flag goes on),
   `plugins/north-pole/skills/welcome-year-in-review/SKILL.md`, `tessl.json`
 
 ## Tested by
