@@ -62,6 +62,18 @@ published next to the live map under `previews/pr-<number>/` and removed when
 it closes. Tessl Code Review's lenses are set in `.tessl-code-review.yml`. To publish the map, go to **Settings → Pages** and set
 **Source** to **GitHub Actions**: every merge to `main` then redeploys it.
 
+## Where the factory runs
+
+The factory runs on [Tessl](https://tessl.io):
+
+- Organization: **Carnival Factory**
+- Workspace: **carnival-factory**
+- Project: **carnival-factory**, named `carnival-factory/carnival-factory`
+  in `tessl.json`
+
+Tessl creates the factory's Loops from the `tessl.json` on `main`.
+`tessl doctor --automations` shows whether they're all there.
+
 ## Commands
 
 | Command          | What it does                                              |
