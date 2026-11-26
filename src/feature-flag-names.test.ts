@@ -8,6 +8,7 @@ const ALL_OFF = {
   advent: false,
   levels: false,
   yearInReview: false,
+  peoplesChoice: false,
 };
 
 describe('readFeatureFlags', () => {

@@ -12,7 +12,7 @@ import { middle, quad, shadow } from './brushes';
 import { faceOf, onFace, type Face, type PaintSquare } from './faces';
 import type { Owner } from './name-board';
 import { trophyFor } from './peoples-choice';
-import { PEOPLES_CHOICE } from './peoples-choice-standings';
+import { shownChoice } from './peoples-choice-standings';
 import type { NorthPoleSquare } from './square';
 import { drawElfHatPin, drawTrophy } from './stall-honours';
 import { SHAPE_PLANS } from './stall-catalogue';
@@ -93,7 +93,7 @@ function drawHonours(ctx: CanvasRenderingContext2D, face: Face, who: string) {
     drawElfHatPin(ctx, pin.x, pin.y, (STALL.wall - 2 - signLow) * 0.42, badge.tier);
   }
   // The trophy stands for the top three, clear of the portrait.
-  const place = trophyFor(who, PEOPLES_CHOICE);
+  const place = trophyFor(who, shownChoice());
   if (place) {
     const r = (STALL.wall - 2 - stallSignLow(face)) * 0.42;
     const cup = onFace(face, 0.12, STALL.wall - 2 + r, 0.1);

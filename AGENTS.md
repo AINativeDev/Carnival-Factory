@@ -516,8 +516,10 @@ in the third shows "Closed for repairs" on its platform, and none of its
 squares run. Only maintainers change it.
 
 **Feature flags** hide unfinished parts of the site while keeping their code
-([ADR 0046](docs/adr/0046-launch-behind-feature-flags.md)). There are six,
-all off on the live site: `levels` (participants' levels: the sleigh
+([ADR 0046](docs/adr/0046-launch-behind-feature-flags.md)). There are seven,
+all off on the live site: `peoplesChoice` (the People's Choice list below the
+map, a booth's ballot link and the stalls' trophies,
+[ADR 0056](docs/adr/0056-peoples-choice-behind-a-flag.md)), `levels` (participants' levels: the sleigh
 station's platforms, "get a level of your own" and the **Your level** form;
 while it's off the Factory, the Academy and the Studio open their own sites,
 [ADR 0055](docs/adr/0055-levels-and-year-in-review-behind-flags.md)),

@@ -20,7 +20,7 @@ import { LEVEL_THEMES } from './northpole/level';
 import { levels } from './northpole/levels';
 import { isNorthPoleLevel } from './northpole/north-pole-levels';
 import { startMap, type MapControls, type SquareKind, type StationEntry } from './northpole/map';
-import { PEOPLES_CHOICE } from './northpole/peoples-choice-standings';
+import { shownChoice } from './northpole/peoples-choice-standings';
 import { sitesToRemember } from './northpole/spots';
 import { theme } from './northpole/theme';
 import { levelLink, squareLink } from './route';
@@ -75,7 +75,7 @@ export function renderMap(page: Page, focus?: { kind: SquareKind; id: string }) 
   page.shown = '';
   app.innerHTML = NORTH_POLE_MAP;
 
-  renderChoice(the(app, '.choice', HTMLDetailsElement), PEOPLES_CHOICE);
+  renderChoice(the(app, '.choice', HTMLDetailsElement), shownChoice());
   renderGuide(app, the(app, '.attractions', HTMLElement), attractionRegistry.all(), {
     href: 'attraction',
     by: () => '',
