@@ -56,11 +56,13 @@ const attractions = squares.filter((s) => s.kind === 'attraction').map((s) => s.
 const pinned = JSON.parse(
   readFileSync(join(root, 'src/northpole/spots.json'), 'utf8'),
 ) as PinnedSpots;
-/** Every participant's level, each with its platform at the sleigh station, as the map lays them out. */
-const levelLogins = readdirSync(join(root, 'carnival', 'levels'))
-  .filter((name) => existsSync(join(root, 'carnival', 'levels', name, 'level.ts')))
-  .filter((name) => !isNorthPoleLevel(name))
-  .sort();
+/** Every participant's level, each with its platform at the sleigh station while their flag is on, as the map lays them out. */
+const levelLogins = !FLAGS.levels
+  ? []
+  : readdirSync(join(root, 'carnival', 'levels'))
+      .filter((name) => existsSync(join(root, 'carnival', 'levels', name, 'level.ts')))
+      .filter((name) => !isNorthPoleLevel(name))
+      .sort();
 
 /** The world the map builds, so a test can find a spot where the page draws it. */
 export function carnivalWorld(pending: WorldExtras['pending'] = []) {

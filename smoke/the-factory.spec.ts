@@ -1,3 +1,4 @@
+import { FLAGS } from './support/feature-flags';
 import { expect, test, type Page } from './coverage';
 import theFactory from '../carnival/levels/the-factory/level';
 import { levelWorld } from '../src/northpole/level';
@@ -34,6 +35,7 @@ for (const viewport of VIEWPORTS) {
   test(`The Factory's landmark opens its level, and the ride stops at every stall (${viewport.name})`, async ({
     page,
   }) => {
+    test.skip(!FLAGS.levels, 'levels are switched off: the landmark opens its site instead');
     test.setTimeout(240_000);
     await page.setViewportSize(viewport);
     const problems = watch(page);
