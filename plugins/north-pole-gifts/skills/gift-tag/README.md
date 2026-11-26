@@ -25,7 +25,7 @@ person opens an issue.
   "actions": {
     "gift-tag": {
       "agent": "claude",
-      "skill": "carnival-christmas-public/north-pole-gifts#gift-tag"
+      "skill": "carnival-factory/north-pole-gifts#gift-tag"
     }
   },
   "triggers": {

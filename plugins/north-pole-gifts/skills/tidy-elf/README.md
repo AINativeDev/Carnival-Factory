@@ -25,7 +25,7 @@ Wednesday morning.
   "actions": {
     "tidy-elf": {
       "agent": "claude",
-      "skill": "carnival-christmas-public/north-pole-gifts#tidy-elf"
+      "skill": "carnival-factory/north-pole-gifts#tidy-elf"
     }
   },
   "schedules": {

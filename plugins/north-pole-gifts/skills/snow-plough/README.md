@@ -25,7 +25,7 @@ first morning of each month.
   "actions": {
     "snow-plough": {
       "agent": "claude",
-      "skill": "carnival-christmas-public/north-pole-gifts#snow-plough"
+      "skill": "carnival-factory/north-pole-gifts#snow-plough"
     }
   },
   "schedules": {

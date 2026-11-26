@@ -1,13 +1,16 @@
 {
-  "name": "carnival-christmas-public/north-pole",
+  "name": "carnival-factory/north-pole",
   "version": "0.1.0",
-  "description": "Factory skills specific to the North Pole map: assess a participant's booth request before the factory builds it, grant or decline an Elf Engineer badge request, accept or decline an advent challenge marked done, judge a booth pull request's risk and taste before it can merge on its own, and review booths and attractions against the house rules.",
+  "description": "Factory skills specific to the North Pole map: assess a participant's booth request before the factory builds it, grant or decline an Elf Engineer badge request, accept or decline an advent challenge marked done, judge a booth pull request's risk and taste before it can merge on its own, and review booths and attractions against the house rules, review a square's craft, and welcome feedback, ideas and Year in Review answers.",
   "private": true,
   "skills": [
     "skills/assess-booth-request",
     "skills/assess-badge-request",
     "skills/assess-advent-challenge",
     "skills/assess-booth-risk",
-    "skills/review-house-rules"
+    "skills/review-house-rules",
+    "skills/review-craft",
+    "skills/welcome-feedback",
+    "skills/welcome-year-in-review"
   ]
 }

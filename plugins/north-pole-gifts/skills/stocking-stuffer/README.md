@@ -25,7 +25,7 @@ Monday morning.
   "actions": {
     "stocking-stuffer": {
       "agent": "claude",
-      "skill": "carnival-christmas-public/north-pole-gifts#stocking-stuffer"
+      "skill": "carnival-factory/north-pole-gifts#stocking-stuffer"
     }
   },
   "schedules": {

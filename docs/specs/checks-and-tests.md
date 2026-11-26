@@ -13,6 +13,11 @@ What runs on every pull request, and what each check guarantees.
 - The workflows run scripts with plain `node`, which never guesses a file's
   extension, so every file a workflow's script reaches imports its relative
   files with their extension (enforced by: scripts/node-imports.test.ts).
+- Each plugin under `plugins/` lists every skill folder it has in its
+  `.tessl-plugin/plugin.json`, and every `file:` skill an action in
+  `tessl.json` runs is listed there. Tessl resolves an action's skill through
+  that manifest when it syncs `tessl.json`, and one skill it can't find fails
+  the whole sync, so no Loop runs (enforced by: scripts/plugin-manifests.test.ts).
 - On a pull request, CI checks that 99% of the lines it adds to `src/`,
   `scripts/` and `lint/`, and of the branch arms on them, ran under the unit tests, and runs ShellCheck and
   actionlint.
