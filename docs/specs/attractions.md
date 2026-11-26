@@ -60,6 +60,10 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   gallery ([year-in-review.md](year-in-review.md)). None has a platform at the sleigh
   station: the landmark is the way in. Their rooms
   show their level's links out as buttons ([ADR 0038](../adr/0038-north-pole-links.md)).
+  Each link out to another site is tagged `utm_source=carnival-factory`,
+  `utm_campaign=christmas-edition` and `utm_medium=<the place's id>`, such as
+  `the-studio`; the Year in Review's GitHub form is left as it is
+  (`northPoleLinks` and `landmarkLinkOut` in `src/northpole/north-pole-links.ts`).
 - The Gift shop shows the gifts of `plugins/north-pole-gifts/`: small factory
   loops anyone can install on their own repository. It waits behind the
   `giftShop` feature flag ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)), off on the live site: until then the

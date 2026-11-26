@@ -5,6 +5,7 @@
  * opens the tickets page (map.ts asks `onBillboard`). The words are ours, set
  * here, never anything a participant wrote.
  */
+import { withUtm } from './links';
 import { drawCatwalk, drawLegs, drawRim, drawSpotlights } from './billboard-frame';
 import { canvasFont, theme } from './theme';
 import type { Box, Tile } from './world';
@@ -17,7 +18,7 @@ export const BILLBOARD = {
   next: 'Next in London',
   when: '7–8 June 2027 · The Brewery',
   cta: 'Get tickets',
-  tickets: 'https://luma.com/aidevcon-ldn2027',
+  tickets: withUtm('https://luma.com/aidevcon-ldn2027', 'billboard'),
 } as const;
 
 /** The board's size and how high its posts hold it, in world pixels. */

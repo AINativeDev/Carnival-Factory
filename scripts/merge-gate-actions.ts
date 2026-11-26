@@ -3,6 +3,7 @@
  * comment, hold a pull request for a person, merge a booth, and close the
  * request it built. The dry run stops before any of it writes.
  */
+import { signupNote } from '../src/northpole/links.ts';
 import { get, type Comment, type GitHub, type Issue, type Pull } from './merge-gate-github.ts';
 
 /** Posts the checklist on pull request `number`, or edits the gate's own one when it changed. */
@@ -64,7 +65,7 @@ export async function mergePull(github: GitHub, pull: Pull, sha: string): Promis
  */
 export async function closeRequest(github: GitHub, issue: Issue, pull: Pull, guide: string) {
   await github.call('POST', `issues/${String(issue.number)}/comments`, {
-    body: `Your booth is on the map. It merged on its own in #${String(pull.number)} after passing every check in the auto-merge gate. [How your request is built](${guide}) explains each one.`,
+    body: `Your booth is on the map. It merged on its own in #${String(pull.number)} after passing every check in the auto-merge gate. [How your request is built](${guide}) explains each one.${signupNote()}`,
   });
   await github.call('PATCH', `issues/${String(issue.number)}`, {
     state: 'closed',

@@ -15,8 +15,14 @@ describe('showLevelLinks', () => {
     showLevelLinks(description(), 'the-studio');
     const links = [...document.querySelectorAll<HTMLAnchorElement>('.level-links a.level-link')];
     expect(links.map((link) => [link.textContent, link.href])).toEqual([
-      ['Listen to the podcast', 'https://tessl.io/podcast/'],
-      ['Watch on YouTube', 'https://www.youtube.com/@tessl-ai'],
+      [
+        'Listen to the podcast',
+        'https://tessl.io/podcast/?utm_source=carnival-factory&utm_medium=the-studio&utm_campaign=christmas-edition',
+      ],
+      [
+        'Watch on YouTube',
+        'https://www.youtube.com/@tessl-ai?utm_source=carnival-factory&utm_medium=the-studio&utm_campaign=christmas-edition',
+      ],
     ]);
     for (const link of links) {
       expect(link.target).toBe('_blank');

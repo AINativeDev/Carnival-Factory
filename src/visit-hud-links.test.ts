@@ -28,13 +28,15 @@ afterEach(() => {
 
 describe("a square's panel, for the North Pole's own levels (ADR 0038)", () => {
   it("links out of a landmark's room", () => {
-    expect(linksOf('the-academy')).toEqual(['https://tessl.io/academy']);
+    expect(linksOf('the-academy')).toEqual([
+      'https://tessl.io/academy?utm_source=carnival-factory&utm_medium=the-academy&utm_campaign=christmas-edition',
+    ]);
   });
 
   it("links out of a North Pole level's stalls", () => {
     expect(linksOf('camera', 'the-studio')).toEqual([
-      'https://tessl.io/podcast/',
-      'https://www.youtube.com/@tessl-ai',
+      'https://tessl.io/podcast/?utm_source=carnival-factory&utm_medium=the-studio&utm_campaign=christmas-edition',
+      'https://www.youtube.com/@tessl-ai?utm_source=carnival-factory&utm_medium=the-studio&utm_campaign=christmas-edition',
     ]);
   });
 

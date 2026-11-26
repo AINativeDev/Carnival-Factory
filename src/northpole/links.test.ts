@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { BOOTH_REQUEST_URL, keepPostedHref, profileUrl, remixUrl, signupOffer } from './links';
+import {
+  BOOTH_REQUEST_URL,
+  keepPostedHref,
+  profileUrl,
+  remixUrl,
+  signupNote,
+  signupOffer,
+  withUtm,
+} from './links';
 
 describe('keepPostedHref', () => {
   it('goes to the placeholder page while there is no form yet', () => {
@@ -64,5 +72,32 @@ describe('profileUrl', () => {
     expect(profileUrl('ghost/../x')).toBeUndefined();
     expect(profileUrl('-ana')).toBeUndefined();
     expect(profileUrl('')).toBeUndefined();
+  });
+});
+
+describe('withUtm', () => {
+  it('tags a link with where the visit came from: this carnival, its edition and the spot', () => {
+    expect(withUtm('https://luma.com/aidevcon-ldn2027', 'billboard')).toBe(
+      'https://luma.com/aidevcon-ldn2027?utm_source=carnival-factory&utm_medium=billboard&utm_campaign=christmas-edition',
+    );
+  });
+
+  it("keeps a link's own query", () => {
+    expect(withUtm('https://tessl.io/login?next=%2F', 'github-comment')).toBe(
+      'https://tessl.io/login?next=%2F&utm_source=carnival-factory&utm_medium=github-comment&utm_campaign=christmas-edition',
+    );
+  });
+});
+
+describe('signupNote', () => {
+  it('ends the on-the-map comment with one quiet line about free credits, the link tagged', () => {
+    expect(signupNote()).toBe(
+      '\n\n_Built with Tessl. Want a factory like this on your own repository? [Tessl gives you free credits to start](https://tessl.io/login?utm_source=carnival-factory&utm_medium=github-comment&utm_campaign=christmas-edition)._',
+    );
+  });
+
+  it('says nothing while there is no https signup link', () => {
+    expect(signupNote('')).toBe('');
+    expect(signupNote('http://tessl.io/login')).toBe('');
   });
 });

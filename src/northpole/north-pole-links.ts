@@ -5,7 +5,7 @@
  * live here, in maintainer code, keyed by a North Pole level's id: no
  * participant's level can ever carry one (ADR 0038).
  */
-import { YEAR_IN_REVIEW_URL } from './links';
+import { withUtm, YEAR_IN_REVIEW_URL } from './links';
 import { isNorthPoleLevel, landmarkLevel } from './north-pole-levels';
 
 /** One link out: what its button says, and where it goes. */
@@ -40,8 +40,16 @@ const LANDMARK_LINKS_OUT: Readonly<Record<string, string>> = {
 export function landmarkLinkOut(kind: string, id: string): string | undefined {
   // Only the North Pole's own ids are looked up, so a name like "constructor" never reaches the object.
   const href = kind === 'attraction' && isNorthPoleLevel(id) ? LANDMARK_LINKS_OUT[id] : undefined;
-  return href && isHttps(href) ? href : undefined;
+  return href && isHttps(href) ? tagged(href, id) : undefined;
 }
+
+/**
+ * A link out of a North Pole place, tagged with the place it sat in, so Tessl
+ * can tell the carnival sent the visit. The Year in Review's form is this
+ * repository's own, so it stays as it is.
+ */
+const tagged = (href: string, place: string) =>
+  new URL(href).hostname === 'github.com' ? href : withUtm(href, place);
 
 /** Whether a link is an https address: anything else, such as `javascript:`, never reaches the page. */
 function isHttps(href: string): boolean {
@@ -60,7 +68,9 @@ export const httpsOnly = (links: readonly OutboundLink[]) =>
 export function northPoleLinks(level: string): readonly OutboundLink[] {
   // Only the North Pole's own ids are looked up, so a name like "constructor" never reaches the object.
   const links = isNorthPoleLevel(level) ? NORTH_POLE_LINKS[level] : undefined;
-  return links ? httpsOnly(links) : [];
+  return links
+    ? httpsOnly(links).map(({ label, href }) => ({ label, href: tagged(href, level) }))
+    : [];
 }
 
 /**

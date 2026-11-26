@@ -4,6 +4,7 @@
  * note on the request and its closing, and publishing the map.
  */
 import { describe, expect, it } from 'vitest';
+import { signupNote } from '../src/northpole/links.ts';
 import { HttpFailure } from './merge-gate-fake-github.ts';
 import { boothPull, mergeableBooth, runGate, SHA } from './merge-gate-world.ts';
 
@@ -21,7 +22,7 @@ describe('a booth pull request that passes every step', () => {
         method: 'POST',
         path: 'issues/5/comments',
         body: {
-          body: `Your booth is on the map. It merged on its own in #7 after passing every check in the auto-merge gate. [How your request is built](${GUIDE}) explains each one.`,
+          body: `Your booth is on the map. It merged on its own in #7 after passing every check in the auto-merge gate. [How your request is built](${GUIDE}) explains each one.${signupNote()}`,
         },
       },
       { method: 'PATCH', path: 'issues/5', body: { state: 'closed', state_reason: 'completed' } },

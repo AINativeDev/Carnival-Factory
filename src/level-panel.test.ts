@@ -81,7 +81,9 @@ describe("a level's panel", () => {
     const academy = open('the-academy').card;
     const start = the(academy, '.level-links a.level-link') as HTMLAnchorElement;
     expect(start.textContent).toBe('Start the Academy');
-    expect(start.href).toBe('https://tessl.io/academy');
+    expect(start.href).toBe(
+      'https://tessl.io/academy?utm_source=carnival-factory&utm_medium=the-academy&utm_campaign=christmas-edition',
+    );
     expect(start.target).toBe('_blank');
     expect(start.rel).toBe('noopener');
     expect(the(academy, '.visit-description').nextElementSibling).toBe(start.parentElement);
