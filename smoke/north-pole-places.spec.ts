@@ -107,7 +107,7 @@ for (const { level, name } of PLACES)
           await expectLinks(page, '.visit', id);
           await page.keyboard.press('Escape');
           await expect(panel).toHaveCount(0);
-          await expect(canvas).not.toHaveAttribute('data-room', /.*/);
+          await expect(canvas).not.toHaveAttribute('data-stage', /.*/);
           await canvas.focus();
         });
       }

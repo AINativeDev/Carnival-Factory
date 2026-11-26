@@ -54,8 +54,8 @@ What runs on every pull request, and what each check guarantees.
   map, such as the call to action or the Controls panel, so a door the camera
   doesn't show yet is still reached. Its time limit grows with the level's
   squares: a minute, plus 20 seconds a stop.
-- `smoke/flashing.spec.ts` plays every booth and attraction on the back wall
-  of its room and measures flashes.
+- `smoke/flashing.spec.ts` plays every booth and attraction inside it, as
+  big as it shows there, and measures flashes.
 - Feature flags ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)): the unit tests build with every flag off, as the live
   site does, and `switchFlags` in `src/test-support/feature-flags.ts` switches
   one on for a `describe`, so each gate is tested on and off. The smoke test

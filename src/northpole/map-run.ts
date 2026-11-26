@@ -5,7 +5,6 @@
  * page, so the map's tests can start one and look inside it.
  */
 import { islandBounds, islandCorners } from './camera';
-import { ENTRANCE } from './interior';
 import { layer } from './map-layers';
 import { spotOf } from './map-labels';
 import type { MapOptions } from './map-options';
@@ -82,9 +81,6 @@ export function openRun(
     footprints: [],
     entered: undefined,
     fading: -Infinity,
-    inside: { ...ENTRANCE },
-    insideGoal: undefined,
-    insideFacing: 1,
     hovered: undefined,
     tagged: undefined,
     tag: makeTag(frame),

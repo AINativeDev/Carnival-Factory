@@ -50,6 +50,27 @@ a {
   text-decoration: none;
 }
 
+/* The square someone is inside, beside the site's name: its own dark pill, shortened when it can't fit. */
+.banner-square {
+  min-width: 0;
+  margin: 0;
+  padding: 3px 14px;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--color-night);
+  color: var(--color-snow);
+  font-size: 17px;
+  font-weight: bold;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.banner-square-by {
+  color: var(--color-gold);
+  font-size: 13px;
+  font-weight: normal;
+}
+
 /* This edition's tag beside the site's name (src/edition.ts): smaller, and left out on a narrow phone. */
 .brand-edition {
   margin-left: 4px;
@@ -1274,14 +1295,9 @@ kbd {
     transform: translateX(-50%);
   }
 
-  /* No Esc key and no room to walk out of on a phone: just Leave. */
+  /* No Esc key on a phone: just Leave. */
   .visit:has(> .visit-sheet-handle) .visit-leave > span {
     visibility: hidden;
-  }
-
-  /* The booth already fills the width above its sheet: nothing bigger to go to. */
-  .booth-tools .visit-full {
-    display: none;
   }
 
   .visit-sheet-handle:focus-visible {
@@ -1316,7 +1332,7 @@ kbd {
   font-size: 22px;
 }
 
-/* The room's sign already shows the square's name, so the panel keeps its heading for screen readers only. */
+/* The top bar names the square (visit-banner.ts), so the panel keeps its heading for screen readers only. */
 .visit .visit-title {
   position: absolute;
   width: 1px;
@@ -1467,53 +1483,8 @@ kbd {
   font-size: 14px;
 }
 
-/* The booth's own tools, for now Full screen, on its drawing's top-right corner
-   (booth-tools.ts places them): round, a little see-through until pointed at. */
-.booth-tools {
-  position: absolute;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.booth-tools[hidden] {
-  display: none;
-}
-
-.booth-tools .visit-full {
-  position: relative;
-  display: grid;
-  place-items: center;
-  box-sizing: border-box;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--color-cream) 88%, transparent);
-  color: var(--color-ink);
-  cursor: pointer;
-  opacity: 0.8;
-  box-shadow: 0 3px 10px color-mix(in srgb, var(--color-night) 40%, transparent);
-  transition: opacity 0.15s;
-}
-
-.booth-tools .visit-full svg {
-  width: 20px;
-  height: 20px;
-}
-
-.booth-tools .visit-full:hover,
-.booth-tools .visit-full:focus-visible {
-  opacity: 1;
-  outline: 3px solid var(--color-gold);
-  outline-offset: 2px;
-}
-
 /* The words, out of sight but read out, and shown as a tooltip. */
-.visit-copy-label,
-.visit-full-label {
+.visit-copy-label {
   position: absolute;
   width: 1px;
   height: 1px;

@@ -153,9 +153,9 @@ async function stepToward(page: Page, world: World, from: Tile, beside: Tile, wh
   await page.waitForTimeout(300);
   // On a phone's close camera a click can still land on a stall and go inside:
   // leave, as a visitor would, and the next step plans again from the door.
-  if ((await canvas.getAttribute('data-room')) !== null) {
+  if ((await canvas.getAttribute('data-stage')) !== null) {
     await page.keyboard.press('Escape');
-    await expect(canvas).not.toHaveAttribute('data-room', /.*/);
+    await expect(canvas).not.toHaveAttribute('data-stage', /.*/);
     await canvas.focus();
   }
   await stillPlayer(page);

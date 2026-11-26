@@ -24,7 +24,7 @@ export const keepPostedLink = (formUrl: string, href: string) =>
 const KEEP_POSTED_LINK = keepPostedLink(KEEP_POSTED_URL, keepPostedHref());
 
 export const VISIT_PANEL = `
-    <p class="visit-leave"><span>Esc or walk out to leave</span> <button class="visit-close" type="button">Leave</button></p>
+    <p class="visit-leave"><span>Esc to leave</span> <button class="visit-close" type="button">Leave</button></p>
     <h2 id="visit-title" class="visit-title" tabindex="-1"></h2>
     <p class="visit-description" id="visit-description"></p>
     <section class="visit-story" aria-labelledby="visit-story-title">

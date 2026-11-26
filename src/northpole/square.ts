@@ -4,8 +4,10 @@ import { canvasFont, theme } from './theme';
 export {
   LANDMARKS,
   LANDMARK_LETTERS,
+  SCENES,
   STALL_SHAPES,
   type Landmark,
+  type Scene,
   type StallShape,
   type StallStyle,
   type ThemeColor,

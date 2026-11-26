@@ -116,6 +116,6 @@ describe('the North Pole', () => {
       frame(200);
       frame(900);
     });
-    expect(pin).toMatchInlineSnapshot(`"c4048e9e4f86be89 (86069 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"84a2c9cb51110bec (85348 calls)"`);
   });
 });

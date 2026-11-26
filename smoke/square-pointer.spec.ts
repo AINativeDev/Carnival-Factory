@@ -128,7 +128,7 @@ for (const [viewport, kind, id] of [
     const frame = frameOf(page, kind, id);
     await expect(frame).toHaveAttribute('data-state', 'ready');
     const canvas = page.locator('.map-canvas');
-    await expect(canvas).toHaveAttribute('data-room', '0.50,0.85');
+    await expect(canvas).toHaveAttribute('data-stage', /^\d+,\d+,\d+,\d+$/);
     const stage = await stageOf(page);
     if (viewport.touch) {
       await page.touchscreen.tap(stage.x + stage.w / 2, stage.y + stage.h / 3);
@@ -143,8 +143,8 @@ for (const [viewport, kind, id] of [
       await expect(canvas).toHaveAttribute('data-pointer', '');
     }
     await page.waitForTimeout(500);
-    // Playing with the drawing leaves the player where they stood, inside.
-    await expect(canvas).toHaveAttribute('data-room', '0.50,0.85');
+    // Playing with the drawing keeps the visit inside.
+    await expect(page.locator('.map-frame')).toHaveAttribute('data-visiting', `${kind}:${id}`);
     await expect(frame).toHaveAttribute('data-state', 'ready');
     expect(problems).toEqual([]);
     await context.close();
@@ -165,8 +165,8 @@ for (const viewport of [
     const frame = frameOf(page, 'attraction', 'gingerbread-fun-house');
     await expect(frame).toHaveAttribute('data-state', 'ready');
     const canvas = page.locator('.map-canvas');
-    await expect(canvas).toHaveAttribute('data-room', /^[\d.]+,[\d.]+$/);
-    const room = await canvas.getAttribute('data-room');
+    await expect(canvas).toHaveAttribute('data-stage', /^\d+,\d+,\d+,\d+$/);
+    const room = await canvas.getAttribute('data-stage');
     const stage = await stageOf(page);
     // A few taps on the house's wall and roof, each sticking a treat on it.
     for (const [x, y] of [
@@ -186,8 +186,8 @@ for (const viewport of [
       await page.waitForTimeout(150);
     }
     await page.waitForTimeout(500);
-    // Decorating leaves the player where they stood, inside, and the house still drawing.
-    await expect(canvas).toHaveAttribute('data-room', present(room, 'room'));
+    // Decorating keeps the visit inside, and the house still drawing where it was.
+    await expect(canvas).toHaveAttribute('data-stage', present(room, 'stage'));
     await expect(frame).toHaveAttribute('data-state', 'ready');
     expect(problems).toEqual([]);
     await context.close();

@@ -25,7 +25,7 @@ for (const { kind, id } of played) {
     // The slowest frame after warming up, not just the last one.
     const slowest = Number(await frame.getAttribute('data-slowest-draw-ms'));
     expect(slowest, 'a frame took too long to draw').toBeLessThanOrEqual(FRAME_BUDGET_MS);
-    // The square's drawing, on the back wall of the room the player is inside.
+    // The square's drawing, beside the panel, where the player is inside.
     await expect(page.locator('.map-canvas')).toHaveAttribute('data-stage', /^\d+,\d+,\d+,\d+$/);
     const stage = await stageOf(page);
     await page.screenshot({

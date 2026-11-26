@@ -1,14 +1,25 @@
 # Visit panel and history
 
-Inside a square, a panel beside the room tells how the square was built, from
-the first request to the map, then offers one row of actions. The room's own
-sign already shows the square's name and maker, so the panel doesn't repeat
-them. A level shows the same panel beside its map (see [Levels](levels.md)).
+Inside a square, its drawing fills the screen beside a panel that names it
+and tells how it was built, from the first request to the map, then offers
+one ask ([ADR 0057](../adr/0057-a-visit-is-the-booth-not-a-room.md)). A level shows the same panel beside its map (see [Levels](levels.md)).
 
 ## Behaviour
 
-- The panel opens with the square's description. Its name is a heading for
-  screen readers only, since the room's sign shows it. A level's panel shows
+- **The drawing fills the screen.** On a laptop it's the biggest square left
+  of the panel, from just under the top bar to the bottom, sharp at the
+  screen's own pixels. Round it, the rest of the screen is a soft, dimmed glow
+  of the drawing's own colours, so the page blends into the booth, or the
+  mood the square chose instead (`stall.scene`, see
+  [Squares and sandbox](squares-and-sandbox.md)). Nobody
+  walks inside: keys do nothing, and a click or a drag is the square's to
+  play with. Booths need no change: each draws to whatever size it's given
+  (`src/northpole/map-room.ts`, `src/northpole/visit-stage.ts`; enforced by:
+  src/northpole/visit-stage.test.ts, src/northpole/map-inside.test.ts).
+- The top bar names the square beside the site's name, "<name> by @<login>"
+  for a booth (`src/visit-banner.ts`; enforced by: src/visit-banner.test.ts). The
+  panel opens with its description, with its name as a heading for screen
+  readers. A level's panel shows
   its name, "A level by @<login>" (or "the North Pole") and its description,
   and its **How it was built** tells the level's own requests.
 - **How it was built** leads the panel, on every screen size: a timeline, oldest
@@ -20,16 +31,6 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
   their GitHub profile. A build without history, such as a preview, says "Made
   by @a", then "On the map"; an attraction without history says timelines
   appear once it's on the live map.
-- **The room tells it too.** The room is dressed as the square's own: its side
-  walls match its stall outside (logs for a cabin, striped fabric for a tent,
-  planks otherwise) trimmed in its roof colour, a window on the left wall shows
-  the dusk with snow falling, a lamp lights it warm from the upper left, and
-  snow drifts in at the doorway. Right of the stage, a pinboard headed "How it
-  was built" pins the same story as notes: a request as a letter, a change as
-  a note, each build as a blueprint stamped with its fixes ("2 fixed") or
-  "Clean", and a gold star for the map. It holds four, keeping the first
-  request and the latest steps, and is left out when the wall is too narrow,
-  as on a phone. A level's squares have no board.
 - Under the timeline, one quiet line lists the craft badges the square earned
   ("Code: Small files · Tested · …"), with how squares are checked.
 - **Remix this booth** waits behind the `remix` feature flag, and the Elf
@@ -41,9 +42,6 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
   @<login>."
 - An Elf Engineer's booth links to their own factory. A booth with a People's
   Choice comment links to it with "Vote for this booth".
-- **Full screen** stands on the square's drawing itself, a round icon at its
-  top-right corner, next to what it acts on. It follows the drawing wherever
-  the room puts it (`src/booth-tools.ts`, from the canvas's `data-stage`).
 - **Share** stands in the panel's footer, an icon beside the ask, so a long
   build story never hides it; a level's own panel has it there too, and it
   steps aside while the player is inside one of the level's squares. It opens
@@ -51,24 +49,13 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
   hidden label shows "Copied" for a moment, or opens the line to copy by hand
   without a clipboard (`src/visit-share.ts`; enforced by:
   src/visit-share.test.ts, smoke/sharing.spec.ts).
-- **Full screen** makes a booth's or attraction's drawing as big as the space
-  beside the panel allows, under the banner and the way back: the biggest
-  square that fits, sharp at the screen's own pixels, on a night background,
-  with no room round it. The panel stays where it is. Esc, or the icon again
-  ("Back to the room"), comes back to the room, not out of the booth; walking
-  keys and room clicks do nothing meanwhile. Booths need no change: each
-  draws to whatever size it's given (`src/visit-full-screen.ts`, `areaBox` in
-  `src/northpole/full-screen.ts`; enforced by: src/visit-full-screen.test.ts,
-  src/northpole/map-full-screen.test.ts, smoke/visit.spec.ts).
-- **On a phone held upright** there's no room: the drawing fills the screen's
-  width under the way back to the map, with its two icons, and the panel is a
-  sheet below it, with no Full screen, since the drawing is already as wide
-  as it goes. The sheet's grip drags it between a sliver and most of the
+- **On a phone held upright** the drawing fills the screen's width under the
+  way back to the map, and the panel is a sheet below it. The sheet's grip drags it between a sliver and most of the
   screen, resting at a quarter, half or most of it when let go; the arrow keys
-  step through those on the grip. Walking and room clicks do nothing there
+  step through those on the grip.
   (`src/visit-sheet.ts`, `isPhoneUpright` and `wideBox` in
-  `src/northpole/full-screen.ts`; enforced by: src/visit-sheet.test.ts,
-  src/northpole/full-screen.test.ts, src/northpole/map-full-screen.test.ts).
+  `src/northpole/visit-stage.ts`; enforced by: src/visit-sheet.test.ts,
+  src/northpole/visit-stage.test.ts, src/northpole/map-inside.test.ts).
 - Under the story, one quiet row: **Vote for this booth** and
   **Remix this booth**, then one ask: "Want one too? Get a booth". Someone
   who arrived by a shared link to a booth gets **Get the spot next door** in
@@ -124,7 +111,7 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
 - Share links go to the square's share page on the live site, even from a
   preview (enforced by: src/northpole/visit.test.ts, the Share test in
   smoke/sharing.spec.ts).
-- Esc, Leave, the back button and walking out all leave the square (enforced
+- Esc, Leave and the back button leave the square (enforced
   by: smoke/visit.spec.ts).
 
 ## Where it lives
@@ -133,9 +120,8 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
 `src/visit-share.ts`, `src/visit-template.ts`, `src/visit-help.ts`, `src/craft-badges.ts`, `src/history.ts`, `scripts/square-history.ts`, `scripts/github-requests.ts`,
 `scripts/square-credits.ts`, `scripts/history-squares.ts`, `scripts/write-square-history.ts`, `scripts/share-pages.ts`,
 `src/northpole/visit.ts`, `src/northpole/links.ts`, `src/northpole/interior.ts`,
-`src/northpole/interior-room.ts`, `src/northpole/interior-stage.ts`,
-`src/northpole/room-dressing.ts`, `src/northpole/room-walls.ts`,
-`src/northpole/pinboard.ts`, `src/northpole/pinboard-layout.ts`, `index.html`.
+`src/northpole/visit-stage.ts`, `src/northpole/map-room.ts`, `src/visit-sheet.ts`,
+`index.html`.
 
 ## Tested by
 
@@ -144,8 +130,8 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
 `scripts/square-credits.test.ts`, `scripts/history-squares.test.ts`,
 `scripts/share-pages.test.ts`, `src/northpole/visit.test.ts`,
 `src/northpole/links.test.ts`, `src/northpole/interior.test.ts`,
-`src/northpole/room-dressing.test.ts`, `src/northpole/room-walls.test.ts`,
-`src/northpole/pinboard.test.ts`, `src/northpole/pinboard-layout.test.ts`,
+`src/northpole/visit-stage.test.ts`, `src/northpole/map-inside.test.ts`,
+`src/visit-sheet.test.ts`,
 `smoke/visit.spec.ts` (leaving, the invitation, the back button, the build
 story's layout), `smoke/sharing.spec.ts` (Share) and `smoke/map.spec.ts` (the
 banner link), and `smoke/levels.spec.ts` (a level's

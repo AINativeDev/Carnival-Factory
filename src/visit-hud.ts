@@ -27,6 +27,7 @@ import { linksHome } from './northpole/north-pole-links';
 import { showLevelLinks } from './level-links';
 import { showYearAnswers } from './year-in-review-panel';
 import { focusBack } from './focus-back';
+import { bannerTitle } from './visit-banner';
 import { isOn } from './feature-flags';
 
 export interface VisitHudOptions {
@@ -89,7 +90,6 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       ? levelLink(square.id)
       : deepLink(kind, square.id);
   if (level) map.textContent = 'See it in the level';
-
   // An Elf Engineer's booth links to the factory on their own repository.
   const badge = kind === 'booth' && isOn('elfEngineer') ? badgeFor(square.id) : undefined;
   if (badge) {
@@ -101,10 +101,8 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
 
   // A booth's place on the People's Choice ballot, where a 👍 on its comment is a vote.
   const vote = kind === 'booth' ? voteUrl(square.id, shownChoice()) : undefined;
-  if (vote) {
-    $<HTMLAnchorElement>('.visit-vote').href = vote;
-    $<HTMLElement>('.visit-vote').hidden = false;
-  }
+  const voteLink = $<HTMLAnchorElement>('.visit-vote');
+  if (vote) [voteLink.href, voteLink.hidden] = [vote, false];
 
   // How it was built: a level's square credits the level's owner, with no history of its own.
   const tellStory = (data: SquareHistory | undefined) => {
@@ -136,13 +134,16 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       ? new URL(level ? levelLink(level, square.id) : levelLink(square.id), document.baseURI).href
       : shareLink(kind, square.id, document.baseURI);
   const share = wireShare(
-    { ...roomPills(frame, card, walking), text: $('.visit-share-text'), options: $('.visit-more') },
+    { ...roomPills(card, walking), text: $('.visit-share-text'), options: $('.visit-more') },
     { kind, id: square.id, name: () => square.name },
     link,
   );
 
+  // A level's own panel stands beside its map, which names it: only a square's name goes in the top bar.
+  const banner = walking ? undefined : bannerTitle(owner);
   const show = () => {
     $('.visit-title').textContent = square.name;
+    banner?.name(square.name);
     $('.visit-description').textContent = square.description;
     remix.href = remixUrl(square.id, square.name);
     share.refresh();
@@ -162,7 +163,6 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     share.shareAsMine();
     offerLevelNext(card);
   });
-
   // Someone who came by a shared link to a booth can claim the spot next door instead.
   const claim = options.invite && kind === 'booth';
   $<HTMLElement>('.visit-claim').hidden = !claim;
@@ -189,6 +189,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     card,
     close() {
       share.stop();
+      banner?.stop();
       document.removeEventListener('keydown', onKeyDown);
       const hadFocus = card.contains(document.activeElement);
       card.remove();

@@ -89,8 +89,8 @@ for (const login of logins) {
         await expect(frame).toHaveAttribute('data-state', 'ready');
         await page.keyboard.press('Escape');
         await expect(page.locator('.visit')).toHaveCount(0);
-        // The room fades out before the map is drawn, and its camera moves, again.
-        await expect(canvas).not.toHaveAttribute('data-room', /.*/);
+        // The visit fades out before the map is drawn, and its camera moves, again.
+        await expect(canvas).not.toHaveAttribute('data-stage', /.*/);
         await canvas.focus({ timeout: 5000 });
       });
     }
