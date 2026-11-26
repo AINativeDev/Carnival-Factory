@@ -46,7 +46,7 @@ beside it:
 - `tallies.ts` is the check lamp and the "toys today" sign (`lampAt`,
   `toysMade`, `bounceOf`); `sleigh.ts` is the sleigh, its bells and the sacks
   counter (`jingleAt`, `sacksFilled`).
-- `cat.ts` is the ginger cat asleep on the crate: its ear twitches and its tail flicks
+- `cat.ts` is the ginger cat asleep on the crate: it wears a red collar with a tiny gold bell, which glints once at each tail flick; its ear twitches and its tail flicks
   once each time a letter lands on the pile.
 - `room.ts` is the room behind it all, with the window's snow and the lights
   (`snowflake`, `twinkle`).

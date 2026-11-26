@@ -1,6 +1,7 @@
 /**
  * The ginger cat asleep on the crate by the mail slot: it twitches an ear and
- * flicks its tail once each time a letter lands on the pile, worked out from
+ * flicks its tail once each time a letter lands on the pile, and its red
+ * collar's gold bell glints at each flick, worked out from
  * `time` alone so the drawing keeps no state.
  */
 import { theme } from '../../../src/northpole/theme';
@@ -20,6 +21,16 @@ export function twitchAt(time: number): number {
   const since = wrap(time - LANDING, SLOT);
   if (since >= TWITCH) return 0;
   return Math.sin((since / TWITCH) * Math.PI);
+}
+
+/** How long the bell's glint lasts around the tail's peak, in milliseconds. */
+const GLINT = 180;
+
+/** The bell's glint, 0 to 1: one short flash at the peak of each tail flick. */
+export function glintAt(time: number): number {
+  const since = wrap(time - LANDING, SLOT);
+  const off = Math.abs(since - TWITCH / 2);
+  return off >= GLINT / 2 ? 0 : 1 - off / (GLINT / 2);
 }
 
 /** The cat curled up on the crate, whose top is at y 72, at `time`. */
@@ -57,6 +68,28 @@ export function drawCat(ctx: Ctx, u: number, time: number) {
     ctx.lineTo(x * u, (67.9 - lift * 0.8) * u);
     ctx.lineTo((x + 0.7) * u, 69.5 * u);
     ctx.fill();
+  }
+
+  // The small red collar round its neck, with a tiny gold bell that glints.
+  ctx.strokeStyle = colors.berry;
+  ctx.lineWidth = 0.5 * u;
+  ctx.beginPath();
+  ctx.moveTo(8.9 * u, 69 * u);
+  ctx.quadraticCurveTo(9.5 * u, 70.4 * u, 8.9 * u, 71.7 * u);
+  ctx.stroke();
+  ctx.fillStyle = colors.gold;
+  circle(ctx, 9.1 * u, 71.8 * u, 0.45 * u);
+  const glint = glintAt(time);
+  if (glint > 0) {
+    ctx.strokeStyle = colors.snow;
+    ctx.lineWidth = 0.2 * u;
+    const reach = (0.6 + glint * 0.8) * u;
+    ctx.beginPath();
+    ctx.moveTo(9.1 * u - reach, 71.8 * u);
+    ctx.lineTo(9.1 * u + reach, 71.8 * u);
+    ctx.moveTo(9.1 * u, 71.8 * u - reach);
+    ctx.lineTo(9.1 * u, 71.8 * u + reach);
+    ctx.stroke();
   }
 
   // The closed eyes, two little curves.
