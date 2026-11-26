@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { BOOTH_ONLY_SPECS } from './scripts/smoke-scope.ts';
+import { BOOTH_ONLY_SPECS, boothOnly as playsOneBooth } from './scripts/smoke-scope.ts';
 
 /**
  * The smoke test: every booth and attraction in a real browser, inside its
@@ -14,8 +14,11 @@ const INTRO_SEEN = {
   localStorage: [{ name: 'north-pole-intro-seen', value: '1' }],
 };
 
-/** A pull request that only changes one booth's folder (scripts/smoke-scope.ts). */
-const boothOnly = Boolean(process.env.SMOKE_ONLY);
+/**
+ * A pull request that only changes one booth's folder (scripts/smoke-scope.ts).
+ * A level-only run still runs the whole suite, walking just that level.
+ */
+const boothOnly = playsOneBooth(process.env.SMOKE_ONLY);
 
 export default defineConfig({
   testDir: 'smoke',

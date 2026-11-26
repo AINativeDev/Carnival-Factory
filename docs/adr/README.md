@@ -30,7 +30,7 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0008](0008-auto-merge-gate.md)                    | Booth changes merge on their own behind a strict gate                  | Accepted                                |
 | [0009](0009-no-network-from-the-page.md)           | The page never calls the network: data is baked in at build            | Accepted                                |
 | [0010](0010-plots-stay-put.md)                     | Plots stay put, and construction sites are never committed             | Accepted                                |
-| [0011](0011-levels-are-plain-data.md)              | A level is plain data plus sandboxed squares                           | Accepted                                |
+| [0011](0011-levels-are-plain-data.md)              | A level is plain data plus sandboxed squares                           | Superseded in part by 0043              |
 | [0012](0012-fast-booth-builds.md)                  | Booths get their own lighter factory action                            | Accepted                                |
 | [0013](0013-scoped-smoke-test.md)                  | Smoke-test only the changed booth on a booth pull request              | Accepted                                |
 | [0014](0014-carnival-folder.md)                    | What people make lives in `carnival/`, the map in `src/`               | Accepted                                |
@@ -61,6 +61,7 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0040](0040-indoor-levels.md)                      | Indoor levels: a room with back walls, furniture and items on displays | Accepted                                |
 | [0041](0041-ride-levels.md)                        | A ride level is ridden in the coaster's car, station to station        | Accepted                                |
 | [0042](0042-attractions-stand-as-what-they-are.md) | Built-in attractions stand as what they are, and stalls vary           | Accepted                                |
+| [0043](0043-level-requests-merge-on-their-own.md)  | Level requests merge on their own, behind the booth gate               | Accepted                                |
 
 ## Template
 

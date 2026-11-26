@@ -2,7 +2,10 @@
  * How much of the smoke test a pull request needs. A pull request that only
  * changes one booth's folder can't change any other square or the site, so CI
  * plays just that booth, in the specs in `BOOTH_ONLY_SPECS`
- * (`SMOKE_ONLY=booth/<login>`). Anything else runs the whole suite.
+ * (`SMOKE_ONLY=booth/<login>`). A pull request that only changes one level's
+ * folder still runs the whole suite, since the map reads a level's data
+ * itself, but walks just that level and its squares one by one
+ * (`SMOKE_ONLY=level/<login>`, ADR 0043). Anything else runs the whole suite.
  *
  * `git diff --name-only <base> HEAD | node scripts/smoke-scope.ts` prints the
  * scope, or nothing for a full run.
@@ -20,24 +23,33 @@ export const BOOTH_ONLY_SPECS = /(?:^|\/)(?:squares-play|flashing)\.spec\.ts$/;
 /** A folder name that can be a GitHub login, in lower case. */
 const LOGIN = /^[a-z0-9](?:[a-z0-9-]{0,38})$/;
 
-/** `booth/<login>` when every changed file is inside that one booth's folder; otherwise undefined. */
+/** The participants' folders a scoped run can play on their own, by the folder they sit in. */
+const SCOPES = new Map([
+  ['booths', 'booth'],
+  ['levels', 'level'],
+]);
+
+/**
+ * `booth/<login>` or `level/<login>` when every changed file is inside that
+ * one booth's or level's folder; otherwise undefined.
+ */
 export function smokeScope(files: readonly string[]): string | undefined {
   const changed = files.map((file) => file.trim()).filter(Boolean);
   if (changed.length === 0) return undefined;
-  const owners = new Set<string>();
+  const scopes = new Set<string>();
   for (const file of changed) {
-    const [top, kind, owner, ...rest] = file.split('/');
-    if (
-      top !== 'carnival' ||
-      kind !== 'booths' ||
-      !owner ||
-      rest.length === 0 ||
-      !LOGIN.test(owner)
-    )
+    const [top, kind = '', owner, ...rest] = file.split('/');
+    const scope = SCOPES.get(kind);
+    if (top !== 'carnival' || !scope || !owner || rest.length === 0 || !LOGIN.test(owner))
       return undefined;
-    owners.add(owner);
+    scopes.add(`${scope}/${owner}`);
   }
-  return owners.size === 1 ? `booth/${[...owners][0]}` : undefined;
+  return scopes.size === 1 ? [...scopes][0] : undefined;
+}
+
+/** Whether a run's `SMOKE_ONLY` scope plays a booth alone, in `BOOTH_ONLY_SPECS` and Chromium only (ADR 0051). */
+export function boothOnly(scope: string | undefined): boolean {
+  return scope?.startsWith('booth/') ?? false;
 }
 
 /** What the command prints for `git diff --name-only`'s output: the scope on a line, or nothing. */

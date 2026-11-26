@@ -1,23 +1,24 @@
 /**
  * One round of the auto-merge gate (docs/specs/auto-merge-gate.md): for each
- * open factory pull request built from a booth request, gather the facts,
+ * open factory pull request built from a booth or level request, gather the facts,
  * decide with `evaluateGate`, keep the checklist comment up to date, and merge
  * only when every step passes. Then publish the map if it's behind.
  */
-import { evaluateGate, gateComment } from './booth-gate.ts';
+import { evaluateGate } from './booth-gate.ts';
 import { closeRequest, holdForPerson, mergePull, upsertChecklist } from './merge-gate-actions.ts';
+import { gateComment } from './merge-gate-checklist.ts';
 import { holdsForPerson } from './merge-gate-decision.ts';
 import { FACTORY, gatherFacts } from './merge-gate-facts.ts';
 import { getAll, type GitHub, type Pull } from './merge-gate-github.ts';
 import { publishIfBehind } from './merge-gate-publish.ts';
-import { boothRequest } from './merge-gate-requests.ts';
+import { participantRequest } from './merge-gate-requests.ts';
 
 interface Round {
   github: GitHub;
   repository: string;
   dryRun: boolean;
   guide: string;
-  /** Whether this round merged a booth. */
+  /** Whether this round merged a booth or a level. */
   merged: boolean;
   /** Factory pull requests with needs-human, which puts their booth's site at "Waiting for a maintainer". */
   held: Set<number>;
@@ -25,15 +26,21 @@ interface Round {
 
 async function gate(round: Round, pull: Pull) {
   const { github, repository, dryRun } = round;
-  const issue = await boothRequest(github, repository, pull);
+  const issue = await participantRequest(github, repository, pull);
   if (!issue) return;
   const sha = pull.head.sha;
   const { facts, comments } = await gatherFacts(github, pull, issue);
   const result = evaluateGate(facts);
   console.log(
-    `#${String(pull.number)} (booth ${String(facts.owner)}, ${sha.slice(0, 7)}): ${result.decision}`,
+    `#${String(pull.number)} (${facts.kind} ${String(facts.owner)}, ${sha.slice(0, 7)}): ${result.decision}`,
   );
-  await upsertChecklist(github, pull.number, comments, gateComment(result, round.guide), dryRun);
+  await upsertChecklist(
+    github,
+    pull.number,
+    comments,
+    gateComment(result, facts.kind, round.guide),
+    dryRun,
+  );
 
   if (holdsForPerson(result, facts.labels) && !dryRun) {
     await holdForPerson(github, pull.number);
@@ -43,7 +50,7 @@ async function gate(round: Round, pull: Pull) {
   if (result.decision !== 'merge' || dryRun) return;
   const closes = await mergePull(github, pull, sha);
   round.merged = true;
-  if (closes) await closeRequest(github, issue, pull, round.guide);
+  if (closes) await closeRequest(github, issue, pull, facts.kind, round.guide);
 }
 
 /**

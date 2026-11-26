@@ -63,27 +63,36 @@ jobs:
       # A pull request that only changes one booth's folder plays just that booth,
       # in Chromium, without the page coverage: a sandboxed booth can't change the
       # site, so the rest of the suite would test untouched code (docs/adr/0051).
-      - name: Play only the changed booth, if that's all that changes
+      # One that only changes one level's folder runs the whole suite, with
+      # coverage, but walks just that level (docs/adr/0043).
+      - name: Play only the changed booth or level, if that's all that changes
         run: |
           scope=$(git diff --name-only HEAD^1 HEAD | node scripts/smoke-scope.ts)
           if [ -n "$scope" ]; then
             echo "SMOKE_ONLY=$scope" >> "$GITHUB_ENV"
-            echo "Playing only $scope: its own specs, in Chromium."
-          else
-            echo "COVERAGE=1" >> "$GITHUB_ENV"
           fi
-      - if: env.SMOKE_ONLY == ''
+          case "$scope" in
+            booth/*)
+              echo "BOOTH_ONLY=1" >> "$GITHUB_ENV"
+              echo "Playing only $scope: its own specs, in Chromium."
+              ;;
+            *)
+              echo "COVERAGE=1" >> "$GITHUB_ENV"
+              ;;
+          esac
+      - if: env.BOOTH_ONLY == ''
         run: npx playwright install --with-deps chromium webkit
-      - if: env.SMOKE_ONLY != ''
+      - if: env.BOOTH_ONLY != ''
         run: npx playwright install --with-deps chromium
       - run: npm run smoke
         env:
           CI: 'true'
       # The unit tests and the browser tests together, line by line, held to the
       # floor in lint/combined-coverage-floor.json (docs/adr/0032). A booth-only
-      # run records no page coverage, so it skips this.
+      # run records no page coverage, so it skips this; a level-only run
+      # (SMOKE_ONLY) is reported but not held to the floor.
       - name: Combined line coverage
-        if: env.SMOKE_ONLY == ''
+        if: env.BOOTH_ONLY == ''
         run: |
           npx vitest run --coverage --coverage.thresholds.autoUpdate=false > /dev/null
           npm run coverage:combined

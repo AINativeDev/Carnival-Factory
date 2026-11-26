@@ -1,12 +1,13 @@
 /**
  * Gathers the facts the merge gate decides on (`GateFacts` in
  * scripts/booth-gate.ts) for one factory pull request, all on its head
- * commit: the request, the changed files, the booth's code, the checks, the
- * review and the risk verdict.
+ * commit: the request, the changed files, the booth's or level's code, the
+ * checks, the review and the risk verdict.
  */
 import type { CheckState, GateFacts } from './booth-gate.ts';
 import { injectionMarkers, scanParticipantText } from './injection-scan.ts';
-import { boothFiles } from './merge-gate-booth-files.ts';
+import { checkLevelCode } from './level-code.ts';
+import { folderFiles } from './merge-gate-folder-files.ts';
 import {
   get,
   getAll,
@@ -17,12 +18,14 @@ import {
   type Pull,
   type User,
 } from './merge-gate-github.ts';
+import { requestKind } from './merge-gate-requests.ts';
 import { checkSquareCode, spotFileProblems } from './square-code.ts';
 
 export const FACTORY = 'tessl-app[bot]';
 const REVIEWER = 'tessl-reviewer[bot]';
 
 type ChangedFile = { filename: string; status: string; previous_filename?: string };
+type GateFiles = Awaited<ReturnType<typeof folderFiles>>;
 type Run = { name: string; status: string; conclusion: string | null; started_at: string };
 
 /**
@@ -88,13 +91,25 @@ function riskVerdict(all: Comment[], sha: string): GateFacts['risk'] {
   return verdicts.at(-1)?.[2] as GateFacts['risk'];
 }
 
-/** The facts about `pull`, built from booth request `issue`, and the comments on it. */
+/**
+ * The static check on a booth's or level's `files`: a booth is one square,
+ * with its spot.json held to its first pull request; a level is plain data
+ * with a square in each squares/<id>/ (scripts/level-code.ts).
+ */
+function codeProblems(folder: string, files: GateFiles, changed: ChangedFile[]) {
+  if (folder.startsWith('carnival/levels/')) return checkLevelCode(folder, files.files);
+  return [...spotFileProblems(folder, changed), ...checkSquareCode(folder, files.files)];
+}
+
+/** The facts about `pull`, built from booth or level request `issue`, and the comments on it. */
 export async function gatherFacts(
   github: GitHub,
   pull: Pull,
   issue: Issue,
 ): Promise<{ facts: GateFacts; comments: Comment[] }> {
   const owner = issue.user.login.toLowerCase();
+  const kind = requestKind(issue);
+  const folder = `carnival/${kind}s/${owner}/`;
   const sha = pull.head.sha;
   const changed = await getAll<ChangedFile>(github, `pulls/${String(pull.number)}/files`);
   const files = changed.flatMap((f) => [
@@ -104,24 +119,21 @@ export async function gatherFacts(
   // Only an open request counts: accepting a newer one closes the older, so a
   // superseded request's pull request never merges on its own.
   const accepted = issue.state === 'open' && names(issue.labels).includes('tessl');
-  const inScope = files.length > 0 && files.every((f) => f.startsWith(`carnival/booths/${owner}/`));
-  // Only read and compile the booth when the cheap checks already pass.
-  const booth =
-    accepted && inScope ? await boothFiles(github, sha, owner) : { files: [], problems: [] };
+  const inScope = files.length > 0 && files.every((f) => f.startsWith(folder));
+  // Only read and compile the folder when the cheap checks already pass.
+  const own: GateFiles =
+    accepted && inScope ? await folderFiles(github, sha, folder) : { files: [], problems: [] };
   const [checks, review, comments] = await Promise.all([
     checkStates(github, sha),
     reviewState(github, pull),
     getAll<Comment>(github, `issues/${String(pull.number)}/comments`),
   ]);
   const facts: GateFacts = {
+    kind,
     owner,
     accepted,
     changedFiles: files,
-    codeProblems: [
-      ...booth.problems,
-      ...spotFileProblems(`carnival/booths/${owner}/`, changed),
-      ...checkSquareCode(`carnival/booths/${owner}/`, booth.files),
-    ],
+    codeProblems: [...own.problems, ...codeProblems(folder, own, changed)],
     textFindings: [
       ...scanParticipantText(`${issue.title}\n${issue.body ?? ''}`),
       ...injectionMarkers(pull.title),

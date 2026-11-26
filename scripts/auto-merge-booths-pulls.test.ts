@@ -1,7 +1,7 @@
 /**
  * Pins which pull requests the merge gate's runner takes (only the factory's,
- * from a tessl/ branch of this repository, built from a person's booth
- * request), how one failing doesn't stop the rest, and when it publishes the
+ * from a tessl/ branch of this repository, built from a person's booth or
+ * level request), how one failing doesn't stop the rest, and when it publishes the
  * map.
  */
 import { describe, expect, it } from 'vitest';
@@ -42,9 +42,9 @@ describe('the pull requests the gate takes', () => {
   it.each([
     ['links no issue', 'GET pulls?state=open', [boothPull({ body: null })]],
     [
-      'builds a level request',
+      'builds a request that is neither a booth’s nor a level’s',
       'GET issues/5',
-      boothRequest({ labels: [{ name: 'level-request' }, { name: 'tessl' }] }),
+      boothRequest({ labels: [{ name: 'feedback' }, { name: 'tessl' }] }),
     ],
     [
       'builds a bot’s request',

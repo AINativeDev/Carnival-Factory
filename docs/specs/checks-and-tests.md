@@ -54,8 +54,9 @@ What runs on every pull request, and what each check guarantees.
   map, such as the call to action or the Controls panel, so a door the camera
   doesn't show yet is still reached. Its time limit grows with the level's
   squares: a minute, plus 20 seconds a stop.
-- `smoke/flashing.spec.ts` plays every booth and attraction on the back wall
-  of its room and measures flashes.
+- `smoke/flashing.spec.ts` plays every booth and attraction, and every square
+  of a participant's open level, on the back wall of its room and measures
+  flashes.
 - Feature flags ([ADR 0046](../adr/0046-launch-behind-feature-flags.md)): the unit tests build with every flag off, as the live
   site does, and `switchFlags` in `src/test-support/feature-flags.ts` switches
   one on for a `describe`, so each gate is tested on and off. The smoke test
@@ -68,6 +69,11 @@ What runs on every pull request, and what each check guarantees.
   map with it on, and `flashing`), in Chromium, with no page coverage and no
   combined coverage step. A booth runs sandboxed and can't change the site, so
   nothing else needs to run for it ([ADR 0051](../adr/0051-booth-only-smoke.md)).
+  When every changed file is inside one level's folder, CI sets
+  `SMOKE_ONLY=level/<login>` and runs the whole suite in both browsers, with
+  page coverage, but walks and measures only that level's squares one by one;
+  its combined coverage is reported, not held to the floor
+  ([ADR 0043](../adr/0043-level-requests-merge-on-their-own.md)).
   Anything else runs the whole suite in both browsers.
 
 ## Rules
@@ -76,8 +82,10 @@ What runs on every pull request, and what each check guarantees.
   changes in relative brightness of at least 0.1. The square is sampled as an
   8 by 8 grid, and at most a quarter of its cells may flash more than 3 times
   in any one second (enforced by: smoke/flashing.spec.ts, scripts/flashing.ts,
-  scripts/flashing.test.ts). Level squares are not in the flashing check
-  (not enforced yet).
+  scripts/flashing.test.ts). The squares of every open participant's level
+  are measured too, and a pull request scoped to one level measures just its
+  squares, since its merge rests on this check (ADR 0043). The North Pole's
+  own levels' squares are not in the flashing check (not enforced yet).
 - Every booth and attraction opens, draws within the frame budget and stays
   quiet, and every open level walks from arrival to each square and home
   (enforced by: smoke/squares-play.spec.ts, smoke/levels.spec.ts).
@@ -91,7 +99,8 @@ What runs on every pull request, and what each check guarantees.
   level passes `validateLevel` (enforced by: scripts/square-size.test.ts,
   src/northpole/level.test.ts).
 - The smoke test plays only the changed booth, in its own specs, when nothing
-  else changes, and the whole suite otherwise (enforced by:
+  else changes, walks only the changed level in the whole suite when nothing
+  else changes, and runs the whole suite otherwise (enforced by:
   scripts/smoke-scope.ts, scripts/smoke-scope.test.ts, playwright.config.ts,
   .github/workflows/preview-build.yml).
 - The factory's sandbox can't start a browser, so agents there never run the

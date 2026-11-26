@@ -132,8 +132,17 @@ The Recording Studio, `carnival/levels/the-studio/`, and The Year in Review,
   room as in any level. The Controls panel and the map's label say how to
   ride (`src/northpole/ride.ts`, `src/northpole/ride-map.ts`,
   `src/northpole/ride-draw.ts`).
-- A level's pull request waits for a maintainer: the auto-merge gate only
-  takes booth requests.
+- A level's pull request merges on its own through the auto-merge gate, like
+  a booth's, when it only changes `carnival/levels/<owner>/` and every check
+  passes; otherwise it waits for a maintainer. The North Pole's own levels
+  always wait for one ([ADR 0043](../adr/0043-level-requests-merge-on-their-own.md),
+  [auto-merge-gate.md](auto-merge-gate.md)).
+- A pull request that only changes one level's folder walks just that level
+  in the smoke test, or rides it, going inside each of its squares, and saves
+  a screenshot from its arrival point and one of each square for the risk
+  check, and measures each square for flashing
+  (`SMOKE_ONLY=level/<login>`, enforced by: scripts/smoke-scope.ts,
+  scripts/smoke-scope.test.ts, smoke/levels.spec.ts, smoke/flashing.spec.ts).
 - A North Pole level (`NORTH_POLE_LEVELS` in
   `src/northpole/north-pole-levels.ts`) says "A level by the North Pole", and
   its squares' panels credit nobody. Its landmark is the attraction with the

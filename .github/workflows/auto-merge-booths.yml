@@ -1,8 +1,9 @@
 name: Auto-merge booths
 
-# Merges a factory pull request for one participant's booth on its own, once
-# every check in scripts/booth-gate.ts passes on its head commit: the request
-# was accepted, only carnival/booths/<owner>/ changes, the code check and the hidden
+# Merges a factory pull request for one participant's booth or level on its
+# own (ADR 0043), once every check in scripts/booth-gate.ts passes on its head
+# commit: the request was accepted, only carnival/booths/<owner>/ or
+# carnival/levels/<owner>/ changes, the code check and the hidden
 # text check pass, CI and the smoke test pass, Tessl Code Review approves, and
 # the risk and taste check says low-risk. Anything else waits, or goes to a
 # person with the needs-human label.

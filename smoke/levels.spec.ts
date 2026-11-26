@@ -13,7 +13,8 @@ import { rideTo } from './level-ride';
  * to each of its squares, inside each one while its sandboxed frame plays,
  * and back out to the sleigh home,
  * which takes the player back to the North Pole. Fails on anything the page or
- * a frame shouldn't do. Saves a screenshot of each level for the pull request.
+ * a frame shouldn't do. Saves a screenshot of each level from its arrival
+ * point, and of each of its squares, for the pull request and its risk check.
  */
 
 const root = join(import.meta.dirname, '..');
@@ -27,6 +28,12 @@ const logins = readdirSync(join(root, 'carnival', 'levels'))
     (name) => existsSync(join(root, 'carnival', 'levels', name, 'level.ts')) && !off.has(name),
   )
   .sort();
+// On a pull request that only changes one level, CI walks just that level
+// (scripts/smoke-scope.ts, ADR 0043). The test of the way home still takes the first level.
+const only = process.env.SMOKE_ONLY;
+const walked = only?.startsWith('level/')
+  ? logins.filter((login) => `level/${login}` === only)
+  : logins;
 
 /** Collects what the page and every frame in it did wrong. */
 function watch(page: Page) {
@@ -46,7 +53,7 @@ function watch(page: Page) {
 
 mkdirSync(SHOTS, { recursive: true });
 
-for (const login of logins) {
+for (const login of walked) {
   test(`level ${login} walks from its arrival to every square and back home, quietly`, async ({
     page,
   }) => {
@@ -87,6 +94,7 @@ for (const login of logins) {
         await expect(page.locator('.visit')).toContainText(credit);
         await page.waitForTimeout(1500);
         await expect(frame).toHaveAttribute('data-state', 'ready');
+        await canvas.screenshot({ path: join(SHOTS, `level-${login}-${String(spot.id)}.png`) });
         await page.keyboard.press('Escape');
         await expect(page.locator('.visit')).toHaveCount(0);
         // The room fades out before the map is drawn, and its camera moves, again.

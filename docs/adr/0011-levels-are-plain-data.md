@@ -1,6 +1,7 @@
 # 0011. A level is plain data plus sandboxed squares
 
-- Status: Accepted
+- Status: Accepted, superseded in part by
+  [0043](0043-level-requests-merge-on-their-own.md)
 - Date: 2026-11-24
 - Pull requests: #122
 - Spec: [levels.md](../specs/levels.md)
@@ -16,6 +17,9 @@ sandbox.
 A level's layout is plain data only, enforced by lint and validated before
 anything is drawn; its squares are ordinary sandboxed squares. Level pull
 requests wait for a maintainer.
+
+> **Superseded in part by [0043](0043-level-requests-merge-on-their-own.md):**
+> level pull requests now merge on their own behind the booth gate.
 
 ## Alternatives considered
 

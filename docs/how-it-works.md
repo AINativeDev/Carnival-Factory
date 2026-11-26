@@ -73,8 +73,10 @@ these passes on the exact commit being merged:
 | Code review approves     | Bugs and house-rule tricks                                                                                                |
 | Risk and taste check     | An agent looks at the change and its screenshot for anything unkind, copied, unsafe or sneaky                             |
 
-Any doubt sends it to a maintainer instead, and a daily digest lists every
-booth that merged on its own, so a person still sees them all. The pull request keeps a checklist comment showing where
+A level goes through the same checks, with the smoke test walking your level
+and going inside each of its squares. Any doubt sends it to a maintainer
+instead, and a daily digest lists every booth or level that merged on its own,
+so a person still sees them all. The pull request keeps a checklist comment showing where
 each check stands.
 
 ## 7. It's on the map

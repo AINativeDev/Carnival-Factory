@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateGate, gateComment, type GateFacts } from './booth-gate.ts';
+import { evaluateGate, type GateFacts } from './booth-gate.ts';
 
 const green: GateFacts = {
+  kind: 'booth',
   owner: 'elf',
   accepted: true,
   changedFiles: ['carnival/booths/elf/booth.ts', 'carnival/booths/elf/README.md'],
@@ -64,13 +65,47 @@ describe('evaluateGate', () => {
   });
 });
 
-describe('gateComment', () => {
-  it('explains every step and links the guide, without emoji', () => {
-    const text = gateComment(gate({ review: 'pending' }), 'https://example.com/guide');
-    expect(text.startsWith('<!-- booth-gate -->')).toBe(true);
-    expect(text).toContain('Code review approves** (Waiting)');
-    expect(text).toContain('https://example.com/guide');
-    expect(text).toContain('[Tessl](https://tessl.io)');
-    expect(/\p{Extended_Pictographic}/u.test(text)).toBe(false);
+describe('evaluateGate for a level', () => {
+  const level = (change: Partial<GateFacts>) =>
+    gate({
+      kind: 'level',
+      changedFiles: ['carnival/levels/elf/level.ts', 'carnival/levels/elf/squares/sled/square.ts'],
+      ...change,
+    });
+
+  it('merges a pull request that only changes its owner’s level, like a booth', () => {
+    const result = level({});
+    expect(result.decision).toBe('merge');
+    expect(result.steps.map((s) => s.name)).toContain('Only the level’s own folder');
+    expect(result.steps.find((s) => s.name === 'Checks pass')?.about).toContain(
+      'walks the level and plays each of its squares',
+    );
+  });
+
+  it.each([
+    ['the owner’s booth too', 'carnival/booths/elf/booth.ts'],
+    ['someone else’s level', 'carnival/levels/ivy/level.ts'],
+    ['the map’s code', 'src/main.ts'],
+  ])('needs a person when it also changes %s', (_, file) => {
+    const result = level({ changedFiles: ['carnival/levels/elf/level.ts', file] });
+    expect(result.decision).toBe('human');
+    expect(result.steps.find((s) => s.name === 'Only the level’s own folder')?.detail).toBe(
+      `Also changes ${file}`,
+    );
+  });
+
+  it('never merges one of the North Pole’s own levels, whoever asked', () => {
+    const result = level({
+      owner: 'the-factory',
+      changedFiles: ['carnival/levels/the-factory/level.ts'],
+    });
+    expect(result.decision).toBe('human');
+    expect(result.steps.find((s) => s.state === 'fail')?.detail).toBe(
+      'The North Pole’s own levels merge only with a maintainer.',
+    );
+  });
+
+  it('holds a booth by the same login to the booth’s folder alone', () => {
+    expect(gate({ changedFiles: ['carnival/levels/elf/level.ts'] }).decision).toBe('human');
   });
 });
