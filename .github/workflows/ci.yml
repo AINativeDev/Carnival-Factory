@@ -36,14 +36,17 @@ jobs:
           fi
           if [ -n "$scope" ]; then
             echo "Checking only $scope."
+            echo "SQUARE_SCOPE=$scope" >> "$GITHUB_ENV"
             node scripts/square-check.ts run "$scope"
           else
             npm run check
           fi
       # New and changed lines need 99% unit-test coverage (docs/adr/0025).
       # The pull request's merge commit is compared with its base branch.
+      # A booth's or level's folder check changes no lines of src/, scripts/ or
+      # lint/, and records no coverage, so there's nothing for this to measure.
       - name: Coverage of changed lines
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && env.SQUARE_SCOPE == ''
         env:
           BASE: ${{ github.base_ref }}
         run: |

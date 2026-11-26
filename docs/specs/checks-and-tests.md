@@ -67,7 +67,9 @@ What runs on every pull request, and what each check guarantees.
   instead of `npm run check`: the house rules, format and Markdown on the
   folder, the whole project's types, strict types, JSON and Knip, and the
   folder's tests with the tests every square of its kind must pass. Anything
-  else, and every push to `main`, runs the full check. ESLint always runs
+  else, and every push to `main`, runs the full check. A scoped run skips the
+  coverage of changed lines, since it records none and changes no lines it
+  measures. ESLint always runs
   with `--config eslint.config.js`, so a config file inside a folder can't
   change the rules ([ADR 0053](../adr/0053-square-only-check.md); enforced
   by: scripts/square-check.ts, scripts/square-check.test.ts,
