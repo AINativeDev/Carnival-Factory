@@ -7,6 +7,10 @@ one click away from anywhere, on a laptop and on a phone.
 
 - The bar has the brand ("Carnival Factory · Christmas edition") at its left,
   then the menu, then the GitHub link at its right.
+- The browser tab shows the brand's icon, `public/favicon.svg`: a red and
+  cream striped carnival tent with a gold pennant on snow, against the map's
+  night blue, in the theme's colours. A phone's home screen gets the same
+  picture as `public/apple-touch-icon.png` (enforced by: smoke/sharing.spec.ts).
 - The menu's places, in order, each a Lucide-style line icon (`aria-hidden`)
   and a short label:
   - **Map**: `#/`, the North Pole's map.
