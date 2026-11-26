@@ -44,17 +44,25 @@ describe('waveAngle', () => {
 /** The twig widths each snowman in view strokes, painted on a canvas that keeps only those. */
 function twigWidths(size: number): number[] {
   const widths: number[] = [];
-  const canvas = new Proxy(
-    {
-      set lineWidth(width: number) {
-        widths.push(width);
-      },
+  const ignore = () => undefined;
+  const canvas = {
+    fillStyle: '',
+    strokeStyle: '',
+    globalAlpha: 1,
+    lineCap: '',
+    set lineWidth(width: number) {
+      widths.push(width);
     },
-    {
-      get: (target, key) =>
-        key in target ? (Reflect.get(target, key) as unknown) : () => undefined,
-    },
-  );
+    beginPath: ignore,
+    closePath: ignore,
+    moveTo: ignore,
+    lineTo: ignore,
+    arc: ignore,
+    ellipse: ignore,
+    fill: ignore,
+    stroke: ignore,
+    fillRect: ignore,
+  };
   for (const one of snowmen(size, 0, 0)) one.paint(canvas as unknown as Ctx);
   return widths;
 }
