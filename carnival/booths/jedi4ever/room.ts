@@ -5,6 +5,7 @@
  */
 import { theme } from '../../../src/northpole/theme';
 import { circle, words, type Ctx } from './brushes';
+import { drawCat } from './cat';
 import { wrap } from './motion';
 import { sacksFilled } from './sleigh';
 import { envelope } from './toys';
@@ -124,6 +125,7 @@ export function drawRoom(ctx: Ctx, u: number, size: number, time: number) {
   ctx.fillRect(1.5 * u, 72 * u, 13 * u, 8 * u);
   envelope(ctx, u, 7, 70.8);
   envelope(ctx, u, 9.5, 69.6);
+  drawCat(ctx, u, time);
 
   // The "maybe later" tray, up on its shelf.
   ctx.fillStyle = colors.wood;
