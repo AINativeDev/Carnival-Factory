@@ -99,3 +99,4 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0051](0051-booth-only-smoke.md) | A booth-only pull request runs only its booth's browser tests | Accepted |
 | [0052](0052-no-hourly-limit.md) | No hourly limit on a person's booth merges | Accepted |
 | [0053](0053-square-only-check.md) | A booth-only or level-only pull request checks just that folder | Accepted |
+| [0054](0054-history-only-after-a-merge.md) | Read the squares' history only after a merge | Accepted |

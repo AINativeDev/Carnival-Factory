@@ -14,7 +14,12 @@ the page never calls GitHub.
   an issue event on a `booth-request` or `advent-done` issue, and by hand. It
   skips with a note when Pages is off.
 - Its steps, from main's own code: read every square's history and the
-  factory's numbers; list the booths being built (`pending.json`); download
+  factory's numbers, afresh only on a push or a publish by hand or by the gate
+  after its merge, and otherwise reused from the `square-history.json` the
+  last deploy published beside the page, since only a merge changes them and
+  reading them all is the costliest call on the API budget the workflows share
+  ([ADR 0054](../adr/0054-history-only-after-a-merge.md); enforced by:
+  scripts/deploy-history.test.ts); list the booths being built (`pending.json`); download
   the booth owners' avatars; list the Elf Engineer badge holders; count the
   season; count the accepted advent challenges; count the People's Choice
   votes; read the Year in Review's accepted answers; build main into the root;
