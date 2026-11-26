@@ -140,13 +140,24 @@ jobs:
       # How every square was built, for its "How was this built?" panel: read
       # from the public issues and pull requests, and bundled into the page by
       # the build. Without it the site still publishes, with no timelines.
+      # Reading them all is the costliest call these workflows make on the API
+      # budget they share, and only a merge changes a square's history: a push,
+      # or the gate's publish after its own merge. Any other deploy, such as a
+      # label putting up a booth being built, reuses the published copy
+      # (docs/adr/0054-history-only-after-a-merge.md).
       - name: Read every square's history
         working-directory: main
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
         run: |
-          node scripts/write-square-history.ts ||
-            echo "::warning title=No square history::Couldn't read the issues and pull requests, so the squares' timelines are empty in this build."
+          if [ "$EVENT" != push ] && [ "$EVENT" != workflow_dispatch ] && [ -s ../site/square-history.json ]; then
+            cp ../site/square-history.json square-history.json
+            echo "Reused the published square history: nothing merged since it was read."
+          else
+            node scripts/write-square-history.ts ||
+              echo "::warning title=No square history::Couldn't read the issues and pull requests, so the squares' timelines are empty in this build."
+          fi
 
       # The accepted booth requests not merged yet, for their construction
       # sites: worked out afresh every run and never committed. The build
@@ -271,6 +282,8 @@ jobs:
           find ../site -mindepth 1 -maxdepth 1 ! -name .git ! -name previews ! -name .nojekyll \
             ! -name assets ! -name assets-kept.txt -exec rm -rf {} +
           cp -R dist/. ../site/
+          # Published beside the page, so the next deploy that merged nothing reuses it.
+          if [ -s square-history.json ]; then cp square-history.json ../site/; fi
           # This build's files are current as of today; drop files unused for a week.
           find dist/assets -maxdepth 1 -type f -printf "$today %f\n" > new-kept.txt
           awk -v cutoff="$cutoff" 'NR==FNR { current[$2] = 1; print; next }
