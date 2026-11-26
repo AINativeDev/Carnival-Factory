@@ -46,13 +46,12 @@ A `level-request` that a maintainer labels `tessl` goes to the level builder,
   reward, and it would always be the slower one, for checks that already
   judge every part of it.
 - **A gate of its own for levels.** Rejected: two gates would drift apart.
-  One gate with a kind keeps one set of rules, one checklist and one rate
-  limit per person.
+  One gate with a kind keeps one set of rules and one checklist.
 
 ## Consequences
 
 A level pull request that also touches its owner's booth, or anything else,
-goes to a person. One merge an hour per person counts booths and levels
-together. The risk check has more to look at for a level, one screenshot per
+goes to a person. A level change, like a booth change, merges as soon as it
+passes, with no waiting time ([ADR 0052](0052-no-hourly-limit.md)). The risk check has more to look at for a level, one screenshot per
 square, and the smoke scope must keep walking a single level when only its
 folder changes.

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateGate, RATE_LIMIT_MS, type GateFacts } from './booth-gate.ts';
+import { evaluateGate, type GateFacts } from './booth-gate.ts';
 
-const now = new Date('2026-12-01T12:00:00Z');
 const green: GateFacts = {
   kind: 'booth',
   owner: 'elf',
@@ -18,8 +17,6 @@ const green: GateFacts = {
   review: 'approved',
   risk: 'low-risk',
   labels: ['tessl'],
-  lastAutoMerge: undefined,
-  now,
 };
 const gate = (change: Partial<GateFacts>) => evaluateGate({ ...green, ...change });
 
@@ -57,20 +54,10 @@ describe('evaluateGate', () => {
     ['a check not started', { checks: { check: 'success' } }],
     ['review not in yet', { review: 'pending' }],
     ['no risk verdict yet', { risk: undefined }],
-    [
-      'a merge for the same person within the hour',
-      { lastAutoMerge: new Date(now.getTime() - RATE_LIMIT_MS / 2) },
-    ],
     ['a failed check the shepherd can fix', { checks: { ...green.checks, smoke: 'failure' } }],
     ['review asking for changes', { review: 'changes' }],
   ])('waits for %s', (_, change) => {
     expect(gate(change).decision).toBe('wait');
-  });
-
-  it('lets the next one through once the hour is up', () => {
-    expect(gate({ lastAutoMerge: new Date(now.getTime() - RATE_LIMIT_MS - 1) }).decision).toBe(
-      'merge',
-    );
   });
 
   it('prefers a person over waiting when both apply', () => {

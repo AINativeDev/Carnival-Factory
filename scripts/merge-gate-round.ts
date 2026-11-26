@@ -29,7 +29,7 @@ async function gate(round: Round, pull: Pull) {
   const issue = await participantRequest(github, repository, pull);
   if (!issue) return;
   const sha = pull.head.sha;
-  const { facts, comments } = await gatherFacts(github, repository, pull, issue, new Date());
+  const { facts, comments } = await gatherFacts(github, pull, issue);
   const result = evaluateGate(facts);
   console.log(
     `#${String(pull.number)} (${facts.kind} ${String(facts.owner)}, ${sha.slice(0, 7)}): ${result.decision}`,

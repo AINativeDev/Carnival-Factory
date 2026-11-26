@@ -98,3 +98,4 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0049](0049-spots-in-the-code.md) | Spots in the code too, not plots | Accepted |
 | [0050](0050-risk-check-after-smoke.md) | The risk check starts when the smoke test passes | Accepted |
 | [0051](0051-booth-only-smoke.md) | A booth-only pull request runs only its booth's browser tests | Accepted |
+| [0052](0052-no-hourly-limit.md) | No hourly limit on a person's booth merges | Accepted |

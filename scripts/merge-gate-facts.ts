@@ -18,7 +18,7 @@ import {
   type Pull,
   type User,
 } from './merge-gate-github.ts';
-import { lastAutoMerge, requestKind } from './merge-gate-requests.ts';
+import { requestKind } from './merge-gate-requests.ts';
 import { checkSquareCode, spotFileProblems } from './square-code.ts';
 
 export const FACTORY = 'tessl-app[bot]';
@@ -28,7 +28,11 @@ type ChangedFile = { filename: string; status: string; previous_filename?: strin
 type GateFiles = Awaited<ReturnType<typeof folderFiles>>;
 type Run = { name: string; status: string; conclusion: string | null; started_at: string };
 
-/** Each check's state on `sha`, from the latest run of that name. */
+/**
+ * Each check's state on `sha`, from the latest run of that name that ran. A
+ * skipped run, such as CI starting again for a label it has no job for, says
+ * nothing about the commit, so it counts only when no run of that name ran.
+ */
 async function checkStates(github: GitHub, sha: string): Promise<Record<string, CheckState>> {
   const runs: Run[] = [];
   for (let page = 1; ; page++) {
@@ -42,7 +46,10 @@ async function checkStates(github: GitHub, sha: string): Promise<Record<string, 
   const latest = new Map<string, Run>();
   for (const run of runs) {
     const seen = latest.get(run.name);
-    if (!seen || run.started_at > seen.started_at) latest.set(run.name, run);
+    const skipped = (r: Run) => r.conclusion === 'skipped';
+    const newer = !seen || run.started_at > seen.started_at;
+    if (!seen || (skipped(seen) && !skipped(run)) || (newer && !skipped(run)))
+      latest.set(run.name, run);
   }
   const states: Record<string, CheckState> = {};
   for (const [name, run] of latest) {
@@ -97,10 +104,8 @@ function codeProblems(folder: string, files: GateFiles, changed: ChangedFile[]) 
 /** The facts about `pull`, built from booth or level request `issue`, and the comments on it. */
 export async function gatherFacts(
   github: GitHub,
-  repository: string,
   pull: Pull,
   issue: Issue,
-  now: Date,
 ): Promise<{ facts: GateFacts; comments: Comment[] }> {
   const owner = issue.user.login.toLowerCase();
   const kind = requestKind(issue);
@@ -137,8 +142,6 @@ export async function gatherFacts(
     review,
     risk: riskVerdict(comments, sha),
     labels: names(pull.labels),
-    lastAutoMerge: await lastAutoMerge(github, repository, owner, now),
-    now,
   };
   return { facts, comments };
 }

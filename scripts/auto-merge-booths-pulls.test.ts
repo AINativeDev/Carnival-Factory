@@ -117,6 +117,19 @@ describe('publishing the map', () => {
     expect(asks(await runGate(routes))).not.toContain(PAGES);
   });
 
+  it('reads closed pull requests page by page, back to the last publish', async () => {
+    // A full first page of recent closes, then a page reaching past the last publish:
+    // the auto-merge on it the map already has, so nothing publishes.
+    const routes = waiting();
+    const recent = Array.from({ length: 100 }, (_, i) => ({ ...merged(5, []), number: 100 + i }));
+    routes['GET pulls?state=closed&sort=updated&direction=desc'] = [
+      ...recent,
+      merged(40),
+      merged(90),
+    ];
+    expect(asks(await runGate(routes))).not.toContain(PAGES);
+  });
+
   it('publishes from scratch when the map was never published', async () => {
     const routes = waiting();
     routes['GET actions/workflows/pages.yml/runs?status=success'] = { workflow_runs: [] };

@@ -75,9 +75,8 @@ these passes on the exact commit being merged:
 
 A level goes through the same checks, with the smoke test walking your level
 and going inside each of its squares. Any doubt sends it to a maintainer
-instead. At most one booth or level change per person merges on its own each
-hour, and a daily digest lists every one, so a person
-still sees them all. The pull request keeps a checklist comment showing where
+instead, and a daily digest lists every booth or level that merged on its own,
+so a person still sees them all. The pull request keeps a checklist comment showing where
 each check stands.
 
 ## 7. It's on the map

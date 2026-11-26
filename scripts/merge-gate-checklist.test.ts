@@ -13,8 +13,6 @@ const facts: GateFacts = {
   review: 'pending',
   risk: 'low-risk',
   labels: [],
-  lastAutoMerge: undefined,
-  now: new Date('2026-12-01T12:00:00Z'),
 };
 
 describe('gateComment', () => {

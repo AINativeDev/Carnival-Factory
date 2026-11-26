@@ -1,10 +1,9 @@
 /**
- * The booth or level request behind a factory pull request, and the ones that
- * merged on their own lately: what the merge gate needs to know who a booth or
- * level belongs to, to hold each person to one merge an hour, and to tell
- * whether the map is behind.
+ * The booth or level request behind a factory pull request, and the pull
+ * requests that closed lately: what the merge gate needs to know who a booth
+ * or level belongs to, and to tell whether the map is behind.
  */
-import { RATE_LIMIT_MS, type RequestKind } from './booth-gate.ts';
+import type { RequestKind } from './booth-gate.ts';
 import { get, getAll, names, type GitHub, type Issue, type Pull } from './merge-gate-github.ts';
 import { linkedIssue } from './ownership.ts';
 
@@ -37,28 +36,4 @@ export async function closedSince(github: GitHub, since: number): Promise<Pull[]
     (page) => page.some((pull) => new Date(pull.updated_at).getTime() < since),
   );
   return pulls.filter((pull) => new Date(pull.updated_at).getTime() >= since);
-}
-
-/**
- * When this participant last had a booth or level merge on its own, within the rate
- * limit's window. Merging updates a pull request, so walking closed pull
- * requests by update time back to the window's start sees every merge in it.
- */
-export async function lastAutoMerge(
-  github: GitHub,
-  repository: string,
-  owner: string,
-  now: Date,
-): Promise<Date | undefined> {
-  const since = now.getTime() - RATE_LIMIT_MS;
-  let last: Date | undefined;
-  for (const pull of await closedSince(github, since)) {
-    if (!pull.merged_at || !names(pull.labels).includes('auto-merged')) continue;
-    const at = new Date(pull.merged_at);
-    if (at.getTime() < since) continue;
-    const issue = await participantRequest(github, repository, pull);
-    if (issue?.user.login.toLowerCase() !== owner) continue;
-    if (!last || at > last) last = at;
-  }
-  return last;
 }

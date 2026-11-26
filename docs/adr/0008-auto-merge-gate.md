@@ -1,6 +1,6 @@
 # 0008. Booth changes merge on their own behind a strict gate
 
-- Status: Accepted
+- Status: Accepted. Its hourly limit is Superseded by [0052](0052-no-hourly-limit.md)
 - Date: 2026-11-24
 - Pull requests: #48, #59, #60, #99, #100
 - Spec: [auto-merge-gate.md](../specs/auto-merge-gate.md)

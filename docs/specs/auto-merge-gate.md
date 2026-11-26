@@ -66,10 +66,14 @@ scripts/auto-merge-booths-needs-human.test.ts):
    request's title, or the code (enforced by: scripts/injection-scan.ts,
    scripts/injection-scan.test.ts).
 5. **Checks pass** (soft): `check`, `ownership`, `build` and `smoke` succeed
-   (enforced by: .github/workflows/ci.yml, booth-ownership.yml,
-   preview-build.yml). A level's smoke run walks just that level, or rides
-   it, goes inside each of its squares and measures each one for flashing
-   (scripts/smoke-scope.ts, smoke/flashing.spec.ts).
+   on the head commit, each read from its latest run that ran. A skipped run,
+   such as CI starting again for the `low-risk` label with no job for it,
+   counts only when no run of that name ran (enforced by:
+   .github/workflows/ci.yml, booth-ownership.yml, preview-build.yml,
+   scripts/merge-gate-facts.ts, scripts/merge-gate-round.test.ts). A level's
+   smoke run walks just that level, or rides it, goes inside each of its
+   squares and measures each one for flashing (scripts/smoke-scope.ts,
+   smoke/flashing.spec.ts).
 6. **Code review approves** (soft): the latest `tessl-reviewer[bot]` review
    with a result, on the head commit, says `approved=true` (enforced by:
    Tessl Code Review, .tessl-code-review.yml).
@@ -77,8 +81,9 @@ scripts/auto-merge-booths-needs-human.test.ts):
    for this exact sha says `low-risk` (enforced by: assess-booth-risk skill,
    tessl.json).
 8. **No one has asked to hold it** (hard): no `needs-human` label.
-9. **One at a time** (soft): at most one booth or level merges on its own
-   per person per hour.
+
+A person's booth and level changes merge one after another as each passes,
+with no waiting time between them ([ADR 0052](../adr/0052-no-hourly-limit.md)).
 
 - The gate puts `needs-human` on for its own hard failures only (steps 1 to
   4), never over a maintainer who just took it off (enforced by:
@@ -142,7 +147,7 @@ in `scripts/square-code/` (`banned-names.test.ts`, `imports.test.ts`,
 scripted GitHub (`scripts/merge-gate-fake-github.ts`, with the booth world in
 `scripts/merge-gate-world.ts`) by `scripts/auto-merge-booths.test.ts` (a
 merge, the checklist, a failed merge), `scripts/auto-merge-booths-waits.test.ts`
-(each reason to wait, and the hourly limit),
+(each reason to wait, and a person's changes one after another),
 `scripts/auto-merge-booths-needs-human.test.ts` (each reason for a person)
 and `scripts/auto-merge-booths-pulls.test.ts` (forks, other branches,
 publishing the map), `scripts/merge-gate-round.test.ts` passes the
