@@ -2,10 +2,10 @@
  * The billboard by the road: what's on next for the people who build the
  * North Pole, AI DevCon in London, high on steel legs and lit by spotlights at dusk. It faces the
  * visitor square on, like a poster, so it reads at any zoom, and a click on it
- * opens the tickets page (map.ts asks `onBillboard`). The words are ours, set
+ * opens AI DevCon's own room, where the tickets are (map.ts asks `onBillboard`). The words are ours, set
  * here, never anything a participant wrote.
  */
-import { withUtm } from './links';
+import { SETTINGS } from '../settings';
 import { drawCatwalk, drawLegs, drawRim, drawSpotlights } from './billboard-frame';
 import { canvasFont, theme } from './theme';
 import type { Box, Tile } from './world';
@@ -14,11 +14,12 @@ const { colors } = theme;
 
 /** What the billboard says, and where its tickets are. */
 export const BILLBOARD = {
-  title: 'AI DevCon',
-  next: 'Next in London',
-  when: '7–8 June 2027 · The Brewery',
+  title: SETTINGS.aiDevcon.title,
+  next: SETTINGS.aiDevcon.next,
+  when: SETTINGS.aiDevcon.when,
   cta: 'Get tickets',
-  tickets: withUtm('https://luma.com/aidevcon-ldn2027', 'billboard'),
+  /** The attraction a click on the board opens, whose panel has the tickets (ADR 0058). */
+  room: 'ai-devcon',
 } as const;
 
 /** The board's size and how high its posts hold it, in world pixels. */

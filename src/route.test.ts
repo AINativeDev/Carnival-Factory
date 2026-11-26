@@ -140,5 +140,7 @@ describe('squareLink', () => {
     expect(squareLink('booth', 'jedi4ever')).toBe('#/booth/jedi4ever');
     expect(squareLink('attraction', 'ferris-wheel')).toBe('#/attraction/ferris-wheel');
     expect(squareLink('attraction', 'the-factory')).toBe('#/level/the-factory');
+    // While levels wait behind their flag, a landmark opens its own room (ADR 0058).
+    expect(squareLink('attraction', 'the-factory', false)).toBe('#/attraction/the-factory');
   });
 });

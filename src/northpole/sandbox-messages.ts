@@ -48,6 +48,8 @@ export function hearFrame(run: SquareRun, iframe: HTMLIFrameElement, data: unkno
       // The slowest frame after warming up, for the smoke test's budget.
       if (++run.frames > WARM_UP_FRAMES) run.slowest = Math.max(run.slowest, message.drawMs);
       iframe.dataset.slowestDrawMs = String(Math.round(run.slowest * 10) / 10);
+      if (message.open !== undefined)
+        for (const listener of run.linkListeners) listener(message.open);
       break;
     case 'error':
       if (run.state === 'loading') setState(run, iframe, 'broken');

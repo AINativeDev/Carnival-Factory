@@ -35,7 +35,7 @@ for (const viewport of VIEWPORTS) {
   test(`The Factory's landmark opens its level, and the ride stops at every stall (${viewport.name})`, async ({
     page,
   }) => {
-    test.skip(!FLAGS.levels, 'levels are switched off: the landmark opens its site instead');
+    test.skip(!FLAGS.levels, 'levels are switched off: the landmark opens its own room instead');
     test.setTimeout(240_000);
     await page.setViewportSize(viewport);
     const problems = watch(page);
@@ -116,6 +116,8 @@ for (const viewport of VIEWPORTS) {
 }
 
 test("The landmark's own room offers the sleigh into the level", async ({ page }) => {
+  // With levels off, the room is the Factory's game, with no sleigh to offer (ADR 0058).
+  test.skip(!FLAGS.levels, 'levels are behind their feature flag');
   const problems = watch(page);
   await page.goto('#/attraction/the-factory');
   const panel = page.locator('.visit');

@@ -117,6 +117,22 @@ describe('what a sandboxed square hears from its frame', () => {
   });
 });
 
+describe('the links out a drawing asks for', () => {
+  it("tells the page's listeners which link, until they stop listening", async () => {
+    const { square, frame, canvas } = await readySquare();
+    const heard = vi.fn();
+    const stop = square.onLink(heard);
+    square.draw(canvas, 100, 1);
+    frame.send({ type: 'frame', bitmap: bitmap(100), drawMs: 1, open: 1 });
+    expect(heard).toHaveBeenCalledExactlyOnceWith(1);
+    stop();
+    stop();
+    square.draw(canvas, 100, 2);
+    frame.send({ type: 'frame', bitmap: bitmap(100), drawMs: 1, open: 0 });
+    expect(heard).toHaveBeenCalledOnce();
+  });
+});
+
 describe('what a sandboxed square tells its frame of the pointer', () => {
   it('sends the pointer at the size it asked for', async () => {
     const { square, frame, canvas } = await readySquare();

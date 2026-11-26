@@ -4,6 +4,7 @@
  * a loop can't freeze any other square. It has no DOM at all: it draws onto an
  * OffscreenCanvas and sends each frame to the frame as a bitmap.
  */
+import { readLinkAsk } from './square-ask';
 import { readDrawRequest, readFrameAddress, readStall } from './frame-protocol';
 import type { NorthPoleSquare } from './square';
 
@@ -69,15 +70,18 @@ addEventListener('message', (event: MessageEvent) => {
   else canvas.width = size;
   const ctx = canvas.getContext('2d') as unknown as CanvasRenderingContext2D;
   const start = performance.now();
+  let ask: unknown;
   try {
     square.draw(ctx, size, time, pointer);
+    ask = square.ask?.();
   } catch (error) {
     send({ type: 'error', message: String(error) });
     return;
   }
   const drawMs = performance.now() - start;
   const bitmap = canvas.transferToImageBitmap();
-  send({ type: 'frame', bitmap, drawMs }, [bitmap]);
+  const open = readLinkAsk(ask);
+  send({ type: 'frame', bitmap, drawMs, ...(open === undefined ? {} : { open }) }, [bitmap]);
 });
 
 // The worker's script has arrived and run: the frame starts timing from here.
