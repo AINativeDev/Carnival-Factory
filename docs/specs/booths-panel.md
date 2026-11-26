@@ -14,7 +14,8 @@ short lists, every booth A to Z, and a way to say which booth is theirs.
 - `/` focuses the search, except in a text field or inside a square. The
   arrow keys move through the results and wrap, Enter jumps to one, Esc clears.
 - A click on a name glides the map to the square and highlights it; a second
-  click lets go. Shift-click or the walk icon walks the player there.
+  click lets go. A double-click goes inside, as E at its door does. Shift-click
+  or the walk icon walks the player there.
 - "This is me" picks the visitor's own booth, which the map marks as theirs.
   "Share it as yours" in a visit panel sets it too.
 - The panel starts open on a wide map and folded on a phone.
@@ -43,4 +44,4 @@ short lists, every booth A to Z, and a way to say which booth is theirs.
 
 `src/booth-panel.test.ts`, `src/booths-hud.test.ts`, `src/booths-hud-keys.test.ts`,
 `src/booths-hud-memory.test.ts`, `scripts/booth-dates.test.ts`,
-`smoke/booths-panel.spec.ts` (picking, shift-click to walk, finding a login).
+`smoke/booths-panel.spec.ts` (picking, double-click to go inside, shift-click to walk, finding a login).

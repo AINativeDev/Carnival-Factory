@@ -24,6 +24,8 @@ export interface BoothsPanelOptions {
   whenNamed(square: NorthPoleSquare, show: () => void): void;
   /** Called after a pick, so the page can update anything it shows. */
   onPicked?(): void;
+  /** Goes inside a square, as E at its door does: a double-click on its entry. */
+  onOpen?(kind: SquareKind, id: string): void;
 }
 
 /** The Booths panel's running parts: what the page tells it, and how to stop it. */
@@ -125,7 +127,7 @@ function showSelected(panel: HTMLElement, next: { kind: SquareKind; id: string }
  * Attractions, and All booths A to Z a page at a time, each section with its
  * count and folding, remembered. Picking a square glides the map to it and
  * highlights it; picking it again, or Esc, lets go. Shift-click or the walk
- * icon walks there. `/` focuses the search, the arrow keys move through the
+ * icon walks there, and a double-click goes inside. `/` focuses the search, the arrow keys move through the
  * results, Enter jumps and Esc clears. Every name and login is set as text.
  */
 export function startBoothsPanel(
@@ -150,7 +152,8 @@ export function startBoothsPanel(
   };
   const isSelected = (kind: SquareKind, id: string) =>
     selected?.kind === kind && selected.id === id;
-  const item = (entry: HudEntry, label = '') => entryItem(entry, { isSelected, pick }, label);
+  const open = (kind: SquareKind, id: string) => options.onOpen?.(kind, id);
+  const item = (entry: HudEntry, label = '') => entryItem(entry, { isSelected, pick, open }, label);
 
   const { featured } = options;
   showFeatured(
