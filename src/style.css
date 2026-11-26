@@ -1417,12 +1417,41 @@ kbd {
   font-size: 14px;
 }
 
-.visit-actions .visit-copy {
-  padding: 3px 14px;
-  border: 1.5px solid var(--color-berry);
-  background: none;
-  color: var(--color-berry);
-  font-size: 14px;
+/* Share stands over the room, beside the panel, so a long build story never hides it:
+   a berry pill with the share icon people know, at the room's top right. */
+.hud.visit-copy {
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-night) 45%, transparent);
+}
+
+.hud.visit-copy:hover,
+.hud.visit-copy:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* A square's panel stands over the room's right side: the pill sits just left of it. A level's
+   panel stands beside the map instead, so its pill keeps the corner. */
+.map-frame:has(> .visit) > .hud.visit-copy {
+  right: 368px;
+}
+
+/* Inside one of a level's squares, the square's own pill shares it: the level's steps aside. */
+.map-frame[data-visiting] > .hud.visit-copy[data-level] {
+  display: none;
+}
+
+/* On a phone the panel sits under the room, so the pill takes the room's own top right. */
+@media (max-width: 719px) {
+  .map-frame:has(> .visit) > .hud.visit-copy {
+    right: 12px;
+  }
 }
 
 /* The one ask: a booth of your own, the spot next door for someone who came by a shared link,

@@ -41,7 +41,14 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
   @<login>."
 - An Elf Engineer's booth links to their own factory. A booth with a People's
   Choice comment links to it with "Vote for this booth".
-- Under the story, one quiet row: **Share**, **Vote for this booth** and
+- **Share** stands over the room, not in the panel, so a long build story
+  never hides it: a pill with the usual share icon at the room's top right,
+  just left of the panel (on a phone, the room's own top-right corner). On a
+  phone it opens the phone's share sheet; elsewhere it copies the line and
+  says "Copied". A level's pill steps aside while the player is inside one of
+  its squares (`src/visit-share.ts`; enforced by: src/visit-share.test.ts,
+  smoke/sharing.spec.ts).
+- Under the story, one quiet row: **Vote for this booth** and
   **Remix this booth**, then one ask: "Want one too? Get a booth". Someone
   who arrived by a shared link to a booth gets **Get the spot next door** in
   its place, until they leave or take it. The booth's owner (picked with

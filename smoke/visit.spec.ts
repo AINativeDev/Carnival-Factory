@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { Locator } from '@playwright/test';
 import { expect, test } from './coverage';
 import { CLAIM_URL } from '../src/northpole/links';
@@ -12,6 +14,12 @@ import { FLAGS } from './support/feature-flags';
  */
 
 /** The visit's panel for jedi4ever's booth: whose it is, its story and its remix link. */
+/** The booth's own name, from its code, so the test follows the booth when its owner renames it. */
+const JEDI4EVER_NAME =
+  /\bname: ['"](.+?)['"],/.exec(
+    readFileSync(join(import.meta.dirname, '../carnival/booths/jedi4ever/booth.ts'), 'utf8'),
+  )?.[1] ?? 'unnamed';
+
 async function expectJedi4everPanel(card: Locator) {
   await expect(card).toBeVisible();
   await expect(card.getByRole('heading', { level: 2 })).toBeFocused();
@@ -41,7 +49,7 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
   await expect(page.locator('.map-prompt')).toBeVisible();
   // Standing at the stall invites the player in.
   await expect(page.locator('.map-prompt')).toHaveAttribute('data-spot', 'booth:jedi4ever');
-  await expect(page.locator('.map-prompt')).toContainText("Visit Santa's Toy Factory");
+  await expect(page.locator('.map-prompt')).toContainText(`Visit ${JEDI4EVER_NAME}`);
   const at = present(await canvas.getAttribute('data-player'), 'player on the map');
   await canvas.focus();
   await page.keyboard.press('e');

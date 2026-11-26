@@ -34,7 +34,6 @@ export const VISIT_PANEL = `
       <p class="visit-craft" hidden></p>
     </section>
     <div class="visit-actions">
-      <button class="visit-copy" type="button">Share</button>
       <a class="visit-vote" target="_blank" rel="noopener" hidden>Vote for this booth</a>
       <a class="visit-remix-link" target="_blank" rel="noopener">Remix this booth</a>
     </div>

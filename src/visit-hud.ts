@@ -16,7 +16,7 @@ import {
 import type { SquareHistory } from '../scripts/square-history';
 import { storySteps } from './build-story';
 import { renderStory } from './build-story-view';
-import { wireShare } from './visit-share';
+import { sharePill, wireShare } from './visit-share';
 import { showSignupOffer } from './offer';
 import { VISIT_PANEL } from './visit-template';
 import { deepLink, levelLink } from './route';
@@ -136,7 +136,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       ? new URL(level ? levelLink(level, square.id) : levelLink(square.id), document.baseURI).href
       : shareLink(kind, square.id, document.baseURI);
   const share = wireShare(
-    { copy: $('.visit-copy'), text: $('.visit-share-text'), options: $('.visit-more') },
+    { copy: sharePill(frame, walking), text: $('.visit-share-text'), options: $('.visit-more') },
     { kind, id: square.id, name: () => square.name },
     link,
   );
