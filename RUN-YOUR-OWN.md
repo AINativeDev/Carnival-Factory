@@ -71,7 +71,7 @@ Run your own copy, with you as the maintainer.
 Add this repository as a remote and merge its `main` now and then:
 
 ```sh
-git remote add upstream https://github.com/AINativeDev/Northpole-Carnival-Factory.git
+git remote add upstream https://github.com/AINativeDev/Carnival-Factory.git
 git fetch upstream && git merge upstream/main
 ```
 

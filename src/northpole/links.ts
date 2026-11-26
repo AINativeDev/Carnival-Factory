@@ -1,4 +1,4 @@
-export const REPO_URL = 'https://github.com/AINativeDev/Northpole-Carnival-Factory';
+export const REPO_URL = 'https://github.com/AINativeDev/Carnival-Factory';
 
 /**
  * The one issue form for a booth: it builds your booth if you don't have one

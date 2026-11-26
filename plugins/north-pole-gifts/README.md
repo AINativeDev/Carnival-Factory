@@ -17,7 +17,7 @@ own, straight from this repository on GitHub, not the registry.
 From your repository's root, install the gift you want by its skill name:
 
 ```sh
-tessl install github:AINativeDev/Northpole-Carnival-Factory --skill stocking-stuffer
+tessl install github:AINativeDev/Carnival-Factory --skill stocking-stuffer
 ```
 
 Then copy the gift's `tessl.json` snippet from its README into your own

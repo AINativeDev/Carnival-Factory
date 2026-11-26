@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { closingLine, topLine } from './peoples-choice-hud';
 
-const BALLOT = 'https://github.com/AINativeDev/Northpole-Carnival-Factory/issues/7';
+const BALLOT = 'https://github.com/AINativeDev/Carnival-Factory/issues/7';
 const entry = (login: string, votes: number) => ({ login, url: BALLOT, votes });
 
 describe('topLine', () => {

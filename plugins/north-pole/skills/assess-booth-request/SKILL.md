@@ -175,7 +175,7 @@ leaves a comment promising something that didn't happen. Create a missing label
 Superseded by #<this issue>: your latest request is the one the factory
 builds.` Then remove `needs-info` here if present, add `tessl`, and comment:
   `Thanks. This fits your booth, carnival/booths/<author>/, so the factory is building it
-now. It'll open a pull request and link it here, where you can follow each check. [How your request is built](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/how-it-works.md) explains every step.`
+now. It'll open a pull request and link it here, where you can follow each check. [How your request is built](https://github.com/AINativeDev/Carnival-Factory/blob/main/docs/how-it-works.md) explains every step.`
 - **Proposal or question:** add `needs-info`, then comment: `Thanks, this is a
 lovely idea. <For a proposal: "One part isn't something a booth can do yet:
 <what, in a few words>. Here's what the factory can build:" then the
@@ -217,7 +217,7 @@ comment:
 <!-- assess-booth-request -->
 Thanks, this sounds like a lovely level. Levels unlock once you have a booth
 on the map, so the factory will build this one after yours. Open
-[Your booth](https://github.com/AINativeDev/Northpole-Carnival-Factory/issues/new?template=01-your-booth.yml)
+[Your booth](https://github.com/AINativeDev/Carnival-Factory/issues/new?template=01-your-booth.yml)
 to get a booth first. Once it's on the map, edit this issue or reply here, and
 your level will be looked at again.
 ```

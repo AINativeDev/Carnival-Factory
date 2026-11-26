@@ -12,7 +12,7 @@ needs a secret beyond the factory's GitHub access.
 ## Install
 
 ```sh
-tessl install github:AINativeDev/Northpole-Carnival-Factory --skill gift-tag
+tessl install github:AINativeDev/Carnival-Factory --skill gift-tag
 ```
 
 ## Trigger to copy

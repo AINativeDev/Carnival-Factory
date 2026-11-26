@@ -9,7 +9,7 @@ import {
   linkedIssue,
 } from './ownership';
 
-const REPO = 'AINativeDev/Northpole-Carnival-Factory';
+const REPO = 'AINativeDev/Carnival-Factory';
 
 describe('linkedIssue', () => {
   it("reads the factory's issue marker", () => {

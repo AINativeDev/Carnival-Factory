@@ -34,7 +34,7 @@ again; your newest grant is the one that counts.
   with their snippets:
 
   ```md
-  [![Elf Engineer](https://ainativedev.github.io/Northpole-Carnival-Factory/badges/elf-engineer.svg)](https://ainativedev.github.io/Northpole-Carnival-Factory/)
+  [![Elf Engineer](https://ainativedev.github.io/Carnival-Factory/badges/elf-engineer.svg)](https://ainativedev.github.io/Carnival-Factory/)
   ```
 
 - **A pin on your booth.** The map draws an elf-hat pin on your booth's sign,

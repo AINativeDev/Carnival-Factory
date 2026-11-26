@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { CHOICE_PANEL, renderChoice } from './peoples-choice-hud';
 
-const BALLOT = 'https://github.com/AINativeDev/Northpole-Carnival-Factory/issues/7';
+const BALLOT = 'https://github.com/AINativeDev/Carnival-Factory/issues/7';
 
 /** The panel below the map, as the page builds it, still hidden. */
 function panel(): HTMLDetailsElement {

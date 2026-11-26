@@ -3,7 +3,7 @@ import { theme } from '../../../src/northpole/theme';
 const { colors } = theme;
 
 /** The repository the gifts install from. */
-export const GIFT_SOURCE = 'github:AINativeDev/Northpole-Carnival-Factory';
+export const GIFT_SOURCE = 'github:AINativeDev/Carnival-Factory';
 
 /**
  * The gifts on the shelves: the skills in `plugins/north-pole-gifts/`, each

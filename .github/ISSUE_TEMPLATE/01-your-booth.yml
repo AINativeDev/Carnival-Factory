@@ -8,8 +8,8 @@ body:
       value: |
         Describe your booth and the factory builds it in `carnival/booths/<your GitHub login>/`.
         If you already have one, it changes it. Your latest request is the one that counts.
-        [How your request is built](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/how-it-works.md)
-        · [Booth ideas](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/booth-ideas.md)
+        [How your request is built](https://github.com/AINativeDev/Carnival-Factory/blob/main/docs/how-it-works.md)
+        · [Booth ideas](https://github.com/AINativeDev/Carnival-Factory/blob/main/docs/booth-ideas.md)
   - type: textarea
     id: what
     attributes:
@@ -18,7 +18,7 @@ body:
         A few sentences are plenty. Things you can mention:
         - **The scene**: who or what is in it, and what they're doing
         - **What moves**: a loop every few seconds, or what happens when someone taps it (a game?)
-        - **The look**: the North Pole's own [diorama style](https://github.com/AINativeDev/Northpole-Carnival-Factory/blob/main/docs/style.md) by default, or pixel art, papercut, storybook…
+        - **The look**: the North Pole's own [diorama style](https://github.com/AINativeDev/Carnival-Factory/blob/main/docs/style.md) by default, or pixel art, papercut, storybook…
         - **The stall**: a market stall, tent, cabin, igloo, chalet, treehouse, windmill, lighthouse, food truck, pagoda… and a roof colour
         - **Little details**: a sign, a pet, a friendly joke, the colours you like
 

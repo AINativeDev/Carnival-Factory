@@ -12,7 +12,7 @@ factory's GitHub access.
 ## Install
 
 ```sh
-tessl install github:AINativeDev/Northpole-Carnival-Factory --skill snow-plough
+tessl install github:AINativeDev/Carnival-Factory --skill snow-plough
 ```
 
 ## Trigger to copy
