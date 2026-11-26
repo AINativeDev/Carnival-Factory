@@ -40,7 +40,7 @@ test('pressing E at a booth goes inside it, and Esc, Back or walking out leaves'
   await expect(canvas).toHaveAttribute('data-near', 'booth:jedi4ever');
   await expect(page.locator('.map-prompt')).toBeVisible();
   // Standing at the stall invites the player in.
-  await expect(page.locator('.map-prompt')).toHaveAttribute('data-plot', 'booth:jedi4ever');
+  await expect(page.locator('.map-prompt')).toHaveAttribute('data-spot', 'booth:jedi4ever');
   await expect(page.locator('.map-prompt')).toContainText("Visit Santa's Toy Factory");
   const at = present(await canvas.getAttribute('data-player'), 'player on the map');
   await canvas.focus();

@@ -1,5 +1,5 @@
 /**
- * The tag that names the plot under the mouse, or the one the player stands
+ * The tag that names the spot under the mouse, or the one the player stands
  * at: the square's name, its owner, a line about it and a hint. A page element
  * over the canvas, placed clear of the player, so it's kept apart from the
  * drawing.
@@ -9,7 +9,7 @@ import { platformLabel, siteLabel, squareOf } from './map-labels';
 import type { MapRun } from './map-state';
 import { inviteFor } from './owners';
 import { placeTag, platformTag, tagText } from './visit';
-import { toScreen, type Plot, type Tile } from './world';
+import { toScreen, type Spot, type Tile } from './world';
 
 /** The tag's element and its four parts. */
 export interface MapTag {
@@ -38,18 +38,18 @@ export function makeTag(frame: HTMLElement): MapTag {
   return { element, parts };
 }
 
-/** Writes a plot's name, owner, line and hint into the tag. */
-function nameIn(m: MapRun, plot: Plot) {
+/** Writes a spot's name, owner, line and hint into the tag. */
+function nameIn(m: MapRun, spot: Spot) {
   const text =
-    plot.kind === 'platform' || plot.kind === 'exit'
-      ? platformTag(plot.kind, platformLabel(m, plot))
-      : tagText(plot, squareOf(m, plot), siteLabel(m, plot).stage);
+    spot.kind === 'platform' || spot.kind === 'exit'
+      ? platformTag(spot.kind, platformLabel(m, spot))
+      : tagText(spot, squareOf(m, spot), siteLabel(m, spot).stage);
   const { parts, element } = m.tag;
   parts.name.textContent = text.name;
   parts.owner.textContent = text.owner;
   parts.line.textContent = text.line;
   parts.hint.textContent = text.hint;
-  element.dataset.plot = `${plot.kind}:${plot.id ?? plot.number}`;
+  element.dataset.spot = `${spot.kind}:${spot.id ?? spot.number}`;
 }
 
 /** Hides the tag. */
@@ -58,24 +58,24 @@ function hide(m: MapRun) {
   m.tag.element.classList.remove('shown');
 }
 
-/** Shows the tag over the plot under the mouse, or the one the player stands at. */
+/** Shows the tag over the spot under the mouse, or the one the player stands at. */
 export function showTag(m: MapRun, zoom: number, centre: Tile) {
   const { frame } = m;
   const tag = m.tag.element;
-  const plot = m.visiting ? undefined : (m.hovered ?? m.near);
+  const spot = m.visiting ? undefined : (m.hovered ?? m.near);
   // The call to action already names the square it invites into.
-  if (plot && plot === inviteFor(m.selected, m.near) && !m.hovered) {
+  if (spot && spot === inviteFor(m.selected, m.near) && !m.hovered) {
     hide(m);
     return;
   }
-  const target = plot && m.targets.find((t) => t.plot === plot);
-  if (!plot || !target) {
+  const target = spot && m.targets.find((t) => t.spot === spot);
+  if (!spot || !target) {
     hide(m);
     return;
   }
-  if (plot !== m.tagged) {
-    m.tagged = plot;
-    nameIn(m, plot);
+  if (spot !== m.tagged) {
+    m.tagged = spot;
+    nameIn(m, spot);
   }
   tag.classList.add('shown');
   const width = frame.clientWidth;

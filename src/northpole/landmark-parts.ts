@@ -12,14 +12,14 @@ import { SIGN_STYLES, type SignStyle } from './sign-styles';
 import type { NorthPoleSquare } from './square';
 import { PAVILION } from './stall-plan';
 import { theme } from './theme';
-import type { Box, Plot, Tile } from './world';
+import type { Box, Spot, Tile } from './world';
 
 const { colors } = theme;
 
-/** How a landmark's drawing is drawn: the same as the map's own `drawPlot`, returning where a click opens it. */
+/** How a landmark's drawing is drawn: the same as the map's own `drawSpot`, returning where a click opens it. */
 export type LandmarkDrawer = (
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   square: NorthPoleSquare,
   paint: PaintSquare,
   time: number,
@@ -33,14 +33,14 @@ export const inset = (box: Box, by: number): Box => ({
   h: box.h - by * 2,
 });
 
-/** The face of `box` on the side of `plot`'s door. */
-export const frontOf = (plot: Plot, box: Box = plot): Face => faceOf({ ...box, door: plot.door });
+/** The face of `box` on the side of `spot`'s door. */
+export const frontOf = (spot: Spot, box: Box = spot): Face => faceOf({ ...box, door: spot.door });
 
-/** The landmark's stage: a shadow on the snow and a low platform over its whole plot. Gives its middle. */
-export function stage(ctx: CanvasRenderingContext2D, plot: Plot, spread = 80): Tile {
-  const { x, y } = middle(plot);
+/** The landmark's stage: a shadow on the snow and a low platform over its whole spot. Gives its middle. */
+export function stage(ctx: CanvasRenderingContext2D, spot: Spot, spread = 80): Tile {
+  const { x, y } = middle(spot);
   shadow(ctx, x, y + 8, spread);
-  block(ctx, plot, PAVILION.stage, colors.snowShade, colors.surface, colors.night);
+  block(ctx, spot, PAVILION.stage, colors.snowShade, colors.surface, colors.night);
   return { x, y };
 }
 
@@ -80,18 +80,18 @@ export function framedArt(
 }
 
 /**
- * A board standing on two posts at the front of the plot, for a landmark that
+ * A board standing on two posts at the front of the spot, for a landmark that
  * isn't a building to hang its drawing on: a wheel, a rink, a coaster.
  */
 export function signPost(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   square: NorthPoleSquare,
   paint: PaintSquare,
   place: ArtPlace,
   style?: SignStyle,
 ): number {
-  const face = frontOf(plot);
+  const face = frontOf(spot);
   ctx.fillStyle = colors.cocoa;
   for (const along of [place.from + 0.03, place.to - 0.03]) {
     band(ctx, face, along - 0.01, along + 0.01, 0, place.low, place.outward);

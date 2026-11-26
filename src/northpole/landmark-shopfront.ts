@@ -59,12 +59,12 @@ function windows(
   for (const along of across) litWindow(ctx, onFace(face, along, lift), 10, 18, time);
 }
 
-export const drawShopfront: LandmarkDrawer = (ctx, plot, square, paint, time) => {
-  stage(ctx, plot, 80);
-  const body = area(plot, [0.1, 0.9], [0.16, 0.9]);
+export const drawShopfront: LandmarkDrawer = (ctx, spot, square, paint, time) => {
+  stage(ctx, spot, 80);
+  const body = area(spot, [0.1, 0.9], [0.16, 0.9]);
   block(ctx, body, SHOP.wall, colors.slab, colors.pine, colors.pineDark, SHOP.stage);
-  const front = frontOf(plot, body);
-  const side = sideOf(plot, body);
+  const front = frontOf(spot, body);
+  const side = sideOf(spot, body);
   // The cornice in cream round the top of the flat roof.
   ctx.fillStyle = colors.cream;
   for (const face of [front, side]) {
@@ -83,14 +83,14 @@ export const drawShopfront: LandmarkDrawer = (ctx, plot, square, paint, time) =>
   // Presents stacked by each front corner, two below and one on top.
   for (const [n, along] of [0.06, 0.94].entries()) {
     const stack = [
-      { at: onSpot(plot, along - 0.05, 0.06, SHOP.stage), s: 16 },
-      { at: onSpot(plot, along + 0.05, 0.04, SHOP.stage), s: 14 },
-      { at: onSpot(plot, along, 0.05, SHOP.stage + 13), s: 11 },
+      { at: onSpot(spot, along - 0.05, 0.06, SHOP.stage), s: 16 },
+      { at: onSpot(spot, along + 0.05, 0.04, SHOP.stage), s: 14 },
+      { at: onSpot(spot, along, 0.05, SHOP.stage + 13), s: 11 },
     ];
     for (const [k, { at, s }] of stack.entries()) {
       const [wrap, ribbon] = inTurn(WRAPS, n * 3 + k);
       present(ctx, at, s, wrap, ribbon);
     }
   }
-  return standing(plot, corners(plot).top.y - (corners(body).top.y - SHOP.wall - SHOP.stage) + 10);
+  return standing(spot, corners(spot).top.y - (corners(body).top.y - SHOP.wall - SHOP.stage) + 10);
 };

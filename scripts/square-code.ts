@@ -13,14 +13,14 @@ import ts from 'typescript';
 import { hiddenTextProblems } from './square-code/text-checks.ts';
 import { checkImports } from './square-code/imports.ts';
 import { checkLoadTimeCode, checkTopLevel } from './square-code/loading.ts';
-import { jsonFileProblems } from './square-code/plot-file.ts';
+import { jsonFileProblems } from './square-code/spot-file.ts';
 import type { CodeProblem, SourceFile, SquareFile } from './square-code/problems.ts';
 import { checkReach } from './square-code/reach.ts';
 import { squareProgram } from './square-code/square-program.ts';
 import { checkSyntax } from './square-code/syntax.ts';
 
 export { BANNED_GLOBALS, BANNED_PROPERTIES } from './square-code/banned-names.ts';
-export { isPlotFile, plotFileProblems } from './square-code/plot-file.ts';
+export { isSpotFile, spotFileProblems } from './square-code/spot-file.ts';
 export type { CodeProblem, SourceFile } from './square-code/problems.ts';
 
 /**

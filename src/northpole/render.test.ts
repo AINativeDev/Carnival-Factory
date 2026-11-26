@@ -7,7 +7,7 @@ import { STALL_SHAPES } from './square';
 import { theme } from './theme';
 
 describe('stallOutline', () => {
-  it('keeps every shape on its own plot', () => {
+  it('keeps every shape on its own spot', () => {
     for (const shape of STALL_SHAPES) {
       for (const { along, depth } of stallOutline(shape)) {
         expect(along).toBeGreaterThanOrEqual(0);
@@ -18,7 +18,7 @@ describe('stallOutline', () => {
     }
   });
 
-  it('fills the plot for the stall, the shed and the cabin', () => {
+  it('fills the spot for the stall, the shed and the cabin', () => {
     for (const shape of ['stall', 'shed', 'cabin'] as const) {
       expect(stallOutline(shape)).toEqual([
         { along: 0, depth: 0 },

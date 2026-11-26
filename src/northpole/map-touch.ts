@@ -3,7 +3,7 @@
  * button held, drags the camera round, two fingers pinch it nearer or farther,
  * and a tap or a click that barely moved still walks or opens (map-input.ts,
  * which `trackPointer` tells a drag's release is no click). The mouse moving
- * with no button held hovers a plot instead. The camera's arithmetic is in
+ * with no button held hovers a spot instead. The camera's arithmetic is in
  * camera.ts; this is what each finger, or the mouse, does to it.
  */
 import { fitZoom } from './camera';
@@ -11,7 +11,7 @@ import { dragCentre } from './camera-view';
 import { pinchZoom } from './camera-view';
 import { pinchCentre } from './camera-view';
 import { billboardUnder, pointAt } from './map-input';
-import { plotUnder } from './map-labels';
+import { spotUnder } from './map-labels';
 import type { MapRun } from './map-state';
 import { isTap } from './pointer';
 import type { Tile } from './world';
@@ -56,7 +56,7 @@ export function onPointerEnd(m: MapRun, event: PointerEvent) {
   m.dragging = undefined;
 }
 
-/** A finger, or the mouse held down, moving drags or pinches the camera; the mouse moving otherwise hovers a plot. */
+/** A finger, or the mouse held down, moving drags or pinches the camera; the mouse moving otherwise hovers a spot. */
 export function onPointerMove(m: MapRun, event: PointerEvent) {
   const mouse = event.pointerType !== 'touch';
   // A button let go off the page sends no pointerup here, so the drag ends at the next move.
@@ -76,10 +76,10 @@ export function onPointerMove(m: MapRun, event: PointerEvent) {
   }
 }
 
-/** The mouse over the map hovers the plot under it, and shows a hand over what a click opens. */
+/** The mouse over the map hovers the spot under it, and shows a hand over what a click opens. */
 function hover(m: MapRun, event: PointerEvent) {
   const at = pointAt(m, event);
-  m.hovered = m.visiting ? undefined : plotUnder(m, at);
+  m.hovered = m.visiting ? undefined : spotUnder(m, at);
   const link = !m.visiting && billboardUnder(m, at);
   m.canvas.style.cursor = m.hovered || link ? 'pointer' : 'default';
 }

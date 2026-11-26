@@ -2,18 +2,18 @@ import { describe, expect, it } from 'vitest';
 import theFactory from '../carnival/levels/the-factory/level';
 import { FACTORY_TOUR } from './factory-tour';
 import { levelWorld } from './northpole/level';
-import { drawPlot } from './northpole/render';
+import { drawSpot } from './northpole/render';
 import { targetAt } from './northpole/visit';
-import { canStand, plotAtDoor } from './northpole/walking';
+import { canStand, spotAtDoor } from './northpole/walking';
 import { toScreen } from './northpole/world';
 import { drawingOf } from './test-support/recording-canvas';
 
-/** The plots the coaster's car stops at, in the order it rides to them from the boarding station (ADR 0041). */
+/** The spots the coaster's car stops at, in the order it rides to them from the boarding station (ADR 0041). */
 function stopsAlongRide(): string[] {
   const world = levelWorld(theFactory);
   return world.things
     .filter((thing) => thing.kind === 'coaster-station')
-    .map((station) => plotAtDoor(world, station)?.id ?? `nothing at ${String(station.x)}`);
+    .map((station) => spotAtDoor(world, station)?.id ?? `nothing at ${String(station.x)}`);
 }
 
 describe('FACTORY_TOUR', () => {
@@ -38,15 +38,15 @@ describe("The Factory's layout", () => {
     // src/northpole/map.ts), so a door with every tile beside it hidden that
     // way can't be walked to with clicks.
     const world = levelWorld(theFactory);
-    const stalls = world.plots
-      .filter((plot) => plot.kind === 'attraction')
-      .map((plot) => {
-        const square = { id: plot.id ?? '', name: '', description: '', draw: () => undefined };
+    const stalls = world.spots
+      .filter((spot) => spot.kind === 'attraction')
+      .map((spot) => {
+        const square = { id: spot.id ?? '', name: '', description: '', draw: () => undefined };
         let box = { x: 0, y: 0, w: 0, h: 0 };
-        drawingOf((ctx) => (box = drawPlot(ctx, plot, square, () => undefined, 0)));
-        return { plot, box };
+        drawingOf((ctx) => (box = drawSpot(ctx, spot, square, () => undefined, 0)));
+        return { spot, box };
       });
-    const hidden = world.plots
+    const hidden = world.spots
       .filter(({ door }) =>
         [
           { x: door.x + 1, y: door.y },
@@ -54,7 +54,7 @@ describe("The Factory's layout", () => {
           { x: door.x, y: door.y - 1 },
         ].every((tile) => !canStand(world, tile) || targetAt(stalls, toScreen(tile))),
       )
-      .map((plot) => plot.id);
+      .map((spot) => spot.id);
     expect(hidden).toEqual([]);
   });
 });

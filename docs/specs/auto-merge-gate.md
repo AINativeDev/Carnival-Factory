@@ -36,9 +36,9 @@ scripts/auto-merge-booths-needs-human.test.ts):
    least one.
 3. **Code stays in its square** (hard): the static check parses and
    type-checks the booth without running it and finds no banned globals or
-   other ways out. Only `.ts` and `.md` files and `plot.json` may be in the
+   other ways out. Only `.ts` and `.md` files and `spot.json` may be in the
    folder, no symlinks, at most 40 files, 100 KB each, 300 KB in all.
-   `plot.json` holds only a plot and maybe an issue number, and only a new
+   `spot.json` holds only a spot and maybe an issue number, and only a new
    booth's first pull request may add or change it (enforced by:
    scripts/square-code.ts and its rule families in scripts/square-code/,
    scripts/square-code.test.ts, scripts/square-code/*.test.ts).
@@ -104,7 +104,7 @@ properties, strings and computed keys), `names.ts` (names that are not
 references), `imports.ts` (the import allow-list), `loading.ts` (nothing runs
 while a square loads), `syntax.ts` (`with`, `debugger`, tagged templates and
 canvases of its own), `text-checks.ts` (hidden characters and injection),
-`plot-file.ts` (`plot.json`), `square-program.ts` (the program the rules ask for types and declarations, whose compiler errors are not read)
+`spot-file.ts` (`spot.json`), `square-program.ts` (the program the rules ask for types and declarations, whose compiler errors are not read)
 and `problems.ts` (what a problem is). Then `scripts/injection-scan.ts`,
 `.github/workflows/auto-merge-booths.yml`,
 `.github/workflows/auto-merge-digest.yml`,
@@ -116,7 +116,7 @@ and `problems.ts` (what a problem is). Then `scripts/injection-scan.ts`,
 whole, and every real booth and attraction), one test file per rule family
 in `scripts/square-code/` (`banned-names.test.ts`, `imports.test.ts`,
 `loading.test.ts`, `syntax.test.ts`, `text-checks.test.ts`,
-`plot-file.test.ts`, sharing the made-up booth in `test-booth.ts`), and
+`spot-file.test.ts`, sharing the made-up booth in `test-booth.ts`), and
 `scripts/injection-scan.test.ts`. The runner is pinned end to end against a
 scripted GitHub (`scripts/merge-gate-fake-github.ts`, with the booth world in
 `scripts/merge-gate-world.ts`) by `scripts/auto-merge-booths.test.ts` (a

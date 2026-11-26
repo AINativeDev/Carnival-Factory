@@ -1,6 +1,6 @@
 /**
  * Visiting a square inside the world, and the tag that names what you hover:
- * the open plot nearest a square, the line Share copies and where it links,
+ * the open spot nearest a square, the line Share copies and where it links,
  * what's under the mouse and where its tag goes. Plain functions, so the map
  * and the tests use them the same way. Points are in world pixels unless they
  * say otherwise.
@@ -9,19 +9,19 @@ import { SITE_NAME } from '../edition';
 import { squareOwner } from './north-pole-levels';
 import { findPathToFirst } from './pathfinding';
 import { tileOf } from './walking';
-import { type Box, type Plot, type Tile, type World } from './world';
+import { type Box, type Spot, type Tile, type World } from './world';
 
 /**
- * The open plots, nearest `from` first, and the path to the nearest one the
+ * The open spots, nearest `from` first, and the path to the nearest one the
  * player can reach: the first step is `from`'s own tile. Undefined when no
- * open plot can be reached.
+ * open spot can be reached.
  */
-export function nearestOpenPlot(
+export function nearestOpenSpot(
   world: World,
   from: Tile,
-): { plot: Plot; path: Tile[] } | undefined {
-  const open = world.plots
-    .filter((plot) => plot.kind === 'open')
+): { spot: Spot; path: Tile[] } | undefined {
+  const open = world.spots
+    .filter((spot) => spot.kind === 'open')
     .sort(
       (a, b) =>
         Math.hypot(a.door.x - from.x, a.door.y - from.y) -
@@ -31,12 +31,12 @@ export function nearestOpenPlot(
   const way = findPathToFirst(
     world,
     start,
-    open.map((plot) => plot.door),
+    open.map((spot) => spot.door),
   );
   const end = way?.at(-1) ?? start;
-  // A walk ends at the door it was found for, so whenever there's a walk its plot is found.
-  const plot = open.find((p) => p.door.x === end.x && p.door.y === end.y);
-  return way && plot && { plot, path: [start, ...way] };
+  // A walk ends at the door it was found for, so whenever there's a walk its spot is found.
+  const spot = open.find((p) => p.door.x === end.x && p.door.y === end.y);
+  return way && spot && { spot, path: [start, ...way] };
 }
 
 /**
@@ -89,7 +89,7 @@ export const inBox = (point: Tile, box: Box) =>
   point.x >= box.x && point.x <= box.x + box.w && point.y >= box.y && point.y <= box.y + box.h;
 
 /**
- * The plot under a point, from what the map drew this frame, back to front: the
+ * The spot under a point, from what the map drew this frame, back to front: the
  * frontmost structure whose drawn outline, its height included, holds it.
  */
 export function targetAt<T extends { box: Box }>(
@@ -107,18 +107,18 @@ export function targetAt<T extends { box: Box }>(
  * the request itself.
  */
 export function tagText(
-  plot: Pick<Plot, 'kind' | 'id'>,
+  spot: Pick<Spot, 'kind' | 'id'>,
   square: { name: string; description: string } | undefined,
   stage = '',
 ): { name: string; owner: string; line: string; hint: string } {
-  if (plot.kind === 'site')
+  if (spot.kind === 'site')
     return {
       name: 'Being built',
       owner: '',
-      line: `Booth for @${plot.id ?? ''}: ${stage}`,
+      line: `Booth for @${spot.id ?? ''}: ${stage}`,
       hint: 'E or click to see the request',
     };
-  if (plot.kind === 'open')
+  if (spot.kind === 'open')
     return {
       name: 'Free spot',
       owner: '',
@@ -126,8 +126,8 @@ export function tagText(
       hint: 'E or click to build your booth here',
     };
   return {
-    name: square?.name ?? plot.id ?? '',
-    owner: plot.kind === 'attraction' ? '' : `@${plot.id}`,
+    name: square?.name ?? spot.id ?? '',
+    owner: spot.kind === 'attraction' ? '' : `@${spot.id}`,
     line: (square?.description ?? '').split(/\r?\n|(?<=[.!?])\s/)[0],
     hint: 'E or click to visit',
   };

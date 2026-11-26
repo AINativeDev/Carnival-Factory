@@ -2,7 +2,7 @@
  * The Ferris Wheel stands as a big wheel on an A-frame, turning once every
  * fifty seconds with its cars hanging level and its rim strung with lights:
  * the tallest ride on the midway, so it reads from across the map. Its
- * square's drawing hangs on a sign at the plot's front (ADR 0042).
+ * square's drawing hangs on a sign at the spot's front (ADR 0042).
  */
 import { bulb, corners, middle, twinkle } from './brushes';
 import { signPost, stage, type LandmarkDrawer } from './landmark-parts';
@@ -82,9 +82,9 @@ function car(ctx: CanvasRenderingContext2D, pin: Tile, color: string) {
   ctx.fillRect(pin.x - 10, pin.y + 4, 20, 3);
 }
 
-export const drawBigWheel: LandmarkDrawer = (ctx, plot, square, paint, time) => {
-  const ground = stage(ctx, plot, 70);
-  const { x } = middle(plot);
+export const drawBigWheel: LandmarkDrawer = (ctx, spot, square, paint, time) => {
+  const ground = stage(ctx, spot, 70);
+  const { x } = middle(spot);
   const hub = { x, y: ground.y - 10 - WHEEL.hub };
   const turn = ((time / WHEEL.turn) % 1) * Math.PI * 2;
   // The A-frame's back legs in shade behind the wheel, its front legs lit in front of it.
@@ -105,6 +105,6 @@ export const drawBigWheel: LandmarkDrawer = (ctx, plot, square, paint, time) => 
   ctx.beginPath();
   ctx.arc(hub.x, hub.y, 8, 0, Math.PI * 2);
   ctx.fill();
-  signPost(ctx, plot, square, paint, { from: 0.12, to: 0.82, low: 16, outward: 0.15 });
-  return standing(plot, corners(plot).top.y - (hub.y - WHEEL.radius) + 14);
+  signPost(ctx, spot, square, paint, { from: 0.12, to: 0.82, low: 16, outward: 0.15 });
+  return standing(spot, corners(spot).top.y - (hub.y - WHEEL.radius) + 14);
 };

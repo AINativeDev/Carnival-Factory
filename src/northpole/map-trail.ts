@@ -1,5 +1,5 @@
 /**
- * The way to a plot, shown in the snow: the footprints left walking to claim
+ * The way to a spot, shown in the snow: the footprints left walking to claim
  * one, fading as they fill with snow, the faint steps ahead on a walk to a
  * picked square, and an arrow at the edge of the screen when it's out of view.
  */
@@ -20,7 +20,7 @@ function step(ctx: CanvasRenderingContext2D, at: Tile, right: boolean) {
   ctx.fill();
 }
 
-/** The footprints left walking to claim a plot, fading as they fill with snow. */
+/** The footprints left walking to claim a spot, fading as they fill with snow. */
 export function drawFootprints(m: MapRun) {
   const { ctx } = m;
   const now = performance.now();

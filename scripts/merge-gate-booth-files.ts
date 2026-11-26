@@ -59,10 +59,10 @@ export async function boothFiles(
   }
   const problems: CodeProblem[] = [];
   for (const entry of entries) {
-    const plotFile = entry.path === `${folder}plot.json`;
-    if (entry.mode === '120000' || !(TEXT_FILES.test(entry.path) || plotFile)) {
+    const spotFile = entry.path === `${folder}spot.json`;
+    if (entry.mode === '120000' || !(TEXT_FILES.test(entry.path) || spotFile)) {
       problems.push(
-        problem(entry.path, 'Only .ts and .md files, and plot.json, merge without a person.'),
+        problem(entry.path, 'Only .ts and .md files, and spot.json, merge without a person.'),
       );
       continue;
     }

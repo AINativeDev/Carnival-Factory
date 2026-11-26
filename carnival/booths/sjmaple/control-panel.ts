@@ -1,5 +1,5 @@
 import { theme } from '../../../src/northpole/theme';
-import { BUTTONS, type Button, font, GRID, type Plot, SPIN_BUTTON } from './board';
+import { BUTTONS, type Button, font, GRID, type Spot, SPIN_BUTTON } from './board';
 import { type Build, partsOf } from './parts';
 import { rating, type Stage, type Test } from './test-mat';
 import { partIcon } from './tops';
@@ -12,7 +12,7 @@ const { colors } = theme;
  */
 export function partsBoard(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   size: number,
   build: Build,
   hovered: Button | null,
@@ -26,15 +26,15 @@ export function partsBoard(
     const part = b.name;
     if (part === 'spin') continue;
     const lit = hovered === part && !busy;
-    plot(colors.cocoa, b.x, b.y, b.w, b.h);
-    plot(
+    spot(colors.cocoa, b.x, b.y, b.w, b.h);
+    spot(
       busy ? colors.slabShade : lit ? colors.glow : colors.cream,
       b.x + 1,
       b.y + 1,
       b.w - 2,
       b.h - 2,
     );
-    partIcon(plot, part, build, b.x + b.w - 5, b.y + b.h / 2 - 0.5);
+    partIcon(spot, part, build, b.x + b.w - 5, b.y + b.h / 2 - 0.5);
     const choice =
       part === 'body'
         ? picked.body.name
@@ -82,15 +82,15 @@ export function testBoardLines(report: TestReport): [string, string] {
 /** The spin button, gold while it can be pressed, and the test board beneath it. */
 export function spinAndTestBoard(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   size: number,
   report: TestReport,
   hovered: Button | null,
   ready: boolean,
 ) {
   const sb = SPIN_BUTTON;
-  plot(colors.cocoa, sb.x, sb.y, sb.w, sb.h);
-  plot(
+  spot(colors.cocoa, sb.x, sb.y, sb.w, sb.h);
+  spot(
     ready ? (hovered === 'spin' ? colors.glow : colors.gold) : colors.slabShade,
     sb.x + 1,
     sb.y + 1,
@@ -106,8 +106,8 @@ export function spinAndTestBoard(
     (size * (sb.y + sb.h / 2)) / GRID,
     (size * (sb.w - 3)) / GRID,
   );
-  plot(colors.cocoa, 38, 20, 22, 11);
-  plot(colors.night, 39, 21, 20, 9);
+  spot(colors.cocoa, 38, 20, 22, 11);
+  spot(colors.night, 39, 21, 20, 9);
   ctx.font = font(size, 3.4);
   ctx.fillStyle = colors.glow;
   const [line1, line2] = testBoardLines(report);

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { drawingOf } from '../test-support/recording-canvas';
 import { cogTurn, drawTower, TOWER } from './tower';
-import { drawPlot } from './render';
+import { drawSpot } from './render';
 import { PAVILION } from './stall-plan';
 import type { NorthPoleSquare } from './square';
-import type { Plot } from './world';
+import type { Spot } from './world';
 
-const plot: Plot = {
+const spot: Spot = {
   kind: 'attraction',
   id: 'the-factory',
   number: 9,
@@ -37,7 +37,7 @@ describe('a tower', () => {
   it('spells TESSL down its front in gold, and still hangs its square at its foot', () => {
     let painted = 0;
     const calls = drawingOf((ctx) => {
-      drawTower(ctx, plot, square('the-factory'), () => (painted += 1), 0, 'TESSL');
+      drawTower(ctx, spot, square('the-factory'), () => (painted += 1), 0, 'TESSL');
     });
     const texts = calls.filter(([name]) => name === 'fillText').map(([, text]) => text);
     for (const letter of 'TESSL') expect(texts).toContain(letter);
@@ -49,10 +49,10 @@ describe('a tower', () => {
     let tower = { h: 0 };
     let pavilion = { h: 0 };
     drawingOf((ctx) => {
-      tower = drawPlot(ctx, plot, square('the-factory', 'TESSL'), () => undefined, 0);
-      pavilion = drawPlot(
+      tower = drawSpot(ctx, spot, square('the-factory', 'TESSL'), () => undefined, 0);
+      pavilion = drawSpot(
         ctx,
-        { ...plot, id: 'ferris-wheel' },
+        { ...spot, id: 'ferris-wheel' },
         square('ferris-wheel'),
         () => undefined,
         0,
@@ -66,14 +66,14 @@ describe('a tower', () => {
     let booth = { h: 0 };
     let tower = { h: 0 };
     drawingOf((ctx) => {
-      booth = drawPlot(
+      booth = drawSpot(
         ctx,
-        { ...plot, kind: 'booth', id: 'ana' },
+        { ...spot, kind: 'booth', id: 'ana' },
         square('ana', 'ANA'),
         () => undefined,
         0,
       );
-      tower = drawPlot(ctx, plot, square('the-factory', 'TESSL'), () => undefined, 0);
+      tower = drawSpot(ctx, spot, square('the-factory', 'TESSL'), () => undefined, 0);
     });
     expect(booth.h).toBeLessThan(tower.h);
   });

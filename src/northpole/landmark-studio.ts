@@ -97,13 +97,13 @@ function mast(ctx: CanvasRenderingContext2D, foot: Tile, time: number): Tile {
   return tip;
 }
 
-export const drawStudio: LandmarkDrawer = (ctx, plot, square, paint, time) => {
-  stage(ctx, plot, 82);
-  const body = area(plot, [0.08, 0.92], [0.1, 0.88]);
+export const drawStudio: LandmarkDrawer = (ctx, spot, square, paint, time) => {
+  stage(ctx, spot, 82);
+  const body = area(spot, [0.08, 0.92], [0.1, 0.88]);
   const roof = STUDIO.stage + STUDIO.wall;
   block(ctx, body, STUDIO.wall, colors.slab, colors.mountain, colors.surface, STUDIO.stage);
-  const front = frontOf(plot, body);
-  const side = sideOf(plot, body);
+  const front = frontOf(spot, body);
+  const side = sideOf(spot, body);
   // A dark band at the foot and the roof's edge, and two rows of narrow lit windows down the side.
   ctx.fillStyle = colors.night;
   for (const face of [front, side])
@@ -120,7 +120,7 @@ export const drawStudio: LandmarkDrawer = (ctx, plot, square, paint, time) => {
   framedArt(ctx, front, square, paint, { from: 0.08, to: 0.92, low: 20 }, SIGN_STYLES.shed);
   onAirSign(ctx, front, time);
   // On the roof: the dish towards the back on the lit side, the mast towards the back on the other.
-  dish(ctx, onSpot(plot, 0.3, 0.62, roof));
-  const tip = mast(ctx, onSpot(plot, 0.72, 0.72, roof), time);
-  return standing(plot, corners(plot).top.y - tip.y + 16);
+  dish(ctx, onSpot(spot, 0.3, 0.62, roof));
+  const tip = mast(ctx, onSpot(spot, 0.72, 0.72, roof), time);
+  return standing(spot, corners(spot).top.y - tip.y + 16);
 };

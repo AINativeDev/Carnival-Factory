@@ -20,13 +20,13 @@ const GALLERY = { stage: 10, wall: 104, frieze: 14, gable: 30, dome: 18 };
 /** Where the columns stand across the front, as fractions of it. */
 const COLUMNS = [0.07, 0.24, 0.76, 0.93];
 
-export const drawGallery: LandmarkDrawer = (ctx, plot, square, paint, time) => {
-  stage(ctx, plot, 82);
-  const body = area(plot, [0.08, 0.92], [0.12, 0.9]);
+export const drawGallery: LandmarkDrawer = (ctx, spot, square, paint, time) => {
+  stage(ctx, spot, 82);
+  const body = area(spot, [0.08, 0.92], [0.12, 0.9]);
   const eaves = GALLERY.stage + GALLERY.wall;
   block(ctx, body, GALLERY.wall, colors.snowShade, colors.cream, colors.cream, GALLERY.stage);
-  const front = frontOf(plot, body);
-  const side = sideOf(plot, body);
+  const front = frontOf(spot, body);
+  const side = sideOf(spot, body);
   // The side away from the light, in the dusk's shade.
   const c = corners(body);
   ctx.fillStyle = colors.night;
@@ -89,7 +89,7 @@ export const drawGallery: LandmarkDrawer = (ctx, plot, square, paint, time) => {
   ]);
   ctx.fill();
   // The gold dome on the roof, and its pennant.
-  const dome = onSpot(plot, 0.5, 0.6, eaves);
+  const dome = onSpot(spot, 0.5, 0.6, eaves);
   ctx.fillStyle = colors.gold;
   ctx.beginPath();
   ctx.ellipse(dome.x, dome.y, 22, GALLERY.dome, 0, Math.PI, 0);
@@ -100,5 +100,5 @@ export const drawGallery: LandmarkDrawer = (ctx, plot, square, paint, time) => {
   ctx.fill();
   const top = { x: dome.x, y: dome.y - GALLERY.dome };
   pennant(ctx, top, 20, colors.berry, time);
-  return standing(plot, corners(plot).top.y - Math.min(top.y - 20, peak.y) + 16);
+  return standing(spot, corners(spot).top.y - Math.min(top.y - 20, peak.y) + 16);
 };

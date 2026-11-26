@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 /**
  * Pins what the map draws and says round the North Pole: booths, construction
- * sites, the sleigh station and open plots, frame by frame, so splitting
+ * sites, the sleigh station and open spots, frame by frame, so splitting
  * map.ts is proven to change nothing (docs/adr/0019-small-files.md).
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -32,7 +32,7 @@ function journey(
   return fingerprint(all);
 }
 
-const site = { login: 'blitzen', issue: 12, plot: 9, stage: 'checks' as const };
+const site = { login: 'blitzen', issue: 12, spot: 9, stage: 'checks' as const };
 
 describe('the North Pole', () => {
   it('shows booths, the visitor’s own, a landed booth and the sleigh station', () => {
@@ -49,7 +49,7 @@ describe('the North Pole', () => {
         map.controls.jumpTo('booth', 'comet');
         for (let t = 1700; t < 2600; t += 150) frame(t);
         key('keydown', 'e');
-        map.controls.walkToOpenPlot();
+        map.controls.walkToOpenSpot();
         for (let t = 2600; t < 6000; t += 200) frame(t);
         key('keydown', 'e');
         map.controls.claimNextDoor();
@@ -61,7 +61,7 @@ describe('the North Pole', () => {
 
   it('builds construction sites, and updates a booth being changed', () => {
     const pin = journey(
-      { pending: [site, { login: 'comet', issue: 3, plot: 1, stage: 'almost' }] },
+      { pending: [site, { login: 'comet', issue: 3, spot: 1, stage: 'almost' }] },
       (map, frame) => {
         frame(0);
         map.controls.walkTo('booth', 'dancer');
@@ -71,7 +71,7 @@ describe('the North Pole', () => {
         });
         frame(200);
         map.record(() => {
-          map.controls.setPending([site, { ...site, login: 'cupid', plot: 10 }]);
+          map.controls.setPending([site, { ...site, login: 'cupid', spot: 10 }]);
         });
         frame(300);
         map.controls.visit('booth', 'comet');
@@ -95,14 +95,14 @@ describe('the North Pole', () => {
   it('takes the sleigh from the station, but not to a level closed for repairs', () => {
     const pin = journey({}, (map, frame) => {
       frame(0);
-      const plots = map.controls.nearest(40);
+      const spots = map.controls.nearest(40);
       for (let n = 0; n < 12; n++) {
         click(map, screenAt(map, { x: n - 6, y: 6 }));
         frame(100 + n * 100);
       }
       key('keydown', 'Enter');
       frame(1500);
-      expect(plots.length).toBeGreaterThan(0);
+      expect(spots.length).toBeGreaterThan(0);
     });
     expect(pin).toMatchInlineSnapshot(`"39cf654b306fd165 (227774 calls)"`);
   });

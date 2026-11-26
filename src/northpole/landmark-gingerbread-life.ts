@@ -11,7 +11,7 @@ import { onFace, type Face } from './faces';
 import { pennant, onSpot } from './landmark-kit';
 import { inTurn } from './rounds';
 import { theme } from './theme';
-import type { Plot, Tile } from './world';
+import type { Spot, Tile } from './world';
 
 const { colors } = theme;
 
@@ -72,12 +72,12 @@ function candyLamp(ctx: CanvasRenderingContext2D, foot: Tile, time: number) {
  * Elves on the snow before the house: two queueing at the left, shuffling
  * from foot to foot, and one at the right holding up a ticket and waving.
  */
-function funHouseElves(ctx: CanvasRenderingContext2D, plot: Plot, time: number) {
+function funHouseElves(ctx: CanvasRenderingContext2D, spot: Spot, time: number) {
   for (const [along, seed] of [
     [0.05, 0.6],
     [0.14, 0.1],
   ] as const) {
-    const feet = onSpot(plot, along, 0.05);
+    const feet = onSpot(spot, along, 0.05);
     const shuffle = swing(time, 2_400, seed) * 2 - 1;
     elf(ctx, feet.x, feet.y - Math.abs(shuffle) * 1.5, {
       ...outfit(seed),
@@ -86,7 +86,7 @@ function funHouseElves(ctx: CanvasRenderingContext2D, plot: Plot, time: number) 
       stride: shuffle * 0.5,
     });
   }
-  const feet = onSpot(plot, 0.86, 0.05);
+  const feet = onSpot(spot, 0.86, 0.05);
   const wave = swing(time, 1_600, 0.3);
   const hands = elf(ctx, feet.x, feet.y, {
     ...outfit(0.9),
@@ -103,13 +103,13 @@ function funHouseElves(ctx: CanvasRenderingContext2D, plot: Plot, time: number) 
 /** Everything alive round the house: its lights, its flag, its smoke, its lamp and its elves. */
 export function funHouseLife(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   time: number,
   at: { front: Face; eaves: number; peak: Tile; chimney: Tile },
 ) {
   eavesLights(ctx, at.front, at.eaves, time);
   pennant(ctx, at.peak, 22, colors.berry, time);
   chimneySmoke(ctx, at.chimney, time);
-  candyLamp(ctx, onSpot(plot, 0.97, 0.03), time);
-  funHouseElves(ctx, plot, time);
+  candyLamp(ctx, onSpot(spot, 0.97, 0.03), time);
+  funHouseElves(ctx, spot, time);
 }

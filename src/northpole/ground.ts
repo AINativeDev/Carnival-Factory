@@ -133,11 +133,11 @@ export function drawLightPools(ctx: CanvasRenderingContext2D, world: World, time
       pool(x, y + 26, 70, 0.8);
     }
   }
-  for (const plot of world.plots) {
-    if (plot.kind === 'open') continue;
-    const face = faceOf(plot);
+  for (const spot of world.spots) {
+    if (spot.kind === 'open') continue;
+    const face = faceOf(spot);
     const at = onFace(face, 0.5, 0, 0.6);
-    pool(at.x, at.y, plot.kind === 'attraction' ? 110 : 76, 1);
+    pool(at.x, at.y, spot.kind === 'attraction' ? 110 : 76, 1);
   }
   ctx.globalAlpha = 1;
 }

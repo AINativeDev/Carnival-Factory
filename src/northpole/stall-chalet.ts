@@ -7,17 +7,17 @@
 import { glow, quad } from './brushes';
 import { band } from './faces';
 import { stallFront } from './stall-front';
-import { plotPoint, type StallParts } from './stall-plan';
+import { spotPoint, type StallParts } from './stall-plan';
 import { prism } from './stall-volumes';
 import { theme } from './theme';
 import type { Tile } from './world';
 
 const { colors } = theme;
 
-/** A point on the chalet's plot, `along` its front, `depth` back from it and `lift` up. */
+/** A point on the chalet's spot, `along` its front, `depth` back from it and `lift` up. */
 type ChaletPoint = (along: number, depth: number, lift: number) => Tile;
 
-/** How far the eaves hang past the gables and out over the front and back, as shares of the plot. */
+/** How far the eaves hang past the gables and out over the front and back, as shares of the spot. */
 const SIDE = 0.24;
 const FRONT = 0.22;
 /** How tall the stone footing is, and how high over the walls the eaves stand, clear of the name board. */
@@ -30,7 +30,7 @@ const FLOOR = 10;
 /** The chalet: footing and plank walls, the front, the gable we see with its balcony, then the roof. */
 export function drawChalet(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const { face, deep, ground, wall, roof, look, square, paint, owner } = parts;
-  const at: ChaletPoint = (along, depth, lift) => plotPoint(face, deep, { along, depth }, lift);
+  const at: ChaletPoint = (along, depth, lift) => spotPoint(face, deep, { along, depth }, lift);
   prism(ctx, ground, FOOTING, undefined, colors.slab, colors.slabShade);
   prism(ctx, ground, wall - FOOTING, undefined, colors.wood, colors.cocoa, FOOTING);
   ctx.fillStyle = colors.cocoa;
@@ -61,7 +61,7 @@ export function drawChalet(ctx: CanvasRenderingContext2D, parts: StallParts) {
   }
 }
 
-/** A flat piece of the chalet, from `low` to `high` up, between two points of its plot. */
+/** A flat piece of the chalet, from `low` to `high` up, between two points of its spot. */
 function upright(
   ctx: CanvasRenderingContext2D,
   at: ChaletPoint,

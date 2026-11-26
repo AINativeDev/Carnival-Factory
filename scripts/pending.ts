@@ -13,7 +13,7 @@ import {
   type PendingBooth,
   type Stage,
 } from '../src/northpole/construction-sites.ts';
-import { reservePlots } from '../src/northpole/plots.ts';
+import { reserveSpots } from '../src/northpole/spots.ts';
 
 /** The label the gate puts on a request, or its pull request, that a person has to look at. */
 export const NEEDS_HUMAN = 'needs-human';
@@ -70,7 +70,7 @@ export function latestRequests<T extends { login: string; issue: number }>(
 /**
  * `pending.json`'s entries: one per login, its latest request, in order of
  * issue number. A login with a booth already is changing it, so its entry
- * names that booth's plot. The others get the next free plots after every
+ * names that booth's spot. The others get the next free spots after every
  * booth's, in order of issue number. Every entry passes `readPending`, the
  * page's own check.
  */
@@ -82,7 +82,7 @@ export function pendingList(
     ...request,
     login: request.login.toLowerCase(),
   }));
-  const reserved = reservePlots(
+  const reserved = reserveSpots(
     chosen.filter((request) => !booths.has(request.login)),
     booths.values(),
   );
@@ -90,7 +90,7 @@ export function pendingList(
     chosen.map((request) => ({
       login: request.login,
       issue: request.issue,
-      plot: booths.get(request.login) ?? reserved.get(request.login),
+      spot: booths.get(request.login) ?? reserved.get(request.login),
       stage: stageOf(request),
     })),
   );

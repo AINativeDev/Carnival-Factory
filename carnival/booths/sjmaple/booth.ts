@@ -1,6 +1,6 @@
 import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
 import { theme } from '../../../src/northpole/theme';
-import { buttonAt, GRID, PLACES, type Plot, pixels } from './board';
+import { buttonAt, GRID, PLACES, type Spot, pixels } from './board';
 import { partsBoard, spinAndTestBoard, type TestReport } from './control-panel';
 import type { Build } from './parts';
 import { backdrop, benchAndMat, elf, sign } from './scene';
@@ -24,7 +24,7 @@ const { colors } = theme;
  * tipped over on the mat. `parts` is how much of the bench's top is built.
  */
 function drawTop(
-  plot: Plot,
+  spot: Spot,
   time: number,
   report: TestReport,
   bench: { build: Build; parts: number; building: boolean },
@@ -34,31 +34,31 @@ function drawTop(
   const benchTip = { x: PLACES.bench.x - 2, y: PLACES.bench.y };
   const matTip = { x: PLACES.mat.x, y: PLACES.mat.y };
   if (!test || since < 0 || stage === 'done') {
-    plot(colors.shadow, benchTip.x - 4, benchTip.y, 9, 1);
-    top(plot, bench.build, benchTip.x, benchTip.y, bench.parts, 0, 0);
-    if (bench.building && hammer(time) > 0.85) plot(colors.glow, benchTip.x + 6, benchTip.y - 6);
+    spot(colors.shadow, benchTip.x - 4, benchTip.y, 9, 1);
+    top(spot, bench.build, benchTip.x, benchTip.y, bench.parts, 0, 0);
+    if (bench.building && hammer(time) > 0.85) spot(colors.glow, benchTip.x + 6, benchTip.y - 6);
   } else if (stage === 'carry') {
     const tip = carryTip(progress, benchTip, matTip);
-    plot(colors.shadow, tip.x - 4, matTip.y, 9, 1);
-    top(plot, tested, tip.x, tip.y, 3, 0, 0);
+    spot(colors.shadow, tip.x - 4, matTip.y, 9, 1);
+    top(spot, tested, tip.x, tip.y, 3, 0, 0);
   } else {
     const ms = stage === 'spin' ? progress * test.spin : test.spin;
     const angle = spinAngle(ms, test.spin);
-    plot(colors.shadow, matTip.x - 4, matTip.y, 9, 1);
+    spot(colors.shadow, matTip.x - 4, matTip.y, 9, 1);
     if (stage === 'spin') {
       // A little spray of snow-dust while it is still fast.
       if (spinSpeed(ms, test.spin) > 0.35) {
         for (let i = 0; i < 4; i++) {
           const a = time / 260 + i * 1.6;
-          plot(colors.snowLit, matTip.x + Math.round(Math.cos(a) * 8), matTip.y - 1 - (i % 2), 1);
+          spot(colors.snowLit, matTip.x + Math.round(Math.cos(a) * 8), matTip.y - 1 - (i % 2), 1);
         }
       }
-      top(plot, tested, matTip.x, matTip.y, 3, angle, wobble(ms, test));
+      top(spot, tested, matTip.x, matTip.y, 3, angle, wobble(ms, test));
     } else {
       // Tipping over, then lying still on its side until it goes back on the bench.
       const pose = restPose(progress);
-      if (pose.lying) lyingTop(plot, tested, matTip.x - 5, matTip.y, angle);
-      else top(plot, tested, matTip.x, matTip.y, 3, angle, pose.lean);
+      if (pose.lying) lyingTop(spot, tested, matTip.x - 5, matTip.y, angle);
+      else top(spot, tested, matTip.x, matTip.y, 3, angle, pose.lean);
     }
   }
 }
@@ -72,7 +72,7 @@ const booth: NorthPoleSquare = {
   description:
     'Pick a body, stripes and a handle, build your own spinning top, then spin it and see how it tests.',
   draw(ctx, size, time, pointer?: SquarePointer) {
-    const plot = pixels(ctx, size);
+    const spot = pixels(ctx, size);
     const gx = pointer ? (pointer.x / size) * GRID : -1;
     const gy = pointer ? (pointer.y / size) * GRID : -1;
     const hovered = pointer ? buttonAt(gx, gy) : null;
@@ -96,15 +96,15 @@ const booth: NorthPoleSquare = {
     const busy = !demo && testing(workshop, time);
     const report = { test, since, stage, progress, demo, best: workshop.best };
 
-    backdrop(plot, time);
-    partsBoard(ctx, plot, size, build, hovered, busy);
-    spinAndTestBoard(ctx, plot, size, report, hovered, !busy);
-    benchAndMat(plot);
+    backdrop(spot, time);
+    partsBoard(ctx, spot, size, build, hovered, busy);
+    spinAndTestBoard(ctx, spot, size, report, hovered, !busy);
+    benchAndMat(spot);
     const building = demo ? since < 0 : time - workshop.changedAt < HAMMER;
-    elf(plot, time, building);
+    elf(spot, time, building);
     const parts = demo && since < 0 ? elfRound.built : 3;
-    drawTop(plot, time, report, { build, parts, building }, tested);
-    sign(ctx, plot, size);
+    drawTop(spot, time, report, { build, parts, building }, tested);
+    sign(ctx, spot, size);
   },
 };
 

@@ -3,7 +3,7 @@
  * ice inside a low wooden rail, a few skaters gliding slowly round it and two
  * lamps at the back throwing warm light on the ice. It stays low, so the
  * midway's taller rides show over it. Its square's drawing hangs on a sign at
- * the front corner of the plot, clear of the ice (ADR 0042).
+ * the front corner of the spot, clear of the ice (ADR 0042).
  */
 import { glow } from './brushes';
 import { signPost, stage, type LandmarkDrawer } from './landmark-parts';
@@ -76,12 +76,12 @@ function skater(
   ctx.restore();
 }
 
-export const drawIceRink: LandmarkDrawer = (ctx, plot, square, paint, time) => {
-  const ground = stage(ctx, plot, 84);
+export const drawIceRink: LandmarkDrawer = (ctx, spot, square, paint, time) => {
+  const ground = stage(ctx, spot, 84);
   const mid = { x: ground.x, y: ground.y - STAGE };
   // Lamps at the back corners, lighting the ice.
   for (const along of [0.08, 0.92]) {
-    const foot = onSpot(plot, along, 0.92, STAGE);
+    const foot = onSpot(spot, along, 0.92, STAGE);
     ctx.fillStyle = colors.cocoa;
     ctx.fillRect(foot.x - 1.5, foot.y - RINK.lamp, 3, RINK.lamp);
     glow(ctx, foot.x, foot.y - RINK.lamp, 26, 0.9);
@@ -114,7 +114,7 @@ export const drawIceRink: LandmarkDrawer = (ctx, plot, square, paint, time) => {
   for (const one of backToFront(skaters, (s) => s.at.y))
     skater(ctx, one.at, Math.sin(one.angle) > 0 ? -1 : 1, one.coat, time);
   rail(ctx, mid, 0);
-  signPost(ctx, plot, square, paint, { from: 0.02, to: 0.52, low: 12, outward: 0.1 });
+  signPost(ctx, spot, square, paint, { from: 0.02, to: 0.52, low: 12, outward: 0.1 });
   // The lamps near the back corner stand highest.
-  return standing(plot, RINK.lamp + 30);
+  return standing(spot, RINK.lamp + 30);
 };

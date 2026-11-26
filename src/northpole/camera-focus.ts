@@ -6,7 +6,7 @@
 import { tilesOnScreen, union } from './camera';
 import { toScreen, type Box, type Tile, type World } from './world';
 
-/** How far a free spot's "Free spot" sign rises over its plot, in world pixels. */
+/** How far a free spot's "Free spot" sign rises over its spot, in world pixels. */
 const SIGN_HEADROOM = 150;
 
 /**
@@ -17,10 +17,10 @@ const SIGN_HEADROOM = 150;
 export function restingFocus(world: World, player: Tile): Box {
   const at = toScreen(player);
   const me = { x: at.x - 48, y: at.y - 120, w: 96, h: 150 };
-  const free = world.plots.filter((plot) => plot.kind === 'open');
-  const distance = (plot: Box) => Math.hypot(plot.x - player.x, plot.y - player.y);
+  const free = world.spots.filter((spot) => spot.kind === 'open');
+  const distance = (spot: Box) => Math.hypot(spot.x - player.x, spot.y - player.y);
   const nearest = free.reduce<Box | undefined>(
-    (best, plot) => (!best || distance(plot) < distance(best) ? plot : best),
+    (best, spot) => (!best || distance(spot) < distance(best) ? spot : best),
     undefined,
   );
   if (!nearest) return me;

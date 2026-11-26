@@ -1,5 +1,5 @@
 /**
- * An open plot waiting for a booth, which visitors see as a free spot: fresh
+ * An open spot waiting for a booth, which visitors see as a free spot: fresh
  * snow roped off between stakes, a soft beam of light rising from it, and a
  * big "Free spot" sign that bounces while the player stands at it, inviting
  * them to ask for a booth of their own (docs/glossary.md).
@@ -7,33 +7,33 @@
 import { corners, diamond, middle } from './brushes';
 import { sidesOf } from './rounds';
 import { canvasFont, theme } from './theme';
-import type { Box, Plot, Tile } from './world';
+import type { Box, Spot, Tile } from './world';
 
 const { colors } = theme;
 
-/** The "Free spot" sign on an open plot: how tall its post is, and its board's size, in world pixels. */
+/** The "Free spot" sign on an open spot: how tall its post is, and its board's size, in world pixels. */
 export const FREE_SPOT_SIGN = { post: 96, w: 128, h: 40 };
 
 /**
- * An open plot: a square of fresh snow roped off between stakes, a soft beam
+ * An open spot: a square of fresh snow roped off between stakes, a soft beam
  * of light rising from it, and a big "Free spot" sign on a tall post. The sign
- * bounces while the player stands at the plot. Everything moves with `time`,
+ * bounces while the player stands at the spot. Everything moves with `time`,
  * so it all stands still when the map passes 0.
  */
-export function drawOpenPlot(
+export function drawOpenSpot(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   time: number,
   near: boolean,
 ): Box {
-  const c = corners(plot);
-  const pulse = 0.75 + 0.25 * Math.sin(time / 700 + plot.number);
-  claimBeam(ctx, c, middle(plot).y, pulse);
+  const c = corners(spot);
+  const pulse = 0.75 + 0.25 * Math.sin(time / 700 + spot.number);
+  claimBeam(ctx, c, middle(spot).y, pulse);
   claimRope(ctx, c);
   const lift = near
     ? Math.abs(Math.sin(time / 180)) * 10
-    : Math.sin(time / 900 + plot.number) * 1.5;
-  return claimSign(ctx, middle(plot), lift);
+    : Math.sin(time / 900 + spot.number) * 1.5;
+  return claimSign(ctx, middle(spot), lift);
 }
 
 /** The beam: a column of warm light fading upwards, over a glow on the snow. */
@@ -83,7 +83,7 @@ function claimRope(ctx: CanvasRenderingContext2D, c: ReturnType<typeof corners>)
   }
 }
 
-/** The sign on its tall post at (`x`, `y`), raised by `lift`; returns where a click opens the plot. */
+/** The sign on its tall post at (`x`, `y`), raised by `lift`; returns where a click opens the spot. */
 function claimSign(ctx: CanvasRenderingContext2D, { x, y }: Tile, lift: number): Box {
   const { post, w, h } = FREE_SPOT_SIGN;
   ctx.fillStyle = colors.cocoa;

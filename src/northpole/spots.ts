@@ -1,61 +1,61 @@
 /**
- * Which plot every booth stands on, and the plots held for the booths being
+ * Which spot every booth stands on, and the spots held for the booths being
  * built. Plain functions, so the map, the deploy and the tests work them out
  * the same way.
  *
- * A booth's plot comes from, in order: its pin in `plots.json`; else its own
- * `carnival/booths/<login>/plot.json`, which the factory writes when it builds a new
- * booth on the plot its construction site held; else the next free plot. A
- * booth with a pin or a `plot.json` never moves, whatever else changes.
+ * A booth's spot comes from, in order: its pin in `spots.json`; else its own
+ * `carnival/booths/<login>/spot.json`, which the factory writes when it builds a new
+ * booth on the spot its construction site held; else the next free spot. A
+ * booth with a pin or a `spot.json` never moves, whatever else changes.
  *
  * The booths being built are never written down: the deploy reads the open,
- * accepted booth requests and holds the next free plots for them, in order of
+ * accepted booth requests and holds the next free spots for them, in order of
  * issue number, in `pending.json` (read in `construction-sites.ts`).
  */
-import { isPlot, MAX_PENDING, type PendingBooth } from './construction-sites.ts';
+import { isSpot, MAX_PENDING, type PendingBooth } from './construction-sites.ts';
 
-/** What a booth's own `plot.json` says: its plot, and the issue that asked for the booth. */
-export interface PlotFile {
-  plot: number;
-  /** The booth request's issue number: when two booths claim one plot, the lower keeps it. */
+/** What a booth's own `spot.json` says: its spot, and the issue that asked for the booth. */
+export interface SpotFile {
+  spot: number;
+  /** The booth request's issue number: when two booths claim one spot, the lower keeps it. */
   issue?: number;
 }
 
 /**
- * The first plot number a booth's `plot.json` or a construction site can't
- * claim, with `booths` booths on the map. A held plot is always the next free
+ * The first spot number a booth's `spot.json` or a construction site can't
+ * claim, with `booths` booths on the map. A held spot is always the next free
  * one, so it's below the booths and the most requests pending added together.
  * A claim past it would stretch the island, and the work of building it, far
- * beyond every square, so it takes the next free plot instead.
+ * beyond every square, so it takes the next free spot instead.
  */
-export const plotLimit = (booths: number) => booths + MAX_PENDING;
+export const spotLimit = (booths: number) => booths + MAX_PENDING;
 
-/** A booth's `plot.json` if it's valid: a whole number for the plot, and maybe the issue. */
-export function readPlotFile(value: unknown): PlotFile | undefined {
+/** A booth's `spot.json` if it's valid: a whole number for the spot, and maybe the issue. */
+export function readSpotFile(value: unknown): SpotFile | undefined {
   if (!value || typeof value !== 'object') return undefined;
-  const { plot, issue } = value as Record<string, unknown>;
-  if (!isPlot(plot)) return undefined;
-  if (typeof issue === 'number' && Number.isInteger(issue) && issue > 0) return { plot, issue };
-  return { plot };
+  const { spot, issue } = value as Record<string, unknown>;
+  if (!isSpot(spot)) return undefined;
+  if (typeof issue === 'number' && Number.isInteger(issue) && issue > 0) return { spot, issue };
+  return { spot };
 }
 
 /**
- * Every booth's plot number. Pins come first, then each booth's own
- * `plot.json`, the lower issue number first when two claim the same plot,
+ * Every booth's spot number. Pins come first, then each booth's own
+ * `spot.json`, the lower issue number first when two claim the same spot,
  * then the rest take the lowest free numbers in the order given. A file's
- * plot that's pinned to another booth, taken by an earlier file, or past
- * `plotLimit`, falls back to the next free one.
+ * spot that's pinned to another booth, taken by an earlier file, or past
+ * `spotLimit`, falls back to the next free one.
  */
-export function boothPlotNumbers(
+export function boothSpotNumbers(
   ids: readonly string[],
   pinned: Record<string, number> = {},
-  files: Record<string, PlotFile> = {},
+  files: Record<string, SpotFile> = {},
 ): Map<string, number> {
   const numbers = new Map<string, number>();
   const taken = new Set<number>();
   for (const id of ids) {
     const number = pinned[id];
-    if (isPlot(number) && !taken.has(number)) {
+    if (isSpot(number) && !taken.has(number)) {
       numbers.set(id, number);
       taken.add(number);
     }
@@ -63,19 +63,19 @@ export function boothPlotNumbers(
   const claims = ids
     .flatMap((id) => {
       const file = Object.hasOwn(files, id) ? files[id] : undefined;
-      return !numbers.has(id) && file && readPlotFile(file) ? [{ id, file }] : [];
+      return !numbers.has(id) && file && readSpotFile(file) ? [{ id, file }] : [];
     })
     .sort(
       (a, b) =>
         (a.file.issue ?? Infinity) - (b.file.issue ?? Infinity) ||
         Number(a.id > b.id) - Number(a.id < b.id),
     );
-  const limit = plotLimit(ids.length);
+  const limit = spotLimit(ids.length);
   for (const { id, file } of claims) {
-    const { plot } = file;
-    if (taken.has(plot) || plot >= limit) continue;
-    numbers.set(id, plot);
-    taken.add(plot);
+    const { spot } = file;
+    if (taken.has(spot) || spot >= limit) continue;
+    numbers.set(id, spot);
+    taken.add(spot);
   }
   let next = 0;
   for (const id of ids) {
@@ -88,11 +88,11 @@ export function boothPlotNumbers(
 }
 
 /**
- * Holds a plot for each pending request: the next free plots after every
- * taken one, in order of issue number, so two requests never share a plot.
- * A login asked for twice keeps its first request's plot.
+ * Holds a spot for each pending request: the next free spots after every
+ * taken one, in order of issue number, so two requests never share a spot.
+ * A login asked for twice keeps its first request's spot.
  */
-export function reservePlots(
+export function reserveSpots(
   requests: readonly { login: string; issue: number }[],
   taken: Iterable<number>,
 ): Map<string, number> {
@@ -111,8 +111,8 @@ export function reservePlots(
 /**
  * Where the map draws the pending requests, given the booths it has: a
  * request whose login already has a booth is an update, shown on that booth.
- * The others are construction sites on the plot `pending.json` held for them,
- * or, if a booth took that plot meanwhile or it's past `plotLimit`, the next
+ * The others are construction sites on the spot `pending.json` held for them,
+ * or, if a booth took that spot meanwhile or it's past `spotLimit`, the next
  * free one.
  */
 export function placePending(
@@ -122,18 +122,18 @@ export function placePending(
   const updates = new Set<string>();
   const sites = new Map<string, number>();
   const used = new Set(booths.values());
-  const limit = plotLimit(booths.size);
+  const limit = spotLimit(booths.size);
   const moved: PendingBooth[] = [];
   for (const entry of [...pending].sort((a, b) => a.issue - b.issue)) {
     if (booths.has(entry.login)) updates.add(entry.login);
     else if (sites.has(entry.login)) continue;
-    else if (used.has(entry.plot) || entry.plot >= limit) moved.push(entry);
+    else if (used.has(entry.spot) || entry.spot >= limit) moved.push(entry);
     else {
-      sites.set(entry.login, entry.plot);
-      used.add(entry.plot);
+      sites.set(entry.login, entry.spot);
+      used.add(entry.spot);
     }
   }
-  for (const [login, plot] of reservePlots(moved, used)) sites.set(login, plot);
+  for (const [login, spot] of reserveSpots(moved, used)) sites.set(login, spot);
   return { sites, updates };
 }
 

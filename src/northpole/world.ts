@@ -1,9 +1,9 @@
 /**
  * The North Pole as a small isometric world: what a world is made of (tiles,
- * ground, things and plots), and the geometry every part of the map shares.
+ * ground, things and spots), and the geometry every part of the map shares.
  * Plain functions, so the map draws it and the tests check it the same way.
- * Laying the world out is in `world-build.ts`, where each plot is in
- * `world-plots.ts`, and walking it in `walking.ts` and `pathfinding.ts`.
+ * Laying the world out is in `world-build.ts`, where each spot is in
+ * `world-spots.ts`, and walking it in `walking.ts` and `pathfinding.ts`.
  *
  * Tiles have whole-number coordinates with the town square's centre at (0, 0). `x` runs down to
  * the right on screen and `y` down to the left. The world is built from a fixed seed and the list
@@ -61,18 +61,18 @@ export interface Thing extends Box {
 }
 
 /**
- * What stands on a plot: an attraction, a participant's booth, the
+ * What stands on a spot: an attraction, a participant's booth, the
  * construction site of a booth being built, or nothing yet. At the sleigh
  * station, a platform whose sleigh goes to one participant's level, and inside
  * a level, the sleigh back to the North Pole.
  */
-type PlotKind = 'attraction' | 'booth' | 'site' | 'open' | 'platform' | 'exit';
+type SpotKind = 'attraction' | 'booth' | 'site' | 'open' | 'platform' | 'exit';
 
-export interface Plot extends Box {
-  kind: PlotKind;
-  /** The attraction's id, or the owner of the booth or the one being built. An open plot has none. */
+export interface Spot extends Box {
+  kind: SpotKind;
+  /** The attraction's id, or the owner of the booth or the one being built. An open spot has none. */
   id?: string;
-  /** The plot's number among its kind's plots. Its number fixes where it is. */
+  /** The spot's number among its kind's spots. Its number fixes where it is. */
   number: number;
   /** Where you stand to visit it. */
   door: Tile;
@@ -91,7 +91,7 @@ export interface World {
   /** Every tile you can't walk on inside the world. */
   blocked: Set<string>;
   things: Thing[];
-  plots: Plot[];
+  spots: Spot[];
   /** The frozen pond, where the skaters go round. */
   pond: Box;
   /** The reindeer's paddock beside their stable. */

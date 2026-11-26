@@ -31,7 +31,7 @@ test('picking from the Booths panel or Featured highlights the square, and its c
   await expect(canvas).toHaveAttribute('data-selected', 'booth:jedi4ever');
   await expect(entry).toHaveClass(/selected/);
   const prompt = page.locator('.map-prompt');
-  await expect(prompt).toHaveAttribute('data-plot', 'booth:jedi4ever');
+  await expect(prompt).toHaveAttribute('data-spot', 'booth:jedi4ever');
   await expect(prompt).toContainText('Visit');
   // Picking it again lets go of it, and so does Esc.
   await entry.click();
@@ -47,7 +47,7 @@ test('picking from the Booths panel or Featured highlights the square, and its c
   const id = await featured.getAttribute('data-id');
   await expect(canvas).toHaveAttribute('data-near', `attraction:${id}`, { timeout: 1000 });
   await expect(canvas).toHaveAttribute('data-selected', `attraction:${id}`);
-  await expect(prompt).toHaveAttribute('data-plot', `attraction:${id}`);
+  await expect(prompt).toHaveAttribute('data-spot', `attraction:${id}`);
   await expect(prompt).toHaveCSS('opacity', '1');
   // It bobs gently, so it never stands still for the click.
   await prompt.click({ force: true });

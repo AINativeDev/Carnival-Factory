@@ -1,6 +1,6 @@
 import disabled from './disabled.json';
 import { sandboxedSquare } from './sandbox';
-import { readPlotFile, type PlotFile } from './plots';
+import { readSpotFile, type SpotFile } from './spots';
 import { closeForRepairs, createBoothRegistry, idsFromFolders } from './square';
 
 /**
@@ -21,23 +21,23 @@ export const boothRegistry = createBoothRegistry(
 );
 
 /**
- * The valid `plot.json` files among `files`, by the login of the booth folder
- * each sits in: the plot its construction site held, which the factory writes
+ * The valid `spot.json` files among `files`, by the login of the booth folder
+ * each sits in: the spot its construction site held, which the factory writes
  * when it builds a new booth.
  */
-export function plotFilesByLogin(
+export function spotFilesByLogin(
   files: Readonly<Record<string, unknown>>,
-): Record<string, PlotFile> {
-  const valid: Record<string, PlotFile> = {};
+): Record<string, SpotFile> {
+  const valid: Record<string, SpotFile> = {};
   for (const [path, value] of Object.entries(files)) {
-    const plot = readPlotFile(value);
+    const spot = readSpotFile(value);
     // The file's own folder, the path's second-to-last part, is its booth's login.
-    if (plot) valid[path.split('/').slice(-2, -1).join('')] = plot;
+    if (spot) valid[path.split('/').slice(-2, -1).join('')] = spot;
   }
   return valid;
 }
 
-/** Each booth's own `plot.json`, by login. Only valid ones. */
-export const boothPlotFiles: Record<string, PlotFile> = plotFilesByLogin(
-  import.meta.glob('../../carnival/booths/*/plot.json', { eager: true, import: 'default' }),
+/** Each booth's own `spot.json`, by login. Only valid ones. */
+export const boothSpotFiles: Record<string, SpotFile> = spotFilesByLogin(
+  import.meta.glob('../../carnival/booths/*/spot.json', { eager: true, import: 'default' }),
 );

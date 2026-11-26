@@ -56,13 +56,13 @@ function bell(ctx: CanvasRenderingContext2D, pin: Tile, time: number) {
   ctx.restore();
 }
 
-export const drawSchoolhouse: LandmarkDrawer = (ctx, plot, square, paint, time) => {
-  stage(ctx, plot, 82);
-  const body = area(plot, [0.1, 0.9], [0.06, 0.9]);
+export const drawSchoolhouse: LandmarkDrawer = (ctx, spot, square, paint, time) => {
+  stage(ctx, spot, 82);
+  const body = area(spot, [0.1, 0.9], [0.06, 0.9]);
   const eaves = SCHOOL.stage + SCHOOL.wall;
   block(ctx, body, SCHOOL.wall, colors.berry, colors.berry, colors.berry, SCHOOL.stage);
-  const front = frontOf(plot, body);
-  const side = sideOf(plot, body);
+  const front = frontOf(spot, body);
+  const side = sideOf(spot, body);
   // The right of the house is in the dusk's shade, whichever face it is.
   const c = corners(body);
   ctx.fillStyle = colors.night;
@@ -95,19 +95,19 @@ export const drawSchoolhouse: LandmarkDrawer = (ctx, plot, square, paint, time) 
   ctx.fillStyle = colors.glow;
   band(ctx, front, 0.42, 0.58, 48, 55, 0.02);
   ctx.fill();
-  gabledRoof(ctx, plot, [0.04, 0.96], [0.0, 0.94], { eaves, rise: SCHOOL.rise, end: colors.berry });
+  gabledRoof(ctx, spot, [0.04, 0.96], [0.0, 0.94], { eaves, rise: SCHOOL.rise, end: colors.berry });
   framedArt(ctx, front, square, paint, { from: 0.17, to: 0.83, low: 64 }, SIGN_STYLES.pavilion);
   // The bell tower astride the ridge near the front: an open belfry under a pointed cap.
-  const tower = area(plot, [0.4, 0.6], [0.16, 0.32]);
+  const tower = area(spot, [0.4, 0.6], [0.16, 0.32]);
   const foot = eaves + SCHOOL.rise - 22;
   block(ctx, tower, SCHOOL.belfry, colors.cream, colors.cream, colors.snowShade, foot);
-  const belfry = frontOf(plot, tower);
+  const belfry = frontOf(spot, tower);
   ctx.fillStyle = colors.night;
   band(ctx, belfry, 0.18, 0.82, foot + 10, foot + SCHOOL.belfry - 8);
   ctx.fill();
   bell(ctx, onFace(belfry, 0.5, foot + SCHOOL.belfry - 10), time);
   const top = foot + SCHOOL.belfry;
-  const cap = area(plot, [0.37, 0.63], [0.13, 0.35]);
+  const cap = area(spot, [0.37, 0.63], [0.13, 0.35]);
   const capCorners = corners(cap);
   peakedRoof(
     ctx,
@@ -116,7 +116,7 @@ export const drawSchoolhouse: LandmarkDrawer = (ctx, plot, square, paint, time) 
     SCHOOL.cap,
     [colors.surface, colors.night],
   );
-  const peak = onSpot(plot, 0.5, 0.24, top + SCHOOL.cap);
+  const peak = onSpot(spot, 0.5, 0.24, top + SCHOOL.cap);
   pennant(ctx, peak, 18, colors.gold, time);
-  return standing(plot, corners(plot).top.y - peak.y + 30);
+  return standing(spot, corners(spot).top.y - peak.y + 30);
 };

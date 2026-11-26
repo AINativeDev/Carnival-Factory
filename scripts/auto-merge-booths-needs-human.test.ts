@@ -78,8 +78,8 @@ const holds: [string, (routes: Routes) => void][] = [
       (r[TREE] = tree(...Array.from({ length: 41 }, (_, n) => blob(`${FOLDER}f${String(n)}.md`)))),
   ],
   [
-    'an existing booth changes its plot.json',
-    (r) => (r[FILES] = [{ filename: `${FOLDER}plot.json`, status: 'modified' }]),
+    'an existing booth changes its spot.json',
+    (r) => (r[FILES] = [{ filename: `${FOLDER}spot.json`, status: 'modified' }]),
   ],
   [
     'the request hides instructions',
@@ -114,16 +114,16 @@ describe('the gate sends a pull request to a person', () => {
     expect(run.requests.map((r) => r.path)).not.toContain(`git/trees/${SHA}?recursive=1`);
   });
 
-  it('may hold a plot.json on a new booth', async () => {
+  it('may hold a spot.json on a new booth', async () => {
     const routes = mergeableBooth();
     routes[FILES] = [
       { filename: `${FOLDER}booth.ts`, status: 'added' },
-      { filename: `${FOLDER}plot.json`, status: 'added' },
+      { filename: `${FOLDER}spot.json`, status: 'added' },
     ];
-    const plot = { path: `${FOLDER}plot.json`, type: 'blob', sha: 'b3', mode: '100644', size: 9 };
+    const spot = { path: `${FOLDER}spot.json`, type: 'blob', sha: 'b3', mode: '100644', size: 9 };
     const trees = routes[TREE] as { tree: object[] };
-    routes[TREE] = { truncated: false, tree: [...trees.tree, plot] };
-    routes['GET git/blobs/b3'] = { content: Buffer.from('{"plot":4}').toString('base64') };
+    routes[TREE] = { truncated: false, tree: [...trees.tree, spot] };
+    routes['GET git/blobs/b3'] = { content: Buffer.from('{"spot":4}').toString('base64') };
     expect((await runGate(routes)).logs[0]).toContain('merge');
   });
 });

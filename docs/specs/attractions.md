@@ -6,8 +6,8 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 ## Behaviour
 
 - Every folder in `carnival/attractions/` with an `attraction.ts` is an
-  attraction. It stands on a 3 by 3 plot in the rings round the town square.
-  Today's plots are pinned in `src/northpole/plots.json`.
+  attraction. It stands on a 3 by 3 spot in the rings round the town square.
+  Today's spots are pinned in `src/northpole/spots.json`.
 - It opens at `#/attraction/<id>`, and the map shows it at
   `#/?attraction=<id>`. Each attraction stands on the home map as what it is,
   the `landmark` its own `stall` asks for (`LANDMARKS` in
@@ -54,9 +54,9 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   one from the map, by a click, E or Enter, takes the sleigh into the North
   Pole's level of the same id rather than into a room. `#/attraction/<id>`
   still shows its room, whose panel has a link to take the sleigh inside
-  ([ADR 0035](../adr/0035-north-pole-levels.md)). The Academy (plot 10) is a
-  schoolhouse with a swinging bell, and The Recording Studio (plot 11) a
-  studio with a glowing ON AIR sign, and The Year in Review (plot 12) a
+  ([ADR 0035](../adr/0035-north-pole-levels.md)). The Academy (spot 10) is a
+  schoolhouse with a swinging bell, and The Recording Studio (spot 11) a
+  studio with a glowing ON AIR sign, and The Year in Review (spot 12) a
   gallery ([year-in-review.md](year-in-review.md)). None has a platform at the sleigh
   station: the landmark is the way in. Their rooms
   show their level's links out as buttons ([ADR 0038](../adr/0038-north-pole-links.md)).
@@ -66,7 +66,7 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   registry leaves it out (`attractionShown` in `src/feature-flag-names.ts`),
   so it isn't on the map, in the Booths panel's Attractions, at
   `#/attraction/gift-shop` (which says it isn't there) or among the share
-  pages, and its pinned plot stays empty.
+  pages, and its pinned spot stays empty.
 - The Sleigh-Ride Coaster is played inside: its sleigh waits at the station
   until a tap, with a mouse or a finger, launches it over the hill, its
   riders' hands go up on each drop, and each launch lights one more bulb of
@@ -95,7 +95,7 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 ## Where it lives
 
 `carnival/attractions/`, `src/northpole/attractions.ts`,
-`src/northpole/plots.json`, `plugins/north-pole-gifts/`.
+`src/northpole/spots.json`, `plugins/north-pole-gifts/`.
 
 ## Tested by
 

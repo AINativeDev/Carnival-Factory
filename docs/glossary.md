@@ -16,12 +16,13 @@ page keeps to these plain words, one word for one thing, with no idioms.
   ferris wheel, in `carnival/attractions/<id>/`. Only maintainers change it.
 - **Square**: anything that draws through the `NorthPoleSquare` contract: a
   booth, an attraction or one of a level's squares. Each runs sandboxed.
-- **Plot**: a numbered place on the map where a square stands. A plot's
-  number always means the same place. It is a word for the code and the docs;
-  visitors see a plot as a **spot**.
-- **Free spot**: a plot with no booth yet, waiting for one. Its sign says
+- **Spot**: a numbered place on the map where a square stands. A spot's
+  number always means the same place. The page, the docs and the code all
+  say spot (`Spot`, `spots.ts`, `spot.json`); the code said plot until
+  [ADR 0049](adr/0049-spots-in-the-code.md).
+- **Free spot**: a spot with no booth yet, waiting for one. Its sign says
   "Free spot", and at one the map offers "Build your booth here". In the code
-  it's an open plot (`kind: 'open'`).
+  it's a spot of `kind: 'open'`.
 - **Being built**: a booth whose request was accepted and that the factory is
   building now. Its spot shows scaffolding and a sign with `@login` and its
   stage, such as "Being built" or "Checks running". The code and the specs

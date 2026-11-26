@@ -66,7 +66,7 @@ for (const { level, name } of PLACES)
         await page.goto(`#/?attraction=${id}`);
         await expect(canvas).toHaveAttribute('data-selected', `attraction:${id}`);
         const prompt = page.locator('.map-prompt');
-        await expect(prompt).toHaveAttribute('data-plot', `attraction:${id}`);
+        await expect(prompt).toHaveAttribute('data-spot', `attraction:${id}`);
         await expect(prompt).toContainText(name);
         await canvas.focus();
         await page.keyboard.press('e');
@@ -89,7 +89,7 @@ for (const { level, name } of PLACES)
       await stillCamera(page);
       await canvas.focus();
       for (const { id: stallId } of level.squares ?? []) {
-        const stall = world.plots.find((plot) => plot.kind === 'attraction' && plot.id === stallId);
+        const stall = world.spots.find((spot) => spot.kind === 'attraction' && spot.id === stallId);
         if (!stall) throw new Error(`${name} has no stall ${stallId}`);
         await test.step(`the ${stallId} item`, async () => {
           // A phone's close camera in a furnished room is a long walk of short
@@ -111,7 +111,7 @@ for (const { level, name } of PLACES)
       }
 
       await test.step('the sleigh home', async () => {
-        const home = world.plots.find((plot) => plot.kind === 'exit');
+        const home = world.spots.find((spot) => spot.kind === 'exit');
         if (!home) throw new Error(`${name} has no sleigh home`);
         // On a phone, the way home is the link in the corner; the laptop walks to the sleigh.
         if (viewport.name === 'phone')

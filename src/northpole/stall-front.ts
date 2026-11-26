@@ -13,7 +13,7 @@ import { SHAPE_PLANS } from './stall-catalogue';
 import { chosenStall } from './stall-default';
 import { STALL, stallSignLow } from './stall-plan';
 import { theme } from './theme';
-import type { Box, Plot } from './world';
+import type { Box, Spot } from './world';
 
 const { colors } = theme;
 
@@ -46,11 +46,11 @@ export function stallFront(
 }
 
 /** The counter, standing out in front of the drawing. */
-export function stallCounter(ctx: CanvasRenderingContext2D, plot: Plot, face: Face) {
+export function stallCounter(ctx: CanvasRenderingContext2D, spot: Spot, face: Face) {
   const counter: Box =
     face.out.x > 0
-      ? { x: plot.x + plot.w, y: plot.y, w: 0.3, h: plot.h }
-      : { x: plot.x, y: plot.y + plot.h, w: plot.w, h: 0.3 };
+      ? { x: spot.x + spot.w, y: spot.y, w: 0.3, h: spot.h }
+      : { x: spot.x, y: spot.y + spot.h, w: spot.w, h: 0.3 };
   block(ctx, counter, STALL.counter, colors.gingerbread, colors.wood, colors.cocoa);
 }
 

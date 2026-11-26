@@ -4,12 +4,12 @@
  */
 import { describe, expect, it } from 'vitest';
 import { drawingOf, fingerprint } from '../test-support/recording-canvas';
-import { drawPlot } from './render';
+import { drawSpot } from './render';
 import type { NorthPoleSquare } from './square';
-import type { Plot } from './world';
+import type { Spot } from './world';
 
 describe('an item to discover', () => {
-  const plot: Plot = {
+  const spot: Spot = {
     kind: 'attraction',
     id: 'globe',
     number: 0,
@@ -26,16 +26,16 @@ describe('an item to discover', () => {
     draw: () => undefined,
     ...(stall ? { stall } : {}),
   });
-  const drawn = (on: Plot, item: NorthPoleSquare) => {
+  const drawn = (on: Spot, item: NorthPoleSquare) => {
     const painted: unknown[] = [];
     const calls = drawingOf((ctx) => {
-      painted.push(drawPlot(ctx, on, item, (_square, mapping) => painted.push(mapping), 0));
+      painted.push(drawSpot(ctx, on, item, (_square, mapping) => painted.push(mapping), 0));
     });
     return { calls, painted };
   };
 
   it('stands on a plinth with its name, its drawing on a framed card', () => {
-    const { calls, painted } = drawn(plot, square({ shape: 'kiosk', roof: 'mint', display: true }));
+    const { calls, painted } = drawn(spot, square({ shape: 'kiosk', roof: 'mint', display: true }));
     expect(calls.filter(([name]) => name === 'fillText').map(([, text]) => text)).toContain(
       'Globe',
     );
@@ -67,14 +67,14 @@ describe('an item to discover', () => {
   });
 
   it('has a gold cloth when it names no colour, and is never a booth’s', () => {
-    const plain = drawn(plot, {
+    const plain = drawn(spot, {
       ...square(undefined),
       stall: { display: true } as NorthPoleSquare['stall'] & object,
     });
     expect(fingerprint(plain.calls)).not.toBe(
-      fingerprint(drawn(plot, square({ shape: 'kiosk', roof: 'mint', display: true })).calls),
+      fingerprint(drawn(spot, square({ shape: 'kiosk', roof: 'mint', display: true })).calls),
     );
-    const booth = { ...plot, kind: 'booth' as const, id: 'ana' };
+    const booth = { ...spot, kind: 'booth' as const, id: 'ana' };
     const style = { shape: 'kiosk', roof: 'mint' } as const;
     expect(fingerprint(drawn(booth, square({ ...style, display: true })).calls)).toBe(
       fingerprint(drawn(booth, square(style)).calls),

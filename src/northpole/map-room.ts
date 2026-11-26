@@ -16,7 +16,7 @@ import { timeFrame } from './map-timing';
 import { onRect } from './pointer';
 import { dressRoom } from './room-dressing';
 import type { NorthPoleSquare } from './square';
-import type { Plot } from './world';
+import type { Spot } from './world';
 
 /** The size a square draws at on the back wall of its room, in pixels. */
 const VISIT_SIZE = 480;
@@ -31,15 +31,15 @@ export interface RoomFrame {
 }
 
 /** The room the player is inside, dressed as its own, with the square's drawing on the stage. */
-export function drawInside(m: MapRun, plot: Plot, square: NorthPoleSquare, frame: RoomFrame) {
+export function drawInside(m: MapRun, spot: Spot, square: NorthPoleSquare, frame: RoomFrame) {
   const started = performance.now();
   const { ctx, canvas, scale } = m;
   const { width, height, time } = frame;
   const room = roomLayout(roomArea(width, height));
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
-  const booth = plot.kind === 'booth';
-  // A square's plot always has its id: its owner's login, or the attraction's.
-  const login = String(plot.id);
+  const booth = spot.kind === 'booth';
+  // A square's spot always has its id: its owner's login, or the attraction's.
+  const login = String(spot.id);
   drawRoom(
     ctx,
     room,
@@ -49,12 +49,12 @@ export function drawInside(m: MapRun, plot: Plot, square: NorthPoleSquare, frame
     booth ? `by @${login}` : '',
     booth ? avatarOf(m, login) : undefined,
   );
-  dressRoom(ctx, room, square, plot, time);
+  dressRoom(ctx, room, square, spot, time);
   const { stage } = room;
   // The stage is the square's drawing scaled, so the pointer scales with it.
   const pressed = m.pointer.now();
   const onStage = pressed && onRect(pressed, stage, VISIT_SIZE);
-  const pointed = onStage ? `${plot.kind}:${login}` : '';
+  const pointed = onStage ? `${spot.kind}:${login}` : '';
   if (canvas.dataset.pointer !== pointed) canvas.dataset.pointer = pointed;
   ctx.save();
   ctx.translate(stage.x, stage.y);

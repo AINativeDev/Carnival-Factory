@@ -10,20 +10,20 @@ import type { MapRun } from './map-state';
 import { inviteFor, inviteOpacity } from './owners';
 import { middle } from './brushes';
 import { cornerLinks, promptSpot } from './prompt-spot';
-import type { Plot, Tile } from './world';
+import type { Spot, Tile } from './world';
 
-/** What the call to action says for a plot. Its words follow the square's name, which arrives once its frame has opened. */
-export function promptWords(m: MapRun, plot: Plot) {
-  if (plot.kind === 'open') return 'Build your booth here';
-  if (plot.kind === 'site') return `Booth for @${String(plot.id)}: ${siteLabel(m, plot).stage}`;
-  if (plot.kind === 'exit') return 'Take the sleigh back to the North Pole';
-  if (plot.kind === 'platform') {
-    const label = platformLabel(m, plot);
+/** What the call to action says for a spot. Its words follow the square's name, which arrives once its frame has opened. */
+export function promptWords(m: MapRun, spot: Spot) {
+  if (spot.kind === 'open') return 'Build your booth here';
+  if (spot.kind === 'site') return `Booth for @${String(spot.id)}: ${siteLabel(m, spot).stage}`;
+  if (spot.kind === 'exit') return 'Take the sleigh back to the North Pole';
+  if (spot.kind === 'platform') {
+    const label = platformLabel(m, spot);
     return label.closed
       ? `${label.name} is closed for repairs`
       : `Take the sleigh to ${label.name}`;
   }
-  return `Visit ${squareOf(m, plot)?.name ?? plot.id ?? ''}`;
+  return `Visit ${squareOf(m, spot)?.name ?? spot.id ?? ''}`;
 }
 
 /**
@@ -34,13 +34,13 @@ export function promptWords(m: MapRun, plot: Plot) {
  */
 export function showPrompt(m: MapRun, time: number, zoom: number, centre: Tile) {
   const { prompt } = m;
-  const plot = m.visiting ? undefined : inviteFor(m.selected, m.near);
-  if (plot !== m.invited) {
-    m.invited = plot;
+  const spot = m.visiting ? undefined : inviteFor(m.selected, m.near);
+  if (spot !== m.invited) {
+    m.invited = spot;
     m.invitedAt = time;
   }
-  if (plot) {
-    const words = promptWords(m, plot);
+  if (spot) {
+    const words = promptWords(m, spot);
     if (prompt.title !== words) {
       const text = document.createElement('span');
       text.className = 'prompt-text';
@@ -50,17 +50,17 @@ export function showPrompt(m: MapRun, time: number, zoom: number, centre: Tile) 
       prompt.replaceChildren(text, ' ', key);
       prompt.title = words;
     }
-    prompt.dataset.plot = `${plot.kind}:${plot.id ?? plot.number}`;
+    prompt.dataset.spot = `${spot.kind}:${spot.id ?? spot.number}`;
   }
-  prompt.hidden = !plot;
-  if (plot) placePrompt(m, plot, time, zoom, centre);
+  prompt.hidden = !spot;
+  if (spot) placePrompt(m, spot, time, zoom, centre);
   noteWhereabouts(m);
 }
 
-/** Sits the prompt above its plot, kept on the screen, or hides it while the plot is out of view. */
-function placePrompt(m: MapRun, plot: Plot, time: number, zoom: number, centre: Tile) {
+/** Sits the prompt above its spot, kept on the screen, or hides it while the spot is out of view. */
+function placePrompt(m: MapRun, spot: Spot, time: number, zoom: number, centre: Tile) {
   const { prompt, frame } = m;
-  const target = m.targets.find((t) => t.plot === plot);
+  const target = m.targets.find((t) => t.spot === spot);
   if (!target) {
     prompt.style.opacity = '0';
     return;
@@ -68,7 +68,7 @@ function placePrompt(m: MapRun, plot: Plot, time: number, zoom: number, centre: 
   const width = frame.clientWidth;
   const height = frame.clientHeight;
   const top = target.box.y - 40;
-  const anchor = worldToScreen({ x: middle(plot).x, y: top }, width, height, centre, zoom);
+  const anchor = worldToScreen({ x: middle(spot).x, y: top }, width, height, centre, zoom);
   const size = { w: prompt.offsetWidth, h: prompt.offsetHeight };
   const { x, y } = promptSpot(anchor, size, { width, height }, cornerLinks(frame));
   prompt.style.translate = `${Math.round(x)}px ${Math.round(y)}px`;

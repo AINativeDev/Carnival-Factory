@@ -6,7 +6,7 @@ vi.mock('./disabled.json', () => ({
   default: { booths: ['JEDI4EVER'], attractions: ['Ferris-Wheel'], levels: [] },
 }));
 
-const { boothRegistry, plotFilesByLogin } = await import('./booths');
+const { boothRegistry, spotFilesByLogin } = await import('./booths');
 const { attractionRegistry } = await import('./attractions');
 
 describe('the kill switch for booths and attractions', () => {
@@ -19,13 +19,13 @@ describe('the kill switch for booths and attractions', () => {
   });
 });
 
-describe("a booth's own plot.json", () => {
-  it('is kept by its folder login when it holds a plot, and left out when it does not', () => {
+describe("a booth's own spot.json", () => {
+  it('is kept by its folder login when it holds a spot, and left out when it does not', () => {
     expect(
-      plotFilesByLogin({
-        '../../carnival/booths/ana/plot.json': { plot: 12, issue: 40 },
-        '../../carnival/booths/bob/plot.json': { plot: 'twelve' },
+      spotFilesByLogin({
+        '../../carnival/booths/ana/spot.json': { spot: 12, issue: 40 },
+        '../../carnival/booths/bob/spot.json': { spot: 'twelve' },
       }),
-    ).toEqual({ ana: { plot: 12, issue: 40 } });
+    ).toEqual({ ana: { spot: 12, issue: 40 } });
   });
 });

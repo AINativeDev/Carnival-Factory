@@ -16,7 +16,7 @@ import { SIGN_STYLES } from './sign-styles';
 import { PAVILION, standing } from './stall-plan';
 import type { NorthPoleSquare } from './square';
 import { canvasFont, theme } from './theme';
-import type { Box, Plot } from './world';
+import type { Box, Spot } from './world';
 
 const { colors } = theme;
 
@@ -116,21 +116,21 @@ function windows(
     }
 }
 
-/** Draws the tower on its plot and returns where a click opens it. */
+/** Draws the tower on its spot and returns where a click opens it. */
 export function drawTower(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   square: NorthPoleSquare,
   paint: PaintSquare,
   time: number,
   word: string,
 ): Box {
-  const { x, y } = middle(plot);
+  const { x, y } = middle(spot);
   shadow(ctx, x, y + 8, 90);
-  block(ctx, plot, PAVILION.stage, colors.snowShade, colors.surface, colors.night);
+  block(ctx, spot, PAVILION.stage, colors.snowShade, colors.surface, colors.night);
   // The hall at the foot, with the square's drawing framed in gold and the sign over it.
-  const hall = inset(plot, 0.2);
-  const front = faceOf({ ...hall, door: plot.door });
+  const hall = inset(spot, 0.2);
+  const front = faceOf({ ...hall, door: spot.door });
   const width = Math.abs(front.b.x - front.a.x);
   block(ctx, hall, TOWER.hall, colors.snow, colors.gingerbread, colors.cocoa, PAVILION.stage);
   const art = width * 0.6;
@@ -150,10 +150,10 @@ export function drawTower(
     SIGN_STYLES.tower,
   );
   // The tower, rising from the hall's roof.
-  const tower = inset(plot, 0.55);
+  const tower = inset(spot, 0.55);
   const rise = PAVILION.stage + TOWER.hall;
   block(ctx, tower, TOWER.tower, colors.snowShade, colors.gingerbread, colors.cocoa, rise);
-  const face = faceOf({ ...tower, door: plot.door });
+  const face = faceOf({ ...tower, door: spot.door });
   // The other face we see: right of the front when the door faces left, left of it otherwise.
   const c = corners(tower);
   const side =
@@ -174,5 +174,5 @@ export function drawTower(
   ctx.fillRect(peak.x + 14, peak.y - top - 26, 9, 26);
   chimneySmoke(ctx, peak.x + 18, peak.y - top - 28, time);
   cog(ctx, peak.x - 4, peak.y - top - TOWER.cog, TOWER.cog * 0.7, time);
-  return standing(plot, top + TOWER.cog * 2 + 20);
+  return standing(spot, top + TOWER.cog * 2 + 20);
 }

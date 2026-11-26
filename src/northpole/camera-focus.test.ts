@@ -12,8 +12,8 @@ describe('the resting view on a laptop', () => {
   it('keeps the player and their nearest free spot, sign and all, on screen', () => {
     const { zoom, target } = framing(world, 1400, 856, world.start, 0, false);
     const centre = frameCentre(islandBounds(world), 1400, 856, zoom, target);
-    const mark = world.plots
-      .filter((plot) => plot.kind === 'open')
+    const mark = world.spots
+      .filter((spot) => spot.kind === 'open')
       .sort(
         (a, b) =>
           Math.hypot(a.x - world.start.x, a.y - world.start.y) -
@@ -31,7 +31,7 @@ describe('the resting view on a laptop', () => {
   });
 
   it('frames the player alone where there is no free spot', () => {
-    const full = { ...world, plots: world.plots.filter((plot) => plot.kind !== 'open') };
+    const full = { ...world, spots: world.spots.filter((spot) => spot.kind !== 'open') };
     const focus = restingFocus(full, world.start);
     const at = toScreen(world.start);
     expect(focus).toEqual({ x: at.x - 48, y: at.y - 120, w: 96, h: 150 });

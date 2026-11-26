@@ -40,10 +40,10 @@ export function buttonAt(x: number, y: number): Button | null {
 }
 
 /** Paints a `w` by `h` block of board pixels at (x, y), snapped so neighbours never leave a seam. */
-export type Plot = (color: string, x: number, y: number, w?: number, h?: number) => void;
+export type Spot = (color: string, x: number, y: number, w?: number, h?: number) => void;
 
 /** The pixel grid every shape snaps to, at `size` canvas pixels across. */
-export function pixels(ctx: CanvasRenderingContext2D, size: number): Plot {
+export function pixels(ctx: CanvasRenderingContext2D, size: number): Spot {
   const px = size / GRID;
   return (color, x, y, w = 1, h = 1) => {
     ctx.fillStyle = color;

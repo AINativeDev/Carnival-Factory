@@ -6,7 +6,7 @@ import { ATTRACTIONS, booths } from '../test-support/sample-squares';
 
 describe('the sights and the forest', () => {
   it('keeps scenery off attractions pinned past where their count would reach', () => {
-    // An attraction pinned to 0 has gone, so eight are left on plots 1 to 8,
+    // An attraction pinned to 0 has gone, so eight are left on spots 1 to 8,
     // and one alone is pinned far out.
     const eight = ATTRACTIONS.concat(['a', 'b', 'c']);
     const gap = Object.fromEntries(eight.map((id, n) => [id, n + 1]));
@@ -15,16 +15,16 @@ describe('the sights and the forest', () => {
       buildWorld(['far'], booths(1), { attractions: { far: 48 }, booths: {} }),
     ]) {
       const things = world.things.filter((t) => t.blocks);
-      for (const plot of world.plots.filter((p) => p.kind === 'attraction')) {
-        for (let x = plot.x; x < plot.x + plot.w; x++)
-          for (let y = plot.y; y < plot.y + plot.h; y++) {
-            expect(world.ground.get(key(x, y)) ?? 'snow', plot.id).not.toMatch(/ice|water/);
+      for (const spot of world.spots.filter((p) => p.kind === 'attraction')) {
+        for (let x = spot.x; x < spot.x + spot.w; x++)
+          for (let y = spot.y; y < spot.y + spot.h; y++) {
+            expect(world.ground.get(key(x, y)) ?? 'snow', spot.id).not.toMatch(/ice|water/);
             for (const thing of things)
               expect(
                 x >= thing.x && x < thing.x + thing.w && y >= thing.y && y < thing.y + thing.h,
               ).toBe(false);
           }
-        expect(findPath(world, world.start, plot.door), plot.id).toBeDefined();
+        expect(findPath(world, world.start, spot.door), spot.id).toBeDefined();
       }
     }
   });

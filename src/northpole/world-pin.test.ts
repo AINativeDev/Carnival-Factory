@@ -1,11 +1,11 @@
 /**
  * Pins the worlds the map lays out, so splitting the world's code into smaller
  * files (docs/adr/0019-small-files.md) is proven to build exactly the same
- * island and the same levels: every tile, thing, plot and stroll.
+ * island and the same levels: every tile, thing, spot and stroll.
  */
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import pinned from './plots.json';
+import pinned from './spots.json';
 import { levelWorld } from './level';
 import { findPath } from './pathfinding';
 import { type World } from './world';
@@ -38,24 +38,24 @@ describe('the worlds the map lays out', () => {
       buildWorld(ATTRACTIONS, booths(3)),
       buildWorld(ATTRACTIONS.concat(booths(11)), booths(70), pinned),
       buildWorld(ATTRACTIONS, booths(9), undefined, {
-        files: { 'elf-2': { plot: 12, issue: 4 } },
-        pending: [{ login: 'amy', issue: 7, plot: 4, stage: 'building' }],
+        files: { 'elf-2': { spot: 12, issue: 4 } },
+        pending: [{ login: 'amy', issue: 7, spot: 4, stage: 'building' }],
         levels: ['jedi4ever', 'snowelf'],
       }),
     ];
     expect(worlds.map(fingerprintOf)).toMatchInlineSnapshot(`
       [
-        "9731517be6964bea",
-        "ee50a7854c002a56",
-        "1249f0cf22a4af24",
+        "3af6f28e8b938911",
+        "6d073b96db63a869",
+        "f85c66a20de990aa",
       ]
     `);
   });
 
   it('finds the same ways round it as before', () => {
     const world = buildWorld(ATTRACTIONS.concat(booths(11)), booths(70), pinned);
-    const ways = world.plots.map((plot) => findPath(world, world.start, plot.door));
-    const back = world.plots.map((plot) => findPath(world, plot.door, { x: 0, y: 2 }));
+    const ways = world.spots.map((spot) => findPath(world, world.start, spot.door));
+    const back = world.spots.map((spot) => findPath(world, spot.door, { x: 0, y: 2 }));
     const digest = createHash('sha256')
       .update(JSON.stringify([ways, back]))
       .digest('hex');
@@ -68,11 +68,11 @@ describe('the worlds the map lays out', () => {
       .map(([path, level]) => `${path}: ${fingerprintOf(levelWorld(level.default))}`);
     expect(fingerprints).toMatchInlineSnapshot(`
       [
-        "../../carnival/levels/jedi4ever/level.ts: cd25e40f7f726894",
-        "../../carnival/levels/the-academy/level.ts: 2aa4e0f718c16ee2",
-        "../../carnival/levels/the-factory/level.ts: 07acd7bbf8cbe1dd",
-        "../../carnival/levels/the-studio/level.ts: ab76f7c0401cb25d",
-        "../../carnival/levels/the-year-in-review/level.ts: 1c81d362357b68f0",
+        "../../carnival/levels/jedi4ever/level.ts: aa7482784e7af429",
+        "../../carnival/levels/the-academy/level.ts: 625c2cf717eb4c6f",
+        "../../carnival/levels/the-factory/level.ts: eb1b99c5e2ae014d",
+        "../../carnival/levels/the-studio/level.ts: 192594fc31bc94e6",
+        "../../carnival/levels/the-year-in-review/level.ts: e30103b32e87dd4d",
       ]
     `);
   });

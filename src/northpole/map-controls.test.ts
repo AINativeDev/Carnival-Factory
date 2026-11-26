@@ -19,7 +19,7 @@ const start = (options: (told: Told) => MapOptions, extra: Partial<MapOptions> =
   return map;
 };
 
-const site = { login: 'blitzen', issue: 12, plot: 9, stage: 'building' as const };
+const site = { login: 'blitzen', issue: 12, spot: 9, stage: 'building' as const };
 
 describe('the controls the page has over a map', () => {
   it('ignores squares that are not on the map', () => {
@@ -39,7 +39,7 @@ describe('the controls the page has over a map', () => {
     expect(controls.visiting).toEqual({ kind: 'attraction', id: 'skates' });
     controls.walkTo('attraction', 'cocoa');
     controls.jumpTo('attraction', 'cocoa');
-    controls.walkToOpenPlot();
+    controls.walkToOpenSpot();
     expect(told.filter(([what]) => what === 'leave')).toHaveLength(3);
     expect(controls.selected).toEqual({ kind: 'attraction', id: 'cocoa' });
   });
@@ -86,19 +86,19 @@ describe('the controls the page has over a map', () => {
     expect(told).toContainEqual(['select', undefined, undefined]);
   });
 
-  it('has no open plot to claim or walk to in a level', () => {
+  it('has no open spot to claim or walk to in a level', () => {
     const { controls, step, canvas } = start(levelOptions);
     step(0);
     const at = canvas.dataset.player;
     controls.claimNextDoor();
-    controls.walkToOpenPlot();
+    controls.walkToOpenSpot();
     step(500);
     expect(canvas.dataset.player).toBe(at);
   });
 });
 
 describe('construction sites', () => {
-  it('lays the world out again only when a plot moved', () => {
+  it('lays the world out again only when a spot moved', () => {
     const { controls, record, canvas } = start(northPoleOptions);
     expect(
       record(() => {
@@ -115,7 +115,7 @@ describe('construction sites', () => {
     expect(canvas.dataset.sites).toBe('blitzen');
   });
 
-  it('keeps hold of the picked square, the plot being claimed and the walk on the way', () => {
+  it('keeps hold of the picked square, the spot being claimed and the walk on the way', () => {
     const { controls, step, canvas } = start(northPoleOptions);
     step(0);
     controls.claimNextDoor();

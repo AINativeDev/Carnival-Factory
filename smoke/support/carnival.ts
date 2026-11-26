@@ -11,7 +11,7 @@ import type { Page } from '../coverage';
 import { isNorthPoleLevel } from '../../src/northpole/north-pole-levels';
 import { attractionShown } from '../../src/feature-flag-names';
 import { FLAGS } from './feature-flags';
-import { buildWorld, type PinnedPlots, type WorldExtras } from '../../src/northpole/world-build';
+import { buildWorld, type PinnedSpots, type WorldExtras } from '../../src/northpole/world-build';
 
 const root = join(import.meta.dirname, '..', '..');
 /** Where every spec saves its screenshots, for the pull request's preview comment. */
@@ -54,15 +54,15 @@ export const played = only ? squares.filter(({ kind, id }) => `${kind}/${id}` ==
 export const booths = squares.filter((square) => square.kind === 'booth').map((s) => s.id);
 const attractions = squares.filter((s) => s.kind === 'attraction').map((s) => s.id);
 const pinned = JSON.parse(
-  readFileSync(join(root, 'src/northpole/plots.json'), 'utf8'),
-) as PinnedPlots;
+  readFileSync(join(root, 'src/northpole/spots.json'), 'utf8'),
+) as PinnedSpots;
 /** Every participant's level, each with its platform at the sleigh station, as the map lays them out. */
 const levelLogins = readdirSync(join(root, 'carnival', 'levels'))
   .filter((name) => existsSync(join(root, 'carnival', 'levels', name, 'level.ts')))
   .filter((name) => !isNorthPoleLevel(name))
   .sort();
 
-/** The world the map builds, so a test can find a plot where the page draws it. */
+/** The world the map builds, so a test can find a spot where the page draws it. */
 export function carnivalWorld(pending: WorldExtras['pending'] = []) {
   return buildWorld(attractions, booths, pinned, { levels: levelLogins, pending });
 }

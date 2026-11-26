@@ -96,7 +96,7 @@ function drawEdgeFence(ctx: CanvasRenderingContext2D, a: Tile, b: Tile) {
   }
 }
 
-/** The string lights' colours, in turn along the fence and round a picked plot. */
+/** The string lights' colours, in turn along the fence and round a picked spot. */
 export const LIGHTS = [colors.lantern, colors.berry, colors.gold, colors.mint] as const;
 
 /** String lights along the fence, glowing and gently twinkling: on its back edges or its front ones. */

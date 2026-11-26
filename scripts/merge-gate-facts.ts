@@ -18,7 +18,7 @@ import {
   type User,
 } from './merge-gate-github.ts';
 import { lastAutoMerge } from './merge-gate-requests.ts';
-import { checkSquareCode, plotFileProblems } from './square-code.ts';
+import { checkSquareCode, spotFileProblems } from './square-code.ts';
 
 export const FACTORY = 'tessl-app[bot]';
 const REVIEWER = 'tessl-reviewer[bot]';
@@ -115,7 +115,7 @@ export async function gatherFacts(
     changedFiles: files,
     codeProblems: [
       ...booth.problems,
-      ...plotFileProblems(`carnival/booths/${owner}/`, changed),
+      ...spotFileProblems(`carnival/booths/${owner}/`, changed),
       ...checkSquareCode(`carnival/booths/${owner}/`, booth.files),
     ],
     textFindings: [

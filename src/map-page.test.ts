@@ -83,11 +83,11 @@ describe('renderMap', () => {
     expect(page.app.querySelector<HTMLDetailsElement>('.hud-controls')?.open).toBe(true);
   });
 
-  it('walks to an open plot, shows the whole island, and comes back to the map from a square', () => {
+  it('walks to an open spot, shows the whole island, and comes back to the map from a square', () => {
     const page = newPage();
     renderMap(page);
     click(page, '.hud-claim');
-    expect(lastMap().walkToOpenPlot).toHaveBeenCalled();
+    expect(lastMap().walkToOpenSpot).toHaveBeenCalled();
     click(page, '.hud-overview');
     expect(page.app.querySelector('.hud-overview')?.textContent).toBe('Back to the carnival');
     lastMap().overview = false;

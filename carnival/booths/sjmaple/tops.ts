@@ -1,5 +1,5 @@
 import { theme } from '../../../src/northpole/theme';
-import type { Plot } from './board';
+import type { Spot } from './board';
 import { type Build, type Part, partsOf } from './parts';
 
 const { colors } = theme;
@@ -10,7 +10,7 @@ const { colors } = theme;
  * far its handle leans, in pixels.
  */
 export function top(
-  plot: Plot,
+  spot: Spot,
   build: Build,
   x: number,
   y: number,
@@ -31,15 +31,15 @@ export function top(
       const striped = parts > 1 && Math.sin(around * 2) > 0.25 && r > 1 && r < rows.length - 1;
       const painted = striped && (parts >= 2 || dx <= -half + Math.round((parts - 1) * half * 2));
       const base = painted ? stripe.color : dx <= 0 ? colors.gold : colors.gingerbread;
-      plot(base, x + dx + shift, y - r);
+      spot(base, x + dx + shift, y - r);
     }
   }
   if (parts > 2 && bodyRows === rows.length) {
     const stem = Math.max(1, Math.round(Math.min(1, parts - 2) * handle.stem));
     const shift = Math.round(lean);
     const from = y - rows.length;
-    for (let s = 0; s < stem; s++) plot(colors.wood, x + shift, from - s);
-    if (handle.cap && stem === handle.stem) plot(colors.cocoa, x + shift - 1, from - stem, 3, 1);
+    for (let s = 0; s < stem; s++) spot(colors.wood, x + shift, from - s);
+    if (handle.cap && stem === handle.stem) spot(colors.cocoa, x + shift - 1, from - stem, 3, 1);
   }
 }
 
@@ -47,7 +47,7 @@ export function top(
  * A whole top lying on its side on the ground at `ground`, tip to the left at
  * `x`, handle to the right. Each body row of an upright top becomes a column.
  */
-export function lyingTop(plot: Plot, build: Build, x: number, ground: number, angle: number) {
+export function lyingTop(spot: Spot, build: Build, x: number, ground: number, angle: number) {
   const { body, handle, stripe } = partsOf(build);
   const { rows } = body;
   const axis = ground - Math.max(...rows);
@@ -58,32 +58,32 @@ export function lyingTop(plot: Plot, build: Build, x: number, ground: number, an
       const around = Math.asin(Math.max(-1, Math.min(1, u))) + angle;
       const striped = Math.sin(around * 2) > 0.25 && c > 1 && c < rows.length - 1;
       const base = striped ? stripe.color : dy <= 0 ? colors.gold : colors.gingerbread;
-      plot(base, x + c, axis + dy);
+      spot(base, x + c, axis + dy);
     }
   }
-  plot(colors.wood, x + rows.length, axis, handle.stem, 1);
-  if (handle.cap) plot(colors.cocoa, x + rows.length + handle.stem, axis - 1, 1, 3);
+  spot(colors.wood, x + rows.length, axis, handle.stem, 1);
+  if (handle.cap) spot(colors.cocoa, x + rows.length + handle.stem, axis - 1, 1, 3);
 }
 
 /** A small picture of a part for its button, centred on (x, y). */
-export function partIcon(plot: Plot, part: Part, build: Build, x: number, y: number) {
+export function partIcon(spot: Spot, part: Part, build: Build, x: number, y: number) {
   const { body, handle, stripe } = partsOf(build);
   if (part === 'stripe') {
-    plot(colors.gold, x - 2, y - 2, 5, 5);
-    plot(stripe.color, x - 2, y - 1, 5, 1);
-    plot(stripe.color, x - 2, y + 1, 5, 1);
+    spot(colors.gold, x - 2, y - 2, 5, 5);
+    spot(stripe.color, x - 2, y - 1, 5, 1);
+    spot(stripe.color, x - 2, y + 1, 5, 1);
     return;
   }
   if (part === 'body') {
     const { rows } = body;
     for (let i = 0; i < 5; i++) {
       const half = Math.round((rows[Math.floor((i * rows.length) / 5)] ?? 0) / 2);
-      plot(i % 2 ? colors.gingerbread : colors.gold, x - half, y + 2 - i, half * 2 + 1, 1);
+      spot(i % 2 ? colors.gingerbread : colors.gold, x - half, y + 2 - i, half * 2 + 1, 1);
     }
     return;
   }
   const stem = Math.min(4, handle.stem);
-  plot(colors.gold, x - 2, y + 2, 5, 1);
-  plot(colors.wood, x, y + 2 - stem, 1, stem);
-  if (handle.cap) plot(colors.cocoa, x - 1, y + 1 - stem, 3, 1);
+  spot(colors.gold, x - 2, y + 2, 5, 1);
+  spot(colors.wood, x, y + 2 - stem, 1, stem);
+  if (handle.cap) spot(colors.cocoa, x - 1, y + 1 - stem, 3, 1);
 }

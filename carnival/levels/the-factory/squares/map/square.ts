@@ -8,7 +8,7 @@ const { colors } = theme;
 export const DEPLOY = 5_000;
 
 /**
- * How tall the new booth stands on its plot at `time`, from 0 (a
+ * How tall the new booth stands on its spot at `time`, from 0 (a
  * construction site) to 1 (built), springing up just after each deploy.
  */
 export function riseAt(time: number): number {
@@ -16,8 +16,8 @@ export function riseAt(time: number): number {
   return Math.min(1, phase * 3);
 }
 
-/** The plots on the little map, by where they sit on the table: the last one gets the new booth. */
-const PLOTS: readonly [number, number][] = [
+/** The spots on the little map, by where they sit on the table: the last one gets the new booth. */
+const SPOTS: readonly [number, number][] = [
   [-12, -10],
   [-2, -10],
   [8, -10],
@@ -26,11 +26,11 @@ const PLOTS: readonly [number, number][] = [
   [8, 2],
 ];
 
-/** The map: a table with a little North Pole on it, where a new booth springs up on its plot after each deploy. */
+/** The map: a table with a little North Pole on it, where a new booth springs up on its spot after each deploy. */
 const map: NorthPoleSquare = {
   id: 'map',
   name: 'The Map',
-  description: 'It goes live: the next deploy puts the booth on its plot.',
+  description: 'It goes live: the next deploy puts the booth on its spot.',
   stall: { shape: 'tent', roof: 'berry', trim: 'snow' },
   draw(ctx, size, time) {
     scene(ctx, size, time, (ctx) => {
@@ -39,8 +39,8 @@ const map: NorthPoleSquare = {
       box(ctx, -16, -14, 32, 26, 8, colors.snow, colors.wood, colors.cocoa);
       box(ctx, -15, -5, 30, 2, 0.4, colors.horizon, colors.horizon, colors.horizon, 8);
       const rise = riseAt(time);
-      PLOTS.forEach(([gx, gy], n) => {
-        const last = n === PLOTS.length - 1;
+      SPOTS.forEach(([gx, gy], n) => {
+        const last = n === SPOTS.length - 1;
         const roof =
           [colors.berry, colors.pine, colors.violet, colors.gold, colors.mint][n] ?? colors.berry;
         const h = last ? 7 * rise : 7;
