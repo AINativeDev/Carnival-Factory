@@ -9,6 +9,7 @@
  * Run as `node scripts/check-json.ts [files...]`; with no files, every tracked
  * .json file.
  */
+import { safePath } from './safe-path.ts';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
@@ -29,7 +30,7 @@ if (process.argv[1]?.endsWith('check-json.ts')) {
     ? given
     : execFileSync('git', ['ls-files', '*.json']).toString().trim().split('\n');
   const broken = files.flatMap((file) => {
-    const problem = jsonProblem(readFileSync(file, 'utf8'));
+    const problem = jsonProblem(readFileSync(safePath(file), 'utf8'));
     return problem ? [`${file}: ${problem}`] : [];
   });
   if (broken.length) {

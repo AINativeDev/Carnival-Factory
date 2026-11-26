@@ -7,12 +7,14 @@
  *   node scripts/craft/check-square.ts --all <out.json>
  *     writes every square's badges, for the panel, and never fails.
  */
+import { safePath } from '../safe-path.ts';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { craftOf, type Craft, type SquareFiles } from './craft.ts';
 
-/** Every file under a square's folder, by its path inside it. */
-export function readSquare(folder: string): SquareFiles {
+/** Every file under a square's folder, by its path inside it; the folder must be in the repository. */
+export function readSquare(given: string): SquareFiles {
+  const folder = safePath(given);
   const files: SquareFiles = {};
   const walk = (dir: string) => {
     for (const name of readdirSync(dir)) {
@@ -60,7 +62,7 @@ if (process.argv[1]?.endsWith('check-square.ts')) {
     const all = Object.fromEntries(
       squareFolders('.').map((folder) => [folder, craftOf(readSquare(folder)).badges]),
     );
-    writeFileSync(args[1] ?? 'craft.json', `${JSON.stringify(all, null, 2)}\n`);
+    writeFileSync(safePath(args[1] ?? 'craft.json'), `${JSON.stringify(all, null, 2)}\n`);
   } else {
     let left = 0;
     for (const folder of args) {

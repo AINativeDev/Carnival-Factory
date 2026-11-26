@@ -53,9 +53,9 @@ async function startFrame() {
 /** What the frame told the map, in order. */
 const toldMap = () => map.postMessage.mock.calls.map(([message]) => message as unknown);
 
-/** A draw request from the map, or from somewhere else. */
-const draw = (source: unknown = map) => {
-  fromMap({ source, data: { type: 'draw', size: 64, time: 0 } });
+/** A draw request from the map, at its own origin, or from somewhere else. */
+const draw = (source: unknown = map, origin = location.origin) => {
+  fromMap({ source, origin, data: { type: 'draw', size: 64, time: 0 } });
 };
 
 beforeEach(() => {
@@ -140,13 +140,18 @@ describe('drawing a square', () => {
     expect(worker.sent.at(-1)).toEqual({ type: 'draw', size: 64, time: 0 });
     const bitmap = new FakeBitmap();
     worker.says({ type: 'frame', bitmap });
-    expect(map.postMessage).toHaveBeenLastCalledWith({ type: 'frame', bitmap }, '*', [bitmap]);
+    // Only the map's own origin can hear it.
+    expect(map.postMessage).toHaveBeenLastCalledWith({ type: 'frame', bitmap }, location.origin, [
+      bitmap,
+    ]);
   });
 
   it('ignores requests from anyone but the map, ones it cannot read, and ones while it is busy', async () => {
     const worker = await readyFrame();
     draw({});
-    fromMap({ source: map, data: { type: 'draw', size: -1, time: 0 } });
+    // The map's own window, but from another origin: not the map.
+    draw(map, 'https://elsewhere.example');
+    fromMap({ source: map, origin: location.origin, data: { type: 'draw', size: -1, time: 0 } });
     expect(worker.sent).toHaveLength(1);
     draw();
     draw();

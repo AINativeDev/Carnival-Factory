@@ -43,12 +43,18 @@
       // GitHub Pages serves this page for any address that doesn't exist yet.
       // A pull request's preview only appears once its build and checks pass,
       // so its link can be opened a few minutes too early: wait for it here.
+      // An address on this site only: a path such as //other.site/ would read as
+      // another site, so anything that doesn't stay here goes to the site's root.
+      const onThisSite = (href) => {
+        const url = new URL(href, location.origin);
+        return url.origin === location.origin ? url.href : `${location.origin}/`;
+      };
       const path = location.pathname;
       const preview = path.match(/^(.*\/)previews\/pr-(\d+)\//);
       const root = preview ? preview[1] : '/' + (path.split('/')[1] || '') + '/';
-      document.getElementById('home').href = root + location.hash;
+      document.getElementById('home').href = onThisSite(root + location.hash);
       if (preview) {
-        const folder = `${root}previews/pr-${preview[2]}/`;
+        const folder = onThisSite(`${root}previews/pr-${preview[2]}/`);
         document.getElementById('title').textContent = 'This preview is still being built';
         document.getElementById('text').textContent =
           `Pull request ${preview[2]} is being built and checked. This page checks every 30 seconds and opens the preview as soon as it's ready.`;
@@ -60,7 +66,8 @@
             });
             // The same address with only the hash would load nothing new,
             // so ask for it with a query that changes.
-            if (response.ok) location.replace(`${folder}?ready=${Date.now()}${location.hash}`);
+            if (response.ok)
+              location.replace(onThisSite(`${folder}?ready=${Date.now()}${location.hash}`));
           } catch {
             // Not there yet: try again on the next check.
           }

@@ -88,7 +88,8 @@ export function route(page: Page, event?: HashChangeEvent) {
   const next = parseHash(location.hash);
   if (next.view === 'legacy') {
     // Booths used to be called spots: keep links shared before the rename working.
-    location.replace(`#/booth/${next.id}`);
+    // Only ever a hash on this page, the id encoded: it can't lead anywhere else.
+    location.replace(`#/booth/${encodeURIComponent(next.id)}`);
   } else if (next.view === 'season') {
     leaveWorld(page);
     page.stop = renderSeason(page.app, next.login);

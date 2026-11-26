@@ -47,7 +47,8 @@ export function decideUpdate(
 function moveTo(latest: string) {
   const url = new URL(location.href);
   url.searchParams.set('v', latest);
-  location.replace(url.href);
+  // Built on this site's own origin: the same page with a new query, never another site.
+  location.replace(new URL(`${url.pathname}${url.search}${url.hash}`, location.origin).href);
 }
 
 /** Reads the published build's id, bypassing every cache; undefined if it can't. */

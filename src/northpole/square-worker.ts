@@ -46,6 +46,7 @@ async function load(hash: string): Promise<NorthPoleSquare> {
 let square: NorthPoleSquare | undefined;
 let canvas: OffscreenCanvas | undefined;
 
+// deepcode ignore InsufficientPostmessageValidation: a dedicated worker hears only the frame that started it, and its messages have no origin to check; each is read with readDrawRequest or as a load.
 addEventListener('message', (event: MessageEvent) => {
   const data = event.data as { type?: unknown; hash?: unknown };
   if (data?.type === 'load' && typeof data.hash === 'string' && !square) {

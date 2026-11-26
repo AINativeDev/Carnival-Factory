@@ -38,6 +38,7 @@ describe('capture: one cookieless event', () => {
     expect(sent[0]?.url).toBe('https://eu.i.posthog.com/i/v0/e/');
     const body = JSON.parse(sent[0]?.body ?? '{}') as Record<string, unknown>;
     expect(body).toMatchObject({
+      // deepcode ignore HardcodedNonCryptoSecret/test: a made-up key for the test, never a real one.
       api_key: 'phc_test',
       event: 'map_viewed',
       distinct_id: 'page-1',

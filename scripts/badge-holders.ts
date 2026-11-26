@@ -6,6 +6,7 @@
  *
  * Run by .github/workflows/pages.yml with GITHUB_TOKEN and GITHUB_REPOSITORY set.
  */
+import { safePath } from './safe-path.ts';
 import { writeFileSync } from 'node:fs';
 import { badgeHolders, type BadgeRequestRecord } from './badge-grants.ts';
 import { github, repoPath, type GitHubReader } from './github-api.ts';
@@ -36,7 +37,7 @@ if (process.argv[1]?.endsWith('badge-holders.ts')) {
   const out = process.argv[2];
   if (!repository || !out) throw new Error('Set GITHUB_REPOSITORY, and name the file to write');
   const holders = await readBadgeHolders(github, repository);
-  writeFileSync(out, JSON.stringify(holders, null, 2) + '\n');
+  writeFileSync(safePath(out), JSON.stringify(holders, null, 2) + '\n');
   console.log(`${holders.length} Elf Engineer badge holder(s).`);
 }
 /* v8 ignore stop */

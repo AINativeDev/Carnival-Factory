@@ -89,5 +89,9 @@ export function askForFrame(
   const request = sent
     ? { type: 'draw', size: asked, time, pointer: sent }
     : { type: 'draw', size: asked, time };
+  // The square's frame is sandboxed with an opaque origin ("null"), so there's no
+  // origin to name: '*' is the only way to reach it. What's sent is a size, a time
+  // and the pointer, nothing private, and the frame checks it (readDrawRequest).
+  // deepcode ignore PostMessageWildcard: the sandboxed frame's origin is opaque, so it has none to name.
   iframe.contentWindow?.postMessage(request, '*');
 }

@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { openPanel, stopPanels } from './test-support/booths-panel';
 
+// deepcode ignore HardcodedNonCryptoSecret/test: the name of the panel's storage slot, not a secret.
 const KEY = 'north-pole-booths-panel';
 const saved = () => JSON.parse(localStorage.getItem(KEY) ?? 'null') as unknown;
 
