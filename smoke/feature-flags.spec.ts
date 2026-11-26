@@ -59,9 +59,18 @@ test("the Factory's, the Academy's and the Studio's landmarks open their sites i
   await context.route('https://tessl.io/**', (route) => route.fulfill({ body: 'tessl' }));
   const canvas = page.locator('.map-canvas');
   for (const [id, url] of [
-    ['the-factory', 'https://tessl.io/'],
-    ['the-academy', 'https://tessl.io/academy'],
-    ['the-studio', 'https://tessl.io/podcast/'],
+    [
+      'the-factory',
+      'https://tessl.io/?utm_source=carnival-factory&utm_medium=the-factory&utm_campaign=christmas-edition',
+    ],
+    [
+      'the-academy',
+      'https://tessl.io/academy?utm_source=carnival-factory&utm_medium=the-academy&utm_campaign=christmas-edition',
+    ],
+    [
+      'the-studio',
+      'https://tessl.io/podcast/?utm_source=carnival-factory&utm_medium=the-studio&utm_campaign=christmas-edition',
+    ],
   ] as const) {
     await page.goto(`#/?attraction=${id}`);
     await expect(canvas).toHaveAttribute('data-selected', `attraction:${id}`);

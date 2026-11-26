@@ -15,7 +15,12 @@ every check passes on its head commit. Any doubt sends it to a person.
 - Decision: **merge** when every step passes; **wait** when a step is still
   running or a soft step failed; **human** when a hard step failed.
 - On merge it labels the pull request `auto-merged`, merges pinned to the head
-  sha, comments on the request and closes it as completed.
+  sha, comments on the request and closes it as completed. The comment ends
+  with one quiet line offering free Tessl credits for a factory of your own,
+  linking to `TESSL_SIGNUP_URL` tagged `utm_medium=github-comment`
+  (`signupNote` in `src/northpole/links.ts`), and leaves it out while that
+  link is empty. It's part of the one comment, so it starts no Loop or
+  workflow of its own.
 - When the map is behind an auto-merge, or `needs-human` went on a pull
   request since the last Pages run, it dispatches the Pages workflow.
 - Once a day the digest opens an issue listing the pull requests labelled

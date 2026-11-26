@@ -110,12 +110,37 @@ export const HOW_IT_WORKS_URL = `${REPO_URL}/blob/main/docs/how-it-works.md`;
 export const OWN_REPO_URL = `${REPO_URL}/blob/main/RUN-YOUR-OWN.md`;
 
 /**
- * The free credits offer for people who sign up for Tessl, shown beside the
- * "own repo" link: where it goes, and its one short line. Both empty until a
- * maintainer fills them in, and until then the offer stays hidden.
+ * The free credits offer for people who sign up for Tessl: where it goes, and
+ * its one short line beside the "own repo" link. The site shows the offer only
+ * once both are set; the issue's "Your booth is on the map" comment needs only
+ * the link (`signupNote`).
  */
-const TESSL_SIGNUP_URL = '';
+const TESSL_SIGNUP_URL = 'https://tessl.io/login';
 const TESSL_SIGNUP_OFFER = '';
+
+/**
+ * A link out, tagged with where the visit came from, so Tessl and the events
+ * we link to can tell this carnival sent it: this site, its edition, and the
+ * spot the link sat in (`medium`, such as `billboard`).
+ */
+export function withUtm(url: string, medium: string): string {
+  const tagged = new URL(url);
+  tagged.searchParams.set('utm_source', 'carnival-factory');
+  tagged.searchParams.set('utm_medium', medium);
+  tagged.searchParams.set('utm_campaign', 'christmas-edition');
+  return tagged.toString();
+}
+
+/**
+ * The quiet last line of the comment that closes a booth request when its
+ * booth merged on its own: free Tessl credits for a factory of your own.
+ * Nothing while there's no https signup link.
+ */
+export function signupNote(url: string = TESSL_SIGNUP_URL): string {
+  if (!/^https:\/\//i.test(url)) return '';
+  const href = withUtm(url, 'github-comment');
+  return `\n\n_Built with Tessl. Want a factory like this on your own repository? [Tessl gives you free credits to start](${href})._`;
+}
 
 /** The offer to show, or nothing while either half is missing or the link isn't https. */
 export function signupOffer(

@@ -16,14 +16,23 @@ const levelFolders = Object.keys(import.meta.glob('../../carnival/levels/*/level
 describe("the North Pole's own links out", () => {
   it('starts the Academy from The Academy', () => {
     expect(northPoleLinks('the-academy')).toEqual([
-      { label: 'Start the Academy', href: 'https://tessl.io/academy' },
+      {
+        label: 'Start the Academy',
+        href: 'https://tessl.io/academy?utm_source=carnival-factory&utm_medium=the-academy&utm_campaign=christmas-edition',
+      },
     ]);
   });
 
   it('opens the podcast and the YouTube channel from The Recording Studio', () => {
     expect(northPoleLinks('the-studio')).toEqual([
-      { label: 'Listen to the podcast', href: 'https://tessl.io/podcast/' },
-      { label: 'Watch on YouTube', href: 'https://www.youtube.com/@tessl-ai' },
+      {
+        label: 'Listen to the podcast',
+        href: 'https://tessl.io/podcast/?utm_source=carnival-factory&utm_medium=the-studio&utm_campaign=christmas-edition',
+      },
+      {
+        label: 'Watch on YouTube',
+        href: 'https://www.youtube.com/@tessl-ai?utm_source=carnival-factory&utm_medium=the-studio&utm_campaign=christmas-edition',
+      },
     ]);
   });
 
@@ -67,14 +76,28 @@ describe('linksHome', () => {
 
 describe('landmarkLinkOut', () => {
   it("opens the Factory's, the Academy's and the Studio's own sites", () => {
-    expect(landmarkLinkOut('attraction', 'the-factory')).toBe('https://tessl.io');
-    expect(landmarkLinkOut('attraction', 'the-academy')).toBe('https://tessl.io/academy');
-    expect(landmarkLinkOut('attraction', 'the-studio')).toBe('https://tessl.io/podcast/');
+    expect(landmarkLinkOut('attraction', 'the-factory')).toBe(
+      'https://tessl.io/?utm_source=carnival-factory&utm_medium=the-factory&utm_campaign=christmas-edition',
+    );
+    expect(landmarkLinkOut('attraction', 'the-academy')).toBe(
+      'https://tessl.io/academy?utm_source=carnival-factory&utm_medium=the-academy&utm_campaign=christmas-edition',
+    );
+    expect(landmarkLinkOut('attraction', 'the-studio')).toBe(
+      'https://tessl.io/podcast/?utm_source=carnival-factory&utm_medium=the-studio&utm_campaign=christmas-edition',
+    );
   });
 
   it('has none for anything else: the Year in Review, a booth, or a name like constructor', () => {
     expect(landmarkLinkOut('attraction', 'the-year-in-review')).toBeUndefined();
     expect(landmarkLinkOut('booth', 'the-academy')).toBeUndefined();
     expect(landmarkLinkOut('attraction', 'constructor')).toBeUndefined();
+  });
+});
+
+describe("the North Pole's links out, tagged", () => {
+  it('leaves the Year in Review form, on GitHub, as it is', () => {
+    expect(northPoleLinks('the-year-in-review')).toEqual([
+      { label: 'Add your answer', href: YEAR_IN_REVIEW_URL },
+    ]);
   });
 });
