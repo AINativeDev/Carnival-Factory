@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SNOWMAN_GAP, snowmanAt, waveAngle, WAVE_REACH } from './snowman';
+import type { Ctx } from './brushes';
+import { SNOWMAN_GAP, snowmanAt, snowmen, waveAngle, WAVE_REACH } from './snowman';
 
 describe('snowmanAt', () => {
   it('stands the same way every time it is asked', () => {
@@ -37,5 +38,34 @@ describe('waveAngle', () => {
     expect(Math.max(...angles)).toBeGreaterThan(0.3);
     expect(Math.min(...angles)).toBeLessThan(Math.max(...angles) - 0.3);
     expect(new Set(angles).size).toBeGreaterThan(1);
+  });
+});
+
+/** The twig widths each snowman in view strokes, painted on a canvas that keeps only those. */
+function twigWidths(size: number): number[] {
+  const widths: number[] = [];
+  const canvas = new Proxy(
+    {
+      set lineWidth(width: number) {
+        widths.push(width);
+      },
+    },
+    {
+      get: (target, key) =>
+        key in target ? (Reflect.get(target, key) as unknown) : () => undefined,
+    },
+  );
+  for (const one of snowmen(size, 0, 0)) one.paint(canvas as unknown as Ctx);
+  return widths;
+}
+
+describe('snowmen', () => {
+  it('scales the twig arms with the square, even far down the road', () => {
+    const small = twigWidths(100);
+    const large = twigWidths(400);
+    expect(small.length).toBeGreaterThan(0);
+    small.forEach((width, i) => {
+      expect(large[i]).toBeCloseTo(width * 4);
+    });
   });
 });

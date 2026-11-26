@@ -42,7 +42,7 @@ function snowman(size: number, d: number, side: number, dist: number, time: numb
       ctx.globalAlpha = 1;
       // The arm on the van's side lifts and swings; the other hangs.
       ctx.strokeStyle = colors.wood;
-      ctx.lineWidth = Math.max(1, u * 0.12);
+      ctx.lineWidth = Math.max(size * 0.002, u * 0.12);
       ctx.lineCap = 'round';
       const shoulderY = at.y - u * 1.9;
       for (const arm of [-1, 1]) {
