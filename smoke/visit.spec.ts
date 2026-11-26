@@ -147,3 +147,21 @@ test("a square's build story lists each step as a block, not in columns", async 
   await expect(steps.first()).toHaveCSS('display', 'block');
   await expect(page.locator('.visit .visit-title')).toHaveCSS('position', 'absolute');
 });
+
+test('Full screen shows the booth edge to edge, and Esc comes back to its room', async ({
+  page,
+}) => {
+  await page.goto('#/booth/jedi4ever');
+  const canvas = page.locator('.map-canvas');
+  const frame = page.locator('.map-frame');
+  await expect(frame).toHaveAttribute('data-visiting', 'booth:jedi4ever');
+  const room = await canvas.getAttribute('data-stage');
+  await page.getByRole('button', { name: 'Full screen' }).click();
+  await expect(frame).toHaveAttribute('data-full', '');
+  await expect(page.locator('.hud.visit')).toBeHidden();
+  await expect(canvas).not.toHaveAttribute('data-stage', room ?? '');
+  await page.keyboard.press('Escape');
+  await expect(frame).not.toHaveAttribute('data-full');
+  await expect(frame).toHaveAttribute('data-visiting', 'booth:jedi4ever');
+  await expect(page.locator('.hud.visit')).toBeVisible();
+});

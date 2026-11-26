@@ -7,11 +7,14 @@
  */
 import type { SquareKind } from './northpole/map-options';
 import { shareText } from './northpole/visit';
+import { fullScreenPill } from './visit-full-screen';
 
 export interface ShareParts {
   copy: HTMLButtonElement;
   text: HTMLTextAreaElement;
   options: HTMLDetailsElement;
+  /** The Full screen pill beside Share, which ends with the visit too (visit-full-screen.ts). */
+  full?: { stop(): void } | undefined;
 }
 
 /** The share icon people know: a box with an arrow up out of it (Lucide's "share"). */
@@ -32,6 +35,12 @@ export function sharePill(frame: HTMLElement, level = false): HTMLButtonElement 
   frame.append(pill);
   return pill;
 }
+
+/** The pills over the room for a visit: Share, and Full screen for a square, never for a level's own panel. */
+export const roomPills = (frame: HTMLElement, level: boolean) => ({
+  copy: sharePill(frame, level),
+  full: level ? undefined : fullScreenPill(frame),
+});
 
 /** A phone with its own share sheet: a touch screen whose browser can share. */
 const sharesNatively = () =>
@@ -93,6 +102,7 @@ export function wireShare(
     stop: () => {
       window.clearTimeout(reset);
       parts.copy.remove();
+      parts.full?.stop();
     },
   };
 }

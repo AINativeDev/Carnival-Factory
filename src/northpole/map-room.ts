@@ -5,6 +5,8 @@
  * room-dressing.ts; this is the map's frame while the player is inside.
  */
 import { drawSquare } from './draw-square';
+import { MAX_SIZE } from './frame-protocol';
+import { fullBox, isFullScreen } from './full-screen';
 import { roomArea, roomLayout } from './interior';
 import { drawRoom } from './interior-room';
 import { drawRoomPerson } from './interior-room';
@@ -16,6 +18,7 @@ import { timeFrame } from './map-timing';
 import { onRect } from './pointer';
 import { dressRoom } from './room-dressing';
 import type { NorthPoleSquare } from './square';
+import { theme } from './theme';
 import type { Spot } from './world';
 
 /** The size a square draws at on the back wall of its room, in pixels. */
@@ -40,30 +43,39 @@ export function drawInside(m: MapRun, spot: Spot, square: NorthPoleSquare, frame
   const booth = spot.kind === 'booth';
   // A square's spot always has its id: its owner's login, or the attraction's.
   const login = String(spot.id);
-  drawRoom(
-    ctx,
-    room,
-    width,
-    height,
-    square.name,
-    booth ? `by @${login}` : '',
-    booth ? avatarOf(m, login) : undefined,
-  );
-  dressRoom(ctx, room, square, spot, time);
-  const { stage } = room;
+  // Full screen, the drawing takes the whole screen at the screen's own pixels;
+  // otherwise it hangs on the back wall of its room.
+  const full = isFullScreen(canvas);
+  if (full) {
+    ctx.fillStyle = theme.colors.night;
+    ctx.fillRect(0, 0, width, height);
+  } else {
+    drawRoom(
+      ctx,
+      room,
+      width,
+      height,
+      square.name,
+      booth ? `by @${login}` : '',
+      booth ? avatarOf(m, login) : undefined,
+    );
+    dressRoom(ctx, room, square, spot, time);
+  }
+  const stage = full ? fullBox(width, height) : room.stage;
+  const size = full ? Math.min(MAX_SIZE, Math.round(stage.w * scale)) : VISIT_SIZE;
   // The stage is the square's drawing scaled, so the pointer scales with it.
   const pressed = m.pointer.now();
-  const onStage = pressed && onRect(pressed, stage, VISIT_SIZE);
+  const onStage = pressed && onRect(pressed, stage, size);
   const pointed = onStage ? `${spot.kind}:${login}` : '';
   if (canvas.dataset.pointer !== pointed) canvas.dataset.pointer = pointed;
   ctx.save();
   ctx.translate(stage.x, stage.y);
-  ctx.scale(stage.w / VISIT_SIZE, stage.h / VISIT_SIZE);
+  ctx.scale(stage.w / size, stage.h / size);
   const pointer = pressed &&
     onStage && { ...onStage, down: pressed.down, presses: pressed.presses };
-  drawSquare(ctx, m.scratch, square, 0, 0, VISIT_SIZE, time, pointer);
+  drawSquare(ctx, m.scratch, square, 0, 0, size, time, pointer);
   ctx.restore();
-  drawRoomPerson(ctx, room, m.inside, PLAYER, m.insideFacing, m.moving, time);
+  if (!full) drawRoomPerson(ctx, room, m.inside, PLAYER, m.insideFacing, m.moving, time);
   darken(ctx, frame.dark, width, height);
   const at = [stage.x, stage.y, stage.w, stage.h].map((n) => Math.round(n * scale)).join(',');
   if (canvas.dataset.stage !== at) canvas.dataset.stage = at;

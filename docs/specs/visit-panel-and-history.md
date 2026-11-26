@@ -48,6 +48,16 @@ them. A level shows the same panel beside its map (see [Levels](levels.md)).
   says "Copied". A level's pill steps aside while the player is inside one of
   its squares (`src/visit-share.ts`; enforced by: src/visit-share.test.ts,
   smoke/sharing.spec.ts).
+- **Full screen**, a quieter pill just under Share, shows a booth's or
+  attraction's drawing edge to edge: the biggest square that fits, sharp at
+  the screen's own pixels, on a night background, with only **Exit full
+  screen** in the corner. It uses the browser's full screen where it has one
+  and fills the page where it hasn't (Safari on an iPhone). Esc, or the pill
+  again, comes back to the room, not out of the booth; walking keys and room
+  clicks do nothing meanwhile. Booths need no change: each draws to whatever
+  size it's given (`src/visit-full-screen.ts`, `src/northpole/full-screen.ts`;
+  enforced by: src/visit-full-screen.test.ts,
+  src/northpole/map-full-screen.test.ts, smoke/visit.spec.ts).
 - Under the story, one quiet row: **Vote for this booth** and
   **Remix this booth**, then one ask: "Want one too? Get a booth". Someone
   who arrived by a shared link to a booth gets **Get the spot next door** in

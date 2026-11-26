@@ -1436,6 +1436,47 @@ kbd {
   outline-offset: 2px;
 }
 
+/* Full screen, just under Share: a quieter pill, since Share is the main action. */
+.hud.visit-full {
+  top: 64px;
+  right: 12px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font: 600 15px var(--font-family);
+  cursor: pointer;
+}
+
+.hud.visit-full:hover,
+.hud.visit-full:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.map-frame:has(> .visit) > .hud.visit-full {
+  right: 368px;
+}
+
+/* A booth full screen fills the page: only its drawing, and the way back out, in the corner. */
+.map-frame[data-full] {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.map-frame[data-full] > :not(.map-canvas, .visit-full) {
+  display: none !important;
+}
+
+.map-frame[data-full] > .hud.visit-full {
+  top: 12px;
+  right: 12px;
+}
+
 /* A square's panel stands over the room's right side: the pill sits just left of it. A level's
    panel stands beside the map instead, so its pill keeps the corner. */
 .map-frame:has(> .visit) > .hud.visit-copy {
@@ -1449,7 +1490,8 @@ kbd {
 
 /* On a phone the panel sits under the room, so the pill takes the room's own top right. */
 @media (max-width: 719px) {
-  .map-frame:has(> .visit) > .hud.visit-copy {
+  .map-frame:has(> .visit) > .hud.visit-copy,
+  .map-frame:has(> .visit) > .hud.visit-full {
     right: 12px;
   }
 }

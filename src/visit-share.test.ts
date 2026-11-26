@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sharePill, wireShare } from './visit-share';
+import { roomPills, sharePill, wireShare } from './visit-share';
 
 function parts() {
   document.body.innerHTML =
@@ -146,5 +146,16 @@ describe("a level's Share pill", () => {
     const frame = document.querySelector('div') as HTMLElement;
     expect(sharePill(frame, true).dataset.level).toBe('');
     expect(sharePill(frame).dataset.level).toBeUndefined();
+  });
+});
+
+describe('the pills over the room', () => {
+  it('are Share and Full screen for a square, and Share alone beside a level', () => {
+    document.body.innerHTML = '<div></div>';
+    const frame = document.querySelector('div') as HTMLElement;
+    const square = roomPills(frame, false);
+    expect(square.copy.textContent).toBe('Share');
+    expect(square.full?.pill.textContent).toBe('Full screen');
+    expect(roomPills(frame, true).full).toBeUndefined();
   });
 });

@@ -5,6 +5,7 @@
  * or leave. Fingers dragging and pinching the camera are map-touch.ts.
  */
 import { BILLBOARD, onBillboard } from './billboard';
+import { isFullScreen } from './full-screen';
 import { middle } from './brushes';
 import { screenToWorld } from './camera-view';
 import { clickInRoom, roomArea, roomLayout } from './interior';
@@ -83,6 +84,8 @@ export function onClick(m: MapRun, event: MouseEvent) {
   const at = { x: event.clientX - box.left, y: event.clientY - box.top };
   if (!m.pointer.tapped(at)) return;
   if (m.visiting) {
+    // Full screen, a click belongs to the booth, never a walk across a room that isn't shown.
+    if (isFullScreen(m.canvas)) return;
     const goal = clickInRoom(roomLayout(roomArea(box.width, box.height)), at);
     if (goal) m.insideGoal = goal;
     return;
