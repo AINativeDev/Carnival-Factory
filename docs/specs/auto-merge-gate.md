@@ -59,8 +59,9 @@ scripts/auto-merge-booths-needs-human.test.ts):
    for this exact sha says `low-risk` (enforced by: assess-booth-risk skill,
    tessl.json).
 8. **No one has asked to hold it** (hard): no `needs-human` label.
-9. **One at a time** (soft): at most one booth merges on its own per person
-   per hour.
+
+A person's booth changes merge one after another as each passes, with no
+waiting time between them ([ADR 0052](../adr/0052-no-hourly-limit.md)).
 
 - The gate puts `needs-human` on for its own hard failures only (steps 1 to
   4), never over a maintainer who just took it off (enforced by:
@@ -124,7 +125,7 @@ in `scripts/square-code/` (`banned-names.test.ts`, `imports.test.ts`,
 scripted GitHub (`scripts/merge-gate-fake-github.ts`, with the booth world in
 `scripts/merge-gate-world.ts`) by `scripts/auto-merge-booths.test.ts` (a
 merge, the checklist, a failed merge), `scripts/auto-merge-booths-waits.test.ts`
-(each reason to wait, and the hourly limit),
+(each reason to wait, and a person's changes one after another),
 `scripts/auto-merge-booths-needs-human.test.ts` (each reason for a person)
 and `scripts/auto-merge-booths-pulls.test.ts` (forks, other branches,
 publishing the map), `scripts/merge-gate-round.test.ts` passes the

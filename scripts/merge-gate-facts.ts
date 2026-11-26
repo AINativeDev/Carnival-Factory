@@ -17,7 +17,6 @@ import {
   type Pull,
   type User,
 } from './merge-gate-github.ts';
-import { lastAutoMerge } from './merge-gate-requests.ts';
 import { checkSquareCode, spotFileProblems } from './square-code.ts';
 
 export const FACTORY = 'tessl-app[bot]';
@@ -92,10 +91,8 @@ function riskVerdict(all: Comment[], sha: string): GateFacts['risk'] {
 /** The facts about `pull`, built from booth request `issue`, and the comments on it. */
 export async function gatherFacts(
   github: GitHub,
-  repository: string,
   pull: Pull,
   issue: Issue,
-  now: Date,
 ): Promise<{ facts: GateFacts; comments: Comment[] }> {
   const owner = issue.user.login.toLowerCase();
   const sha = pull.head.sha;
@@ -133,8 +130,6 @@ export async function gatherFacts(
     review,
     risk: riskVerdict(comments, sha),
     labels: names(pull.labels),
-    lastAutoMerge: await lastAutoMerge(github, repository, owner, now),
-    now,
   };
   return { facts, comments };
 }

@@ -56,12 +56,12 @@ describe('runMergeGate', () => {
     expect(logs[0]).toContain(': merge');
   });
 
-  it('counts the latest merge in the hour, whatever order they come in', async () => {
+  it("merges a person's booth however recently their last one merged", async () => {
     const routes = mergeableBooth();
     routes['GET pulls?state=closed&sort=updated&direction=desc'] = [autoMerged(10), autoMerged(40)];
     routes['GET issues/3'] = boothRequest({ number: 3, state: 'closed' });
     await round(routes);
-    expect(logs[0]).toContain(': wait');
+    expect(logs[0]).toContain(': merge');
   });
 
   it('says it would publish on a dry run when the map is behind', async () => {
