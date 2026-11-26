@@ -8,7 +8,7 @@
 import { block, corners, quad } from './brushes';
 import { band, faceText, onFace } from './faces';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
-import { area, litWindow, pennant, sideOf, spot } from './landmark-kit';
+import { area, litWindow, pennant, sideOf, onSpot } from './landmark-kit';
 import { SIGN_STYLES } from './sign-styles';
 import { standing } from './stall-plan';
 import { signFont, theme } from './theme';
@@ -89,7 +89,7 @@ export const drawGallery: LandmarkDrawer = (ctx, plot, square, paint, time) => {
   ]);
   ctx.fill();
   // The gold dome on the roof, and its pennant.
-  const dome = spot(plot, 0.5, 0.6, eaves);
+  const dome = onSpot(plot, 0.5, 0.6, eaves);
   ctx.fillStyle = colors.gold;
   ctx.beginPath();
   ctx.ellipse(dome.x, dome.y, 22, GALLERY.dome, 0, Math.PI, 0);

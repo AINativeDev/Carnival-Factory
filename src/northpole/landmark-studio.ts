@@ -8,7 +8,7 @@
 import { block, bulb, corners, glow } from './brushes';
 import { band, faceText, onFace, type Face } from './faces';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
-import { area, litWindow, sideOf, spot } from './landmark-kit';
+import { area, litWindow, sideOf, onSpot } from './landmark-kit';
 import { SIGN_STYLES } from './sign-styles';
 import { standing } from './stall-plan';
 import { canvasFont, theme } from './theme';
@@ -120,7 +120,7 @@ export const drawStudio: LandmarkDrawer = (ctx, plot, square, paint, time) => {
   framedArt(ctx, front, square, paint, { from: 0.08, to: 0.92, low: 20 }, SIGN_STYLES.shed);
   onAirSign(ctx, front, time);
   // On the roof: the dish towards the back on the lit side, the mast towards the back on the other.
-  dish(ctx, spot(plot, 0.3, 0.62, roof));
-  const tip = mast(ctx, spot(plot, 0.72, 0.72, roof), time);
+  dish(ctx, onSpot(plot, 0.3, 0.62, roof));
+  const tip = mast(ctx, onSpot(plot, 0.72, 0.72, roof), time);
   return standing(plot, corners(plot).top.y - tip.y + 16);
 };

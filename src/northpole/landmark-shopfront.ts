@@ -8,7 +8,7 @@
 import { block, corners } from './brushes';
 import { band, onFace, type Face } from './faces';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
-import { area, fillShape, litWindow, present, sideOf, spot } from './landmark-kit';
+import { area, fillShape, litWindow, present, sideOf, onSpot } from './landmark-kit';
 import { inTurn } from './rounds';
 import { SIGN_STYLES } from './sign-styles';
 import { standing } from './stall-plan';
@@ -83,9 +83,9 @@ export const drawShopfront: LandmarkDrawer = (ctx, plot, square, paint, time) =>
   // Presents stacked by each front corner, two below and one on top.
   for (const [n, along] of [0.06, 0.94].entries()) {
     const stack = [
-      { at: spot(plot, along - 0.05, 0.06, SHOP.stage), s: 16 },
-      { at: spot(plot, along + 0.05, 0.04, SHOP.stage), s: 14 },
-      { at: spot(plot, along, 0.05, SHOP.stage + 13), s: 11 },
+      { at: onSpot(plot, along - 0.05, 0.06, SHOP.stage), s: 16 },
+      { at: onSpot(plot, along + 0.05, 0.04, SHOP.stage), s: 14 },
+      { at: onSpot(plot, along, 0.05, SHOP.stage + 13), s: 11 },
     ];
     for (const [k, { at, s }] of stack.entries()) {
       const [wrap, ribbon] = inTurn(WRAPS, n * 3 + k);

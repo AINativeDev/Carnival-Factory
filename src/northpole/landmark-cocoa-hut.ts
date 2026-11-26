@@ -7,7 +7,7 @@
 import { corners, glow } from './brushes';
 import { band, onFace, type Face } from './faces';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
-import { spot } from './landmark-kit';
+import { onSpot } from './landmark-kit';
 import { SIGN_STYLES } from './sign-styles';
 import { standing } from './stall-plan';
 import { peakedRoof, prism } from './stall-volumes';
@@ -23,7 +23,7 @@ const MUG = { rx: 32, ry: 13, tall: 54 };
 const ring = (plot: Plot, r: number): Tile[] =>
   Array.from({ length: 16 }, (_, n) => {
     const angle = (n / 16) * Math.PI * 2;
-    return spot(plot, 0.5 + Math.cos(angle) * r, 0.5 + Math.sin(angle) * r);
+    return onSpot(plot, 0.5 + Math.cos(angle) * r, 0.5 + Math.sin(angle) * r);
   });
 
 /** The giant mug, standing on the roof's peak at `foot`: its body, its band, its handle, cocoa and marshmallows. */
@@ -101,7 +101,7 @@ export const drawCocoaHut: LandmarkDrawer = (ctx, plot, square, paint, time) => 
   );
   const out = frontOf(plot).out;
   // The lit hatch high on the front, its glow spilling out.
-  const front: Face = { a: spot(plot, 0.33, 0.12), b: spot(plot, 0.67, 0.12), out };
+  const front: Face = { a: onSpot(plot, 0.33, 0.12), b: onSpot(plot, 0.67, 0.12), out };
   const hatch = onFace(front, 0.5, 106);
   glow(ctx, hatch.x, hatch.y, 40, 0.9);
   ctx.fillStyle = colors.glow;
@@ -111,14 +111,14 @@ export const drawCocoaHut: LandmarkDrawer = (ctx, plot, square, paint, time) => 
   band(ctx, front, 0.02, 0.98, 92, 96, 0.1);
   ctx.fill();
   // The counter board in front, with the square's drawing and the stand's name.
-  const counter: Face = { a: spot(plot, 0.2, 0.05), b: spot(plot, 0.8, 0.05), out };
+  const counter: Face = { a: onSpot(plot, 0.2, 0.05), b: onSpot(plot, 0.8, 0.05), out };
   ctx.fillStyle = colors.wood;
   band(ctx, counter, 0, 1, HUT.stage, 90);
   ctx.fill();
   framedArt(ctx, counter, square, paint, { from: 0.08, to: 0.92, low: 12 }, SIGN_STYLES.cabin);
   const eaves = HUT.stage + HUT.wall;
   peakedRoof(ctx, ring(plot, HUT.eaves), eaves, HUT.rise, [colors.berry, colors.cream]);
-  const peak = spot(plot, 0.5, 0.5, eaves + HUT.rise - 6);
+  const peak = onSpot(plot, 0.5, 0.5, eaves + HUT.rise - 6);
   mug(ctx, peak);
   steam(ctx, { x: peak.x, y: peak.y - MUG.tall - 4 }, time);
   return standing(plot, corners(plot).top.y - (peak.y - MUG.tall - 70));

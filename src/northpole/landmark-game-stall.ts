@@ -10,7 +10,7 @@ import { block, bulb, corners, twinkle } from './brushes';
 import { band, onFace, type Face } from './faces';
 import { hoodLights, releaseFrom, stallLife, THROWER } from './landmark-game-stall-life';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
-import { area, fillShape, spot } from './landmark-kit';
+import { area, fillShape, onSpot } from './landmark-kit';
 import { inTurn } from './rounds';
 import { SIGN_STYLES } from './sign-styles';
 import { standing } from './stall-plan';
@@ -70,8 +70,8 @@ function stripes(ctx: CanvasRenderingContext2D, plot: Plot, time: number) {
   const top = STALL.wall + STALL.stage;
   const [low, high] = STALL.header;
   const header: Face = {
-    a: spot(plot, 0.06, 0.07),
-    b: spot(plot, 0.94, 0.07),
+    a: onSpot(plot, 0.06, 0.07),
+    b: onSpot(plot, 0.94, 0.07),
     out: frontOf(plot).out,
   };
   for (let n = 0; n < 10; n++) {
@@ -80,10 +80,10 @@ function stripes(ctx: CanvasRenderingContext2D, plot: Plot, time: number) {
     fillShape(
       ctx,
       [
-        spot(plot, from, 0.78, top),
-        spot(plot, to, 0.78, top),
-        spot(plot, to, 0.56, top - 16),
-        spot(plot, from, 0.56, top - 16),
+        onSpot(plot, from, 0.78, top),
+        onSpot(plot, to, 0.78, top),
+        onSpot(plot, to, 0.56, top - 16),
+        onSpot(plot, from, 0.56, top - 16),
       ],
       color,
     );
@@ -128,7 +128,7 @@ export const drawGameStall: LandmarkDrawer = (ctx, plot, square, paint, time) =>
       STALL.stage,
     );
   // One snowball in flight from the thrower's hand to the middle target, every few seconds.
-  const from = releaseFrom(spot(plot, THROWER.along, THROWER.deep, STALL.stage));
+  const from = releaseFrom(onSpot(plot, THROWER.along, THROWER.deep, STALL.stage));
   const to = onFace(wall, 0.5, 178);
   snowball(
     ctx,
@@ -155,7 +155,7 @@ export const drawGameStall: LandmarkDrawer = (ctx, plot, square, paint, time) =>
     for (let k = 0; k < count; k++)
       snowball(
         ctx,
-        spot(
+        onSpot(
           plot,
           0.8 + (k - (count - 1) / 2) * 0.05,
           0.12,

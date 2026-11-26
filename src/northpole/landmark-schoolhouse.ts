@@ -8,7 +8,7 @@
 import { block, corners, quad } from './brushes';
 import { band, onFace, type Face } from './faces';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
-import { area, gabledRoof, litWindow, pennant, sideOf, spot } from './landmark-kit';
+import { area, gabledRoof, litWindow, pennant, sideOf, onSpot } from './landmark-kit';
 import { SIGN_STYLES } from './sign-styles';
 import { standing } from './stall-plan';
 import { peakedRoof } from './stall-volumes';
@@ -116,7 +116,7 @@ export const drawSchoolhouse: LandmarkDrawer = (ctx, plot, square, paint, time) 
     SCHOOL.cap,
     [colors.surface, colors.night],
   );
-  const peak = spot(plot, 0.5, 0.24, top + SCHOOL.cap);
+  const peak = onSpot(plot, 0.5, 0.24, top + SCHOOL.cap);
   pennant(ctx, peak, 18, colors.gold, time);
   return standing(plot, corners(plot).top.y - peak.y + 30);
 };

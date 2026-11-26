@@ -50,8 +50,8 @@ const map: NorthPoleSquare = {
         }
       });
       // A sparkle over the new booth as it lands.
-      const spot = iso(10.5, 4.5, 18);
-      glow(ctx, spot.x, spot.y, 12, 1 - rise * 0.6);
+      const mark = iso(10.5, 4.5, 18);
+      glow(ctx, mark.x, mark.y, 12, 1 - rise * 0.6);
     });
   },
 };

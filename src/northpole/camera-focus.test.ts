@@ -12,7 +12,7 @@ describe('the resting view on a laptop', () => {
   it('keeps the player and their nearest free spot, sign and all, on screen', () => {
     const { zoom, target } = framing(world, 1400, 856, world.start, 0, false);
     const centre = frameCentre(islandBounds(world), 1400, 856, zoom, target);
-    const spot = world.plots
+    const mark = world.plots
       .filter((plot) => plot.kind === 'open')
       .sort(
         (a, b) =>
@@ -20,8 +20,8 @@ describe('the resting view on a laptop', () => {
           Math.hypot(b.x - world.start.x, b.y - world.start.y),
       )
       .at(0);
-    expect(spot).toBeDefined();
-    for (const tile of [world.start, spot?.door ?? world.start]) {
+    expect(mark).toBeDefined();
+    for (const tile of [world.start, mark?.door ?? world.start]) {
       const at = worldToScreen(toScreen(tile), 1400, 856, centre, zoom);
       expect(at.x).toBeGreaterThan(0);
       expect(at.x).toBeLessThan(1400);

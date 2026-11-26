@@ -43,7 +43,7 @@ export function area(plot: Plot, along: Span, deep: Span): Box {
 }
 
 /** Where a spot on the plot is on screen, `lift` up. Attraction plots are square, so depth runs `plot.w` tiles back. */
-export const spot = (plot: Plot, along: number, deep: number, lift = 0): Tile =>
+export const onSpot = (plot: Plot, along: number, deep: number, lift = 0): Tile =>
   plotPoint(frontOf(plot), plot.w, { along, depth: deep }, lift);
 
 /** The face of `box` we see beside its front: right of it with the door on the left, left of it otherwise. */
@@ -94,13 +94,13 @@ export function gabledRoof(
   const [from, to] = along;
   const [near, far] = deep;
   const ridge = (from + to) / 2;
-  const front = spot(plot, ridge + lean, near, eaves + rise - sag);
-  const back = spot(plot, ridge - lean, far, eaves + rise);
+  const front = onSpot(plot, ridge + lean, near, eaves + rise - sag);
+  const back = onSpot(plot, ridge - lean, far, eaves + rise);
   const slopes = [
     { edge: from, color: lit },
     { edge: to, color: shaded },
   ].map(({ edge, color }) => {
-    const eave = [spot(plot, edge, near, eaves), spot(plot, edge, far, eaves)];
+    const eave = [onSpot(plot, edge, near, eaves), onSpot(plot, edge, far, eaves)];
     return { color, eave, points: [...eave, back, front] };
   });
   // The slope whose far eave is higher on screen is the one we see less of.
@@ -116,7 +116,7 @@ export function gabledRoof(
     ctx.stroke();
   }
   ctx.lineWidth = 1;
-  fillShape(ctx, [spot(plot, from, near, eaves), front, spot(plot, to, near, eaves)], gable);
+  fillShape(ctx, [onSpot(plot, from, near, eaves), front, onSpot(plot, to, near, eaves)], gable);
 }
 
 /** A window lit warm from inside, `w` by `h`, breathing a little. */

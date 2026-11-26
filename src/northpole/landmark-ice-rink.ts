@@ -7,7 +7,7 @@
  */
 import { glow } from './brushes';
 import { signPost, stage, type LandmarkDrawer } from './landmark-parts';
-import { backToFront, spot } from './landmark-kit';
+import { backToFront, onSpot } from './landmark-kit';
 import { standing } from './stall-plan';
 import { theme } from './theme';
 import type { Tile } from './world';
@@ -81,7 +81,7 @@ export const drawIceRink: LandmarkDrawer = (ctx, plot, square, paint, time) => {
   const mid = { x: ground.x, y: ground.y - STAGE };
   // Lamps at the back corners, lighting the ice.
   for (const along of [0.08, 0.92]) {
-    const foot = spot(plot, along, 0.92, STAGE);
+    const foot = onSpot(plot, along, 0.92, STAGE);
     ctx.fillStyle = colors.cocoa;
     ctx.fillRect(foot.x - 1.5, foot.y - RINK.lamp, 3, RINK.lamp);
     glow(ctx, foot.x, foot.y - RINK.lamp, 26, 0.9);

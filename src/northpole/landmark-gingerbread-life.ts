@@ -8,7 +8,7 @@
 import { bulb, twinkle } from './brushes';
 import { elf, outfit, swing } from './elf';
 import { onFace, type Face } from './faces';
-import { pennant, spot } from './landmark-kit';
+import { pennant, onSpot } from './landmark-kit';
 import { inTurn } from './rounds';
 import { theme } from './theme';
 import type { Plot, Tile } from './world';
@@ -77,7 +77,7 @@ function funHouseElves(ctx: CanvasRenderingContext2D, plot: Plot, time: number) 
     [0.05, 0.6],
     [0.14, 0.1],
   ] as const) {
-    const feet = spot(plot, along, 0.05);
+    const feet = onSpot(plot, along, 0.05);
     const shuffle = swing(time, 2_400, seed) * 2 - 1;
     elf(ctx, feet.x, feet.y - Math.abs(shuffle) * 1.5, {
       ...outfit(seed),
@@ -86,7 +86,7 @@ function funHouseElves(ctx: CanvasRenderingContext2D, plot: Plot, time: number) 
       stride: shuffle * 0.5,
     });
   }
-  const feet = spot(plot, 0.86, 0.05);
+  const feet = onSpot(plot, 0.86, 0.05);
   const wave = swing(time, 1_600, 0.3);
   const hands = elf(ctx, feet.x, feet.y, {
     ...outfit(0.9),
@@ -110,6 +110,6 @@ export function funHouseLife(
   eavesLights(ctx, at.front, at.eaves, time);
   pennant(ctx, at.peak, 22, colors.berry, time);
   chimneySmoke(ctx, at.chimney, time);
-  candyLamp(ctx, spot(plot, 0.97, 0.03), time);
+  candyLamp(ctx, onSpot(plot, 0.97, 0.03), time);
   funHouseElves(ctx, plot, time);
 }

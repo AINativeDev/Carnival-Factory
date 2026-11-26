@@ -11,7 +11,7 @@ import { block, corners } from './brushes';
 import { onFace, type Face } from './faces';
 import { funHouseLife } from './landmark-gingerbread-life';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
-import { area, gabledRoof, litWindow, sideOf, spot, type Span } from './landmark-kit';
+import { area, gabledRoof, litWindow, sideOf, onSpot, type Span } from './landmark-kit';
 import { inTurn } from './rounds';
 import { SIGN_STYLES } from './sign-styles';
 import { standing } from './stall-plan';
@@ -96,7 +96,7 @@ export const drawGingerbreadHouse: LandmarkDrawer = (ctx, plot, square, paint, t
   });
   // A crooked chimney on the slope we see, leaning the other way to the roof.
   const slope = frontOf(plot).out.x < 0 ? 0.7 : 0.3;
-  const stack = spot(plot, slope, 0.7, eaves + HOUSE.rise * 0.5);
+  const stack = onSpot(plot, slope, 0.7, eaves + HOUSE.rise * 0.5);
   ctx.save();
   ctx.translate(stack.x, stack.y);
   ctx.rotate(0.18);
@@ -109,19 +109,19 @@ export const drawGingerbreadHouse: LandmarkDrawer = (ctx, plot, square, paint, t
   ctx.fillRect(-9, -64, 18, 6);
   ctx.restore();
   // Icing piped along the gable's edges.
-  const peak = spot(plot, 0.5 + HOUSE.lean, 0.06, eaves + HOUSE.rise - HOUSE.sag);
+  const peak = onSpot(plot, 0.5 + HOUSE.lean, 0.06, eaves + HOUSE.rise - HOUSE.sag);
   ctx.strokeStyle = colors.snow;
   ctx.lineWidth = 4;
   ctx.beginPath();
-  for (const p of [spot(plot, 0.06, 0.06, eaves), peak, spot(plot, 0.94, 0.06, eaves)])
+  for (const p of [onSpot(plot, 0.06, 0.06, eaves), peak, onSpot(plot, 0.94, 0.06, eaves)])
     ctx.lineTo(p.x, p.y);
   ctx.stroke();
   ctx.lineWidth = 1;
   // A round attic window in the gable, and gumdrops along the crooked ridge.
-  litWindow(ctx, spot(plot, 0.5 + HOUSE.lean * 0.4, 0.06, eaves + 26), 12, 12, time);
+  litWindow(ctx, onSpot(plot, 0.5 + HOUSE.lean * 0.4, 0.06, eaves + 26), 12, 12, time);
   for (let n = 0; n <= 6; n++) {
     const t = n / 6;
-    const at = spot(
+    const at = onSpot(
       plot,
       0.5 + HOUSE.lean * (1 - 2 * t),
       0.06 + 0.86 * t,
@@ -131,6 +131,6 @@ export const drawGingerbreadHouse: LandmarkDrawer = (ctx, plot, square, paint, t
   }
   const chimney = { x: stack.x + 64 * Math.sin(0.18), y: stack.y - 64 * Math.cos(0.18) };
   funHouseLife(ctx, plot, time, { front, eaves, peak, chimney });
-  const ridge = spot(plot, 0.5, 0.92, eaves + HOUSE.rise);
+  const ridge = onSpot(plot, 0.5, 0.92, eaves + HOUSE.rise);
   return standing(plot, corners(plot).top.y - Math.min(ridge.y, stack.y - 64) + 20);
 };
