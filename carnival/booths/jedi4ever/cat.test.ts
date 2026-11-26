@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LANDING, twitchAt, TWITCH } from './cat';
+import { glintAt, LANDING, twitchAt, TWITCH } from './cat';
 import { letterAt, LOOP, SLOT } from './letters';
 
 describe('the cat', () => {
@@ -26,5 +26,16 @@ describe('the cat', () => {
   it('repeats every round, and before the page loaded', () => {
     expect(twitchAt(LANDING + TWITCH / 2 + LOOP)).toBeCloseTo(twitchAt(LANDING + TWITCH / 2));
     expect(twitchAt(LANDING + TWITCH / 2 - LOOP)).toBeCloseTo(1);
+  });
+
+  it('glints the bell once per tail flick, at its peak, and never while asleep', () => {
+    expect(glintAt(LANDING - 1)).toBe(0);
+    expect(glintAt(LANDING + TWITCH)).toBe(0);
+    for (let slot = 0; slot < 4; slot++) {
+      const peak = slot * SLOT + LANDING + TWITCH / 2;
+      expect(glintAt(peak)).toBeCloseTo(1);
+      expect(glintAt(peak + TWITCH / 4)).toBe(0);
+      expect(glintAt(peak - TWITCH / 4)).toBe(0);
+    }
   });
 });
