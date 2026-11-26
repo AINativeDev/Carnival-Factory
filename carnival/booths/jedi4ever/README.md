@@ -6,7 +6,9 @@ A busy little workshop that acts out how this map gets built, as a loop that
 repeats every 12 seconds:
 
 - **Letters arrive**: an envelope drops through the mail slot on the left and
-  lands on the pile on a crate, every 3 seconds.
+  lands on the pile on a crate, every 3 seconds. A ginger cat sleeps curled up
+  on top of the crate: each time a letter lands, its ear twitches and its tail
+  flicks once, then it settles back to sleep.
 - **Sorting**: an elf with a magnifying glass looks each letter over and
   stamps it. Three letters a round get a green stamp and go on to the belt; one
   gets a red stamp and floats up to the "maybe later" tray, where it fades
@@ -44,6 +46,8 @@ beside it:
 - `tallies.ts` is the check lamp and the "toys today" sign (`lampAt`,
   `toysMade`, `bounceOf`); `sleigh.ts` is the sleigh, its bells and the sacks
   counter (`jingleAt`, `sacksFilled`).
+- `cat.ts` is the ginger cat asleep on the crate: its ear twitches and its tail flicks
+  once each time a letter lands on the pile.
 - `room.ts` is the room behind it all, with the window's snow and the lights
   (`snowflake`, `twinkle`).
 - `elves.ts`, `belt.ts` and `toys.ts` draw the elves, the belt with
