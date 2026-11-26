@@ -150,12 +150,25 @@ describe("a level's Share pill", () => {
 });
 
 describe('the pills over the room', () => {
-  it('are Share and Full screen for a square, and Share alone beside a level', () => {
-    document.body.innerHTML = '<div></div>';
-    const frame = document.querySelector('div') as HTMLElement;
-    const square = roomPills(frame, false);
-    expect(square.copy.textContent).toBe('Share');
-    expect(square.full?.pill.textContent).toBe('Full screen');
-    expect(roomPills(frame, true).full).toBeUndefined();
+  it("stack Share and Full screen on a square's drawing, and give a level's panel Share alone", () => {
+    document.body.innerHTML =
+      '<div class="map-frame"><canvas></canvas><section><div class="visit-footer"></div></section></div>';
+    const frame = document.querySelector('.map-frame') as HTMLElement;
+    const panel = document.querySelector('section') as HTMLElement;
+    const square = roomPills(frame, panel, false);
+    const tools = frame.querySelector('.booth-tools');
+    expect(square.copy.parentElement).toBe(tools);
+    expect(tools?.querySelector('.visit-full')?.textContent).toBe('Full screen');
+    square.full?.stop();
+    expect(frame.querySelector('.booth-tools')).toBeNull();
+    const level = roomPills(frame, panel, true);
+    expect(level.copy.parentElement?.className).toBe('visit-footer');
+    expect('full' in level).toBe(false);
+  });
+
+  it("puts a level's Share in the panel itself when it has no footer", () => {
+    document.body.innerHTML = '<div><section></section></div>';
+    const panel = document.querySelector('section') as HTMLElement;
+    expect(roomPills(document.body, panel, true).copy.parentElement).toBe(panel);
   });
 });

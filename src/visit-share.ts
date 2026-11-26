@@ -7,6 +7,7 @@
  */
 import type { SquareKind } from './northpole/map-options';
 import { shareText } from './northpole/visit';
+import { boothTools } from './booth-tools';
 import { fullScreenPill } from './visit-full-screen';
 
 export interface ShareParts {
@@ -29,18 +30,31 @@ const SHARE_ICON =
 export function sharePill(frame: HTMLElement, level = false): HTMLButtonElement {
   const pill = document.createElement('button');
   pill.type = 'button';
-  pill.className = 'hud visit-copy';
+  pill.className = 'visit-copy';
   if (level) pill.dataset.level = '';
+  pill.title = 'Share';
   pill.innerHTML = `${SHARE_ICON}<span class="visit-copy-label">Share</span>`;
   frame.append(pill);
   return pill;
 }
 
-/** The pills over the room for a visit: Share, and Full screen for a square, never for a level's own panel. */
-export const roomPills = (frame: HTMLElement, level: boolean) => ({
-  copy: sharePill(frame, level),
-  full: level ? undefined : fullScreenPill(frame),
-});
+/**
+ * A visit's two buttons, Share and Full screen, stacked on the corner of the
+ * square's drawing (booth-tools.ts). A level's own panel gets Share alone.
+ */
+export function roomPills(frame: HTMLElement, panel: HTMLElement, level: boolean) {
+  // A level's own panel has no drawing to stand on: its Share stays beside the ask.
+  if (level)
+    return { copy: sharePill(panel.querySelector<HTMLElement>('.visit-footer') ?? panel, level) };
+  const tools = boothTools(frame);
+  const copy = sharePill(tools.element);
+  const full = fullScreenPill(frame, tools.element);
+  const stop = () => {
+    full.stop();
+    tools.stop();
+  };
+  return { copy, full: { stop } };
+}
 
 /** A phone with its own share sheet: a touch screen whose browser can share. */
 const sharesNatively = () =>
@@ -79,8 +93,13 @@ export function wireShare(
     navigator.clipboard.writeText(parts.text.value).then(
       () => {
         label.textContent = 'Copied';
+        // Its word is hidden beside the icon, except to say Copied for a moment.
+        parts.copy.dataset.said = '';
         window.clearTimeout(reset);
-        reset = window.setTimeout(() => (label.textContent = 'Share'), 2000);
+        reset = window.setTimeout(() => {
+          label.textContent = 'Share';
+          delete parts.copy.dataset.said;
+        }, 2000);
       },
       () => {
         // No clipboard: the line is shown and selected, to copy by hand.

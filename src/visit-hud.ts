@@ -136,7 +136,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
       ? new URL(level ? levelLink(level, square.id) : levelLink(square.id), document.baseURI).href
       : shareLink(kind, square.id, document.baseURI);
   const share = wireShare(
-    { ...roomPills(frame, walking), text: $('.visit-share-text'), options: $('.visit-more') },
+    { ...roomPills(frame, card, walking), text: $('.visit-share-text'), options: $('.visit-more') },
     { kind, id: square.id, name: () => square.name },
     link,
   );

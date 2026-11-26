@@ -1417,83 +1417,134 @@ kbd {
   font-size: 14px;
 }
 
-/* Share stands over the room, beside the panel, so a long build story never hides it:
-   a berry pill with the share icon people know, at the room's top right. */
-.hud.visit-copy {
-  top: 12px;
-  right: 12px;
+/* The booth's own tools, Share and Full screen, stacked on its drawing's top-right corner
+   (booth-tools.ts places them): round, a little see-through until pointed at. */
+.booth-tools {
+  position: absolute;
   z-index: 5;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
-  padding: 8px 18px;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-night) 45%, transparent);
 }
 
-.hud.visit-copy:hover,
-.hud.visit-copy:focus-visible {
-  outline: 3px solid var(--color-gold);
-  outline-offset: 2px;
+.booth-tools[hidden] {
+  display: none;
 }
 
-/* Full screen, just under Share: a quieter pill, since Share is the main action. */
-.hud.visit-full {
-  top: 64px;
-  right: 12px;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.booth-tools .visit-copy,
+.booth-tools .visit-full {
+  position: relative;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
-  padding: 8px 18px;
-  font: 600 15px var(--font-family);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-cream) 88%, transparent);
+  color: var(--color-ink);
   cursor: pointer;
+  opacity: 0.8;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--color-night) 40%, transparent);
+  transition: opacity 0.15s;
 }
 
-.hud.visit-full:hover,
-.hud.visit-full:focus-visible {
+.booth-tools .visit-copy {
+  color: var(--color-berry);
+}
+
+.booth-tools .visit-copy svg,
+.booth-tools .visit-full svg {
+  width: 20px;
+  height: 20px;
+}
+
+.booth-tools .visit-copy:hover,
+.booth-tools .visit-copy:focus-visible,
+.booth-tools .visit-full:hover,
+.booth-tools .visit-full:focus-visible {
+  opacity: 1;
   outline: 3px solid var(--color-gold);
   outline-offset: 2px;
 }
 
-.map-frame:has(> .visit) > .hud.visit-full {
-  right: 368px;
+/* The words, out of sight but read out, and shown as a tooltip. */
+.visit-copy-label,
+.visit-full-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-/* A booth full screen fills the page: only its drawing, and the way back out, in the corner. */
+/* After a copy, "Copied" shows for a moment beside the icon. */
+.visit-copy[data-said] .visit-copy-label {
+  right: 48px;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-night);
+  color: var(--color-snow);
+  font: 600 13px var(--font-family);
+}
+
+/* A booth full screen fills the page: only its drawing, with its tools on its corner. */
 .map-frame[data-full] {
   position: fixed;
   inset: 0;
   z-index: 100;
 }
 
-.map-frame[data-full] > :not(.map-canvas, .visit-full) {
+.map-frame[data-full] > :not(.map-canvas, .booth-tools) {
   display: none !important;
 }
 
-.map-frame[data-full] > .hud.visit-full {
-  top: 12px;
-  right: 12px;
+/* The ask stays in sight at the panel's foot, however long the build story above it. */
+.visit-footer {
+  position: sticky;
+  bottom: -16px;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px -18px -16px;
+  padding: 12px 18px 16px;
+  border-top: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  background: var(--color-cream);
 }
 
-/* A square's panel stands over the room's right side: the pill sits just left of it. A level's
-   panel stands beside the map instead, so its pill keeps the corner. */
-.map-frame:has(> .visit) > .hud.visit-copy {
-  right: 368px;
+.visit-footer .visit-want,
+.visit-footer .visit-next {
+  margin: 0;
 }
 
-/* Inside one of a level's squares, the square's own pill shares it: the level's steps aside. */
-.map-frame[data-visiting] > .hud.visit-copy[data-level] {
-  display: none;
+/* A level's own panel keeps its Share beside the ask, as an icon. */
+.visit-footer .visit-copy {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
 }
 
-/* On a phone the panel sits under the room, so the pill takes the room's own top right. */
-@media (max-width: 719px) {
-  .map-frame:has(> .visit) > .hud.visit-copy,
-  .map-frame:has(> .visit) > .hud.visit-full {
-    right: 12px;
-  }
+/* The main ask is a button, not a link in a sentence. */
+.visit-want .visit-build:not([hidden]) {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: var(--color-berry);
+  color: var(--color-snow);
+  font-size: 16px;
+  text-decoration: none;
 }
 
 /* The one ask: a booth of your own, the spot next door for someone who came by a shared link,

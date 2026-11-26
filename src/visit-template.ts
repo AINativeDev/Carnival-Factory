@@ -37,8 +37,12 @@ export const VISIT_PANEL = `
       <a class="visit-vote" target="_blank" rel="noopener" hidden>Vote for this booth</a>
       <a class="visit-remix-link" target="_blank" rel="noopener">Remix this booth</a>
     </div>
-    <p class="visit-want">Want one too? <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Get a booth</a><button class="visit-claim" type="button" hidden>Get the spot next door</button></p>
-    <p class="visit-next" hidden>Next: <a href="${LEVEL_REQUEST_URL}" target="_blank" rel="noopener">get a level of your own</a></p>
+    <div class="visit-footer">
+      <div class="visit-ask">
+        <p class="visit-want">Want one too? <a class="visit-build" href="${BUILD_YOUR_OWN_URL}" target="_blank" rel="noopener">Get a booth</a><button class="visit-claim" type="button" hidden>Get the spot next door</button></p>
+        <p class="visit-next" hidden>Next: <a href="${LEVEL_REQUEST_URL}" target="_blank" rel="noopener">get a level of your own</a></p>
+      </div>
+    </div>
     <details class="visit-more">
       <summary>More</summary>
       <div class="visit-edit">

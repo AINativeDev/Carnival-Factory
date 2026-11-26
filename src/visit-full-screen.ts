@@ -11,10 +11,11 @@ const FULL_ICON =
   '<svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
 
 /** Adds the Full screen pill to the map's frame for a visit; `stop` ends full screen and removes it. */
-export function fullScreenPill(frame: HTMLElement) {
+export function fullScreenPill(frame: HTMLElement, parent: HTMLElement = frame) {
   const pill = document.createElement('button');
   pill.type = 'button';
-  pill.className = 'hud visit-full';
+  pill.className = 'visit-full';
+  pill.title = 'Full screen';
   pill.innerHTML = `${FULL_ICON}<span class="visit-full-label">Full screen</span>`;
   const label = pill.querySelector('.visit-full-label') as HTMLElement;
   const on = () => frame.dataset.full !== undefined;
@@ -22,7 +23,7 @@ export function fullScreenPill(frame: HTMLElement) {
   const refit = () => window.dispatchEvent(new Event('resize'));
   const enter = () => {
     frame.dataset.full = '';
-    label.textContent = 'Exit full screen';
+    label.textContent = pill.title = 'Exit full screen';
     // Not every browser has it (Safari on an iPhone, for a page's element), and it
     // can refuse: the page is filled either way.
     if ('requestFullscreen' in frame && typeof frame.requestFullscreen === 'function')
@@ -32,7 +33,7 @@ export function fullScreenPill(frame: HTMLElement) {
   const leave = () => {
     if (!on()) return;
     delete frame.dataset.full;
-    label.textContent = 'Full screen';
+    label.textContent = pill.title = 'Full screen';
     if (document.fullscreenElement === frame) document.exitFullscreen().catch(() => undefined);
     refit();
   };
@@ -53,7 +54,7 @@ export function fullScreenPill(frame: HTMLElement) {
   };
   document.addEventListener('keydown', onKey, true);
   document.addEventListener('fullscreenchange', onChange);
-  frame.append(pill);
+  parent.append(pill);
   return {
     pill,
     stop() {
