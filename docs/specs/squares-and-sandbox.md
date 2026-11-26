@@ -18,7 +18,8 @@ page never runs a square's code: each runs in its own sandboxed frame and worker
   the worker and again on the page (`readLinkAsk`). The page opens it only
   for a North Pole place with links (`northPoleLinks`) and only within 1.5
   seconds of a tap on the page, one tab a tap, so a booth, or a square asking
-  on its own, opens nothing (`src/visit-link-out.ts`; enforced by:
+  on its own, opens nothing. What opens is the list's own copy of the address
+  (`allowedLinkOut`), so nothing from the page's address reaches a new tab (`src/visit-link-out.ts`; enforced by:
   src/northpole/square-ask.test.ts, src/visit-link-out.test.ts,
   src/northpole/square-worker.test.ts).
 - `stall` is `{ shape, roof, trim?, landmark?, letters?, scene? }`: shape one of

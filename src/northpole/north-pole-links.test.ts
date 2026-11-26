@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { httpsOnly, linksHome, NORTH_POLE_LINKS, northPoleLinks } from './north-pole-links';
+import {
+  allowedLinkOut,
+  httpsOnly,
+  linksHome,
+  NORTH_POLE_LINKS,
+  northPoleLinks,
+} from './north-pole-links';
 import { isNorthPoleLevel } from './north-pole-levels';
 import { YEAR_IN_REVIEW_URL } from './links';
 
@@ -90,5 +96,15 @@ describe("the North Pole's links out, tagged", () => {
     expect(northPoleLinks('the-year-in-review')).toEqual([
       { label: 'Add your answer', href: YEAR_IN_REVIEW_URL },
     ]);
+  });
+});
+
+describe('the addresses a link out may open', () => {
+  it("are the North Pole's own, tagged, and nothing else, not even the same site untagged", () => {
+    const signup = northPoleLinks('the-factory')[0]?.href ?? '';
+    expect(allowedLinkOut(signup)).toBe(signup);
+    expect(allowedLinkOut('https://tessl.io/login')).toBeUndefined();
+    expect(allowedLinkOut('https://evil.example/')).toBeUndefined();
+    expect(allowedLinkOut('')).toBeUndefined();
   });
 });

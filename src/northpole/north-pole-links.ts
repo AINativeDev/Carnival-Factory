@@ -71,3 +71,17 @@ export function linksHome(kind: string, id: string, level?: string): string | un
   const own = kind === 'attraction' && Object.hasOwn(NORTH_POLE_LINKS, id) ? id : undefined;
   return landmarkLevel(kind, id) ?? level ?? own;
 }
+
+/**
+ * Every address a link out may open, each tagged as its panel shows it: the
+ * one place `window.open` takes an address from (visit-link-out.ts). The
+ * address returned is the list's own string, never the one asked about, so
+ * nothing from a page's address or a square's message can reach a new tab.
+ */
+const EVERY_LINK_OUT: readonly string[] = Object.keys(NORTH_POLE_LINKS).flatMap((place) =>
+  northPoleLinks(place).map(({ href }) => href),
+);
+
+/** The list's own copy of `href`, if it's one of the North Pole's links out, else undefined. */
+export const allowedLinkOut = (href: string): string | undefined =>
+  EVERY_LINK_OUT.find((allowed) => allowed === href);

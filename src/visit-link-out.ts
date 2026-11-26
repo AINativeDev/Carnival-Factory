@@ -6,7 +6,7 @@
  * real tap on the page, one tab a tap, so no square can open tabs by itself.
  */
 import type { SquareKind } from './northpole/map-options';
-import { linksHome, northPoleLinks } from './northpole/north-pole-links';
+import { allowedLinkOut, linksHome, northPoleLinks } from './northpole/north-pole-links';
 import type { SandboxedSquare } from './northpole/sandbox';
 
 /** How soon after a tap on the page a drawing's ask still counts as that tap's, in milliseconds. */
@@ -28,10 +28,12 @@ export function followLinkAsks(
   };
   frame.addEventListener('pointerdown', onTap, true);
   const stopListening = (square as SandboxedSquare).onLink((link) => {
-    const out = links.at(link);
+    // Only an address on the maintainers' own list opens, and it's the list's copy that does.
+    const out = allowedLinkOut(links.at(link)?.href ?? '');
     if (!out || performance.now() - tapped > AFTER_A_TAP) return;
     tapped = Number.NEGATIVE_INFINITY;
-    window.open(out.href, '_blank', 'noopener');
+    // deepcode ignore OR: `out` is a fixed address from NORTH_POLE_LINKS (allowedLinkOut), never one from the page's address or a square.
+    window.open(out, '_blank', 'noopener');
   });
   return {
     stop() {
