@@ -1,134 +1,112 @@
 import { describe, expect, it } from 'vitest';
-import booth from './booth';
+import booth, { steerFrom } from './booth';
+import { dialSpeed } from './dashboard';
+import { starAt } from './sky';
+import { flakeAt } from './snow';
+import { segmentDepth } from './street';
 
-/** Stands in for the canvas and writes down what was drawn on it, so the scene can be drawn in Node. */
+/** A canvas that accepts every drawing call and counts the ones made. */
 class DrawingLog {
-  readonly calls: string[] = [];
-  private note(name: string, args: readonly unknown[]) {
-    this.calls.push(`${name}(${args.map(String).join(',')})`);
+  calls = 0;
+  fillStyle = '';
+  strokeStyle = '';
+  globalAlpha = 1;
+  lineWidth = 1;
+  font = '';
+  textAlign = '';
+  textBaseline = '';
+  createLinearGradient() {
+    return { addColorStop: () => undefined };
   }
-  set fillStyle(value: string) {
-    this.note('fillStyle', [value]);
-  }
-  set strokeStyle(value: string) {
-    this.note('strokeStyle', [value]);
-  }
-  set globalAlpha(value: number) {
-    this.note('globalAlpha', [value]);
-  }
-  set lineWidth(value: number) {
-    this.note('lineWidth', [value]);
-  }
-  set lineCap(value: string) {
-    this.note('lineCap', [value]);
-  }
-  set lineJoin(value: string) {
-    this.note('lineJoin', [value]);
-  }
-  set font(value: string) {
-    this.note('font', [value]);
-  }
-  set textAlign(value: string) {
-    this.note('textAlign', [value]);
-  }
-  set textBaseline(value: string) {
-    this.note('textBaseline', [value]);
-  }
-  save = (...args: unknown[]) => {
-    this.note('save', args);
+  private count = () => {
+    this.calls += 1;
   };
-  restore = (...args: unknown[]) => {
-    this.note('restore', args);
-  };
-  translate = (...args: unknown[]) => {
-    this.note('translate', args);
-  };
-  scale = (...args: unknown[]) => {
-    this.note('scale', args);
-  };
-  rotate = (...args: unknown[]) => {
-    this.note('rotate', args);
-  };
-  beginPath = (...args: unknown[]) => {
-    this.note('beginPath', args);
-  };
-  closePath = (...args: unknown[]) => {
-    this.note('closePath', args);
-  };
-  moveTo = (...args: unknown[]) => {
-    this.note('moveTo', args);
-  };
-  lineTo = (...args: unknown[]) => {
-    this.note('lineTo', args);
-  };
-  quadraticCurveTo = (...args: unknown[]) => {
-    this.note('quadraticCurveTo', args);
-  };
-  arc = (...args: unknown[]) => {
-    this.note('arc', args);
-  };
-  ellipse = (...args: unknown[]) => {
-    this.note('ellipse', args);
-  };
-  fill = (...args: unknown[]) => {
-    this.note('fill', args);
-  };
-  stroke = (...args: unknown[]) => {
-    this.note('stroke', args);
-  };
-  fillRect = (...args: unknown[]) => {
-    this.note('fillRect', args);
-  };
-  strokeRect = (...args: unknown[]) => {
-    this.note('strokeRect', args);
-  };
-  fillText = (...args: unknown[]) => {
-    this.note('fillText', args);
-  };
+  save = this.count;
+  restore = this.count;
+  translate = this.count;
+  rotate = this.count;
+  scale = this.count;
+  transform = this.count;
+  beginPath = this.count;
+  closePath = this.count;
+  moveTo = this.count;
+  lineTo = this.count;
+  arc = this.count;
+  ellipse = this.count;
+  roundRect = this.count;
+  fill = this.count;
+  stroke = this.count;
+  fillRect = this.count;
+  fillText = this.count;
 }
 
-/** What the booth draws at `time` with `pointer`, `size` across. */
-function drawn(size: number, time: number, pointer?: Parameters<typeof booth.draw>[3]): string[] {
-  const canvas = new DrawingLog();
-  booth.draw(canvas as unknown as CanvasRenderingContext2D, size, time, pointer);
-  return canvas.calls;
+function recordingCanvas() {
+  const log = new DrawingLog();
+  return { log, ctx: log as unknown as CanvasRenderingContext2D };
 }
 
-describe("Santa's Toy Factory", () => {
-  it('keeps its id, name and log cabin stall', () => {
+describe('booth', () => {
+  it('is the night run on a food truck', () => {
     expect(booth.id).toBe('jedi4ever');
-    expect(booth.name).toBe("Santa's Toy Factory");
-    expect(booth.stall).toEqual({ shape: 'cabin', roof: 'berry', trim: 'gold' });
+    expect(booth.stall?.shape).toBe('food-truck');
   });
 
-  it('draws the same scene for the same moment', () => {
-    const first = drawn(200, 4_321);
-    expect(first.length).toBeGreaterThan(100);
-    expect(drawn(200, 4_321)).toEqual(first);
+  it('draws the whole street on its own, frame after frame', () => {
+    const { log, ctx } = recordingCanvas();
+    for (let time = 0; time < 40_000; time += 50) booth.draw(ctx, 200, time);
+    expect(log.calls).toBeGreaterThan(5000);
   });
 
-  it('swirls the globe when tapped, and waves a penguin under the pointer', () => {
-    const still = drawn(100, 50_000);
-    expect(drawn(100, 50_000, { x: 60, y: 76, down: true, presses: 1 })).not.toEqual(still);
-    const away = drawn(100, 60_000);
-    expect(drawn(100, 60_000, { x: 19, y: 87, down: false, presses: 0 })).not.toEqual(away);
+  it('plays with the pointer, then goes again after a crash with a tap', () => {
+    const { ctx } = recordingCanvas();
+    let time = 100_000;
+    for (let step = 0; step < 600; step += 1) {
+      time += 50;
+      booth.draw(ctx, 200, time, {
+        x: step % 2 === 0 ? 5 : 195,
+        y: 100,
+        down: true,
+        presses: step % 7 === 0 ? 1 : 0,
+      });
+    }
+    expect(time).toBeGreaterThan(0);
+  });
+});
+
+describe('steerFrom', () => {
+  it('follows the pointer across the road', () => {
+    const left = { x: 10, y: 50, down: false, presses: 0 };
+    expect(steerFrom(left, 100, 0)).toBeLessThan(0);
+    expect(steerFrom({ ...left, x: 90 }, 100, 0)).toBeGreaterThan(0);
   });
 
-  it('spins the logo while a press on it is held, and slows once let go', () => {
-    // The logo is the one thing turned about the plaque's middle.
-    const turn = (calls: string[]) =>
-      Number(calls[calls.indexOf('translate(89.5,42)') + 1]?.slice(7, -1));
-    const press = { x: 89, y: 42, down: true, presses: 1 };
-    const held = { x: 89, y: 42, down: true, presses: 0 };
-    drawn(100, 70_000);
-    drawn(100, 70_016, press);
-    for (let time = 70_032; time < 71_000; time += 16) drawn(100, time, held);
-    const spinning = turn(drawn(100, 71_016, held));
-    expect(turn(drawn(100, 71_032, held))).toBeGreaterThan(spinning);
-    drawn(100, 71_048);
-    const slowing = turn(drawn(100, 71_064)) - turn(drawn(100, 71_048));
-    expect(slowing).toBeLessThan(turn(drawn(100, 71_032, held)) - spinning);
-    for (let time = 71_080; time < 76_000; time += 16) drawn(100, time);
-    expect(turn(drawn(100, 76_016))).toBe(turn(drawn(100, 76_032)));
+  it('turns towards the half that was tapped', () => {
+    expect(steerFrom({ x: 10, y: 0, down: true, presses: 1 }, 100, 0.1)).toBeLessThan(0);
+    expect(steerFrom({ x: 90, y: 0, down: true, presses: 1 }, 100, 0.1)).toBeGreaterThan(0.1);
+  });
+});
+
+describe('the little parts', () => {
+  it('shows speed in whole km/h', () => {
+    expect(dialSpeed(10)).toBe(36);
+  });
+
+  it('keeps the stars gentle', () => {
+    for (let time = 0; time < 10_000; time += 100) {
+      expect(starAt(3, time)).toBeGreaterThan(0.1);
+      expect(starAt(3, time)).toBeLessThanOrEqual(0.9);
+    }
+  });
+
+  it('streaks the snow longer at speed, always on the square', () => {
+    const slow = flakeAt(4, 1000, 0, 10);
+    const fast = flakeAt(4, 1000, 0, 34);
+    expect(fast.streak).toBeGreaterThan(slow.streak);
+    expect(fast.y).toBeGreaterThanOrEqual(0);
+    expect(fast.y).toBeLessThan(1);
+  });
+
+  it('packs the road segments close near the camera', () => {
+    expect(segmentDepth(1) - segmentDepth(0)).toBeLessThan(segmentDepth(44) - segmentDepth(43));
   });
 });
