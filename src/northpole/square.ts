@@ -1,4 +1,5 @@
 import type { StallStyle } from './stall-style';
+import type { SquareAsk } from './square-ask';
 import { canvasFont, theme } from './theme';
 
 export {
@@ -36,6 +37,8 @@ export interface NorthPoleSquare {
   /** How its stall on the map looks. Leave it out for the usual market stall. */
   stall?: StallStyle;
   draw(ctx: CanvasRenderingContext2D, size: number, time: number, pointer?: SquarePointer): void;
+  /** Asked after each frame: what the drawing asks of the page, such as a link to open (square-ask.ts). */
+  ask?(): SquareAsk | undefined;
 }
 
 /**

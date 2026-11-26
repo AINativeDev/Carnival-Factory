@@ -17,9 +17,7 @@ describe('the AI DevCon billboard', () => {
       '7–8 June 2027 · The Brewery',
       'Get tickets →',
     ]);
-    expect(BILLBOARD.tickets).toBe(
-      'https://luma.com/aidevcon-ldn2027?utm_source=carnival-factory&utm_medium=billboard&utm_campaign=christmas-edition',
-    );
+    expect(BILLBOARD.room).toBe('ai-devcon');
   });
 
   it('is hit by a click on the board or its posts, and nowhere else', () => {

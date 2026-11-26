@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  httpsOnly,
-  landmarkLinkOut,
-  linksHome,
-  NORTH_POLE_LINKS,
-  northPoleLinks,
-} from './north-pole-links';
+import { httpsOnly, linksHome, NORTH_POLE_LINKS, northPoleLinks } from './north-pole-links';
 import { isNorthPoleLevel } from './north-pole-levels';
 import { YEAR_IN_REVIEW_URL } from './links';
 
@@ -43,13 +37,14 @@ describe("the North Pole's own links out", () => {
     expect(YEAR_IN_REVIEW_URL).toMatch(/\/issues\/new\?template=07-year-in-review\.yml$/);
   });
 
-  it("gives links only to the North Pole's own levels, never a participant's", () => {
-    for (const id of Object.keys(NORTH_POLE_LINKS)) expect(isNorthPoleLevel(id)).toBe(true);
+  it("gives links only to the North Pole's own places, never a participant's level", () => {
+    // AI DevCon's room is the one place with links that isn't a level.
+    for (const id of Object.keys(NORTH_POLE_LINKS))
+      expect(isNorthPoleLevel(id) || id === 'ai-devcon').toBe(true);
     const participants = levelFolders.filter((id) => !isNorthPoleLevel(id));
     expect(participants).toContain('jedi4ever');
     for (const id of participants) expect(northPoleLinks(id)).toEqual([]);
     expect(northPoleLinks('constructor')).toEqual([]);
-    expect(northPoleLinks('the-factory')).toEqual([]);
   });
 
   it('keeps only https links', () => {
@@ -74,23 +69,19 @@ describe('linksHome', () => {
   });
 });
 
-describe('landmarkLinkOut', () => {
-  it("opens the Factory's, the Academy's and the Studio's own sites", () => {
-    expect(landmarkLinkOut('attraction', 'the-factory')).toBe(
-      'https://tessl.io/?utm_source=carnival-factory&utm_medium=the-factory&utm_campaign=christmas-edition',
-    );
-    expect(landmarkLinkOut('attraction', 'the-academy')).toBe(
-      'https://tessl.io/academy?utm_source=carnival-factory&utm_medium=the-academy&utm_campaign=christmas-edition',
-    );
-    expect(landmarkLinkOut('attraction', 'the-studio')).toBe(
-      'https://tessl.io/podcast/?utm_source=carnival-factory&utm_medium=the-studio&utm_campaign=christmas-edition',
-    );
-  });
-
-  it('has none for anything else: the Year in Review, a booth, or a name like constructor', () => {
-    expect(landmarkLinkOut('attraction', 'the-year-in-review')).toBeUndefined();
-    expect(landmarkLinkOut('booth', 'the-academy')).toBeUndefined();
-    expect(landmarkLinkOut('attraction', 'constructor')).toBeUndefined();
+describe('links of their own', () => {
+  it("give the Factory its signup and AI DevCon's room its tickets, tagged with the place", () => {
+    expect(northPoleLinks('the-factory')).toEqual([
+      {
+        label: 'Sign up for Tessl',
+        href: 'https://tessl.io/login?utm_source=carnival-factory&utm_medium=the-factory&utm_campaign=christmas-edition',
+      },
+    ]);
+    expect(linksHome('attraction', 'ai-devcon')).toBe('ai-devcon');
+    expect(northPoleLinks('ai-devcon')[0]?.label).toBe('Get tickets');
+    expect(linksHome('booth', 'ai-devcon')).toBeUndefined();
+    expect(linksHome('attraction', 'constructor')).toBeUndefined();
+    expect(northPoleLinks('constructor')).toEqual([]);
   });
 });
 

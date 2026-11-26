@@ -43,10 +43,11 @@ square stands on a numbered spot, and the page's hash decides what is shown.
 - A roadside billboard, high on braced steel legs with a catwalk and
   spotlights, stands in open snow beside the main road east, in the opening
   view, and says what's on next: AI DevCon, next in London, 7–8 June 2027 at The
-  Brewery. A click on it opens the tickets page in a new tab, the link tagged
-  `utm_source=carnival-factory`, `utm_medium=billboard` and
-  `utm_campaign=christmas-edition` (`withUtm` in `src/northpole/links.ts`), and
-  the pointer turns to a hand over it (`src/northpole/billboard.ts`).
+  Brewery. A click on it opens AI DevCon's own room, `#/attraction/ai-devcon`,
+  whose panel has the tickets; the billboard is its way in, and it has no
+  stall of its own ([ADR 0058](../adr/0058-tessl-places-open-as-booths.md),
+  `src/northpole/off-map.ts`). The pointer turns to a hand over it
+  (`src/northpole/billboard.ts`).
 - "Get a booth" walks the player to the nearest free spot. "Show the whole
   island" toggles the overview.
 - Zoom, on every device and on levels too: a "+" and "−" pair of buttons

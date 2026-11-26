@@ -16,6 +16,7 @@ import {
   type StallStyle,
   type ThemeColor,
 } from './square';
+import { readLinkAsk } from './square-ask';
 import { theme } from './theme';
 
 /** A booth, one of the North Pole's attractions, or one of a level's own squares. */
@@ -33,7 +34,7 @@ export interface DrawRequest {
 /** What a frame may send back, once checked. */
 export type FrameMessage =
   | { type: 'ready'; name: string; description: string; stall?: StallStyle }
-  | { type: 'frame'; bitmap: ImageBitmap; drawMs: number }
+  | { type: 'frame'; bitmap: ImageBitmap; drawMs: number; open?: number }
   | { type: 'error'; message: string };
 
 /** The largest square a frame draws, in pixels a side. */
@@ -71,7 +72,8 @@ export function readFrameMessage(
       if (!isBitmap(bitmap)) return undefined;
       if (bitmap.width !== expectedSize || bitmap.height !== expectedSize) return undefined;
       const ms = typeof drawMs === 'number' && Number.isFinite(drawMs) ? Math.max(0, drawMs) : 0;
-      return { type: 'frame', bitmap, drawMs: ms };
+      const open = readLinkAsk(message);
+      return { type: 'frame', bitmap, drawMs: ms, ...(open === undefined ? {} : { open }) };
     }
     case 'error':
       return { type: 'error', message: text(message.message, 200) };

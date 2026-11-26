@@ -1,12 +1,14 @@
 /**
- * Links out of the map for the North Pole's own levels: the Academy's
- * lessons, the podcast and the YouTube channel. A square runs sandboxed and
+ * Links out of the map for the North Pole's own places: the Factory's
+ * signup, the Academy's lessons, the podcast and the YouTube channel, and AI
+ * DevCon's tickets. A square runs sandboxed and
  * can't link anywhere, and a level is a participant's plain data, so these
  * live here, in maintainer code, keyed by a North Pole level's id: no
  * participant's level can ever carry one (ADR 0038).
  */
+import { SETTINGS } from '../settings';
 import { withUtm, YEAR_IN_REVIEW_URL } from './links';
-import { isNorthPoleLevel, landmarkLevel } from './north-pole-levels';
+import { landmarkLevel } from './north-pole-levels';
 
 /** One link out: what its button says, and where it goes. */
 export interface OutboundLink {
@@ -14,34 +16,19 @@ export interface OutboundLink {
   readonly href: string;
 }
 
-/** Each North Pole level's links, in the order its panel shows them. */
+/** Each North Pole place's links, by its level's or attraction's id, in the order its panel shows them. */
 export const NORTH_POLE_LINKS: Readonly<Record<string, readonly OutboundLink[]>> = {
-  'the-academy': [{ label: 'Start the Academy', href: 'https://tessl.io/academy' }],
+  'the-factory': [{ label: 'Sign up for Tessl', href: SETTINGS.tessl.signup }],
+  'the-academy': [{ label: 'Start the Academy', href: SETTINGS.tessl.academy }],
   'the-studio': [
-    { label: 'Listen to the podcast', href: 'https://tessl.io/podcast/' },
-    { label: 'Watch on YouTube', href: 'https://www.youtube.com/@tessl-ai' },
+    { label: 'Listen to the podcast', href: SETTINGS.tessl.podcast },
+    { label: 'Watch on YouTube', href: SETTINGS.tessl.youtube },
   ],
   // The Year in Review's form, where a visitor's answer starts (ADR 0047).
   'the-year-in-review': [{ label: 'Add your answer', href: YEAR_IN_REVIEW_URL }],
+  // AI DevCon's own room, which its billboard on the map opens (ADR 0058).
+  'ai-devcon': [{ label: 'Get tickets', href: SETTINGS.aiDevcon.tickets }],
 };
-
-/**
- * Where a landmark goes straight out to, in a new tab, while the levels flag
- * is off: the Factory, the Academy and the Studio open their own sites
- * instead of their levels, as the billboard opens its tickets (ADR 0055).
- */
-const LANDMARK_LINKS_OUT: Readonly<Record<string, string>> = {
-  'the-factory': 'https://tessl.io',
-  'the-academy': 'https://tessl.io/academy',
-  'the-studio': 'https://tessl.io/podcast/',
-};
-
-/** The site a landmark opens instead of its level, if it has one and it's https. */
-export function landmarkLinkOut(kind: string, id: string): string | undefined {
-  // Only the North Pole's own ids are looked up, so a name like "constructor" never reaches the object.
-  const href = kind === 'attraction' && isNorthPoleLevel(id) ? LANDMARK_LINKS_OUT[id] : undefined;
-  return href && isHttps(href) ? tagged(href, id) : undefined;
-}
 
 /**
  * A link out of a North Pole place, tagged with the place it sat in, so Tessl
@@ -64,21 +51,23 @@ function isHttps(href: string): boolean {
 export const httpsOnly = (links: readonly OutboundLink[]) =>
   links.filter(({ href }) => isHttps(href));
 
-/** A level's links out: its own when it's one of the North Pole's, and none for anyone else's. */
+/** A place's links out: its own when it's one of the North Pole's, and none for anyone else's. */
 export function northPoleLinks(level: string): readonly OutboundLink[] {
-  // Only the North Pole's own ids are looked up, so a name like "constructor" never reaches the object.
-  const links = isNorthPoleLevel(level) ? NORTH_POLE_LINKS[level] : undefined;
+  // Only the list's own keys are looked up, so a name like "constructor" never reaches the object.
+  const links = Object.hasOwn(NORTH_POLE_LINKS, level) ? NORTH_POLE_LINKS[level] : undefined;
   return links
     ? httpsOnly(links).map(({ label, href }) => ({ label, href: tagged(href, level) }))
     : [];
 }
 
 /**
- * Which level a panel's links come from: a level's own panel, a landmark's
- * room, or one of a level's squares. The links themselves come from
+ * Which place a panel's links come from: a level's own panel, a landmark's
+ * room, one of a level's squares, or an attraction with links of its own. The links themselves come from
  * `northPoleLinks`, so a participant's level still gets none.
  */
 export function linksHome(kind: string, id: string, level?: string): string | undefined {
   if (kind === 'level') return id;
-  return landmarkLevel(kind, id) ?? level;
+  // An attraction with no level of its own, such as AI DevCon, may have links of its own.
+  const own = kind === 'attraction' && Object.hasOwn(NORTH_POLE_LINKS, id) ? id : undefined;
+  return landmarkLevel(kind, id) ?? level ?? own;
 }

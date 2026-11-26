@@ -4,7 +4,6 @@
  * panel, Get a booth, the whole island) and People's Choice below it. The
  * router (src/router.ts) opens it; src/level-page.ts opens a level's instead.
  */
-import { landmarkLinkOut } from './northpole/north-pole-links';
 import { isOn } from './feature-flags';
 import { startBoothsPanel } from './booths-hud';
 import { the } from './dom';
@@ -69,15 +68,12 @@ function followBuilding(map: MapControls) {
 }
 
 /**
- * Goes inside a square, from E at its door or a double-click in the Booths
- * panel. While levels wait behind their flag, the Factory, the Academy and
- * the Studio open their own sites, like the billboard (ADR 0055).
+ * Goes inside a square, from E at its door, a double-click in the Booths
+ * panel or the billboard. While levels wait behind their flag, the Factory,
+ * the Academy and the Studio open their own rooms, not their levels (ADR 0058).
  */
-/* v8 ignore next 5 -- the page's wiring: squareLink is unit tested, and smoke/the-factory.spec.ts opens the landmark here */
 function openSquare(kind: SquareKind, id: string) {
-  const out = isOn('levels') ? undefined : landmarkLinkOut(kind, id);
-  if (out) window.open(out, '_blank', 'noopener');
-  else location.hash = squareLink(kind, id);
+  location.hash = squareLink(kind, id, isOn('levels'));
 }
 
 /** The North Pole's map, perhaps showing one square, and the guide to every square under it. */

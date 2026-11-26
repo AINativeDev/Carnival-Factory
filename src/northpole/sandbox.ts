@@ -28,6 +28,8 @@ export interface SandboxedSquare extends NorthPoleSquare {
   readonly kind: SquareKind;
   /** Calls `listener` once the frame has said its name, at once if it already has. */
   onReady(listener: (info: SquareInfo) => void): void;
+  /** Calls `listener` whenever the drawing asks for one of its links out; the result stops listening. */
+  onLink(listener: (link: number) => void): () => void;
 }
 
 /**
@@ -85,6 +87,13 @@ export function sandboxedSquare(kind: SquareKind, id: string, level?: string): S
     onReady(listener: (info: SquareInfo) => void) {
       if (run.state === 'ready') listener(run.info);
       else run.listeners.push(listener);
+    },
+    onLink(listener: (link: number) => void) {
+      run.linkListeners.push(listener);
+      return () => {
+        const at = run.linkListeners.indexOf(listener);
+        if (at >= 0) run.linkListeners.splice(at, 1);
+      };
     },
     draw(ctx: CanvasRenderingContext2D, size: number, time: number, pointer?: SquarePointer) {
       if (live) live.lastDrawn = performance.now();

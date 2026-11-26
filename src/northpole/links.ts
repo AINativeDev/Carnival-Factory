@@ -1,4 +1,6 @@
-export const REPO_URL = 'https://github.com/AINativeDev/Carnival-Factory';
+import { REPO_URL, SETTINGS } from '../settings.ts';
+
+export { REPO_URL };
 
 /**
  * The one issue form for a booth: it builds your booth if you don't have one
@@ -83,7 +85,7 @@ export function remixUrl(login: string, name: string): string {
 /** A GitHub login's profile, or nothing for text that isn't a login. */
 export function profileUrl(login: string): string | undefined {
   return /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/i.test(login)
-    ? `https://github.com/${login}`
+    ? `${SETTINGS.github.web}/${login}`
     : undefined;
 }
 
@@ -115,7 +117,7 @@ export const OWN_REPO_URL = `${REPO_URL}/blob/main/RUN-YOUR-OWN.md`;
  * once both are set; the issue's "Your booth is on the map" comment needs only
  * the link (`signupNote`).
  */
-const TESSL_SIGNUP_URL = 'https://tessl.io/login';
+const TESSL_SIGNUP_URL: string = SETTINGS.tessl.signup;
 const TESSL_SIGNUP_OFFER = '';
 
 /**
@@ -125,9 +127,9 @@ const TESSL_SIGNUP_OFFER = '';
  */
 export function withUtm(url: string, medium: string): string {
   const tagged = new URL(url);
-  tagged.searchParams.set('utm_source', 'carnival-factory');
+  tagged.searchParams.set('utm_source', SETTINGS.utm.source);
   tagged.searchParams.set('utm_medium', medium);
-  tagged.searchParams.set('utm_campaign', 'christmas-edition');
+  tagged.searchParams.set('utm_campaign', SETTINGS.utm.campaign);
   return tagged.toString();
 }
 
