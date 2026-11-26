@@ -5,6 +5,7 @@
 import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
 import { drawBelt, drawLetters, drawSparks, drawTick } from './belt';
 import { drawElves } from './elves';
+import { drawLantern } from './lantern';
 import { drawLogo } from './logo';
 import { lettersAt } from './letters';
 import { drawPenguin, hopHeight, penguinAt, PENGUINS } from './penguins';
@@ -41,6 +42,7 @@ const booth: NorthPoleSquare = {
     drawBelt(ctx, u, time);
     drawSleigh(ctx, u, time);
     drawSnowman(ctx, u, time);
+    drawLantern(ctx, u, time);
     drawLetters(ctx, u, letters);
     drawSparks(ctx, u, time, letters);
 

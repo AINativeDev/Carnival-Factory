@@ -22,7 +22,8 @@ repeats every 12 seconds:
   When the round's third toy lands, the sleigh's bells wiggle and the counter on
   the wall ticks up.
 - **A waving snowman**: a small snowman with a carrot nose and a red scarf stands
-  beside the sleigh, slowly waving one stick arm back and forth.
+  beside the sleigh, slowly waving one stick arm back and forth. Beside it a small lantern hangs on a
+  post, its flame flickering gently and its glow breathing with it.
 - **Cosy details**: a fireplace with gently flickering flames, snow falling past
   the window, a string of lights along the ceiling beam that twinkles slowly,
   and the big "Santa's Toy Factory" sign.
@@ -46,7 +47,7 @@ beside it:
 - `letters.ts` is the loop itself: each letter's trip (`letterAt`,
   `lettersAt`, `placeOf`, `buildOf`).
 - `tallies.ts` is the check lamp and the "toys today" sign (`lampAt`,
-  `toysMade`, `bounceOf`); `snowman.ts` is the waving snowman beside the sleigh; `sleigh.ts` is the sleigh, its bells and the sacks
+  `toysMade`, `bounceOf`); `snowman.ts` is the waving snowman beside the sleigh; `lantern.ts` is the flickering lantern on a post beside it (`flameAt`); `sleigh.ts` is the sleigh, its bells and the sacks
   counter (`jingleAt`, `sacksFilled`).
 - `cat.ts` is the ginger cat asleep on the crate: it wears a red collar with a tiny gold bell, which glints once at each tail flick; its ear twitches and its tail flicks
   once each time a letter lands on the pile.
