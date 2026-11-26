@@ -1,8 +1,9 @@
 /**
  * What the merge gate does on GitHub once it has decided: keep its checklist
- * comment, hold a pull request for a person, merge a booth, and close the
+ * comment, hold a pull request for a person, merge a booth or level, and close the
  * request it built. The dry run stops before any of it writes.
  */
+import type { RequestKind } from './booth-gate.ts';
 import { get, type Comment, type GitHub, type Issue, type Pull } from './merge-gate-github.ts';
 
 /** Posts the checklist on pull request `number`, or edits the gate's own one when it changed. */
@@ -62,9 +63,15 @@ export async function mergePull(github: GitHub, pull: Pull, sha: string): Promis
  * A merge by the workflow's token doesn't close the linked issue, so close the
  * request here, with a note on how it got onto the map.
  */
-export async function closeRequest(github: GitHub, issue: Issue, pull: Pull, guide: string) {
+export async function closeRequest(
+  github: GitHub,
+  issue: Issue,
+  pull: Pull,
+  kind: RequestKind,
+  guide: string,
+) {
   await github.call('POST', `issues/${String(issue.number)}/comments`, {
-    body: `Your booth is on the map. It merged on its own in #${String(pull.number)} after passing every check in the auto-merge gate. [How your request is built](${guide}) explains each one.`,
+    body: `Your ${kind} is on the map. It merged on its own in #${String(pull.number)} after passing every check in the auto-merge gate. [How your request is built](${guide}) explains each one.`,
   });
   await github.call('PATCH', `issues/${String(issue.number)}`, {
     state: 'closed',

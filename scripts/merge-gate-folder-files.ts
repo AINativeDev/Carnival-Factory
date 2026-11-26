@@ -1,12 +1,12 @@
 /**
- * Reads a booth's folder at the pull request's head commit, as text through
+ * Reads a booth's or a level's folder at the pull request's head commit, as text through
  * the API, for the static code check. It never checks out or runs the pull
  * request's files (docs/specs/auto-merge-gate.md).
  */
 import { get, type GitHub } from './merge-gate-github.ts';
 import type { CodeProblem, SourceFile } from './square-code.ts';
 
-/** The only kinds of file a booth may hold and still merge without a person. */
+/** The only kinds of file a booth or level may hold and still merge without a person. */
 const TEXT_FILES = /\.(ts|md)$/;
 /** Limits on what the gate reads and compiles, checked from the tree before any file is loaded. */
 const MAX_FILES = 40;
@@ -29,16 +29,19 @@ const problem = (file: string, message: string): CodeProblem => ({
 });
 
 /**
- * Every file in the booth's folder at the head commit, read as text, plus any
+ * Every file in `folder` (`carnival/booths/<owner>/` or
+ * `carnival/levels/<owner>/`) at the head commit, read as text, plus any
  * problem with what the folder holds. Sizes are checked from the tree first,
- * so an oversized booth goes to a person without being loaded or compiled.
+ * so an oversized booth or level goes to a person without being loaded or
+ * compiled. Only a booth has a plot.json: a level's platform is laid out by
+ * the map.
  */
-export async function boothFiles(
+export async function folderFiles(
   github: GitHub,
   sha: string,
-  owner: string,
+  folder: string,
 ): Promise<{ files: SourceFile[]; problems: CodeProblem[] }> {
-  const folder = `carnival/booths/${owner}/`;
+  const booth = folder.startsWith('carnival/booths/');
   const tree = await get<{ tree: TreeEntry[]; truncated: boolean }>(
     github,
     `git/trees/${sha}?recursive=1`,
@@ -59,10 +62,15 @@ export async function boothFiles(
   }
   const problems: CodeProblem[] = [];
   for (const entry of entries) {
-    const plotFile = entry.path === `${folder}plot.json`;
+    const plotFile = booth && entry.path === `${folder}plot.json`;
     if (entry.mode === '120000' || !(TEXT_FILES.test(entry.path) || plotFile)) {
       problems.push(
-        problem(entry.path, 'Only .ts and .md files, and plot.json, merge without a person.'),
+        problem(
+          entry.path,
+          booth
+            ? 'Only .ts and .md files, and plot.json, merge without a person.'
+            : 'Only .ts and .md files merge without a person.',
+        ),
       );
       continue;
     }

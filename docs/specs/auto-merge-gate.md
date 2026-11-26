@@ -1,7 +1,9 @@
 # Auto-merge gate
 
-A factory pull request for one participant's booth merges on its own once
-every check passes on its head commit. Any doubt sends it to a person.
+A factory pull request for one participant's booth, or for their level,
+merges on its own once every check passes on its head commit
+([ADR 0043](../adr/0043-level-requests-merge-on-their-own.md)). Any doubt
+sends it to a person.
 
 ## Behaviour
 
@@ -9,9 +11,14 @@ every check passes on its head commit. Any doubt sends it to a person.
   pull request, when the Tessl Reviewer's check finishes, every 10 minutes,
   and by hand. It looks at every open pull request by `tessl-app[bot]` from a
   `tessl/` branch of this repository whose linked issue is a `booth-request`
-  written by a person. Level requests never merge on their own.
+  or a `level-request` written by a person. A `level-request` makes it a
+  level's pull request, whose folder is `carnival/levels/<owner>/`; any other
+  is a booth's, in `carnival/booths/<owner>/` (enforced by:
+  scripts/merge-gate-requests.ts, scripts/auto-merge-levels.test.ts).
 - It keeps one checklist comment (`<!-- booth-gate -->`) on the pull request,
-  saying what each step checks, where it stands, and what happens next.
+  saying what each step checks, where it stands, and what happens next. It
+  says "level" for a level, under the same marker (enforced by:
+  scripts/merge-gate-checklist.ts, scripts/merge-gate-checklist.test.ts).
 - Decision: **merge** when every step passes; **wait** when a step is still
   running or a soft step failed; **human** when a hard step failed.
 - On merge it labels the pull request `auto-merged`, merges pinned to the head
@@ -30,10 +37,15 @@ scripts/auto-merge-booths-waits.test.ts,
 scripts/auto-merge-booths-needs-human.test.ts):
 
 1. **Request accepted** (hard): the linked issue is open and has
-   `booth-request` and `tessl`. A superseded request is closed, so it fails.
-2. **Only the booth's own folder** (hard): every changed file, renames'
-   old paths included, is in `carnival/booths/<owner>/`, and there is at
-   least one.
+   `booth-request` or `level-request`, and `tessl`. A superseded request is
+   closed, so it fails.
+2. **Only the booth's own folder**, or **Only the level's own folder** (hard):
+   every changed file, renames' old paths included, is in
+   `carnival/booths/<owner>/` for a booth or `carnival/levels/<owner>/` for a
+   level, and there is at least one. A level pull request that also changes
+   the owner's booth fails it. The North Pole's own levels
+   (`NORTH_POLE_LEVELS`) always fail it, even for a login that matches one:
+   only maintainers change them.
 3. **Code stays in its square** (hard): the static check parses and
    type-checks the booth without running it and finds no banned globals or
    other ways out. Only `.ts` and `.md` files and `plot.json` may be in the
@@ -41,14 +53,22 @@ scripts/auto-merge-booths-needs-human.test.ts):
    `plot.json` holds only a plot and maybe an issue number, and only a new
    booth's first pull request may add or change it (enforced by:
    scripts/square-code.ts and its rule families in scripts/square-code/,
-   scripts/square-code.test.ts, scripts/square-code/*.test.ts).
+   scripts/square-code.test.ts, scripts/square-code/*.test.ts). A level has
+   no `plot.json`: its `level.ts` holds only `import type` of its level type,
+   one object of plain data and its default export, its Markdown is scanned
+   for hidden text, and each `squares/<id>/` goes through the same check as a
+   booth, from its own folder (enforced by: scripts/level-code.ts,
+   scripts/level-code.test.ts). Whether the level is valid, by
+   `validateLevel`, is `check`'s job in step 5: `src/northpole/level.test.ts`
+   fails on a level that doesn't validate, so it never merges.
 4. **No hidden instructions** (hard): no text aimed at an AI, hidden
    characters or encoded blobs in the issue's title and body, the pull
    request's title, or the code (enforced by: scripts/injection-scan.ts,
    scripts/injection-scan.test.ts).
 5. **Checks pass** (soft): `check`, `ownership`, `build` and `smoke` succeed
    (enforced by: .github/workflows/ci.yml, booth-ownership.yml,
-   preview-build.yml).
+   preview-build.yml). A level's smoke run walks just that level, or rides
+   it, and goes inside each of its squares (scripts/smoke-scope.ts).
 6. **Code review approves** (soft): the latest `tessl-reviewer[bot]` review
    with a result, on the head commit, says `approved=true` (enforced by:
    Tessl Code Review, .tessl-code-review.yml).
@@ -56,8 +76,8 @@ scripts/auto-merge-booths-needs-human.test.ts):
    for this exact sha says `low-risk` (enforced by: assess-booth-risk skill,
    tessl.json).
 8. **No one has asked to hold it** (hard): no `needs-human` label.
-9. **One at a time** (soft): at most one booth merges on its own per person
-   per hour.
+9. **One at a time** (soft): at most one booth or level merges on its own
+   per person per hour.
 
 - The gate puts `needs-human` on for its own hard failures only (steps 1 to
   4), never over a maintainer who just took it off (enforced by:
@@ -65,7 +85,7 @@ scripts/auto-merge-booths-needs-human.test.ts):
   scripts/auto-merge-booths-needs-human.test.ts).
 - Security: the workflow runs main's own code on every trigger, never checks
   out or runs the pull request's code, and reads its files as text through
-  the API (scripts/merge-gate-booth-files.ts). The token is kept out of
+  the API (scripts/merge-gate-folder-files.ts). The token is kept out of
   `.git/config` (enforced by: .github/workflows/auto-merge-booths.yml).
 - The merge is pinned to the head sha, and if it fails and the pull request
   is not merged, `auto-merged` comes off (enforced by:
@@ -94,7 +114,7 @@ scripts/auto-merge-booths-needs-human.test.ts):
 runner the workflow starts: it reads its settings and runs one round,
 `scripts/merge-gate-round.ts`, with a GitHub client passed in
 (`scripts/merge-gate-github.ts`). The round gathers the facts
-(`scripts/merge-gate-facts.ts`, `scripts/merge-gate-booth-files.ts`,
+(`scripts/merge-gate-facts.ts`, `scripts/merge-gate-folder-files.ts`,
 `scripts/merge-gate-requests.ts`), decides (`evaluateGate`, and
 `scripts/merge-gate-decision.ts` for its own `needs-human`), and acts
 (`scripts/merge-gate-actions.ts`, `scripts/merge-gate-publish.ts`). Also

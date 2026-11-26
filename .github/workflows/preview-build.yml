@@ -61,7 +61,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
-      - name: Play only the changed booth, if that's all that changes
+      - name: Play only the changed booth or level, if that's all that changes
         run: |
           scope=$(git diff --name-only HEAD^1 HEAD | node scripts/smoke-scope.ts)
           if [ -n "$scope" ]; then
@@ -75,7 +75,7 @@ jobs:
           COVERAGE: '1'
       # The unit tests and the browser tests together, line by line, held to the
       # floor in lint/combined-coverage-floor.json (docs/adr/0032). A booth-only
-      # run (SMOKE_ONLY) is reported but not held to it.
+      # or level-only run (SMOKE_ONLY) is reported but not held to it.
       - name: Combined line coverage
         run: |
           npx vitest run --coverage --coverage.thresholds.autoUpdate=false > /dev/null
