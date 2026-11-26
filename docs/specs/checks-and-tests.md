@@ -10,6 +10,9 @@ What runs on every pull request, and what each check guarantees.
   and push to main.
 - Vitest runs `{src,carnival,scripts,lint}/**/*.test.ts` in Node, configured in
   `vitest.config.ts`.
+- The workflows run scripts with plain `node`, which never guesses a file's
+  extension, so every file a workflow's script reaches imports its relative
+  files with their extension (enforced by: scripts/node-imports.test.ts).
 - On a pull request, CI checks that 99% of the lines it adds to `src/`,
   `scripts/` and `lint/`, and of the branch arms on them, ran under the unit tests, and runs ShellCheck and
   actionlint.
