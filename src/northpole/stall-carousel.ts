@@ -8,7 +8,7 @@
 import { bulb, quad, twinkle } from './brushes';
 import { band } from './faces';
 import { stallFront } from './stall-front';
-import { plotPoint, STALL, type StallParts } from './stall-plan';
+import { spotPoint, STALL, type StallParts } from './stall-plan';
 import { peakedRoof, prism } from './stall-volumes';
 import { theme } from './theme';
 import type { Tile } from './world';
@@ -33,11 +33,11 @@ interface Horse {
 /** The carousel: deck, horses behind the column, the column, horses before it, canopy, then the board. */
 export function drawCarouselStall(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const { face, deep, ground, wall, roof, look, square, paint, owner, time } = parts;
-  const centre = plotPoint(face, deep, { along: 0.5, depth: 0.5 });
+  const centre = spotPoint(face, deep, { along: 0.5, depth: 0.5 });
   prism(ctx, ground, DECK, colors.slab, colors.gingerbread, colors.wood);
   const horses: Horse[] = Array.from({ length: HORSES }, (_, k) => {
     const angle = (time / TURN) * Math.PI * 2 + (k / HORSES) * Math.PI * 2;
-    const foot = plotPoint(face, deep, {
+    const foot = spotPoint(face, deep, {
       along: 0.5 + Math.cos(angle) * RIDE,
       depth: 0.5 + Math.sin(angle) * RIDE,
     });

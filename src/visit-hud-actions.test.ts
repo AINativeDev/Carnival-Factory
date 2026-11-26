@@ -102,7 +102,7 @@ describe("a booth's panel's own buttons", () => {
     expect(part(visitor, '.visit-next').hidden).toBe(false);
   });
 
-  it('claims the plot next door for someone who came by a shared link', () => {
+  it('claims the spot next door for someone who came by a shared link', () => {
     const { card, onClaim } = open('bob', { invite: true });
     expect(part(card, '.visit-build').hidden).toBe(true);
     part(card, '.visit-claim').click();

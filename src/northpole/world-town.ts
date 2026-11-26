@@ -1,13 +1,13 @@
 /**
  * The town of the North Pole: the town square with its tree and Santa's
  * sleigh, the main path in from the entrance arch, the four avenues and their
- * lanes, the room kept round every plot, and the elves strolling the paths.
+ * lanes, the room kept round every spot, and the elves strolling the paths.
  * It's apart from the sights and the forest (`world-sights.ts`) because the
  * town grows with the booths, lane by lane, while the sights only move out.
  */
 import { blockBox, type Groundwork } from './groundwork';
-import { hash, turn, turnBox, type Box, type Plot, type Stroll } from './world';
-import { LANE_LENGTH, laneX, PLAZA } from './world-plots';
+import { hash, turn, turnBox, type Box, type Spot, type Stroll } from './world';
+import { LANE_LENGTH, laneX, PLAZA } from './world-spots';
 
 /** How far the town reaches: the avenues' ends, and how many lanes each has. */
 export interface TownSize {
@@ -50,7 +50,7 @@ export function layMainPath(work: Groundwork, avenueEnd: number, extent: number)
 
 /**
  * The four avenues, each with a bench, a cocoa cart and lamps along its north
- * side, and its lanes, with a fence between neighbouring lanes' plots.
+ * side, and its lanes, with a fence between neighbouring lanes' spots.
  */
 export function layAvenues(work: Groundwork, { avenueEnd, lanesOut }: TownSize): void {
   for (let quarter = 0; quarter < 4; quarter++) {
@@ -73,15 +73,15 @@ export function layAvenues(work: Groundwork, { avenueEnd, lanesOut }: TownSize):
 }
 
 /**
- * Keeps room round every plot and its door, paves an attraction's door, and
- * blocks every plot but the open ones, which stay walkable until claimed.
+ * Keeps room round every spot and its door, paves an attraction's door, and
+ * blocks every spot but the open ones, which stay walkable until claimed.
  */
-export function clearPlots(work: Groundwork, plots: readonly Plot[]): void {
-  for (const plot of plots) {
-    work.keep(plot, plot.kind === 'attraction' || plot.kind === 'platform' ? 1 : 0);
-    work.keep({ ...plot.door, w: 1, h: 1 });
-    if (plot.kind === 'attraction') work.lay({ ...plot.door, w: 1, h: 1 }, 'path');
-    if (plot.kind !== 'open') blockBox(work, plot);
+export function clearSpots(work: Groundwork, spots: readonly Spot[]): void {
+  for (const spot of spots) {
+    work.keep(spot, spot.kind === 'attraction' || spot.kind === 'platform' ? 1 : 0);
+    work.keep({ ...spot.door, w: 1, h: 1 });
+    if (spot.kind === 'attraction') work.lay({ ...spot.door, w: 1, h: 1 }, 'path');
+    if (spot.kind !== 'open') blockBox(work, spot);
   }
 }
 

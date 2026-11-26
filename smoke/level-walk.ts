@@ -2,7 +2,7 @@ import { expect, type Page } from '@playwright/test';
 import { worldToScreen } from '../src/northpole/camera-view';
 import { findPath } from '../src/northpole/pathfinding';
 import { canStand } from '../src/northpole/walking';
-import { type Plot, type Tile, toScreen, type World } from '../src/northpole/world';
+import { type Spot, type Tile, toScreen, type World } from '../src/northpole/world';
 
 /**
  * Walking a level's player to a door in a real browser, for
@@ -162,20 +162,20 @@ async function stepToward(page: Page, world: World, from: Tile, beside: Tile, wh
 }
 
 /**
- * Walks the player to a plot's door: in steps to the ground beside it, which
+ * Walks the player to a spot's door: in steps to the ground beside it, which
  * the map walks to, then a step onto the door. Clicking the door itself would
  * land on the stall in front of it. A player already on the door, such as one
  * who arrived there, stays put.
  */
-export async function walkToDoor(page: Page, world: World, plot: Plot) {
+export async function walkToDoor(page: Page, world: World, spot: Spot) {
   const canvas = page.locator('.map-canvas');
-  const what = `${plot.kind} ${plot.id}'s door`;
-  if ((await canvas.getAttribute('data-player')) === `${plot.door.x},${plot.door.y}`) {
-    await expect(canvas).toHaveAttribute('data-near', `${plot.kind}:${plot.id}`);
+  const what = `${spot.kind} ${spot.id}'s door`;
+  if ((await canvas.getAttribute('data-player')) === `${spot.door.x},${spot.door.y}`) {
+    await expect(canvas).toHaveAttribute('data-near', `${spot.kind}:${spot.id}`);
     return;
   }
   const approach = APPROACHES.map(({ dx, dy, keys }) => ({
-    beside: { x: plot.door.x + dx, y: plot.door.y + dy },
+    beside: { x: spot.door.x + dx, y: spot.door.y + dy },
     keys,
   })).find(
     ({ beside }) => canStand(world, beside) && findPath(world, world.start, beside) !== undefined,
@@ -192,5 +192,5 @@ export async function walkToDoor(page: Page, world: World, plot: Plot) {
   for (const key of keys) await page.keyboard.down(key);
   await page.waitForTimeout(200);
   for (const key of keys) await page.keyboard.up(key);
-  await expect(canvas).toHaveAttribute('data-near', `${plot.kind}:${plot.id}`);
+  await expect(canvas).toHaveAttribute('data-near', `${spot.kind}:${spot.id}`);
 }

@@ -3,7 +3,7 @@
  * to a tall hill at the back and smaller ones to either side, with two sleighs
  * running round it, one lap every eighteen seconds. Everything is drawn back
  * to front, posts, track and sleighs together, so the near track passes in
- * front of the far. Its square's drawing hangs on a sign at the plot's front
+ * front of the far. Its square's drawing hangs on a sign at the spot's front
  * (ADR 0042).
  */
 import { bulb, corners, twinkle } from './brushes';
@@ -75,8 +75,8 @@ function sleigh(ctx: CanvasRenderingContext2D, at: Tile, ahead: Tile) {
   ctx.restore();
 }
 
-export const drawCoaster: LandmarkDrawer = (ctx, plot, square, paint, time) => {
-  const mid = stage(ctx, plot, 84);
+export const drawCoaster: LandmarkDrawer = (ctx, spot, square, paint, time) => {
+  const mid = stage(ctx, spot, 84);
   type Piece = { y: number; draw: () => void };
   const pieces: Piece[] = [];
   for (let n = 0; n < LOOP.pieces; n++) {
@@ -123,7 +123,7 @@ export const drawCoaster: LandmarkDrawer = (ctx, plot, square, paint, time) => {
     });
   }
   for (const piece of backToFront(pieces, (p) => p.y)) piece.draw();
-  signPost(ctx, plot, square, paint, { from: 0.18, to: 0.88, low: 14, outward: 0.15 });
+  signPost(ctx, spot, square, paint, { from: 0.18, to: 0.88, low: 14, outward: 0.15 });
   const crest = onLoop(mid, HILLS[0].at).track;
-  return standing(plot, corners(plot).top.y - crest.y + 24);
+  return standing(spot, corners(spot).top.y - crest.y + 24);
 };

@@ -22,7 +22,7 @@ export interface MapHarness {
   record: (act: () => void) => CanvasCall[];
   /** Sets the clock that `performance.now()` reads. */
   setClock: (time: number) => void;
-  /** The tag over a plot, as the page shows it. */
+  /** The tag over a spot, as the page shows it. */
   tag: () => HTMLElement | null;
   /** Everything the map says on the page itself, in one line, for pinning beside the drawing. */
   page: () => string;
@@ -131,9 +131,9 @@ export function startHarness(options: MapOptions, screen: Screen = {}): MapHarne
       JSON.stringify({
         canvas: Object.entries(canvas.dataset),
         frame: Object.entries(frame.dataset),
-        prompt: [prompt.hidden, prompt.title, prompt.textContent, prompt.dataset.plot],
+        prompt: [prompt.hidden, prompt.title, prompt.textContent, prompt.dataset.spot],
         at: [prompt.style.translate, prompt.style.opacity],
-        tag: [tag()?.className, tag()?.textContent, tag()?.style.transform, tag()?.dataset.plot],
+        tag: [tag()?.className, tag()?.textContent, tag()?.style.transform, tag()?.dataset.spot],
         cursor: canvas.style.cursor,
       }),
     stop() {

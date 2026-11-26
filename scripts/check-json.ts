@@ -1,7 +1,7 @@
 /**
  * Every JSON file in the repository must parse. JSON here is configuration
- * that changes what the map does: the kill switch, plot pins, a booth's
- * plot.json, the advent challenges, the lint baseline. A broken one fails the
+ * that changes what the map does: the kill switch, spot pins, a booth's
+ * spot.json, the advent challenges, the lint baseline. A broken one fails the
  * build late or, worse, a script reads it as empty, so it is caught on the edit
  * that broke it (docs/adr/0022-lint-everything-on-edit.md). Prettier checks
  * the formatting.

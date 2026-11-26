@@ -7,14 +7,14 @@
 import { quad } from './brushes';
 import { band } from './faces';
 import { stallFront } from './stall-front';
-import { plotPoint, type StallParts } from './stall-plan';
+import { spotPoint, type StallParts } from './stall-plan';
 import { prism } from './stall-volumes';
 import { theme } from './theme';
 import type { Tile } from './world';
 
 const { colors } = theme;
 
-/** A point on the barn's plot, `along` its front, `depth` back from it and `lift` up. */
+/** A point on the barn's spot, `along` its front, `depth` back from it and `lift` up. */
 type BarnPoint = (along: number, depth: number, lift: number) => Tile;
 
 /** How far the roof hangs past the walls, and where the gambrel's knee is, from the ridge. */
@@ -24,7 +24,7 @@ const KNEE = { along: 0.32, rise: 0.62 };
 /** The barn: walls and trim, its side doors, the front, then the roof and its gable. */
 export function drawBarn(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const { face, deep, ground, wall, roof, look, square, paint, owner } = parts;
-  const at: BarnPoint = (along, depth, lift) => plotPoint(face, deep, { along, depth }, lift);
+  const at: BarnPoint = (along, depth, lift) => spotPoint(face, deep, { along, depth }, lift);
   prism(ctx, ground, wall, undefined, colors.berry, colors.berry, 0, true);
   ctx.fillStyle = colors.night;
   ctx.globalAlpha = 0.18;

@@ -7,24 +7,24 @@
 import { bulb, corners, quad, twinkle } from './brushes';
 import type { Face } from './faces';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
-import { fillShape, pennant, spot } from './landmark-kit';
+import { fillShape, pennant, onSpot } from './landmark-kit';
 import { SIGN_STYLES } from './sign-styles';
 import { inTurn } from './rounds';
 import { standing } from './stall-plan';
 import { peakedRoof, prism } from './stall-volumes';
 import { theme } from './theme';
-import type { Plot, Tile } from './world';
+import type { Spot, Tile } from './world';
 
 const { colors } = theme;
 
-/** The tent's plan, in fractions of the plot: its two poles, one behind the other, and how round its ends are. */
+/** The tent's plan, in fractions of the spot: its two poles, one behind the other, and how round its ends are. */
 const TENT = { poles: [0.36, 0.64] as const, radius: 0.33, wall: 60, rise: 104, sag: 30 };
 const STAGE = 10;
 const STRIPES = [colors.berry, colors.cream] as const;
 
 /** A point on the ring `r` round the pole `deep` back, `angle` round from its right. */
-const ringPoint = (plot: Plot, deep: number, r: number, angle: number) =>
-  spot(plot, 0.5 + Math.cos(angle) * r, deep + Math.sin(angle) * r);
+const ringPoint = (spot: Spot, deep: number, r: number, angle: number) =>
+  onSpot(spot, 0.5 + Math.cos(angle) * r, deep + Math.sin(angle) * r);
 
 const lerp = (p: Tile, q: Tile, t: number): Tile => ({
   x: p.x + (q.x - p.x) * t,
@@ -32,11 +32,11 @@ const lerp = (p: Tile, q: Tile, t: number): Tile => ({
 });
 
 /** The canvas sagging between the peaks down to the wall on one side, `edge` along the front, in stripes. */
-function saddle(ctx: CanvasRenderingContext2D, plot: Plot, edge: number, eaves: number) {
+function saddle(ctx: CanvasRenderingContext2D, spot: Spot, edge: number, eaves: number) {
   const [front, back] = TENT.poles;
-  const peak = (deep: number) => spot(plot, 0.5, deep, eaves + TENT.rise);
-  const dip = spot(plot, 0.5, 0.5, eaves + TENT.rise - TENT.sag);
-  const foot = [spot(plot, edge, front, eaves), spot(plot, edge, back, eaves)] as const;
+  const peak = (deep: number) => onSpot(spot, 0.5, deep, eaves + TENT.rise);
+  const dip = onSpot(spot, 0.5, 0.5, eaves + TENT.rise - TENT.sag);
+  const foot = [onSpot(spot, edge, front, eaves), onSpot(spot, edge, back, eaves)] as const;
   const top = (t: number) =>
     t < 0.5 ? lerp(peak(front), dip, t * 2) : lerp(dip, peak(back), t * 2 - 1);
   for (let k = 0; k < 6; k++) {
@@ -53,41 +53,41 @@ function saddle(ctx: CanvasRenderingContext2D, plot: Plot, edge: number, eaves: 
   }
 }
 
-export const drawBigTop: LandmarkDrawer = (ctx, plot, square, paint, time) => {
-  stage(ctx, plot, 86);
+export const drawBigTop: LandmarkDrawer = (ctx, spot, square, paint, time) => {
+  stage(ctx, spot, 86);
   const [front, back] = TENT.poles;
   const { radius: r } = TENT;
   // The walls: round the front end, along one side, round the back end and along the other.
   const ground: Tile[] = [];
   for (let n = 0; n <= 12; n++)
-    ground.push(ringPoint(plot, front, r, Math.PI + (n / 12) * Math.PI));
-  for (let n = 0; n <= 12; n++) ground.push(ringPoint(plot, back, r, (n / 12) * Math.PI));
+    ground.push(ringPoint(spot, front, r, Math.PI + (n / 12) * Math.PI));
+  for (let n = 0; n <= 12; n++) ground.push(ringPoint(spot, back, r, (n / 12) * Math.PI));
   const stripe = (n: number) => inTurn(STRIPES, n);
   prism(ctx, ground, TENT.wall, undefined, stripe, stripe, STAGE, true);
   // The roof, back to front: the canvas on the far side, the two cones, the canvas on the near side.
   const eaves = STAGE + TENT.wall;
-  const far = spot(plot, 0.5 - r, 0.5).y < spot(plot, 0.5 + r, 0.5).y ? 0.5 - r : 0.5 + r;
-  saddle(ctx, plot, far, eaves);
+  const far = onSpot(spot, 0.5 - r, 0.5).y < onSpot(spot, 0.5 + r, 0.5).y ? 0.5 - r : 0.5 + r;
+  saddle(ctx, spot, far, eaves);
   for (const deep of [back, front])
     peakedRoof(
       ctx,
-      Array.from({ length: 16 }, (_, n) => ringPoint(plot, deep, r + 0.05, (n / 16) * Math.PI * 2)),
+      Array.from({ length: 16 }, (_, n) => ringPoint(spot, deep, r + 0.05, (n / 16) * Math.PI * 2)),
       eaves,
       TENT.rise,
       [colors.berry, colors.snow],
     );
-  saddle(ctx, plot, 1 - far, eaves);
-  const peaks = [back, front].map((deep) => spot(plot, 0.5, deep, eaves + TENT.rise));
+  saddle(ctx, spot, 1 - far, eaves);
+  const peaks = [back, front].map((deep) => onSpot(spot, 0.5, deep, eaves + TENT.rise));
   for (const peak of peaks) pennant(ctx, peak, 26, colors.gold, time);
   // Lights round the front's eaves.
   for (let n = 0; n <= 10; n++) {
-    const at = ringPoint(plot, front, r + 0.05, Math.PI + (n / 10) * Math.PI);
+    const at = ringPoint(spot, front, r + 0.05, Math.PI + (n / 10) * Math.PI);
     bulb(ctx, at.x, at.y - eaves + 3, colors.lantern, twinkle(time, n * 1.9));
   }
   const entry = front - r;
   // The entrance: a dark way in on the front wall, its flaps tied back either side.
-  const out = frontOf(plot).out;
-  const door = { a: spot(plot, 0.42, entry), b: spot(plot, 0.58, entry) };
+  const out = frontOf(spot).out;
+  const door = { a: onSpot(spot, 0.42, entry), b: onSpot(spot, 0.58, entry) };
   fillShape(
     ctx,
     [
@@ -114,12 +114,12 @@ export const drawBigTop: LandmarkDrawer = (ctx, plot, square, paint, time) => {
     );
   // The marquee on two gold posts, just out from the wall.
   const marquee: Face = {
-    a: spot(plot, 0.18, entry - 0.04),
-    b: spot(plot, 0.82, entry - 0.04),
+    a: onSpot(spot, 0.18, entry - 0.04),
+    b: onSpot(spot, 0.82, entry - 0.04),
     out,
   };
   ctx.fillStyle = colors.gold;
   for (const end of [marquee.a, marquee.b]) ctx.fillRect(end.x - 2, end.y - 72, 4, 72 - STAGE);
   framedArt(ctx, marquee, square, paint, { from: 0.06, to: 0.94, low: 72 }, SIGN_STYLES.tent);
-  return standing(plot, corners(plot).top.y - Math.min(...peaks.map((p) => p.y)) + 34);
+  return standing(spot, corners(spot).top.y - Math.min(...peaks.map((p) => p.y)) + 34);
 };

@@ -46,4 +46,4 @@ the real thing, from the page's own text in `src/factory-tour.ts`:
    green, and for every other change stays shut with red lamps and a ringing
    bell, waiting for a person.
 6. **The Map** (`squares/map/`): a table with a little North Pole on it, where
-   a new booth springs up on its plot after each deploy.
+   a new booth springs up on its spot after each deploy.

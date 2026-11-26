@@ -7,7 +7,7 @@
 import { glow, quad } from './brushes';
 import { band } from './faces';
 import { stallFront } from './stall-front';
-import { plotPoint, STALL, type StallParts } from './stall-plan';
+import { spotPoint, STALL, type StallParts } from './stall-plan';
 import { prism } from './stall-volumes';
 import { theme } from './theme';
 import type { Tile } from './world';
@@ -20,7 +20,7 @@ const COURSES = 6;
 /** The igloo: its dome, its tunnel on the side we see, then the board with the drawing. */
 export function drawIgloo(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const { face, deep, ground, wall, roof, square, paint, owner } = parts;
-  const centre = plotPoint(face, deep, { along: 0.5, depth: 0.5 });
+  const centre = spotPoint(face, deep, { along: 0.5, depth: 0.5 });
   const height = wall + roof;
   for (let k = 0; k < COURSES; k++) {
     const low = (k / COURSES) * (Math.PI / 2);
@@ -57,9 +57,9 @@ function tunnel(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const right = face.out.x < 0;
   const inner = right ? 0.78 : 0.22;
   const outer = right ? 1.06 : -0.06;
-  // A point on the tunnel's arch, `turn` from 0 to a half turn over it, `along` the plot.
+  // A point on the tunnel's arch, `turn` from 0 to a half turn over it, `along` the spot.
   const onArch = (along: number, turn: number, scale = 1) =>
-    plotPoint(
+    spotPoint(
       face,
       deep,
       { along, depth: 0.5 + Math.cos(turn) * 0.16 * scale },
@@ -86,7 +86,7 @@ function tunnel(ctx: CanvasRenderingContext2D, parts: StallParts) {
   ctx.fillStyle = colors.night;
   quad(ctx, arch(outer, 0.7));
   ctx.fill();
-  const door = plotPoint(face, deep, { along: outer, depth: 0.5 }, 8);
+  const door = spotPoint(face, deep, { along: outer, depth: 0.5 }, 8);
   glow(ctx, door.x, door.y, 16, 0.9);
 }
 

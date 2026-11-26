@@ -9,7 +9,7 @@
 import { select } from './map-open';
 import type { MapRun } from './map-state';
 import { carAt, rideFor, rideOn, standAt, stationAt, waiting, type Ride } from './ride';
-import { plotAtDoor } from './walking';
+import { spotAtDoor } from './walking';
 import { toScreen, type Tile } from './world';
 
 /** The keys that send the car on: Space, the right arrow and D, the way ahead in a game. */
@@ -43,7 +43,7 @@ export function rideAlong(m: MapRun, ride: Ride, button: HTMLButtonElement, dt: 
   const dx = toScreen(m.player).x - toScreen(before).x;
   if (Math.abs(dx) > 0.01) m.facing = Math.sign(dx);
   // At a station, its stall is the one invited into; between stations, none is.
-  m.near = stopped ? plotAtDoor(m.world, m.player) : undefined;
+  m.near = stopped ? spotAtDoor(m.world, m.player) : undefined;
   const state = `${String(m.ride.stop)} ${stopped ? 'stopped' : 'riding'}`;
   if (m.canvas.dataset.ride !== state) m.canvas.dataset.ride = state;
   showButton(m, button, m.ride.stop === 0 ? 'Start the ride' : 'Ride on', stopped);

@@ -9,7 +9,7 @@ import { glow, quad } from './brushes';
 import { band } from './faces';
 import { sidesOf } from './rounds';
 import { stallFront } from './stall-front';
-import { plotPoint, STALL, type StallParts } from './stall-plan';
+import { spotPoint, STALL, type StallParts } from './stall-plan';
 import { peakedRoof, prism } from './stall-volumes';
 import { theme } from './theme';
 import type { Tile } from './world';
@@ -27,13 +27,13 @@ const SWEEP = 16_000;
 /** The lighthouse: base, striped tower, gallery and lantern, its beam, then the board. */
 export function drawLighthouse(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const { face, deep, ground, wall, roof, look, square, paint, owner, time } = parts;
-  const centre = plotPoint(face, deep, { along: 0.5, depth: 0.5 });
+  const centre = spotPoint(face, deep, { along: 0.5, depth: 0.5 });
   const base = [
     { along: 0.08, depth: 0.08 },
     { along: 0.92, depth: 0.08 },
     { along: 0.92, depth: 0.92 },
     { along: 0.08, depth: 0.92 },
-  ].map((at) => plotPoint(face, deep, at));
+  ].map((at) => spotPoint(face, deep, at));
   prism(ctx, base, BASE, colors.snowShade, colors.slab, colors.slabShade);
   const scaleAt = (lift: number) => 1 + ((TAPER - 1) * (lift - BASE)) / (wall - BASE);
   for (let k = 0; k < STRIPES; k++) {

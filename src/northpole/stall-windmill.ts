@@ -8,7 +8,7 @@ import { quad } from './brushes';
 import { band } from './faces';
 import { sidesOf } from './rounds';
 import { stallFront } from './stall-front';
-import { plotPoint, STALL, type StallParts } from './stall-plan';
+import { spotPoint, STALL, type StallParts } from './stall-plan';
 import { peakedRoof } from './stall-volumes';
 import { theme } from './theme';
 import type { Tile } from './world';
@@ -22,13 +22,13 @@ const TAPER = 0.68;
 /** How long a sail is, on screen, and how wide its lattice. */
 const SAIL = 54;
 const LATTICE = 11;
-/** About how many screen pixels one plot's depth runs across. */
+/** About how many screen pixels one spot's depth runs across. */
 const DEPTH_PX = 72;
 
 /** The windmill: its tapering body, its cap, the board with the drawing, then the sails. */
 export function drawWindmill(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const { face, deep, ground, wall, roof, look, square, paint, owner, time } = parts;
-  const centre = plotPoint(face, deep, { along: 0.5, depth: 0.5 });
+  const centre = spotPoint(face, deep, { along: 0.5, depth: 0.5 });
   // Each corner at the foot with the corner over it at the top, drawn in towards the middle.
   const corners = ground.map((foot) => ({
     foot,
@@ -72,7 +72,7 @@ function sails(ctx: CanvasRenderingContext2D, parts: StallParts, turn: number) {
   const onSails = (angle: number, out: number, across: number) => {
     const depth = Math.cos(angle) * out - Math.sin(angle) * across;
     const lift = Math.sin(angle) * out + Math.cos(angle) * across;
-    return plotPoint(face, deep, { along: side, depth: 0.66 + depth / DEPTH_PX }, hub + lift);
+    return spotPoint(face, deep, { along: side, depth: 0.66 + depth / DEPTH_PX }, hub + lift);
   };
   for (let k = 0; k < 4; k++) {
     const angle = turn + (k * Math.PI) / 2;

@@ -1,7 +1,7 @@
 # Construction sites
 
 While an accepted booth request is being built, the map shows a construction
-site on the plot held for it, so the booth lands where its site stood.
+site on the spot held for it, so the booth lands where its site stood.
 Visitors read it as a booth **being built** ([glossary](../glossary.md)).
 
 ## Behaviour
@@ -9,7 +9,7 @@ Visitors read it as a booth **being built** ([glossary](../glossary.md)).
 - Every deploy reads the open issues labelled `booth-request` and `tessl`
   from the API and writes `pending.json` beside the page. A build without it,
   such as a preview or a local build, writes `[]`.
-- Each entry is `{ login, issue, plot, stage }`. The stages, in words on the
+- Each entry is `{ login, issue, spot, stage }`. The stages, in words on the
   sign and tag:
   - `building` ("Being built"): no pull request yet.
   - `checks` ("Checks running"): its pull request's checks are running, or one
@@ -29,29 +29,29 @@ Visitors read it as a booth **being built** ([glossary](../glossary.md)).
   `needs-human` going on or off a pull request, run the deploy, so a site
   appears or moves on within minutes.
 - When the factory builds a new booth, it reads the live site's
-  `pending.json` and writes that entry's `plot` and `issue` to the booth's
-  `plot.json`. With no entry, it writes none.
+  `pending.json` and writes that entry's `spot` and `issue` to the booth's
+  `spot.json`. With no entry, it writes none.
 
 ## Rules
 
-- Nothing about a site is committed: every deploy works the plots out again
+- Nothing about a site is committed: every deploy works the spots out again
   (enforced by: scripts/write-pending.ts, .github/workflows/pages.yml).
-- One entry per login, its latest request, ordered by issue number, at most 100. New booths' sites take the next free plots after every booth's, in
-  order of issue number, so two requests never share a plot. An existing
-  booth's request names that booth's plot (enforced by: scripts/pending.ts,
-  scripts/pending.test.ts, src/northpole/plots.test.ts).
+- One entry per login, its latest request, ordered by issue number, at most 100. New booths' sites take the next free spots after every booth's, in
+  order of issue number, so two requests never share a spot. An existing
+  booth's request names that booth's spot (enforced by: scripts/pending.ts,
+  scripts/pending.test.ts, src/northpole/spots.test.ts).
 - Stages: `maintainer` when `needs-human` is on the issue or its pull request,
   else `building` without a pull request, `almost` once every check passed,
   `checks` otherwise (enforced by: scripts/pending.test.ts).
-- On the page, a site whose held plot a booth took meanwhile, or that is at
-  or past booths + 100, moves to the next free plot (enforced by:
-  src/northpole/plots.test.ts).
+- On the page, a site whose held spot a booth took meanwhile, or that is at
+  or past booths + 100, moves to the next free spot (enforced by:
+  src/northpole/spots.test.ts).
 - Security: only the author's login, the issue number, labels and the pull
   request's check states are read, never a request's title or body. The page
-  drops any entry with an invalid login, issue, plot or stage, and any other
-  field (enforced by: scripts/pending.test.ts, src/northpole/plots.test.ts,
+  drops any entry with an invalid login, issue, spot or stage, and any other
+  field (enforced by: scripts/pending.test.ts, src/northpole/spots.test.ts,
   the construction-site test in smoke/claiming.spec.ts).
-- A new booth's `plot.json` comes from the live `pending.json`, and a change
+- A new booth's `spot.json` comes from the live `pending.json`, and a change
   to an existing booth never adds or changes it (enforced by: the
   implement-booth instructions in tessl.json, scripts/square-code.ts in the
   gate).
@@ -59,12 +59,12 @@ Visitors read it as a booth **being built** ([glossary](../glossary.md)).
 ## Where it lives
 
 `scripts/pending.ts`, `scripts/write-pending.ts`, `src/pending.ts`,
-`src/northpole/plots.ts`, `src/northpole/construction-sites.ts`, `vite.config.ts` (`pendingFile`),
+`src/northpole/spots.ts`, `src/northpole/construction-sites.ts`, `vite.config.ts` (`pendingFile`),
 `src/northpole/visit.ts` (`tagText`).
 
 ## Tested by
 
-`scripts/pending.test.ts`, `src/northpole/plots.test.ts`,
+`scripts/pending.test.ts`, `src/northpole/spots.test.ts`,
 `src/northpole/construction-sites.test.ts`,
 `src/northpole/visit.test.ts`, `smoke/claiming.spec.ts` (an accepted request
 shows a site, its stage and a link, never its text).

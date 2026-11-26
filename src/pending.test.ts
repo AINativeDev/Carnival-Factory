@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PendingBooth } from './northpole/construction-sites';
 import { followPending, knownPending, loadSites, saveSites } from './pending';
 
-const ANA: PendingBooth = { login: 'ana', issue: 12, plot: 30, stage: 'building' };
+const ANA: PendingBooth = { login: 'ana', issue: 12, spot: 30, stage: 'building' };
 
 /** A fake `fetch` that answers every request for pending.json with `answer`. */
 function servePending(answer: unknown) {

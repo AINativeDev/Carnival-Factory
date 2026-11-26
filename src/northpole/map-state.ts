@@ -14,7 +14,7 @@ import type { MapOptions, StationEntry } from './map-options';
 import { type PendingBooth } from './construction-sites';
 import type { Ride } from './ride';
 import type { NorthPoleSquare } from './square';
-import type { Box, Plot, Tile, World } from './world';
+import type { Box, Spot, Tile, World } from './world';
 
 /** A canvas of its own, drawn on once and copied onto the map each frame. */
 export interface Layer {
@@ -35,7 +35,7 @@ export const remembered = new Map<string, Tile>();
 /** What the map keeps between frames. */
 interface MapState {
   world: World;
-  /** The world's layout, so the island is only redrawn when a plot changes. */
+  /** The world's layout, so the island is only redrawn when a spot changes. */
   layout: string;
   /** The booth requests being built, by login, and the booths they change. */
   pending: Map<string, PendingBooth>;
@@ -45,13 +45,13 @@ interface MapState {
   groundBox: Box;
   /** The sky and the mountains at the screen's size, and the island and its front fence. */
   layers: { sky: Layer; mountains: Layer; ground: Layer; front: Layer };
-  /** The picked plot, when its highlight began, and whether the player is walking there on a trail. */
-  selected: Plot | undefined;
+  /** The picked spot, when its highlight began, and whether the player is walking there on a trail. */
+  selected: Spot | undefined;
   selectedAt: number | undefined;
   trailing: boolean;
   me: string | undefined;
-  /** The plot the call to action invites into, and when it started to. */
-  invited: Plot | undefined;
+  /** The spot the call to action invites into, and when it started to. */
+  invited: Spot | undefined;
   invitedAt: number;
   player: Tile;
   path: Tile[];
@@ -79,28 +79,28 @@ interface MapState {
   fingers: Map<number, Tile>;
   pinching: { apart: number; between: Tile } | undefined;
   chosen: number | undefined;
-  near: Plot | undefined;
+  near: Spot | undefined;
   scale: number;
   last: number | undefined;
-  /** The plot the player is inside, the open plot they're walking to claim, and their footprints. */
-  visiting: Plot | undefined;
-  claiming: Plot | undefined;
+  /** The spot the player is inside, the open spot they're walking to claim, and their footprints. */
+  visiting: Spot | undefined;
+  claiming: Spot | undefined;
   footprints: Footprint[];
   /**
-   * The plot whose room is drawn, which changes halfway through the fade in or
+   * The spot whose room is drawn, which changes halfway through the fade in or
    * out, and when that fade began. Inside, where the player stands, where a
    * click sends them, and which way they face.
    */
-  entered: Plot | undefined;
+  entered: Spot | undefined;
   fading: number;
   inside: Tile;
   insideGoal: { to: Tile; out: boolean } | undefined;
   insideFacing: number;
-  /** The plot under the mouse, or tapped once on a touch screen, and the tag that names it. */
-  hovered: Plot | undefined;
-  tagged: Plot | undefined;
-  /** What can be clicked this frame, back to front: each plot's structure or sign. */
-  targets: { plot: Plot; box: Box }[];
+  /** The spot under the mouse, or tapped once on a touch screen, and the tag that names it. */
+  hovered: Spot | undefined;
+  tagged: Spot | undefined;
+  /** What can be clicked this frame, back to front: each spot's structure or sign. */
+  targets: { spot: Spot; box: Box }[];
   /** The keys held down now, by name, and which way each walks on screen. */
   held: Map<string, [number, number]>;
   /** In a ride level, where the coaster's car is, with the player in it (ADR 0041). */
@@ -121,7 +121,7 @@ export interface MapRun extends MapState {
   readonly ctx: CanvasRenderingContext2D;
   /** The canvas each square paints on before it's copied onto the map. */
   readonly scratch: HTMLCanvasElement;
-  /** The tag that names the plot under the mouse. */
+  /** The tag that names the spot under the mouse. */
   readonly tag: MapTag;
   /** The zoom buttons over the map. */
   readonly zoomButtons: ZoomButtons;
@@ -134,7 +134,7 @@ export interface MapRun extends MapState {
   readonly place: string;
   readonly squares: Record<'attraction' | 'booth', Map<string, NorthPoleSquare>>;
   readonly stations: Map<string, StationEntry>;
-  /** The booths that just landed on their construction site's plot, and when their sparkles began. */
+  /** The booths that just landed on their construction site's spot, and when their sparkles began. */
   readonly landed: Map<string, number | undefined>;
   /** Avatars by login: loading, loaded, or failed, which draws the elf. */
   readonly avatars: Map<string, HTMLImageElement | undefined>;

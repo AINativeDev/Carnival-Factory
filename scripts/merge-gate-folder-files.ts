@@ -33,7 +33,7 @@ const problem = (file: string, message: string): CodeProblem => ({
  * `carnival/levels/<owner>/`) at the head commit, read as text, plus any
  * problem with what the folder holds. Sizes are checked from the tree first,
  * so an oversized booth or level goes to a person without being loaded or
- * compiled. Only a booth has a plot.json: a level's platform is laid out by
+ * compiled. Only a booth has a spot.json: a level's platform is laid out by
  * the map.
  */
 export async function folderFiles(
@@ -62,13 +62,13 @@ export async function folderFiles(
   }
   const problems: CodeProblem[] = [];
   for (const entry of entries) {
-    const plotFile = booth && entry.path === `${folder}plot.json`;
-    if (entry.mode === '120000' || !(TEXT_FILES.test(entry.path) || plotFile)) {
+    const spotFile = booth && entry.path === `${folder}spot.json`;
+    if (entry.mode === '120000' || !(TEXT_FILES.test(entry.path) || spotFile)) {
       problems.push(
         problem(
           entry.path,
           booth
-            ? 'Only .ts and .md files, and plot.json, merge without a person.'
+            ? 'Only .ts and .md files, and spot.json, merge without a person.'
             : 'Only .ts and .md files merge without a person.',
         ),
       );

@@ -8,9 +8,9 @@ import { drawingOf, fingerprint, type CanvasCall } from '../test-support/recordi
 import { chimneySmoke, PUFF } from './landmark-gingerbread-life';
 import { drawGingerbreadHouse } from './landmark-gingerbread';
 import type { NorthPoleSquare } from './square';
-import type { Plot } from './world';
+import type { Spot } from './world';
 
-const plot: Plot = {
+const spot: Spot = {
   kind: 'attraction',
   id: 'gingerbread-fun-house',
   number: 4,
@@ -27,7 +27,7 @@ const funHouse: NorthPoleSquare = {
   draw: () => undefined,
 };
 
-const drawnAt = (time: number, at: Plot = plot): CanvasCall[] =>
+const drawnAt = (time: number, at: Spot = spot): CanvasCall[] =>
   drawingOf((ctx) => {
     drawGingerbreadHouse(ctx, at, funHouse, () => undefined, time);
   });
@@ -44,7 +44,7 @@ describe('the Gingerbread Fun House on the map', () => {
   });
 
   it('paints its drawing once, with the door on either side', () => {
-    for (const at of [plot, { ...plot, door: { x: 8, y: 6 } }]) {
+    for (const at of [spot, { ...spot, door: { x: 8, y: 6 } }]) {
       let painted = 0;
       drawingOf((ctx) => {
         drawGingerbreadHouse(ctx, at, funHouse, () => (painted += 1), 0);

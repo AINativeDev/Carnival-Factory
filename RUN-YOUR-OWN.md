@@ -62,7 +62,7 @@ Run your own copy, with you as the maintainer.
   banner, the page title and share text, and in `public/404.html`.
 - **Start fresh, or keep ours.** The booths in `carnival/booths/` belong to this
   project's participants; delete the folders you don't want, and clear their
-  pins in `src/northpole/plots.json`.
+  pins in `src/northpole/spots.json`.
 - **Then run it like a maintainer:** [MAINTAINING.md](MAINTAINING.md) covers the
   settings, the merge gate, the kill switch and People's Choice.
 

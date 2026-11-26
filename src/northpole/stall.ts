@@ -1,5 +1,5 @@
 /**
- * A booth's stall on the map: laid out on its plot, its body drawn in the
+ * A booth's stall on the map: laid out on its spot, its body drawn in the
  * shape the booth chose (`stall-shapes.ts`), then what it has earned over
  * whatever shape it is: the Elf Engineer pin, the People's Choice trophy, the
  * advent decorations, the owner's pennant and the visitor's "You" tag.
@@ -19,7 +19,7 @@ import { SHAPE_PLANS } from './stall-catalogue';
 import { chosenStall } from './stall-default';
 import { STALL_BODIES } from './stall-shapes';
 import {
-  plotPoint,
+  spotPoint,
   STALL,
   stallLook,
   stallOutline,
@@ -28,33 +28,33 @@ import {
   standing,
 } from './stall-plan';
 import { canvasFont, theme } from './theme';
-import type { Box, Plot, Tile } from './world';
+import type { Box, Spot, Tile } from './world';
 
 const { colors } = theme;
 
 /**
  * A booth's stall: its square on the front, framed, with the name board over
  * it, in the shape and colours the booth chose, or else the ones its id
- * picks (`stall-default.ts`). Every shape stands on its plot, so the door and the depth
+ * picks (`stall-default.ts`). Every shape stands on its spot, so the door and the depth
  * order stay the same.
  */
 export function drawStall(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   square: NorthPoleSquare,
   paint: PaintSquare,
   time: number,
   owner: Owner,
 ): Box {
-  const { x, y } = middle(plot);
-  const face = faceOf(plot);
-  const deep = face.out.x > 0 ? plot.w : plot.h;
+  const { x, y } = middle(spot);
+  const face = faceOf(spot);
+  const deep = face.out.x > 0 ? spot.w : spot.h;
   const look = stallLook(chosenStall(square));
   const { wall, roof } = SHAPE_PLANS[look.shape];
-  const ground = stallOutline(look.shape).map((at) => plotPoint(face, deep, at));
+  const ground = stallOutline(look.shape).map((at) => spotPoint(face, deep, at));
   shadow(ctx, x, y + 6, 48);
   STALL_BODIES[look.shape](ctx, {
-    plot,
+    spot,
     face,
     deep,
     ground,
@@ -72,16 +72,16 @@ export function drawStall(
   // The owner's advent challenges, as decorations the map hangs on whatever shape the stall is.
   const decorations = decorationsFor(isOn('advent') ? adventCountFor(who) : 0);
   const crown = stallReach(look.shape) + 6;
-  const centre = plotPoint(face, deep, { along: 0.5, depth: 0.5 });
+  const centre = spotPoint(face, deep, { along: 0.5, depth: 0.5 });
   drawAdventDecorations(ctx, face, centre, crown, decorations, time);
   // The owner's pennant, on a pole at the front's far corner, over whatever shape the stall is.
   const top = look.shape === 'stall' ? STALL.wall + 22 : wall;
   const foot = onFace(face, 0.96, top, look.shape === 'stall' ? -0.5 : 0);
   const pole = 30;
-  ownerPennant(ctx, foot, pole, owner.color, Math.sin(time / 500 + plot.number) * 2);
+  ownerPennant(ctx, foot, pole, owner.color, Math.sin(time / 500 + spot.number) * 2);
   const reach = Math.max(stallReach(look.shape), top + pole, crown + adventCrown(decorations));
   if (owner.you) youTag(ctx, onFace(face, 0.5, reach + 8, -0.5));
-  return standing(plot, reach + (owner.you ? 22 : 0));
+  return standing(spot, reach + (owner.you ? 22 : 0));
 }
 
 /** An Elf Engineer's pin on the name board's right end, and a People's Choice trophy on its left. */

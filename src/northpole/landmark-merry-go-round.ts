@@ -78,9 +78,9 @@ function reindeer(
   ctx.restore();
 }
 
-export const drawMerryGoRound: LandmarkDrawer = (ctx, plot, square, paint, time) => {
-  const { x } = middle(plot);
-  const base = stage(ctx, plot, 84).y - 10;
+export const drawMerryGoRound: LandmarkDrawer = (ctx, spot, square, paint, time) => {
+  const { x } = middle(spot);
+  const base = stage(ctx, spot, 84).y - 10;
   drum(ctx, x, base, RIDE.rx, RIDE.ry, RIDE.deck, colors.slabShade, colors.snowShade);
   const floor = base - RIDE.deck;
   const rim = floor - RIDE.poles;
@@ -146,12 +146,12 @@ export const drawMerryGoRound: LandmarkDrawer = (ctx, plot, square, paint, time)
   }
   pennant(ctx, tip, 22, colors.gold, time);
   // The crest board over the canopy's front, out at the rim.
-  const crest = frontOf(plot, inset(plot, 0.5));
+  const crest = frontOf(spot, inset(spot, 0.5));
   framedArt(ctx, crest, square, paint, {
     from: 0.1,
     to: 0.9,
-    low: middle(plot).y - rim - 14,
+    low: middle(spot).y - rim - 14,
     outward: 0.85,
   });
-  return standing(plot, corners(plot).top.y - tip.y + 30);
+  return standing(spot, corners(spot).top.y - tip.y + 30);
 };

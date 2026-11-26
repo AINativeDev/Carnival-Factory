@@ -69,7 +69,7 @@ export function fakeMap(options: MapOptions) {
     jumpTo: vi.fn(),
     walkTo: vi.fn(),
     claimNextDoor: vi.fn(),
-    walkToOpenPlot: vi.fn(),
+    walkToOpenSpot: vi.fn(),
     clearSelection: vi.fn(),
     setMe: vi.fn(),
     setPending: vi.fn(),

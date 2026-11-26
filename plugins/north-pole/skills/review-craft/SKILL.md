@@ -26,7 +26,7 @@ lines, so don't report those; report what needs judgement.
 
 ADR 0023:
 
-- Names say what a thing is in the carnival's terms (a booth, a plot, the gate,
+- Names say what a thing is in the carnival's terms (a booth, a spot, the gate,
   a construction site), not how it works (`data`, `handler`, `process`,
   `item2`, `.box`). CSS classes too.
 - A doc comment says what the thing is for, what would break without it, or

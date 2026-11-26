@@ -4,7 +4,7 @@ import {
   canStand,
   moveBy,
   nearestStand,
-  plotAtDoor,
+  spotAtDoor,
   screenDirection,
   strollAt,
   walkable,
@@ -12,7 +12,7 @@ import {
 } from './walking';
 import { key, toScreen } from './world';
 import { buildWorld } from './world-build';
-import { ATTRACTIONS, booths, plotWhere } from '../test-support/sample-squares';
+import { ATTRACTIONS, booths, spotWhere } from '../test-support/sample-squares';
 
 describe('walking', () => {
   const world = buildWorld(ATTRACTIONS, booths(10));
@@ -24,8 +24,8 @@ describe('walking', () => {
   it('blocks buildings, trees, stalls and water, but not paths or snow', () => {
     for (const thing of world.things.filter((t) => t.blocks))
       expect(walkable(world, thing.x, thing.y), JSON.stringify(thing)).toBe(false);
-    for (const plot of world.plots.filter((p) => p.kind !== 'open'))
-      expect(walkable(world, plot.x, plot.y)).toBe(false);
+    for (const spot of world.spots.filter((p) => p.kind !== 'open'))
+      expect(walkable(world, spot.x, spot.y)).toBe(false);
     for (const [at, ground] of world.ground)
       if (ground === 'water' || ground === 'ice') expect(world.blocked.has(at)).toBe(true);
     expect(walkable(world, world.extent + 1, 0)).toBe(false);
@@ -78,10 +78,10 @@ describe('walking', () => {
     expect(walkAlong({ x: 0, y: 0 }, path, 5)).toEqual({ position: { x: 2, y: 0 }, path: [] });
   });
 
-  it('knows which plot you are standing at', () => {
-    const booth = plotWhere(world, (p) => p.id === 'elf-3');
-    expect(plotAtDoor(world, booth.door)).toBe(booth);
-    expect(plotAtDoor(world, world.start)).toBeUndefined();
+  it('knows which spot you are standing at', () => {
+    const booth = spotWhere(world, (p) => p.id === 'elf-3');
+    expect(spotAtDoor(world, booth.door)).toBe(booth);
+    expect(spotAtDoor(world, world.start)).toBeUndefined();
   });
 
   it('keeps a stroller with nowhere to go standing where they are', () => {

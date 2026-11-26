@@ -7,14 +7,14 @@
 import { islandBounds, islandCorners } from './camera';
 import { ENTRANCE } from './interior';
 import { layer } from './map-layers';
-import { plotOf } from './map-labels';
+import { spotOf } from './map-labels';
 import type { MapOptions } from './map-options';
 import { islandBox, layoutOf, layWorld } from './map-plan';
 import { trackPointer } from './map-pointer';
 import { remembered, type MapRun } from './map-state';
 import { makeTag } from './map-tag';
 import { makeZoomButtons } from './map-zoom-buttons';
-import { landedBooths } from './plots';
+import { landedBooths } from './spots';
 import { startRide } from './ride';
 import { boardAt, makeRideButton } from './ride-map';
 
@@ -102,7 +102,7 @@ export function openRun(
     groundBox: islandBox(island, world.indoor),
   };
   // The player starts at the square the page opened on, else where they last stood in this world.
-  m.selected = options.focus ? plotOf(m, options.focus.kind, options.focus.id) : undefined;
+  m.selected = options.focus ? spotOf(m, options.focus.kind, options.focus.id) : undefined;
   m.player = m.selected ? { ...m.selected.door } : (remembered.get(m.place) ?? { ...world.start });
   // In a ride level they're in the car instead, at that door's station, or at the first.
   boardAt(m, m.player);

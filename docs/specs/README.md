@@ -22,7 +22,7 @@ the [glossary](../glossary.md).
 
 ## Index
 
-- [Map and world](map-and-world.md): the isometric world, plots, walking, the camera and the routes.
+- [Map and world](map-and-world.md): the isometric world, spots, walking, the camera and the routes.
 - [Squares and the sandbox](squares-and-sandbox.md): the `NorthPoleSquare` contract, the sandboxed frame and worker, the size budget and the kill switch.
 - [Booths](booths.md): a participant's folder, ownership and remixes.
 - [Booth craft](booth-craft.md): the conventions every square is checked against, and its badges.

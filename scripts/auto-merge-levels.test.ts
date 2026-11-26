@@ -109,10 +109,10 @@ describe('a level pull request', () => {
     expect(checklist(run)).toContain('The North Pole’s own levels merge only with a maintainer.');
   });
 
-  it('holds a level to .ts and .md files: no plot.json, which only a booth has', async () => {
+  it('holds a level to .ts and .md files: no spot.json, which only a booth has', async () => {
     const routes = mergeableLevel();
     const tree = routes[`GET git/trees/${SHA}?recursive=1`] as { tree: object[] };
-    tree.tree.push({ path: `${LEVEL}plot.json`, type: 'blob', sha: 'l4', mode: '100644' });
+    tree.tree.push({ path: `${LEVEL}spot.json`, type: 'blob', sha: 'l4', mode: '100644' });
     const run = await runGate(routes);
     expect(checklist(run)).toContain('Only .ts and .md files merge without a person.');
   });

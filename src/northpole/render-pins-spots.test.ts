@@ -1,5 +1,5 @@
 /**
- * Pins every plot drawing the map makes, so splitting the renderer into small
+ * Pins every spot drawing the map makes, so splitting the renderer into small
  * files (docs/adr/0019-small-files.md) is proven to draw exactly the same:
  * each fingerprint was taken before the split and must never change with a
  * move. A change that means to draw differently updates its pin on purpose.
@@ -9,11 +9,11 @@ import { pinDrawing } from '../test-support/recording-canvas';
 import { switchFlags } from '../test-support/feature-flags';
 import { FEATURE_FLAGS } from '../feature-flags';
 import { STALL_SHAPES, type NorthPoleSquare, type StallStyle } from './square';
-import type { Plot } from './world';
+import type { Spot } from './world';
 import type { Owner } from './name-board';
 import { drawPlatform, drawUpdateSign } from './platform';
-import { drawPlotGlow, drawSelectionBeam, drawSelectionRing, drawSparkles } from './plot-marks';
-import { drawPlot } from './render';
+import { drawSpotGlow, drawSelectionBeam, drawSelectionRing, drawSparkles } from './spot-marks';
+import { drawSpot } from './render';
 import { drawSite } from './site';
 
 // The honours come from data the build bakes in: here one booth holds them all.
@@ -32,7 +32,7 @@ vi.mock('./peoples-choice', async (load) => ({
 }));
 
 const TIMES = [0, 4321];
-const front: Plot = {
+const front: Spot = {
   kind: 'booth',
   id: 'b',
   number: 3,
@@ -42,8 +42,8 @@ const front: Plot = {
   h: 2,
   door: { x: 2, y: 6 },
 };
-const side: Plot = { ...front, number: 4, door: { x: 4, y: 4 } };
-const attraction: Plot = {
+const side: Spot = { ...front, number: 4, door: { x: 4, y: 4 } };
+const attraction: Spot = {
   ...front,
   kind: 'attraction',
   number: 5,
@@ -67,9 +67,9 @@ const square = (id: string, stall?: StallStyle): NorthPoleSquare => ({
   ...(stall ? { stall } : {}),
 });
 
-/** Draws `plot` at every time in `TIMES`, with `square` on it. */
-const atTimes = (plot: Plot, sq: NorthPoleSquare | undefined, near = false, owner?: Owner) =>
-  pinDrawing((ctx, paint) => TIMES.map((t) => drawPlot(ctx, plot, sq, paint, t, near, owner)));
+/** Draws `spot` at every time in `TIMES`, with `square` on it. */
+const atTimes = (spot: Spot, sq: NorthPoleSquare | undefined, near = false, owner?: Owner) =>
+  pinDrawing((ctx, paint) => TIMES.map((t) => drawSpot(ctx, spot, sq, paint, t, near, owner)));
 
 describe('the stalls while the Elf Engineer and advent feature flags are off', () => {
   // The live build hangs no badge pin and no advent decorations on any stall.
@@ -87,17 +87,17 @@ describe('the stalls while the Elf Engineer and advent feature flags are off', (
   });
 });
 
-describe('the plots, pinned before the renderer split', () => {
+describe('the spots, pinned before the renderer split', () => {
   // The pins were taken with every honour showing: the badge pin and the advent decorations.
   switchFlags({ elfEngineer: true, advent: true });
   it('draws every stall shape the same, on either face, for every owner and honour', () => {
     const prints: Record<string, string> = {};
     for (const shape of STALL_SHAPES)
       for (const id of ['plain', 'some', 'honoured'])
-        for (const [p, plot] of [front, side].entries())
+        for (const [p, spot] of [front, side].entries())
           for (const [o, owner] of OWNERS.entries())
             prints[`${shape} ${id} ${String(p)} ${String(o)}`] = atTimes(
-              plot,
+              spot,
               square(id, { shape, roof: 'pine' }),
               false,
               owner,
@@ -107,7 +107,7 @@ describe('the plots, pinned before the renderer split', () => {
     expect(prints).toMatchSnapshot();
   });
 
-  it('draws attractions, towers and open plots the same', () => {
+  it('draws attractions, towers and open spots the same', () => {
     const prints: Record<string, string> = {};
     for (const number of [0, 1, 2, 3])
       prints[`pavilion ${String(number)}`] = atTimes({ ...attraction, number }, square('a'));
@@ -127,7 +127,7 @@ describe('the plots, pinned before the renderer split', () => {
     expect(prints).toMatchSnapshot();
   });
 
-  it('draws sites, platforms and the marks on a plot the same', () => {
+  it('draws sites, platforms and the marks on a spot the same', () => {
     const label = { name: 'Frosty Fields', by: 'by @someone', color: '#123456' };
     const prints: Record<string, string> = {};
     for (const near of [false, true])
@@ -150,7 +150,7 @@ describe('the plots, pinned before the renderer split', () => {
       });
     for (const kind of ['attraction', 'booth', 'open'] as const)
       prints[`glow ${kind}`] = pinDrawing((ctx) => {
-        drawPlotGlow(ctx, { ...front, kind }, 0.7);
+        drawSpotGlow(ctx, { ...front, kind }, 0.7);
       });
     for (const strength of [0, 0.5, 1]) {
       prints[`ring ${String(strength)}`] = pinDrawing((ctx) => {

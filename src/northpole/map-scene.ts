@@ -1,19 +1,19 @@
 /**
  * Everything standing on the island in one frame, drawn back to front by its
  * footprint so what's in front hides what's behind: the trees and things, every
- * plot's structure with its square's drawing on its face, the crowd and the
+ * spot's structure with its square's drawing on its face, the crowd and the
  * player, and the picked square's beam over all of it.
  */
 import { screenToWorld } from './camera-view';
 import { addCrowd, addPlayer, type AddToScene } from './map-crowd';
-import { plotUnder, squareOf } from './map-labels';
+import { spotUnder, squareOf } from './map-labels';
 import type { MapRun } from './map-state';
-import { addPlots, type Aim } from './map-stands';
+import { addSpots, type Aim } from './map-stands';
 import { arrowBounce, highlightAt } from './owners';
 import { IN_FRONT, isTrack, STATION } from './coaster-pieces';
 import { drawThing } from './render';
 import { FLAT } from './show';
-import { drawSelectionBeam } from './plot-marks';
+import { drawSelectionBeam } from './spot-marks';
 import { middle } from './brushes';
 import type { Box, Tile } from './world';
 
@@ -59,15 +59,15 @@ export function drawScene(m: MapRun, view: Box, frame: SceneFrame) {
   m.targets = [];
   if (m.selected) m.selectedAt ??= time;
   const picked = m.selectedAt === undefined ? 0 : highlightAt(time - m.selectedAt);
-  addPlots(m, add, shown, aim, picked, frame);
+  addSpots(m, add, shown, aim, picked, frame);
   addCrowd(m, add, time, motion, still);
   addPlayer(m, add, time, still);
   scene.sort((a, b) => a.depth - b.depth);
   for (const item of scene) item.draw();
   // The picked square's beam and arrow, over whatever stands in front of it.
-  const pickedTarget = m.selected && m.targets.find((t) => t.plot === m.selected);
+  const pickedTarget = m.selected && m.targets.find((t) => t.spot === m.selected);
   if (pickedTarget && picked > 0)
-    drawSelectionBeam(ctx, pickedTarget.plot, pickedTarget.box.y, picked, arrowBounce(time, still));
+    drawSelectionBeam(ctx, pickedTarget.spot, pickedTarget.box.y, picked, arrowBounce(time, still));
   // Which square has the pointer, for the smoke test.
   if (m.canvas.dataset.pointer !== aim.pointed) m.canvas.dataset.pointer = aim.pointed;
 }
@@ -77,8 +77,8 @@ function aimOf(m: MapRun, frame: SceneFrame): Aim {
   const pressed = m.pointer.now();
   if (!pressed) return { target: undefined, pointed: '' };
   const aimed = screenToWorld(pressed, frame.width, frame.height, frame.camera, m.zoom);
-  // Plots are found where the last frame drew them.
-  const under = plotUnder(m, aimed);
+  // Spots are found where the last frame drew them.
+  const under = spotUnder(m, aimed);
   const square = under && squareOf(m, under);
   return { target: under && square && { pressed, aimed, under, square }, pointed: '' };
 }

@@ -19,7 +19,7 @@ import {
   type User,
 } from './merge-gate-github.ts';
 import { lastAutoMerge, requestKind } from './merge-gate-requests.ts';
-import { checkSquareCode, plotFileProblems } from './square-code.ts';
+import { checkSquareCode, spotFileProblems } from './square-code.ts';
 
 export const FACTORY = 'tessl-app[bot]';
 const REVIEWER = 'tessl-reviewer[bot]';
@@ -86,12 +86,12 @@ function riskVerdict(all: Comment[], sha: string): GateFacts['risk'] {
 
 /**
  * The static check on a booth's or level's `files`: a booth is one square,
- * with its plot.json held to its first pull request; a level is plain data
+ * with its spot.json held to its first pull request; a level is plain data
  * with a square in each squares/<id>/ (scripts/level-code.ts).
  */
 function codeProblems(folder: string, files: GateFiles, changed: ChangedFile[]) {
   if (folder.startsWith('carnival/levels/')) return checkLevelCode(folder, files.files);
-  return [...plotFileProblems(folder, changed), ...checkSquareCode(folder, files.files)];
+  return [...spotFileProblems(folder, changed), ...checkSquareCode(folder, files.files)];
 }
 
 /** The facts about `pull`, built from booth or level request `issue`, and the comments on it. */

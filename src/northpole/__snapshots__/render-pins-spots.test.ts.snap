@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`the plots, pinned before the renderer split > draws attractions, towers and open plots the same 1`] = `
+exports[`the spots, pinned before the renderer split > draws attractions, towers and open spots the same 1`] = `
 {
   "attraction barn": "e3edffcb03e03f11 (696 calls)",
   "attraction cabin": "418a4833f1eae57f (692 calls)",
@@ -30,7 +30,7 @@ exports[`the plots, pinned before the renderer split > draws attractions, towers
 }
 `;
 
-exports[`the plots, pinned before the renderer split > draws every stall shape the same, on either face, for every owner and honour 1`] = `
+exports[`the spots, pinned before the renderer split > draws every stall shape the same, on either face, for every owner and honour 1`] = `
 {
   "barn honoured 0 0": "00c614739811865f (1484 calls)",
   "barn honoured 0 1": "6fbf311a28f87974 (1484 calls)",
@@ -421,7 +421,7 @@ exports[`the plots, pinned before the renderer split > draws every stall shape t
 }
 `;
 
-exports[`the plots, pinned before the renderer split > draws sites, platforms and the marks on a plot the same 1`] = `
+exports[`the spots, pinned before the renderer split > draws sites, platforms and the marks on a spot the same 1`] = `
 {
   "beam 0": "9242cb378419dfe5 (2 calls)",
   "beam 0.5": "05e05bc55c631f2d (32 calls)",

@@ -111,3 +111,17 @@ test('the Elf Engineer badges and their snippets are plain files on the site', a
   expect(page).toContain('badges/elf-engineer-gold.svg)]');
   expect(page).not.toMatch(/<script/i);
 });
+
+test("the tab shows the Carnival Factory's tent, and a phone's home screen does too", async ({
+  page,
+  request,
+}) => {
+  await page.goto('#/');
+  for (const rel of ['icon', 'apple-touch-icon']) {
+    const href = await page.locator(`link[rel="${rel}"]`).getAttribute('href');
+    expect(href, rel).toBeTruthy();
+    const icon = await request.get(new URL(href ?? '', page.url()).href);
+    expect(icon.ok(), rel).toBe(true);
+    expect(icon.headers()['content-type'], rel).toMatch(/^image\/(svg\+xml|png)/);
+  }
+});

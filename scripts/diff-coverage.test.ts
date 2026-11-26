@@ -8,8 +8,8 @@ import {
 } from './diff-coverage';
 
 const diff = [
-  'diff --git a/src/plot.ts b/src/plot.ts',
-  '+++ b/src/plot.ts',
+  'diff --git a/src/spot.ts b/src/spot.ts',
+  '+++ b/src/spot.ts',
   '@@ -1,0 +2,3 @@',
   '@@ -9 +12 @@',
   '+++ b/carnival/booths/ana/booth.ts',
@@ -20,7 +20,7 @@ const statement = (line: number) => ({ start: { line }, end: { line } });
 
 describe('addedLines', () => {
   it('reads the lines each file gains from every hunk', () => {
-    expect(addedLines(diff).get('src/plot.ts')).toEqual(new Set([2, 3, 4, 12]));
+    expect(addedLines(diff).get('src/spot.ts')).toEqual(new Set([2, 3, 4, 12]));
   });
 });
 
@@ -36,7 +36,7 @@ describe('isGated', () => {
 
 describe('diffCoverage', () => {
   const coverage: Record<string, FileCoverage> = {
-    'src/plot.ts': {
+    'src/spot.ts': {
       statementMap: { 0: statement(2), 1: statement(3), 2: statement(12) },
       s: { 0: 1, 1: 0, 2: 4 },
     },
@@ -46,7 +46,7 @@ describe('diffCoverage', () => {
     expect(diffCoverage(addedLines(diff), coverage)).toEqual({
       total: 3,
       covered: 2,
-      missing: ['src/plot.ts:3'],
+      missing: ['src/spot.ts:3'],
     });
   });
 
@@ -59,7 +59,7 @@ describe('diffCoverage', () => {
 describe('diffBranchCoverage', () => {
   const arm = (line: number) => ({ start: { line }, end: { line } });
   const coverage: Record<string, FileCoverage> = {
-    'src/plot.ts': {
+    'src/spot.ts': {
       statementMap: {},
       s: {},
       // An if/else on added line 3 (one arm never ran), and a ?: on line 9, not added.
@@ -69,11 +69,11 @@ describe('diffBranchCoverage', () => {
   };
 
   it('counts the branch arms that start on added lines, and names the ones no test took', () => {
-    const added = new Map([['src/plot.ts', new Set([3, 4])]]);
+    const added = new Map([['src/spot.ts', new Set([3, 4])]]);
     expect(diffBranchCoverage(added, coverage)).toEqual({
       total: 2,
       covered: 1,
-      missing: ['src/plot.ts:4 (a branch no test took)'],
+      missing: ['src/spot.ts:4 (a branch no test took)'],
     });
   });
 
@@ -90,7 +90,7 @@ describe('diffBranchCoverage', () => {
   it('leaves out squares, tests, and files without branch data', () => {
     const added = new Map([
       ['carnival/booths/ana/booth.ts', new Set([1])],
-      ['src/plot.test.ts', new Set([1])],
+      ['src/spot.test.ts', new Set([1])],
       ['scripts/plain.ts', new Set([1])],
     ]);
     expect(diffBranchCoverage(added, { 'scripts/plain.ts': { statementMap: {}, s: {} } })).toEqual({

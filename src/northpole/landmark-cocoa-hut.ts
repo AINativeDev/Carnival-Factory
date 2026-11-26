@@ -7,23 +7,23 @@
 import { corners, glow } from './brushes';
 import { band, onFace, type Face } from './faces';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
-import { spot } from './landmark-kit';
+import { onSpot } from './landmark-kit';
 import { SIGN_STYLES } from './sign-styles';
 import { standing } from './stall-plan';
 import { peakedRoof, prism } from './stall-volumes';
 import { theme } from './theme';
-import type { Plot, Tile } from './world';
+import type { Spot, Tile } from './world';
 
 const { colors } = theme;
 
 const HUT = { stage: 10, wall: 122, rise: 34, radius: 0.4, eaves: 0.47 };
 const MUG = { rx: 32, ry: 13, tall: 54 };
 
-/** The hut's outline, `r` of the plot out from its middle. */
-const ring = (plot: Plot, r: number): Tile[] =>
+/** The hut's outline, `r` of the spot out from its middle. */
+const ring = (spot: Spot, r: number): Tile[] =>
   Array.from({ length: 16 }, (_, n) => {
     const angle = (n / 16) * Math.PI * 2;
-    return spot(plot, 0.5 + Math.cos(angle) * r, 0.5 + Math.sin(angle) * r);
+    return onSpot(spot, 0.5 + Math.cos(angle) * r, 0.5 + Math.sin(angle) * r);
   });
 
 /** The giant mug, standing on the roof's peak at `foot`: its body, its band, its handle, cocoa and marshmallows. */
@@ -87,11 +87,11 @@ function steam(ctx: CanvasRenderingContext2D, from: Tile, time: number) {
   ctx.globalAlpha = 1;
 }
 
-export const drawCocoaHut: LandmarkDrawer = (ctx, plot, square, paint, time) => {
-  stage(ctx, plot, 72);
+export const drawCocoaHut: LandmarkDrawer = (ctx, spot, square, paint, time) => {
+  stage(ctx, spot, 72);
   prism(
     ctx,
-    ring(plot, HUT.radius),
+    ring(spot, HUT.radius),
     HUT.wall,
     undefined,
     colors.wood,
@@ -99,9 +99,9 @@ export const drawCocoaHut: LandmarkDrawer = (ctx, plot, square, paint, time) => 
     HUT.stage,
     true,
   );
-  const out = frontOf(plot).out;
+  const out = frontOf(spot).out;
   // The lit hatch high on the front, its glow spilling out.
-  const front: Face = { a: spot(plot, 0.33, 0.12), b: spot(plot, 0.67, 0.12), out };
+  const front: Face = { a: onSpot(spot, 0.33, 0.12), b: onSpot(spot, 0.67, 0.12), out };
   const hatch = onFace(front, 0.5, 106);
   glow(ctx, hatch.x, hatch.y, 40, 0.9);
   ctx.fillStyle = colors.glow;
@@ -111,15 +111,15 @@ export const drawCocoaHut: LandmarkDrawer = (ctx, plot, square, paint, time) => 
   band(ctx, front, 0.02, 0.98, 92, 96, 0.1);
   ctx.fill();
   // The counter board in front, with the square's drawing and the stand's name.
-  const counter: Face = { a: spot(plot, 0.2, 0.05), b: spot(plot, 0.8, 0.05), out };
+  const counter: Face = { a: onSpot(spot, 0.2, 0.05), b: onSpot(spot, 0.8, 0.05), out };
   ctx.fillStyle = colors.wood;
   band(ctx, counter, 0, 1, HUT.stage, 90);
   ctx.fill();
   framedArt(ctx, counter, square, paint, { from: 0.08, to: 0.92, low: 12 }, SIGN_STYLES.cabin);
   const eaves = HUT.stage + HUT.wall;
-  peakedRoof(ctx, ring(plot, HUT.eaves), eaves, HUT.rise, [colors.berry, colors.cream]);
-  const peak = spot(plot, 0.5, 0.5, eaves + HUT.rise - 6);
+  peakedRoof(ctx, ring(spot, HUT.eaves), eaves, HUT.rise, [colors.berry, colors.cream]);
+  const peak = onSpot(spot, 0.5, 0.5, eaves + HUT.rise - 6);
   mug(ctx, peak);
   steam(ctx, { x: peak.x, y: peak.y - MUG.tall - 4 }, time);
-  return standing(plot, corners(plot).top.y - (peak.y - MUG.tall - 70));
+  return standing(spot, corners(spot).top.y - (peak.y - MUG.tall - 70));
 };

@@ -7,7 +7,7 @@
 import { quad } from './brushes';
 import { band, onFace } from './faces';
 import { stallFront } from './stall-front';
-import { plotPoint, type StallParts } from './stall-plan';
+import { spotPoint, type StallParts } from './stall-plan';
 import { prism } from './stall-volumes';
 import { theme } from './theme';
 import type { Tile } from './world';
@@ -23,7 +23,7 @@ const CAB = 66;
 export function drawFoodTruck(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const { face, deep, wall, roof, look, square, paint, owner } = parts;
   const at = (along: number, depth: number, lift = 0) =>
-    plotPoint(face, deep, { along, depth }, lift);
+    spotPoint(face, deep, { along, depth }, lift);
   const box = (from: number, to: number, near: number, far: number) => [
     at(from, near),
     at(to, near),

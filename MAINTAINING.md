@@ -62,6 +62,18 @@ published next to the live map under `previews/pr-<number>/` and removed when
 it closes. Tessl Code Review's lenses are set in `.tessl-code-review.yml`. To publish the map, go to **Settings → Pages** and set
 **Source** to **GitHub Actions**: every merge to `main` then redeploys it.
 
+## Where the factory runs
+
+The factory runs on [Tessl](https://tessl.io):
+
+- Organization: **Carnival Factory**
+- Workspace: **carnival-factory**
+- Project: **carnival-factory**, named `carnival-factory/carnival-factory`
+  in `tessl.json`
+
+Tessl creates the factory's Loops from the `tessl.json` on `main`.
+`tessl doctor --automations` shows whether they're all there.
+
 ## Commands
 
 | Command          | What it does                                              |
@@ -89,8 +101,8 @@ native dependencies, so `npm ci` is the whole setup. Node 22.13 or later.
 - `src/northpole/`: the map: the `NorthPoleSquare` shape and registries, the
   isometric world you walk round (`world.ts`), how the camera frames its
   island (`camera.ts`), its drawing (`render.ts`, the files it hands each
-  thing to, and `map.ts`), which plot
-  each square keeps (`plots.json`) and the theme.
+  thing to, and `map.ts`), which spot
+  each square keeps (`spots.json`) and the theme.
 - `carnival/booths/<login>/`: one folder per participant. `carnival/booths/jedi4ever/` is the
   pattern to copy.
 - `carnival/attractions/<id>/`: one folder per attraction the North Pole owns.

@@ -285,7 +285,7 @@ The Recording Studio, `carnival/levels/the-studio/`, and The Year in Review,
 `src/northpole/north-pole-levels.ts`, `src/northpole/north-pole-links.ts`,
 `src/level-links.ts`, `src/factory-tour.ts`, `src/level-hud.ts`,
 `src/level-panel.ts`,
-`src/northpole/world-plots.ts` (`platformPlot`), `src/level-page.ts` (`renderLevel`),
+`src/northpole/world-spots.ts` (`platformSpot`), `src/level-page.ts` (`renderLevel`),
 `eslint.config.js`.
 
 ## Tested by

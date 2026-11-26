@@ -1,7 +1,7 @@
 /**
  * The intro's three little dioramas (docs/specs/intro.md): an elf writing a
  * booth request, the factory's workshop humming, and a stall popping up on an
- * empty plot. Drawn in the diorama style (docs/style.md), from `time` in
+ * empty spot. Drawn in the diorama style (docs/style.md), from `time` in
  * seconds alone, so a still frame at `STILL` is the whole story with reduced
  * motion.
  */
@@ -26,7 +26,7 @@ export const INTRO_BEATS = [
 /** The moment each scene is drawn at with reduced motion: the letter written, the stall standing. */
 export const STILL = 3;
 
-/** How long the stall's beat takes before it starts again: an empty plot, the pop, then the stall. */
+/** How long the stall's beat takes before it starts again: an empty spot, the pop, then the stall. */
 const STALL_CYCLE = 4;
 
 /** Draws one beat's scene, `size` pixels square, at `time` seconds. */
@@ -146,7 +146,7 @@ function popped(time: number) {
   return 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2;
 }
 
-/** Beat three: an empty plot, then a stall with a striped awning pops up on it, and sparkles. */
+/** Beat three: an empty spot, then a stall with a striped awning pops up on it, and sparkles. */
 function stallPops(ctx: CanvasRenderingContext2D, time: number) {
   pine(ctx, 76, 62, 20);
   const corners = [iso(-10, -10), iso(10, -10), iso(10, 10), iso(-10, 10)];

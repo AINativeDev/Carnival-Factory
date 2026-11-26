@@ -108,8 +108,8 @@ describe('checkLevelCode', () => {
   });
 
   it('holds only level.ts, Markdown and its squares', () => {
-    expect(rules({ 'plot.json': '{"plot": 3}' })).toContain('files');
+    expect(rules({ 'spot.json': '{"spot": 3}' })).toContain('files');
     expect(rules({ 'helper.ts': 'export const x = 1;' })).toContain('files');
-    expect(rules({ 'squares/cocoa/plot.json': '{"plot": 3}' })).toContain('files');
+    expect(rules({ 'squares/cocoa/spot.json': '{"spot": 3}' })).toContain('files');
   });
 });

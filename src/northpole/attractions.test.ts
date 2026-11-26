@@ -34,7 +34,7 @@ describe('attraction registry', () => {
     expect(attractionRegistry.get('gift-shop')).toBeUndefined();
   });
 
-  // Two rings of plots round the town square: sixteen keeps them all in the first two rows.
+  // Two rings of spots round the town square: sixteen keeps them all in the first two rows.
   it('seeds the midway with six to sixteen attractions', () => {
     expect(attractionRegistry.all().length).toBeGreaterThanOrEqual(6);
     expect(attractionRegistry.all().length).toBeLessThanOrEqual(16);

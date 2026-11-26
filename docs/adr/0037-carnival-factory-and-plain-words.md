@@ -1,6 +1,6 @@
 # 0037. Name the site Carnival Factory, and use plain words for spots
 
-- Status: Accepted
+- Status: Accepted. Its code-names part is Superseded by [0049](0049-spots-in-the-code.md)
 - Date: 2026-11-25
 - Spec: [map-and-world.md](../specs/map-and-world.md), [glossary](../glossary.md)
 

@@ -87,7 +87,7 @@ export function route(page: Page, event?: HashChangeEvent) {
   }
   const next = parseHash(location.hash);
   if (next.view === 'legacy') {
-    // Booths used to be called plots: keep links shared before the rename working.
+    // Booths used to be called spots: keep links shared before the rename working.
     location.replace(`#/booth/${next.id}`);
   } else if (next.view === 'season') {
     leaveWorld(page);

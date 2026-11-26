@@ -1,5 +1,5 @@
 /**
- * The faces of the things standing on the map: which side of a plot faces us,
+ * The faces of the things standing on the map: which side of a spot faces us,
  * points on it, strips across it, text along it the way a shop sign follows its
  * wall, and where a square's drawing goes on it. Stalls, pavilions, towers and
  * the entrance all hang their signs and drawings through these, so they live
@@ -9,17 +9,17 @@ import { corners, quad } from './brushes';
 import type { NorthPoleSquare } from './square';
 import { TILE_H, TILE_W, type Box, type Tile } from './world';
 
-/** One of a plot's faces we see: its ends on the ground, left to right on screen, and a tile's step outwards. */
+/** One of a spot's faces we see: its ends on the ground, left to right on screen, and a tile's step outwards. */
 export interface Face {
   a: Tile;
   b: Tile;
   out: Tile;
 }
 
-/** The face a plot's drawing goes on: its door's, or with the door round the back, the one we see on that side. */
-export function faceOf(plot: Box & { door: Tile }): Face {
-  const c = corners(plot);
-  const sideways = plot.door.x >= plot.x + plot.w || plot.door.x < plot.x;
+/** The face a spot's drawing goes on: its door's, or with the door round the back, the one we see on that side. */
+export function faceOf(spot: Box & { door: Tile }): Face {
+  const c = corners(spot);
+  const sideways = spot.door.x >= spot.x + spot.w || spot.door.x < spot.x;
   return sideways
     ? { a: c.bottom, b: c.right, out: { x: TILE_W / 2, y: TILE_H / 2 } }
     : { a: c.left, b: c.bottom, out: { x: -TILE_W / 2, y: TILE_H / 2 } };
