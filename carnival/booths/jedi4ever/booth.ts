@@ -1,72 +1,148 @@
 /**
- * Santa's Toy Factory: puts the workshop's parts together in the order they
- * stand, back to front, and keeps the booth's one memory of the pointer.
+ * North Pole Night Run: puts the street, the traffic and the van together
+ * back to front, steers the van from the pointer (or the autopilot when nobody
+ * is), and keeps the run and the best of this visit as the booth's one memory.
  */
 import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
-import { drawBelt, drawLetters, drawSparks, drawTick } from './belt';
-import { drawElves } from './elves';
-import { drawLantern } from './lantern';
-import { drawLogo } from './logo';
-import { lettersAt } from './letters';
-import { drawPenguin, hopHeight, penguinAt, PENGUINS } from './penguins';
-import { drawRoom } from './room';
-import { drawSleigh } from './sleigh';
-import { onLogo, REST, stepSpin, type Spin } from './spin';
+import { drawDashboard } from './dashboard';
+import { autopilotTarget } from './autopilot';
+import { advance, newRun, restart, type Run } from './game';
+import { drawSky, drawSkyline } from './sky';
+import { drawPuff, drawSnowfall, drawSparkles } from './snow';
+import { drawRoad, drawTrails, roadside, type Roadside } from './street';
+import { drawDeliveryVan, drawParcel, drawTraffic } from './vehicles';
+import { FAR, project, VAN_DEPTH } from './view';
 
-import { drawSnowGlobe, onGlobe } from './snow-globe';
-import { drawSnowman } from './snowman';
-import { drawCheckLamp, drawToySign } from './tallies';
+/** Who is steering, towards where and until when, and where the pointer was last frame. */
+interface Steering {
+  target: number;
+  until: number;
+  lastX: number;
+}
 
-/** When each penguin was last tapped, so it can hop: the booth's one memory of the pointer. */
-const tapped: number[] = PENGUINS.map(() => -Infinity);
-/** When the snow globe was last tapped. */
-let globeTapped = -Infinity;
-/** The logo's turn, and whether the press that spins it began on the logo. */
-let spin: Spin = REST;
-let holdingLogo = false;
+/** The run in progress, when the last frame was, and who is steering. */
+let run: Run = newRun(1);
+let lastTime = Number.NaN;
+let steering: Steering = { target: 0, until: -Infinity, lastX: Number.NaN };
+let runs = 1;
 
-/** Santa's toy factory: letters in, sorted, built into toys, checked and into the sleigh. */
+/** Where the pointer wants the van: its side of the square, or a half-turn on a tap. */
+export function steerFrom(pointer: SquarePointer, size: number, vanX: number): number {
+  if (pointer.presses > 0) return vanX + (pointer.x < size / 2 ? -0.55 : 0.55);
+  return (pointer.x / size - 0.5) * 2;
+}
+
+/**
+ * The steering after this frame's pointer. A pointer that hasn't moved keeps
+ * the turn it set, so a tap's half-turn isn't undone by the frames that keep
+ * reporting the finger where it tapped.
+ */
+export function steerWith(
+  prev: Steering,
+  pointer: SquarePointer,
+  size: number,
+  vanX: number,
+  time: number,
+): Steering {
+  const fresh = pointer.presses > 0 || pointer.x !== prev.lastX;
+  const target = fresh ? steerFrom(pointer, size, vanX) : prev.target;
+  return { target, until: time + 1500, lastX: pointer.x };
+}
+
+/**
+ * The steps, in seconds, that play `ms` between frames: none small enough to
+ * jump past a car or a parcel, and none at all past a second, which is a
+ * pause rather than driving.
+ */
+export function frameSteps(ms: number): number[] {
+  const elapsed = Number.isNaN(ms) ? 0 : Math.max(0, Math.min(1, ms / 1000));
+  const count = Math.ceil(elapsed / 0.05);
+  return Array.from({ length: count }, () => elapsed / count);
+}
+
+/** The traffic, parcels and roadside, sorted far to near. */
+function sorted(size: number, state: Run): Roadside[] {
+  const scenery = roadside(size, state.dist);
+  for (const car of state.traffic) {
+    const d = VAN_DEPTH + car.z;
+    if (d < 1 || d > FAR) continue;
+    const at = project(size, d, car.x, state.dist);
+    scenery.push({
+      d,
+      paint: (ctx) => {
+        drawTraffic(ctx, car.kind, at.x, at.y, 0.4 * 0.62 * at.scale * size);
+      },
+    });
+  }
+  for (const parcel of state.parcels) {
+    const d = VAN_DEPTH + parcel.z;
+    if (d < 1 || d > FAR) continue;
+    const at = project(size, d, parcel.x, state.dist);
+    const bob = 0.1 + 0.1 * Math.sin(state.time * 4 + parcel.z);
+    scenery.push({
+      d,
+      paint: (ctx) => {
+        drawParcel(ctx, at.x, at.y, 0.3 * 0.62 * at.scale * size, bob);
+      },
+    });
+  }
+  return scenery.sort((a, b) => b.d - a.d);
+}
+
+/** A north pole night run: a driving game that plays itself on the stall's front. */
 const booth: NorthPoleSquare = {
   id: 'jedi4ever',
-  name: "Santa's Toy Factory",
-  description: 'Letters in, toys out: the workshop that builds the whole North Pole.',
-  stall: { shape: 'cabin', roof: 'berry', trim: 'gold' },
+  name: 'North Pole Night Run',
+  description:
+    'Drive a little red delivery van down a snowy street at dusk, weaving through traffic for parcels.',
+  stall: { shape: 'food-truck', roof: 'berry', trim: 'gold' },
   draw(ctx, size, time, pointer?: SquarePointer) {
-    const u = size / 100;
-    const letters = lettersAt(time);
+    const steps = frameSteps(time - lastTime);
+    lastTime = time;
+    if (pointer) {
+      steering = steerWith(steering, pointer, size, run.van.x, time);
+      if (pointer.presses > 0 && run.crashed && run.crashTime > 0.6) {
+        runs += 1;
+        run = restart(run, runs);
+      }
+    } else {
+      steering = { ...steering, lastX: Number.NaN };
+      if (run.crashed && run.crashTime > (steering.until > time ? 6 : 2.5)) {
+        runs += 1;
+        run = restart(run, runs);
+      }
+    }
+    for (const dt of steps) {
+      run = advance(run, dt, steering.until > time ? steering.target : autopilotTarget(run));
+    }
 
-    drawRoom(ctx, u, size, time);
-    drawCheckLamp(ctx, u, time);
-    drawToySign(ctx, u, time);
-    drawElves(ctx, u, time, letters);
-    drawBelt(ctx, u, time);
-    drawSleigh(ctx, u, time);
-    drawSnowman(ctx, u, time);
-    drawLantern(ctx, u, time);
-    drawLetters(ctx, u, letters);
-    drawSparks(ctx, u, time, letters);
-
-    // The logo spins while a press that began on it is held, and slows once let go.
-    if (pointer && pointer.presses > 0 && onLogo(pointer.x / u, pointer.y / u)) holdingLogo = true;
-    if (!pointer?.down) holdingLogo = false;
-    spin = stepSpin(spin, holdingLogo, time);
-    drawLogo(ctx, u, spin.angle);
-
-    drawTick(ctx, u, letters);
-
-    // The snow globe swirls when tapped.
-    if (pointer && pointer.presses > 0 && onGlobe(pointer.x / u, pointer.y / u)) globeTapped = time;
-    drawSnowGlobe(ctx, u, time - globeTapped);
-
-    // The penguins on the floor: one waves while the pointer is over it, and hops when tapped.
-    // Typed here, not only where they're made: the static code check reads this
-    // file on its own, and indexes only by what it can see is a number.
-    const lifts: number[] = tapped.map((at) => hopHeight(time - at));
-    const over: number = pointer ? penguinAt(pointer.x / u, pointer.y / u, time, lifts) : -1;
-    if (pointer && pointer.presses > 0 && over >= 0) tapped[over] = time;
-    PENGUINS.forEach((spot, index: number) => {
-      drawPenguin(ctx, u, spot, index, time, index === over, lifts[index] ?? 0);
-    });
+    drawSky(ctx, size, time);
+    drawSkyline(ctx, size, run.dist);
+    drawRoad(ctx, size, run.dist);
+    const here = project(size, VAN_DEPTH, run.van.x, run.dist);
+    const w = 0.4 * 0.62 * here.scale * size;
+    drawTrails(ctx, size, run.trails, run.dist);
+    const tilt = run.crashed ? Math.min(run.crashTime * 3, 2.5) : run.van.slide;
+    const scenery = sorted(size, run);
+    let vanDrawn = false;
+    for (const piece of scenery) {
+      if (!vanDrawn && piece.d < VAN_DEPTH) {
+        drawDeliveryVan(ctx, here.x, here.y, w, run.van.vx, tilt);
+        vanDrawn = true;
+      }
+      piece.paint(ctx);
+    }
+    if (!vanDrawn) drawDeliveryVan(ctx, here.x, here.y, w, run.van.vx, tilt);
+    if (run.crashed) drawPuff(ctx, here.x, here.y, size, run.crashTime);
+    for (const burst of run.sparks)
+      drawSparkles(ctx, here.x, here.y - w, size, run.time - burst.at);
+    drawSnowfall(ctx, size, time, run.dist, run.van.speed);
+    drawDashboard(
+      ctx,
+      size,
+      { speed: run.van.speed, score: run.score, best: run.best },
+      run.crashed && run.crashTime > 0.6,
+    );
   },
 };
 
