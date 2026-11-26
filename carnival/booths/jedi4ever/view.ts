@@ -8,7 +8,7 @@
 /** Where the horizon sits, as a share of the square's height. */
 export const HORIZON = 0.36;
 /** How wide the road is at the camera, as a share of the square. */
-export const ROAD_HALF = 0.62;
+const ROAD_HALF = 0.62;
 /** The bottom of the picture, where the road would pass under the camera. */
 const GROUND = 0.97;
 /** How far ahead of the camera the van drives. */

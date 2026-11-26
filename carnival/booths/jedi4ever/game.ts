@@ -9,30 +9,30 @@
 /** What can come up the road. */
 export type TrafficKind = 'sleigh' | 'plough' | 'van' | 'bus';
 /** The traffic's mix, with sleighs twice as common as the rest. */
-export const TRAFFIC_KINDS: readonly TrafficKind[] = ['sleigh', 'plough', 'van', 'bus', 'sleigh'];
+const TRAFFIC_KINDS: readonly TrafficKind[] = ['sleigh', 'plough', 'van', 'bus', 'sleigh'];
 /** How far from its middle a kind of traffic still hits the van. */
-export function halfWidth(kind: TrafficKind): number {
+function halfWidth(kind: TrafficKind): number {
   if (kind === 'plough') return 0.3;
   if (kind === 'bus') return 0.28;
   return kind === 'van' ? 0.22 : 0.2;
 }
 
-export interface Traffic {
+interface Traffic {
   kind: TrafficKind;
   x: number;
   z: number;
 }
-export interface Parcel {
+interface Parcel {
   x: number;
   z: number;
 }
 /** A tyre mark in the snow, and the distance run when it was left. */
-export interface Trail {
+interface Trail {
   x: number;
   at: number;
 }
 /** A burst of sparkles where a parcel landed, and the run time it began. */
-export interface Spark {
+interface Spark {
   at: number;
 }
 export interface Run {
@@ -55,7 +55,7 @@ export interface Run {
 }
 
 /** How far ahead things appear, and how fast the road rushes at the start and at the top. */
-export const SPAWN_Z = 150;
+const SPAWN_Z = 150;
 const START_SPEED = 14;
 const TOP_SPEED = 34;
 const ONCOMING = 5;
