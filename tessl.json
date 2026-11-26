@@ -1,6 +1,10 @@
 {
   "name": "carnival-factory/carnival-factory",
-  "dependencies": {},
+  "dependencies": {
+    "tessl/factory": {
+      "version": "1.2.8"
+    }
+  },
   "environment": "carnival-factory-env",
   "actions": {
     "follow-ticket-changes": {

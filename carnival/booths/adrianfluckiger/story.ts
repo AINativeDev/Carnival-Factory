@@ -45,7 +45,7 @@ export function lerp(from: number, to: number, amount: number): number {
 }
 
 /** Progress through a stretch from `start` to `end` seconds, from 0 to 1. */
-export function between(seconds: number, start: number, end: number): number {
+function between(seconds: number, start: number, end: number): number {
   return Math.min(1, Math.max(0, (seconds - start) / (end - start)));
 }
 
