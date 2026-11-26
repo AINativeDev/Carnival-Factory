@@ -14,8 +14,6 @@ import type { TextFinding } from './injection-scan.ts';
 
 /** The checks that must pass on the head commit before anything merges. */
 export const REQUIRED_CHECKS = ['check', 'ownership', 'build', 'smoke'] as const;
-/** At most one booth merges on its own per participant in this long. */
-export const RATE_LIMIT_MS = 60 * 60 * 1000;
 
 export type CheckState = 'success' | 'failure' | 'pending' | 'missing';
 export type Verdict = 'low-risk' | 'needs-human';
@@ -39,9 +37,6 @@ export interface GateFacts {
   risk: Verdict | undefined;
   /** Labels on the pull request. */
   labels: string[];
-  /** When this participant last had a booth merge on its own, if ever. */
-  lastAutoMerge: Date | undefined;
-  now: Date;
 }
 
 export interface GateStep {
@@ -144,16 +139,6 @@ export function evaluateGate(facts: GateFacts): GateDecision {
     'No one has asked to hold it',
     'A maintainer, or any check above, can hold a pull request for a person with the needs-human label.',
     flagged ? 'fail' : 'pass',
-  );
-
-  const recent =
-    facts.lastAutoMerge && facts.now.getTime() - facts.lastAutoMerge.getTime() < RATE_LIMIT_MS;
-  add(
-    'One at a time',
-    'At most one booth change per person merges on its own each hour.',
-    recent ? 'wait' : 'pass',
-    undefined,
-    false,
   );
 
   const decision = steps.some((s) => s.hard && s.state === 'fail')

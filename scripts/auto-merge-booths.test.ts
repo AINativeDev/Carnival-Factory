@@ -40,7 +40,7 @@ describe('a booth pull request that passes every step', () => {
     const body = (run.writes()[0]?.body as { body: string } | undefined)?.body ?? '';
     expect(body.startsWith('<!-- booth-gate -->\n### How this booth gets onto the map')).toBe(true);
     expect(body).toContain('**Request accepted** (Passed)');
-    expect(body).toContain('**One at a time** (Passed)');
+    expect(body).not.toContain('One at a time');
     expect(body).not.toContain('(Waiting)');
     expect(body).toContain(`[How your request is built](${GUIDE})`);
   });

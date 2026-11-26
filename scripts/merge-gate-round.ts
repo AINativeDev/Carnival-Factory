@@ -28,7 +28,7 @@ async function gate(round: Round, pull: Pull) {
   const issue = await boothRequest(github, repository, pull);
   if (!issue) return;
   const sha = pull.head.sha;
-  const { facts, comments } = await gatherFacts(github, repository, pull, issue, new Date());
+  const { facts, comments } = await gatherFacts(github, pull, issue);
   const result = evaluateGate(facts);
   console.log(
     `#${String(pull.number)} (booth ${String(facts.owner)}, ${sha.slice(0, 7)}): ${result.decision}`,
