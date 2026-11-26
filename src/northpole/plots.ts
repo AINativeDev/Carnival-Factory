@@ -12,7 +12,7 @@
  * accepted booth requests and holds the next free plots for them, in order of
  * issue number, in `pending.json` (read in `construction-sites.ts`).
  */
-import { isPlot, MAX_PENDING, type PendingBooth } from './construction-sites';
+import { isPlot, MAX_PENDING, type PendingBooth } from './construction-sites.ts';
 
 /** What a booth's own `plot.json` says: its plot, and the issue that asked for the booth. */
 export interface PlotFile {
