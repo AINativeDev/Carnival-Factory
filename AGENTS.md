@@ -33,7 +33,9 @@ levels and the advent challenges. Everything else is the code that runs it.
 ## Commands
 
 Run `npm run format`, then `npm run check`, before you finish any change. CI
-runs `npm run check` and `npm run build`. `npm run check` is:
+runs `npm run check` and `npm run build`; a pull request that only changes
+one booth's or one level's folder runs `scripts/square-check.ts` on it
+instead ([ADR 0053](docs/adr/0053-square-only-check.md)). `npm run check` is:
 
 - `npm run lint`: ESLint (the house rules, the 200-line limit and the strict
   type-aware rules), markdownlint, a JSON check and Knip for unused code;

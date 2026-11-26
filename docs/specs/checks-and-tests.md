@@ -62,6 +62,16 @@ What runs on every pull request, and what each check guarantees.
   reads the same `FEATURE_FLAGS` setting as its build (`smoke/support/feature-flags.ts`):
   it leaves out an attraction a flag holds back, skips a check for a hidden
   feature, and `smoke/feature-flags.spec.ts` checks each hidden feature is gone.
+- Check scope: when every changed file is inside one booth's folder or one
+  level's, CI's `check` job runs `scripts/square-check.ts` on that folder
+  instead of `npm run check`: the house rules, format and Markdown on the
+  folder, the whole project's types, strict types, JSON and Knip, and the
+  folder's tests with the tests every square of its kind must pass. Anything
+  else, and every push to `main`, runs the full check. ESLint always runs
+  with `--config eslint.config.js`, so a config file inside a folder can't
+  change the rules ([ADR 0053](../adr/0053-square-only-check.md); enforced
+  by: scripts/square-check.ts, scripts/square-check.test.ts,
+  .github/workflows/ci.yml).
 - Smoke scope: when every changed file is inside one booth's folder, CI sets
   `SMOKE_ONLY=booth/<login>` and runs only the specs that play that booth
   (`BOOTH_ONLY_SPECS`: `squares-play` for its screenshot, frame budget and the
