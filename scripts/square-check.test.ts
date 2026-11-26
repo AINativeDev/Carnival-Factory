@@ -83,4 +83,10 @@ describe('CI with a folder-scoped check', () => {
     expect(ci).toContain('echo "SQUARE_SCOPE=$scope" >> "$GITHUB_ENV"');
     expect(ci).toContain("if: github.event_name == 'pull_request' && env.SQUARE_SCOPE == ''");
   });
+
+  it('still fetches the base for the baselines check, which runs on every pull request', () => {
+    const step = ci.slice(ci.indexOf('- name: Baselines only shrink'));
+    const run = step.slice(0, step.indexOf('\n      - '));
+    expect(run).toContain('git fetch --no-tags --depth=1 origin "$BASE"');
+  });
 });
