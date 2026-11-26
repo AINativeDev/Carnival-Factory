@@ -1,6 +1,6 @@
 import { badgeFor, factoryUrl } from './northpole/badges';
 import { voteUrl } from './northpole/peoples-choice';
-import { PEOPLES_CHOICE } from './northpole/peoples-choice-standings';
+import { shownChoice } from './northpole/peoples-choice-standings';
 import { remixUrl } from './northpole/links';
 import type { SquareKind } from './northpole/map-options';
 import type { SandboxedSquare } from './northpole/sandbox';
@@ -100,7 +100,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   }
 
   // A booth's place on the People's Choice ballot, where a 👍 on its comment is a vote.
-  const vote = kind === 'booth' ? voteUrl(square.id, PEOPLES_CHOICE) : undefined;
+  const vote = kind === 'booth' ? voteUrl(square.id, shownChoice()) : undefined;
   if (vote) {
     $<HTMLAnchorElement>('.visit-vote').href = vote;
     $<HTMLElement>('.visit-vote').hidden = false;

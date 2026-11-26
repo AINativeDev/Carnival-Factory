@@ -15,7 +15,7 @@ import {
 
 describe('the Year in review issue form', () => {
   const form = readFileSync(
-    new URL('../.github/ISSUE_TEMPLATE/07-year-in-review.yml', import.meta.url),
+    new URL('../.github/issue-templates-later/07-year-in-review.yml', import.meta.url),
     'utf8',
   );
 

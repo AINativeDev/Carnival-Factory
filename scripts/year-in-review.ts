@@ -21,7 +21,7 @@ import {
 export const ACCEPTED_LABEL = 'year-in-review-accepted';
 const DECLINED_LABEL = 'declined';
 
-/** The form's fields, by the headings GitHub writes them under (.github/ISSUE_TEMPLATE/07-year-in-review.yml). */
+/** The form's fields, by the headings GitHub writes them under (.github/issue-templates-later/07-year-in-review.yml while its flag is off). */
 export const YEAR_FIELDS = {
   question: 'Which question?',
   own: 'Your own question',

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { httpsOnly, linksHome, NORTH_POLE_LINKS, northPoleLinks } from './north-pole-links';
+import {
+  httpsOnly,
+  landmarkLinkOut,
+  linksHome,
+  NORTH_POLE_LINKS,
+  northPoleLinks,
+} from './north-pole-links';
 import { isNorthPoleLevel } from './north-pole-levels';
 import { YEAR_IN_REVIEW_URL } from './links';
 
@@ -56,5 +62,19 @@ describe('linksHome', () => {
     expect(linksHome('attraction', 'podcast-booth', 'the-studio')).toBe('the-studio');
     expect(linksHome('attraction', 'ferris-wheel')).toBeUndefined();
     expect(linksHome('booth', 'the-academy')).toBeUndefined();
+  });
+});
+
+describe('landmarkLinkOut', () => {
+  it("opens the Factory's, the Academy's and the Studio's own sites", () => {
+    expect(landmarkLinkOut('attraction', 'the-factory')).toBe('https://tessl.io');
+    expect(landmarkLinkOut('attraction', 'the-academy')).toBe('https://tessl.io/academy');
+    expect(landmarkLinkOut('attraction', 'the-studio')).toBe('https://tessl.io/podcast/');
+  });
+
+  it('has none for anything else: the Year in Review, a booth, or a name like constructor', () => {
+    expect(landmarkLinkOut('attraction', 'the-year-in-review')).toBeUndefined();
+    expect(landmarkLinkOut('booth', 'the-academy')).toBeUndefined();
+    expect(landmarkLinkOut('attraction', 'constructor')).toBeUndefined();
   });
 });

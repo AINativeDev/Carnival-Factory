@@ -4,6 +4,8 @@
  * panel, Get a booth, the whole island) and People's Choice below it. The
  * router (src/router.ts) opens it; src/level-page.ts opens a level's instead.
  */
+import { landmarkLinkOut } from './northpole/north-pole-links';
+import { isOn } from './feature-flags';
 import { startBoothsPanel } from './booths-hud';
 import { the } from './dom';
 import { renderUnknown } from './map-notes';
@@ -18,7 +20,7 @@ import { LEVEL_THEMES } from './northpole/level';
 import { levels } from './northpole/levels';
 import { isNorthPoleLevel } from './northpole/north-pole-levels';
 import { startMap, type MapControls, type SquareKind, type StationEntry } from './northpole/map';
-import { PEOPLES_CHOICE } from './northpole/peoples-choice-standings';
+import { shownChoice } from './northpole/peoples-choice-standings';
 import { sitesToRemember } from './northpole/spots';
 import { theme } from './northpole/theme';
 import { levelLink, squareLink } from './route';
@@ -27,18 +29,20 @@ import { levelLink, squareLink } from './route';
 const FEATURED: { kind: SquareKind; id: string } = { kind: 'attraction', id: 'ferris-wheel' };
 
 /**
- * A platform at the sleigh station for every participant's level. The North
- * Pole's own levels have none: their landmark attraction is the way in (ADR 0042).
+ * A platform at the sleigh station for every participant's level, while the
+ * levels flag is on (ADR 0055). The North Pole's own levels have none: their
+ * landmark attraction is the way in (ADR 0042).
  */
-const STATION: StationEntry[] = levels
-  .filter((entry) => !isNorthPoleLevel(entry.login))
-  .map((entry) => ({
-    login: entry.login,
-    name: entry.name,
-    owner: entry.owner,
-    color: entry.level ? LEVEL_THEMES[entry.level.theme].sign : theme.colors.muted,
-    closed: !entry.level,
-  }));
+const station = (): StationEntry[] =>
+  levels
+    .filter((entry) => isOn('levels') && !isNorthPoleLevel(entry.login))
+    .map((entry) => ({
+      login: entry.login,
+      name: entry.name,
+      owner: entry.owner,
+      color: entry.level ? LEVEL_THEMES[entry.level.theme].sign : theme.colors.muted,
+      closed: !entry.level,
+    }));
 
 /** Takes the sleigh: to a level, or home to the North Pole. */
 export const travel = (login: string | undefined) => {
@@ -71,7 +75,7 @@ export function renderMap(page: Page, focus?: { kind: SquareKind; id: string }) 
   page.shown = '';
   app.innerHTML = NORTH_POLE_MAP;
 
-  renderChoice(the(app, '.choice', HTMLDetailsElement), PEOPLES_CHOICE);
+  renderChoice(the(app, '.choice', HTMLDetailsElement), shownChoice());
   renderGuide(app, the(app, '.attractions', HTMLElement), attractionRegistry.all(), {
     href: 'attraction',
     by: () => '',
@@ -95,7 +99,11 @@ export function renderMap(page: Page, focus?: { kind: SquareKind; id: string }) 
       attractions: attractionRegistry.all(),
       booths: boothRegistry.all(),
       onOpen: (kind, id) => {
-        location.hash = squareLink(kind, id);
+        // While levels wait behind their flag, the Factory, the Academy and the
+        // Studio open their own sites, like the billboard (ADR 0055).
+        const out = isOn('levels') ? undefined : landmarkLinkOut(kind, id);
+        if (out) window.open(out, '_blank', 'noopener');
+        else location.hash = squareLink(kind, id);
       },
       onLeave: () => {
         closeCard(page, true);
@@ -107,7 +115,7 @@ export function renderMap(page: Page, focus?: { kind: SquareKind; id: string }) 
       ...(focus ? { focus } : {}),
       ...(pending ? { pending } : {}),
       wereSites: loadSites(),
-      levels: STATION,
+      levels: station(),
       onTravel: travel,
     },
   );

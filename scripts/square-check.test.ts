@@ -75,3 +75,12 @@ describe('checkCommands', () => {
     expect(scripts.lint).toContain('eslint --config eslint.config.js');
   });
 });
+
+describe('CI with a folder-scoped check', () => {
+  const ci = readFileSync(join(import.meta.dirname, '..', '.github/workflows/ci.yml'), 'utf8');
+
+  it('skips the changed-lines coverage, which needs the full run and has nothing to measure', () => {
+    expect(ci).toContain('echo "SQUARE_SCOPE=$scope" >> "$GITHUB_ENV"');
+    expect(ci).toContain("if: github.event_name == 'pull_request' && env.SQUARE_SCOPE == ''");
+  });
+});

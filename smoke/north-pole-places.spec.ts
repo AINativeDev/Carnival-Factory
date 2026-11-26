@@ -1,3 +1,4 @@
+import { FLAGS } from './support/feature-flags';
 import { expect, test, type Page } from './coverage';
 import theAcademy from '../carnival/levels/the-academy/level';
 import theStudio from '../carnival/levels/the-studio/level';
@@ -55,6 +56,7 @@ for (const { level, name } of PLACES)
     test(`${name}'s landmark opens its level, its links show, and the walk reaches every stall (${viewport.name})`, async ({
       page,
     }) => {
+      test.skip(!FLAGS.levels, 'levels are switched off: the landmarks open their sites instead');
       // A phone's close camera walks in many short steps.
       test.setTimeout(480_000);
       await page.setViewportSize(viewport);
@@ -143,6 +145,7 @@ for (const viewport of [
   test(`Each landmark opens its level with its links out (${String(viewport.width)} wide)`, async ({
     page,
   }) => {
+    test.skip(!FLAGS.levels, 'levels are switched off: the landmarks open their sites instead');
     await page.setViewportSize(viewport);
     const problems = watch(page);
     const canvas = page.locator('.map-canvas');

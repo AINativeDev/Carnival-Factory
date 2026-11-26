@@ -25,6 +25,24 @@ export const NORTH_POLE_LINKS: Readonly<Record<string, readonly OutboundLink[]>>
   'the-year-in-review': [{ label: 'Add your answer', href: YEAR_IN_REVIEW_URL }],
 };
 
+/**
+ * Where a landmark goes straight out to, in a new tab, while the levels flag
+ * is off: the Factory, the Academy and the Studio open their own sites
+ * instead of their levels, as the billboard opens its tickets (ADR 0055).
+ */
+const LANDMARK_LINKS_OUT: Readonly<Record<string, string>> = {
+  'the-factory': 'https://tessl.io',
+  'the-academy': 'https://tessl.io/academy',
+  'the-studio': 'https://tessl.io/podcast/',
+};
+
+/** The site a landmark opens instead of its level, if it has one and it's https. */
+export function landmarkLinkOut(kind: string, id: string): string | undefined {
+  // Only the North Pole's own ids are looked up, so a name like "constructor" never reaches the object.
+  const href = kind === 'attraction' && isNorthPoleLevel(id) ? LANDMARK_LINKS_OUT[id] : undefined;
+  return href && isHttps(href) ? href : undefined;
+}
+
 /** Whether a link is an https address: anything else, such as `javascript:`, never reaches the page. */
 function isHttps(href: string): boolean {
   try {
