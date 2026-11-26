@@ -6,7 +6,15 @@
  * src/northpole/plots.ts (#235). So every file a workflow's script reaches,
  * in scripts/ or src/, names its imports in full.
  */
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -26,17 +34,22 @@ function entryPoints(): string[] {
   return [...new Set(found.map(([, script = '']) => script))].sort();
 }
 
-/** Each import Node would fail to find, as "<file>: <specifier>". */
-function missingImports(entry: string): string[] {
+/** Whether Node can load the path as written: a file, never a directory. */
+function isFile(path: string): boolean {
+  return statSync(path, { throwIfNoEntry: false })?.isFile() ?? false;
+}
+
+/** Each import Node would fail to load, as "<file>: <specifier>", from `root`. */
+function missingImports(entry: string, root = ROOT): string[] {
   const missing: string[] = [];
   const seen = new Set<string>();
-  const queue = [join(ROOT, entry)];
+  const queue = [join(root, entry)];
   for (let file = queue.pop(); file !== undefined; file = queue.pop()) {
     if (seen.has(file)) continue;
     seen.add(file);
     for (const [, specifier = ''] of readFileSync(file, 'utf8').matchAll(RELATIVE_IMPORT)) {
       const target = resolve(dirname(file), specifier);
-      if (!existsSync(target)) missing.push(`${relative(ROOT, file)}: ${specifier}`);
+      if (!isFile(target)) missing.push(`${relative(root, file)}: ${specifier}`);
       else if (target.endsWith('.ts')) queue.push(target);
     }
   }
@@ -46,6 +59,21 @@ function missingImports(entry: string): string[] {
 describe('the scripts the workflows run with node', () => {
   it('are found in the workflows', () => {
     expect(entryPoints()).toContain('scripts/auto-merge-booths.ts');
+  });
+
+  it('catches a bare name or a folder reached through another file', () => {
+    const root = mkdtempSync(join(tmpdir(), 'node-imports-'));
+    mkdirSync(join(root, 'square-code'));
+    const files: Record<string, string> = {
+      'entry.ts': "import { gate } from './gate.ts';",
+      'gate.ts': "import './plots';\nimport './square-code';\nimport './square-code.ts';",
+      'square-code.ts': '',
+    };
+    for (const [name, text] of Object.entries(files)) writeFileSync(join(root, name), text);
+    expect(missingImports('entry.ts', root)).toEqual([
+      'gate.ts: ./plots',
+      'gate.ts: ./square-code',
+    ]);
   });
 
   it.each(entryPoints())('%s imports only files Node can find as named', (entry) => {
