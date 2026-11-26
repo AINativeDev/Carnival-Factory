@@ -96,3 +96,4 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0047](0047-year-in-review-answers.md) | Year in Review answers are moderated and baked in at build | Accepted |
 | [0048](0048-a-level-unlocks-after-a-booth.md) | A level unlocks after a booth | Accepted |
 | [0049](0049-spots-in-the-code.md) | Spots in the code too, not plots | Accepted |
+| [0050](0050-risk-check-after-smoke.md) | The risk check starts when the smoke test passes | Accepted |
