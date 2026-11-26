@@ -1228,7 +1228,8 @@ kbd {
   }
 }
 
-/* On a phone, below the room. */
+/* On a phone, a sheet under the booth, a quarter or so of the screen to start; its handle
+   (visit-sheet.ts) drags it taller to read the story, or shorter to keep the booth big. */
 @media (max-width: 719px) {
   .visit {
     top: auto;
@@ -1236,7 +1237,51 @@ kbd {
     right: 8px;
     bottom: 8px;
     width: auto;
-    max-height: 43%;
+    height: 34%;
+    max-height: none;
+    padding-top: 0;
+    border-radius: 18px 18px var(--radius) var(--radius);
+  }
+}
+
+/* The sheet's handle: a grip bar across its top, only on a phone. */
+.visit-sheet-handle {
+  display: none;
+}
+
+@media (max-width: 719px) {
+  .visit-sheet-handle {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: block;
+    height: 26px;
+    margin: 0 -18px 4px;
+    background: var(--color-cream);
+    cursor: ns-resize;
+    touch-action: none;
+  }
+
+  .visit-sheet-handle::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 44px;
+    height: 5px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--color-ink) 30%, transparent);
+    transform: translateX(-50%);
+  }
+
+  /* No Esc key and no room to walk out of on a phone: just Leave. */
+  .visit:has(> .visit-sheet-handle) .visit-leave > span {
+    visibility: hidden;
+  }
+
+  .visit-sheet-handle:focus-visible {
+    outline: 3px solid var(--color-gold);
+    outline-offset: -3px;
   }
 }
 

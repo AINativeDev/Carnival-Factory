@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
-import { fullBox, isFullScreen } from './full-screen';
+import { edgeToEdge, fullBox, isFullScreen, isPhoneUpright, wideBox } from './full-screen';
 
 describe('a booth full screen', () => {
   it('is on while the map frame is marked full', () => {
@@ -18,5 +18,29 @@ describe('a booth full screen', () => {
   it('fills the screen with the biggest square that fits, centred, with a margin', () => {
     expect(fullBox(1400, 900)).toEqual({ x: 266, y: 16, w: 868, h: 868 });
     expect(fullBox(390, 844)).toEqual({ x: 16, y: 243, w: 358, h: 358 });
+  });
+
+  it('fills the width on a phone held upright, under the way back to the map', () => {
+    expect(isPhoneUpright(390, 844)).toBe(true);
+    expect(isPhoneUpright(844, 390)).toBe(false);
+    expect(isPhoneUpright(1400, 900)).toBe(false);
+    expect(wideBox(390)).toEqual({ x: 16, y: 56, w: 358, h: 358 });
+    expect(wideBox(10).w).toBe(0);
+  });
+
+  it('leaves the room out in full screen and on a phone held upright, and nowhere else', () => {
+    document.body.innerHTML = '<div class="map-frame"><canvas></canvas></div>';
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    const size = (width: number, height: number) => {
+      Object.defineProperty(canvas, 'clientWidth', { value: width, configurable: true });
+      Object.defineProperty(canvas, 'clientHeight', { value: height, configurable: true });
+    };
+    size(1400, 900);
+    expect(edgeToEdge(canvas)).toBe(false);
+    size(390, 844);
+    expect(edgeToEdge(canvas)).toBe(true);
+    size(1400, 900);
+    (canvas.parentElement as HTMLElement).dataset.full = '';
+    expect(edgeToEdge(canvas)).toBe(true);
   });
 });

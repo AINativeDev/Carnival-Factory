@@ -5,7 +5,7 @@
  * drawing, since it's the one part of a frame that moves the player.
  */
 import { ROOM_SPEED, stepInRoom } from './interior';
-import { isFullScreen } from './full-screen';
+import { edgeToEdge } from './full-screen';
 import { rideAlong } from './ride-map';
 import type { MapRun } from './map-state';
 import { toScreen, type Tile } from './world';
@@ -82,7 +82,7 @@ function leaveFootprints(m: MapRun, before: Tile) {
 /** Walks the player inside a room, with the keys or toward where a click sent them, and out through its doorway. */
 function walkInside(m: MapRun, dt: number, right: number, down: number) {
   // Full screen there's no room to walk in, and no doorway to wander out of by accident.
-  if (isFullScreen(m.canvas)) {
+  if (edgeToEdge(m.canvas)) {
     m.moving = false;
     return;
   }

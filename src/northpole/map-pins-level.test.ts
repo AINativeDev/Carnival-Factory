@@ -101,7 +101,7 @@ describe('walking a level', () => {
       },
       { width: 390, height: 700, coarse: true, reduced: true },
     );
-    expect(pin).toMatchInlineSnapshot(`"20faf6ae2887a562 (10404 calls)"`);
+    expect(pin).toMatchInlineSnapshot(`"52b00b969cd1f3f1 (9770 calls)"`);
   });
 
   it('drags and pinches the camera with fingers on a phone', () => {

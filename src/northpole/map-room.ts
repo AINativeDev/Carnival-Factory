@@ -6,7 +6,7 @@
  */
 import { drawSquare } from './draw-square';
 import { MAX_SIZE } from './frame-protocol';
-import { fullBox, isFullScreen } from './full-screen';
+import { fullBox, isFullScreen, isPhoneUpright, wideBox } from './full-screen';
 import { roomArea, roomLayout } from './interior';
 import { drawRoom } from './interior-room';
 import { drawRoomPerson } from './interior-room';
@@ -46,7 +46,9 @@ export function drawInside(m: MapRun, spot: Spot, square: NorthPoleSquare, frame
   // Full screen, the drawing takes the whole screen at the screen's own pixels;
   // otherwise it hangs on the back wall of its room.
   const full = isFullScreen(canvas);
-  if (full) {
+  // A phone held upright has no room to spare for walls: the booth fills its width.
+  const wide = !full && isPhoneUpright(width, height);
+  if (full || wide) {
     ctx.fillStyle = theme.colors.night;
     ctx.fillRect(0, 0, width, height);
   } else {
@@ -61,8 +63,8 @@ export function drawInside(m: MapRun, spot: Spot, square: NorthPoleSquare, frame
     );
     dressRoom(ctx, room, square, spot, time);
   }
-  const stage = full ? fullBox(width, height) : room.stage;
-  const size = full ? Math.min(MAX_SIZE, Math.round(stage.w * scale)) : VISIT_SIZE;
+  const stage = full ? fullBox(width, height) : wide ? wideBox(width) : room.stage;
+  const size = full || wide ? Math.min(MAX_SIZE, Math.round(stage.w * scale)) : VISIT_SIZE;
   // The stage is the square's drawing scaled, so the pointer scales with it.
   const pressed = m.pointer.now();
   const onStage = pressed && onRect(pressed, stage, size);
@@ -75,7 +77,7 @@ export function drawInside(m: MapRun, spot: Spot, square: NorthPoleSquare, frame
     onStage && { ...onStage, down: pressed.down, presses: pressed.presses };
   drawSquare(ctx, m.scratch, square, 0, 0, size, time, pointer);
   ctx.restore();
-  if (!full) drawRoomPerson(ctx, room, m.inside, PLAYER, m.insideFacing, m.moving, time);
+  if (!full && !wide) drawRoomPerson(ctx, room, m.inside, PLAYER, m.insideFacing, m.moving, time);
   darken(ctx, frame.dark, width, height);
   const at = [stage.x, stage.y, stage.w, stage.h].map((n) => Math.round(n * scale)).join(',');
   if (canvas.dataset.stage !== at) canvas.dataset.stage = at;

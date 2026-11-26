@@ -8,6 +8,7 @@
 import type { SquareKind } from './northpole/map-options';
 import { shareText } from './northpole/visit';
 import { boothTools } from './booth-tools';
+import { visitSheet } from './visit-sheet';
 import { fullScreenPill } from './visit-full-screen';
 
 export interface ShareParts {
@@ -49,9 +50,12 @@ export function roomPills(frame: HTMLElement, panel: HTMLElement, level: boolean
   const tools = boothTools(frame);
   const copy = sharePill(tools.element);
   const full = fullScreenPill(frame, tools.element);
+  // On a phone the panel is a sheet under the booth, resized by its handle.
+  const sheet = visitSheet(panel);
   const stop = () => {
     full.stop();
     tools.stop();
+    sheet.stop();
   };
   return { copy, full: { stop } };
 }

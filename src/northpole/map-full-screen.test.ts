@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { startHarness, type MapHarness } from '../test-support/map-harness';
 import { click, key } from '../test-support/map-events';
 import { LEVEL, levelOptions, type Told } from '../test-support/map-fixtures';
-import { fullBox } from './full-screen';
+import { fullBox, wideBox } from './full-screen';
 import { levelWorld } from './level';
 
 let map: MapHarness | undefined;
@@ -47,5 +47,18 @@ describe('a square full screen', () => {
     for (let t = 3000; t < 5000; t += 100) running.step(t);
     expect(running.canvas.dataset.room).toBe(at);
     expect(told).not.toContainEqual(['leave']);
+  });
+});
+
+describe('a square on a phone held upright', () => {
+  it('draws the square across the width, under the way back, with no room round it', () => {
+    const told: Told = [];
+    const level = { name: 'Test Fair', tint: 'tint', world: levelWorld(LEVEL), id: 'upright' };
+    map = startHarness({ ...levelOptions(told), level }, { width: 390, height: 844 });
+    map.step(0);
+    map.controls.visit('attraction', 'cocoa');
+    for (let t = 100; t < 900; t += 100) map.step(t);
+    const box = wideBox(390);
+    expect(map.canvas.dataset.stage).toBe([box.x, box.y, box.w, box.h].join(','));
   });
 });
