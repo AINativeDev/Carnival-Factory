@@ -264,6 +264,23 @@ a {
   border-radius: var(--radius);
 }
 
+.intro-beat-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius);
+}
+
+.intro-beat-link:hover strong,
+.intro-beat-link:focus-visible strong {
+  text-decoration: underline;
+}
+
+.intro-beat-link:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 4px;
+}
+
 .intro-beat strong {
   color: var(--color-gold);
 }
@@ -318,12 +335,18 @@ a {
     gap: 8px;
   }
 
-  .intro-beat {
+  .intro-beat,
+  .intro-beat-link {
     display: grid;
     grid-template-columns: 84px 1fr;
     gap: 10px;
     align-items: center;
     text-align: left;
+  }
+
+  /* The first beat's link carries the row, so the beat itself is just its box. */
+  .intro-beat:has(> .intro-beat-link) {
+    display: block;
   }
 
   .intro-beat p {

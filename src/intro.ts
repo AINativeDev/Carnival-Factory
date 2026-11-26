@@ -71,6 +71,7 @@ export function startIntro(hash: string): Intro {
     const ways: [HTMLElement, IntroClose][] = [
       [parts.explore, 'explore'],
       [parts.build, 'build'],
+      [parts.write, 'build'],
     ];
     for (const [way, how] of ways)
       way.addEventListener('click', () => {

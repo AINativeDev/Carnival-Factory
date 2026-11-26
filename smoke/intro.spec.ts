@@ -155,3 +155,17 @@ test('with reduced motion, the intro shows its beats still', async ({ page }) =>
   );
   expect(animating).toBe(0);
 });
+
+test('"Write an issue" opens the booth form in a new tab and closes the intro', async ({
+  page,
+  context,
+}) => {
+  await context.route('https://github.com/**', (route) => route.fulfill({ body: 'the form' }));
+  await page.goto('#/');
+  const form = context.waitForEvent('page');
+  await dialog(page)
+    .getByRole('link', { name: /Write an issue/ })
+    .click();
+  expect((await form).url()).toBe(BOOTH_REQUEST_URL);
+  await expect(dialog(page)).toBeHidden();
+});
