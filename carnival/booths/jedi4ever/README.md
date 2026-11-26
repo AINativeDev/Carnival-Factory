@@ -10,6 +10,12 @@ above it.
   left and right, with lane dashes, snowbanks along the kerbs, lamps that sweep
   past and pool warm light on the snow, and shops on both sides with lit windows
   and wreathed doors. Far ahead are snowy rooftops under a dusk sky with stars.
+- **The look**: noir. The street is in black and white, with the little red
+  van the one thing in colour. It's chiaroscuro too: the street falls into
+  darkness all round, and the van's headlights throw one pale beam up the
+  road ahead, so the van and what it's about to meet are the brightest things
+  in the picture. The snow
+  and the dashboard stay bright on top.
 - **Snow**: it falls and streaks past the camera faster as you speed up.
 - **Driving**: steer with the pointer and the van follows it across the road. On
   touch, a tap on the left or right half steers that way. Speed builds slowly
@@ -33,4 +39,5 @@ the run in progress, who is steering and the best score, for one visit.
 - `game.ts` is the rules: `advance`, `speedAt`, `newRun` and `restart`, and
   `autopilot.ts` the `autopilotTarget`, tested in `game.test.ts`.
 - `view.ts` is the chase camera (`project`, `bend`); `sky.ts`, `street.ts`,
-  `snow.ts` and `vehicles.ts` draw the scene; `dashboard.ts` the dials.
+  `snow.ts` and `vehicles.ts` draw the scene, `lighting.ts` its light and shadow;
+  `dashboard.ts` the dials.

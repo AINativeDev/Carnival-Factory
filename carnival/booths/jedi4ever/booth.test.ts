@@ -15,7 +15,11 @@ class DrawingLog {
   font = '';
   textAlign = '';
   textBaseline = '';
+  globalCompositeOperation = '';
   createLinearGradient() {
+    return { addColorStop: () => undefined };
+  }
+  createRadialGradient() {
     return { addColorStop: () => undefined };
   }
   private count = () => {
