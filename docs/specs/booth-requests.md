@@ -66,12 +66,17 @@ accepted ones.
   - `tessl` added by a maintainer to a `booth-request`: `implement-booth`.
   - `tessl` added by a maintainer to any issue without `booth-request`:
     `implement`, the general action.
-  - `shepherd` answers reviews, comments and failed or passed checks on the
-    factory's `tessl/` pull requests; `follow-ticket-changes` follows issues
+  - `shepherd` answers reviews, comments and failed checks on the factory's
+    `tessl/` pull requests, and posts once that they're ready when their smoke
+    test passes; `follow-ticket-changes` follows issues
     and pull requests closing or `tessl` coming off; `merge-conflict-sweep`
     runs on every push to the default branch.
-  - `assess-booth-risk` runs when a `tessl/` branch's GitHub Actions checks
-    pass, and again when a maintainer takes `needs-human` off.
+  - `assess-booth-risk` runs when a `tessl/` pull request's `smoke` job, in
+    the Preview build, passes, because it judges the drawing from that run's
+    screenshot; and again when a maintainer takes `needs-human` off. Started
+    any earlier, it ends without a verdict rather than stopping the booth for
+    a person (enforced by: scripts/factory-triggers.test.ts, assess-booth-risk
+    skill).
   - `assess-badge-request` and `assess-advent-challenge` run when their
     issues are opened by a user.
 

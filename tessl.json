@@ -561,23 +561,25 @@
         }
       }
     },
-    "shepherd-pr-checks-passed": {
+    "shepherd-pr-smoke-passed": {
       "on": [
-        "github:check_suite.completed"
+        "github:check_run.completed"
       ],
       "when": {
-        "event.check_suite.conclusion": "success",
-        "event.check_suite.head_branch": {
+        "event.check_run.name": "smoke",
+        "event.check_run.conclusion": "success",
+        "event.check_run.app.slug": "github-actions",
+        "event.check_run.check_suite.head_branch": {
           "matches": "^tessl/"
         },
-        "event.check_suite.pull_requests.0.number": {
+        "event.check_run.pull_requests.0.number": {
           "exists": true
         }
       },
       "action": {
         "use": "shepherd",
         "inputs": {
-          "GITHUB_PR_NUMBER": "{{ event.check_suite.pull_requests.0.number }}",
+          "GITHUB_PR_NUMBER": "{{ event.check_run.pull_requests.0.number }}",
           "GITHUB_REPOSITORY": "{{ event.repository.full_name }}"
         }
       }
@@ -678,24 +680,25 @@
         }
       }
     },
-    "assess-booth-risk-checks-passed": {
+    "assess-booth-risk-smoke-passed": {
       "on": [
-        "github:check_suite.completed"
+        "github:check_run.completed"
       ],
       "when": {
-        "event.check_suite.conclusion": "success",
-        "event.check_suite.head_branch": {
+        "event.check_run.name": "smoke",
+        "event.check_run.conclusion": "success",
+        "event.check_run.app.slug": "github-actions",
+        "event.check_run.check_suite.head_branch": {
           "matches": "^tessl/"
         },
-        "event.check_suite.pull_requests.0.number": {
+        "event.check_run.pull_requests.0.number": {
           "exists": true
-        },
-        "event.check_suite.app.slug": "github-actions"
+        }
       },
       "action": {
         "use": "assess-booth-risk",
         "inputs": {
-          "GITHUB_PR_NUMBER": "{{ event.check_suite.pull_requests.0.number }}"
+          "GITHUB_PR_NUMBER": "{{ event.check_run.pull_requests.0.number }}"
         }
       }
     },
