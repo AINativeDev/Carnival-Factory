@@ -97,10 +97,10 @@ describe("a square's panel", () => {
     expect(card.querySelector<HTMLElement>('.history-empty')?.hidden).toBe(false);
   });
 
-  it('keeps one quiet row of actions, with the map link and the message under More', () => {
+  it('puts Share over the room, and the map link and message under More', () => {
     const { card } = open({ kind: 'booth', square: square('ana', "Ana's booth") });
-    const actions = the(card, '.visit-actions');
-    expect([...actions.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Share']);
+    expect(card.querySelector('.visit-copy')).toBeNull();
+    expect(card.parentElement?.querySelector('.visit-copy')?.textContent).toBe('Share');
     const options = the(card, '.visit-more');
     expect(options.querySelector('summary')?.textContent).toBe('More');
     expect(options.querySelector<HTMLAnchorElement>('.visit-map')?.getAttribute('href')).toBe(

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { wireShare } from './visit-share';
+import { sharePill, wireShare } from './visit-share';
 
 function parts() {
   document.body.innerHTML =
@@ -72,5 +72,79 @@ describe('wireShare', () => {
     wired.shareAsMine();
     expect(share.text.value).not.toBe(visitorLine);
     expect(share.options.open).toBe(true);
+  });
+});
+
+describe('the Share pill over the room', () => {
+  it('stands in the frame beside the panel, with its icon and its word, and leaves with the visit', () => {
+    document.body.innerHTML =
+      '<div class="map-frame"><details><textarea></textarea></details></div>';
+    const frame = document.querySelector('.map-frame') as HTMLElement;
+    const pill = sharePill(frame);
+    expect(pill.parentElement).toBe(frame);
+    expect(pill.classList.contains('visit-copy')).toBe(true);
+    expect(pill.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+    expect(pill.textContent).toBe('Share');
+    const wired = wireShare(
+      {
+        copy: pill,
+        text: frame.querySelector('textarea') as HTMLTextAreaElement,
+        options: frame.querySelector('details') as HTMLDetailsElement,
+      },
+      square,
+      link,
+    );
+    wired.stop();
+    expect(pill.isConnected).toBe(false);
+  });
+
+  it('says Copied on its word only, keeping its icon', async () => {
+    clipboard(() => Promise.resolve());
+    document.body.innerHTML = '<div><details><textarea></textarea></details></div>';
+    const frame = document.querySelector('div') as HTMLElement;
+    const pill = sharePill(frame);
+    wireShare(
+      {
+        copy: pill,
+        text: frame.querySelector('textarea') as HTMLTextAreaElement,
+        options: frame.querySelector('details') as HTMLDetailsElement,
+      },
+      square,
+      link,
+    ).refresh();
+    pill.click();
+    await vi.waitFor(() => {
+      expect(pill.textContent).toBe('Copied');
+    });
+    expect(pill.querySelector('svg')).not.toBeNull();
+  });
+
+  it("opens the phone's own share sheet with the line, instead of copying", async () => {
+    const shared: { text?: string }[] = [];
+    const writeText = vi.fn(() => Promise.resolve());
+    vi.stubGlobal('navigator', {
+      clipboard: { writeText },
+      share: (data: { text?: string }) => {
+        shared.push(data);
+        return Promise.reject(new Error('the visitor closed the sheet'));
+      },
+    });
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: query === '(pointer: coarse)' }));
+    const share = parts();
+    wireShare(share, square, link).refresh();
+    share.copy.click();
+    await vi.waitFor(() => {
+      expect(shared[0]?.text).toContain(link);
+    });
+    expect(writeText).not.toHaveBeenCalled();
+  });
+});
+
+describe("a level's Share pill", () => {
+  it("is marked as the level's, so it steps aside inside one of its squares", () => {
+    document.body.innerHTML = '<div></div>';
+    const frame = document.querySelector('div') as HTMLElement;
+    expect(sharePill(frame, true).dataset.level).toBe('');
+    expect(sharePill(frame).dataset.level).toBeUndefined();
   });
 });
