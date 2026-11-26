@@ -63,8 +63,12 @@ What runs on every pull request, and what each check guarantees.
   it leaves out an attraction a flag holds back, skips a check for a hidden
   feature, and `smoke/feature-flags.spec.ts` checks each hidden feature is gone.
 - Smoke scope: when every changed file is inside one booth's folder, CI sets
-  `SMOKE_ONLY=booth/<login>` and plays only that booth one by one; the
-  map-wide tests still run. Anything else plays every square.
+  `SMOKE_ONLY=booth/<login>` and runs only the specs that play that booth
+  (`BOOTH_ONLY_SPECS`: `squares-play` for its screenshot, frame budget and the
+  map with it on, and `flashing`), in Chromium, with no page coverage and no
+  combined coverage step. A booth runs sandboxed and can't change the site, so
+  nothing else needs to run for it ([ADR 0051](../adr/0051-booth-only-smoke.md)).
+  Anything else runs the whole suite in both browsers.
 
 ## Rules
 
@@ -86,9 +90,10 @@ What runs on every pull request, and what each check guarantees.
 - Every booth, attraction and level fits the size budget, and every real
   level passes `validateLevel` (enforced by: scripts/square-size.test.ts,
   src/northpole/level.test.ts).
-- The smoke test plays only the changed booth when nothing else changes, and
-  every square otherwise (enforced by: scripts/smoke-scope.ts,
-  scripts/smoke-scope.test.ts, .github/workflows/preview-build.yml).
+- The smoke test plays only the changed booth, in its own specs, when nothing
+  else changes, and the whole suite otherwise (enforced by:
+  scripts/smoke-scope.ts, scripts/smoke-scope.test.ts, playwright.config.ts,
+  .github/workflows/preview-build.yml).
 - The factory's sandbox can't start a browser, so agents there never run the
   smoke test; CI runs it (enforced by: the instructions in tessl.json).
 - No native dependencies: `npm ci` is the whole setup for `npm run check`
