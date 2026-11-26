@@ -57,7 +57,11 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           BASE: ${{ github.base_ref }}
-        run: node scripts/baselines-shrink.ts "origin/$BASE"
+        # It fetches the base itself: the coverage step that also fetches it is
+        # skipped on a booth's or level's folder check.
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE"
+          node scripts/baselines-shrink.ts "origin/$BASE"
       - run: npm run build
 
   shell:
