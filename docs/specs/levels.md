@@ -140,8 +140,9 @@ The Recording Studio, `carnival/levels/the-studio/`, and The Year in Review,
 - A pull request that only changes one level's folder walks just that level
   in the smoke test, or rides it, going inside each of its squares, and saves
   a screenshot from its arrival point and one of each square for the risk
-  check (`SMOKE_ONLY=level/<login>`, enforced by: scripts/smoke-scope.ts,
-  scripts/smoke-scope.test.ts, smoke/levels.spec.ts).
+  check, and measures each square for flashing
+  (`SMOKE_ONLY=level/<login>`, enforced by: scripts/smoke-scope.ts,
+  scripts/smoke-scope.test.ts, smoke/levels.spec.ts, smoke/flashing.spec.ts).
 - A North Pole level (`NORTH_POLE_LEVELS` in
   `src/northpole/north-pole-levels.ts`) says "A level by the North Pole", and
   its squares' panels credit nobody. Its landmark is the attraction with the

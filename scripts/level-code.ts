@@ -141,5 +141,10 @@ export function checkLevelCode(folder: string, files: readonly SourceFile[]): Co
   for (const [id, own] of squares) {
     problems.push(...checkSquareCode(`${folder}squares/${id}/`, own));
   }
+  // A folder with no level.ts has no level to pass: the page and the level
+  // smoke test only find levels by it, so nothing else would say so.
+  if (!files.some((file) => file.path === `${folder}level.ts`)) {
+    problems.push({ file: `${folder}level.ts`, line: 0, rule: 'level-data', message: LEVEL_DATA });
+  }
   return problems;
 }

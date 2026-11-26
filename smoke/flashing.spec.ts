@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from './coverage';
 import {
@@ -9,12 +9,14 @@ import {
   type Sample,
 } from '../scripts/flashing.ts';
 import { attractionShown } from '../src/feature-flag-names';
+import { isNorthPoleLevel } from '../src/northpole/north-pole-levels';
 import { FLAGS } from './support/feature-flags';
 
 /**
- * Seizure safety: plays every booth and attraction on the back wall of its room and measures
- * how often it flashes (see scripts/flashing.ts). Nothing may flash more than
- * three times a second.
+ * Seizure safety: plays every booth and attraction, and every square of a
+ * participant's open level, on the back wall of its room and measures how often
+ * it flashes (see scripts/flashing.ts). Nothing may flash more than three times
+ * a second. A participant's level merges on its own on this check (ADR 0043).
  */
 const root = join(import.meta.dirname, '..');
 const squares = (['booth', 'attraction'] as const).flatMap((kind) =>
@@ -25,15 +27,37 @@ const squares = (['booth', 'attraction'] as const).flatMap((kind) =>
     .map((id) => ({ kind, id })),
 );
 
-// On a pull request that only changes one booth, CI plays just that booth
-// one by one (scripts/smoke-scope.ts). The map-wide tests still see every square.
+const disabled = JSON.parse(readFileSync(join(root, 'src/northpole/disabled.json'), 'utf8')) as {
+  levels?: string[];
+};
+const closed = new Set((disabled.levels ?? []).map((login) => login.toLowerCase()));
+const levels = join(root, 'carnival', 'levels');
+const levelSquares = readdirSync(levels)
+  .filter((login) => existsSync(join(levels, login, 'level.ts')))
+  .filter((login) => !isNorthPoleLevel(login) && !closed.has(login))
+  .flatMap((login) =>
+    existsSync(join(levels, login, 'squares'))
+      ? readdirSync(join(levels, login, 'squares'))
+          .filter((id) => existsSync(join(levels, login, 'squares', id, 'square.ts')))
+          .map((id) => ({ kind: 'level' as const, id: `${login}/${id}`, scope: `level/${login}` }))
+      : [],
+  );
+const everything = [
+  ...squares.map((square) => ({ ...square, scope: `${square.kind}/${square.id}` })),
+  ...levelSquares,
+];
+
+// On a pull request that only changes one booth or one level, CI plays just
+// that booth, or that level's squares, one by one (scripts/smoke-scope.ts).
+// The map-wide tests still see every square.
 const only = process.env.SMOKE_ONLY;
-const played = only ? squares.filter(({ kind, id }) => `${kind}/${id}` === only) : squares;
+const played = only ? everything.filter(({ scope }) => scope === only) : everything;
 
 for (const { kind, id } of played) {
   test(`${kind} ${id} doesn't flash more than ${MAX_PER_SECOND} times a second`, async ({
     page,
   }) => {
+    // #/level/<login>/<id> puts the player inside that square, like #/booth/<login>.
     await page.goto(`#/${kind}/${id}`);
     await expect(page.locator('.map-canvas')).toHaveAttribute('data-stage', /^\d+,\d+,\d+,\d+$/);
     await page.waitForTimeout(1500);

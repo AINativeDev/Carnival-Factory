@@ -100,6 +100,13 @@ describe('checkLevelCode', () => {
     ).toContain('hidden-text');
   });
 
+  it('sends a folder with no level.ts to a person', () => {
+    expect(rules({})).toContain('level-data');
+    expect(rules({ 'README.md': '# Elf', 'squares/cocoa/square.ts': square })).toContain(
+      'level-data',
+    );
+  });
+
   it('holds only level.ts, Markdown and its squares', () => {
     expect(rules({ 'plot.json': '{"plot": 3}' })).toContain('files');
     expect(rules({ 'helper.ts': 'export const x = 1;' })).toContain('files');

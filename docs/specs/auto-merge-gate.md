@@ -68,7 +68,8 @@ scripts/auto-merge-booths-needs-human.test.ts):
 5. **Checks pass** (soft): `check`, `ownership`, `build` and `smoke` succeed
    (enforced by: .github/workflows/ci.yml, booth-ownership.yml,
    preview-build.yml). A level's smoke run walks just that level, or rides
-   it, and goes inside each of its squares (scripts/smoke-scope.ts).
+   it, goes inside each of its squares and measures each one for flashing
+   (scripts/smoke-scope.ts, smoke/flashing.spec.ts).
 6. **Code review approves** (soft): the latest `tessl-reviewer[bot]` review
    with a result, on the head commit, says `approved=true` (enforced by:
    Tessl Code Review, .tessl-code-review.yml).
