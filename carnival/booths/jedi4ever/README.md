@@ -10,6 +10,8 @@ above it.
   left and right, with lane dashes, snowbanks along the kerbs, lamps that sweep
   past and pool warm light on the snow, and shops on both sides with lit windows
   and wreathed doors. Far ahead are snowy rooftops under a dusk sky with stars.
+- **The snowman**: now and then a small snowman in a red scarf stands on the
+  snowbank and waves a twig arm as the van comes by (`snowman.ts`).
 - **Snow**: it falls and streaks past the camera faster as you speed up.
 - **Driving**: steer with the pointer and the van follows it across the road. On
   touch, a tap on the left or right half steers that way. Speed builds slowly
