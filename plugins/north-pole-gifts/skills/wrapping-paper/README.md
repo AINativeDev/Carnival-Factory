@@ -25,7 +25,7 @@ person adds the `wrapping-paper` label to an issue.
   "actions": {
     "wrapping-paper": {
       "agent": "claude",
-      "skill": "carnival-christmas-public/north-pole-gifts#wrapping-paper"
+      "skill": "carnival-factory/north-pole-gifts#wrapping-paper"
     }
   },
   "triggers": {

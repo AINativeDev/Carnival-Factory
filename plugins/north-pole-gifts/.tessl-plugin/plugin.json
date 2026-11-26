@@ -1,5 +1,5 @@
 {
-  "name": "carnival-christmas-public/north-pole-gifts",
+  "name": "carnival-factory/north-pole-gifts",
   "version": "0.1.0",
   "description": "The North Pole's gift shelf: small factory loops for any repository. Bump one outdated dependency a week, check the README's commands and links, label new issues, list stale branches and drafts, and draft release notes. Each only reads, comments or opens issues and pull requests.",
   "private": true,
