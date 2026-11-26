@@ -6,7 +6,7 @@ import { LEVEL, levelOptions, northPoleOptions, square } from '../test-support/m
 import { levelWorld } from './level';
 import { layWorld } from './map-plan';
 import type { MapOptions } from './map-options';
-import type { Plot } from './world';
+import type { Spot } from './world';
 
 let map: MapHarness | undefined;
 beforeEach(() => vi.spyOn(console, 'error').mockImplementation(() => undefined));
@@ -31,9 +31,9 @@ describe('a frame of the map', () => {
   it('points the way at the edge of the screen to a picked square out of view', () => {
     const options = northPoleOptions([]);
     const world = layWorld(options, []);
-    const far = (plot: Plot) => Math.hypot(plot.x - world.start.x, plot.y - world.start.y);
-    const squares = world.plots.filter(
-      (plot) => plot.kind === 'booth' || plot.kind === 'attraction',
+    const far = (spot: Spot) => Math.hypot(spot.x - world.start.x, spot.y - world.start.y);
+    const squares = world.spots.filter(
+      (spot) => spot.kind === 'booth' || spot.kind === 'attraction',
     );
     const farthest = squares.sort((a, b) => far(b) - far(a)).at(0);
     if (farthest?.kind !== 'booth' && farthest?.kind !== 'attraction') throw new Error('no square');
@@ -60,7 +60,7 @@ describe('a frame of the map', () => {
     expect(running.canvas.width).toBe(1200);
   });
 
-  it('goes inside before it has drawn the map, and draws the map for a plot whose square is gone', () => {
+  it('goes inside before it has drawn the map, and draws the map for a spot whose square is gone', () => {
     const running = start(levelOptions([]), { reduced: true });
     running.controls.visit('attraction', 'skates');
     running.step(0);
@@ -87,24 +87,24 @@ describe('a frame of the map', () => {
 describe('the tags and footprints round the North Pole', () => {
   const options = northPoleOptions([]);
   const world = layWorld(options, []);
-  const first = (kind: Plot['kind']) => world.plots.find((plot) => plot.kind === kind);
+  const first = (kind: Spot['kind']) => world.spots.find((spot) => spot.kind === kind);
 
-  it('names a platform and an open plot under the mouse', () => {
+  it('names a platform and an open spot under the mouse', () => {
     const running = start(options);
     for (const kind of ['platform', 'open'] as const) {
-      const plot = first(kind);
-      if (!plot) throw new Error(`no ${kind} plot`);
+      const spot = first(kind);
+      if (!spot) throw new Error(`no ${kind} spot`);
       running.controls.walkTo('booth', 'jedi4ever');
       running.controls.jumpTo('booth', 'jedi4ever');
       frames(running, 0, 300);
-      const centre = { x: plot.x + plot.w / 2, y: plot.y + plot.h / 2 };
+      const centre = { x: spot.x + spot.w / 2, y: spot.y + spot.h / 2 };
       point(running, 'pointermove', screenAt(running, centre));
       running.step(400);
-      expect(running.tag()?.dataset.plot).toMatch(new RegExp(`^${kind}:`));
+      expect(running.tag()?.dataset.spot).toMatch(new RegExp(`^${kind}:`));
     }
   });
 
-  it('leaves footprints to the open plot being claimed, until the player goes elsewhere', () => {
+  it('leaves footprints to the open spot being claimed, until the player goes elsewhere', () => {
     const running = start(options);
     running.controls.jumpTo('booth', 'dancer');
     running.step(0);

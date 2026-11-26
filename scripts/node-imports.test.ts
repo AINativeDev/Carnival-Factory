@@ -3,7 +3,7 @@
  * the types but, unlike Vite and Vitest, never guesses a file's extension. A
  * relative import without `.ts` passes every unit test and then fails in CI
  * with ERR_MODULE_NOT_FOUND, as the auto-merge gate did through
- * src/northpole/plots.ts (#235). So every file a workflow's script reaches,
+ * src/northpole/spots.ts (#235). So every file a workflow's script reaches,
  * in scripts/ or src/, names its imports in full.
  */
 import {
@@ -66,12 +66,12 @@ describe('the scripts the workflows run with node', () => {
     mkdirSync(join(root, 'square-code'));
     const files: Record<string, string> = {
       'entry.ts': "import { gate } from './gate.ts';",
-      'gate.ts': "import './plots';\nimport './square-code';\nimport './square-code.ts';",
+      'gate.ts': "import './spots';\nimport './square-code';\nimport './square-code.ts';",
       'square-code.ts': '',
     };
     for (const [name, text] of Object.entries(files)) writeFileSync(join(root, name), text);
     expect(missingImports('entry.ts', root)).toEqual([
-      'gate.ts: ./plots',
+      'gate.ts: ./spots',
       'gate.ts: ./square-code',
     ]);
   });

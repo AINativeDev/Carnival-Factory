@@ -44,7 +44,7 @@ for (const viewport of VIEWPORTS) {
       await page.goto('#/?attraction=the-factory');
       await expect(canvas).toHaveAttribute('data-selected', 'attraction:the-factory');
       const prompt = page.locator('.map-prompt');
-      await expect(prompt).toHaveAttribute('data-plot', 'attraction:the-factory');
+      await expect(prompt).toHaveAttribute('data-spot', 'attraction:the-factory');
       await expect(prompt).toContainText('The Factory');
       await canvas.focus();
       await page.keyboard.press('e');
@@ -75,13 +75,13 @@ for (const viewport of VIEWPORTS) {
       else await page.keyboard.press(keys[rides++ % keys.length] ?? 'Space');
     };
     for (const { id } of theFactory.squares ?? []) {
-      const stall = world.plots.find((plot) => plot.kind === 'attraction' && plot.id === id);
+      const stall = world.spots.find((spot) => spot.kind === 'attraction' && spot.id === id);
       const stop = Object.entries(FACTORY_TOUR).find(([key]) => key === id)?.[1];
       if (!stall || !stop) throw new Error(`The Factory's ${id} has no stall or no step`);
       await test.step(`the ${id} station`, async () => {
         await rideTo(page, world, stall, rideOn);
         const prompt = page.locator('.map-prompt');
-        await expect(prompt).toHaveAttribute('data-plot', `attraction:${id}`);
+        await expect(prompt).toHaveAttribute('data-spot', `attraction:${id}`);
         // The call to action bobs gently, so it never stands still for a click to wait for.
         if (phone) await prompt.click({ force: true });
         else await page.keyboard.press('e');
@@ -101,7 +101,7 @@ for (const viewport of VIEWPORTS) {
     }
 
     await test.step('round to the sleigh home', async () => {
-      const home = world.plots.find((plot) => plot.kind === 'exit');
+      const home = world.spots.find((spot) => spot.kind === 'exit');
       if (!home) throw new Error('The Factory has no sleigh home');
       await rideTo(page, world, home, rideOn);
       await expect(button).toContainText('Start the ride');

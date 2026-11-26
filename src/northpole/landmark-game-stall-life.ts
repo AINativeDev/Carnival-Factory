@@ -8,9 +8,9 @@
  */
 import { glow } from './brushes';
 import { elf, outfit, swing } from './elf';
-import { pennant, spot } from './landmark-kit';
+import { pennant, onSpot } from './landmark-kit';
 import { theme } from './theme';
-import type { Plot, Tile } from './world';
+import type { Spot, Tile } from './world';
 
 const { colors } = theme;
 
@@ -41,9 +41,9 @@ export function releaseFrom(feet: Tile): Tile {
   return { x: feet.x + 5 + arm.x, y: feet.y - 24 + arm.y - HELD };
 }
 
-/** The lamp under the hood and the candy canes on the header, at the plot's `top`. */
-export function hoodLights(ctx: CanvasRenderingContext2D, plot: Plot, top: number, time: number) {
-  const lamp = spot(plot, 0.5, 0.6, top - 24);
+/** The lamp under the hood and the candy canes on the header, at the spot's `top`. */
+export function hoodLights(ctx: CanvasRenderingContext2D, spot: Spot, top: number, time: number) {
+  const lamp = onSpot(spot, 0.5, 0.6, top - 24);
   glow(ctx, lamp.x, lamp.y + 30, 70, 0.9);
   ctx.fillStyle = colors.lantern;
   ctx.beginPath();
@@ -53,7 +53,7 @@ export function hoodLights(ctx: CanvasRenderingContext2D, plot: Plot, top: numbe
   ctx.strokeStyle = colors.berry;
   ctx.lineWidth = 3;
   for (const [n, along] of [0.24, 0.42, 0.6, 0.78].entries()) {
-    const hook = spot(plot, along, 0.07, 140);
+    const hook = onSpot(spot, along, 0.07, 140);
     const sway = (swing(time, 3200, n * 0.3) - 0.5) * 4;
     ctx.beginPath();
     ctx.arc(hook.x - 3, hook.y, 3, Math.PI, 0);
@@ -78,16 +78,16 @@ function ticket(ctx: CanvasRenderingContext2D, hand: Tile) {
  */
 export function stallLife(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   stage: number,
   posts: number,
   time: number,
   t: number,
 ) {
-  pennant(ctx, spot(plot, 0.085, 0.07, stage + posts), 26, colors.pine, time);
-  pennant(ctx, spot(plot, 0.915, 0.07, stage + posts), 26, colors.berry, time);
+  pennant(ctx, onSpot(spot, 0.085, 0.07, stage + posts), 26, colors.pine, time);
+  pennant(ctx, onSpot(spot, 0.915, 0.07, stage + posts), 26, colors.berry, time);
   for (const [n, deep] of [0.34, 0.12].entries()) {
-    const feet = spot(plot, 0.02, deep, stage);
+    const feet = onSpot(spot, 0.02, deep, stage);
     // Shuffling from foot to foot while they wait.
     const shuffle = (swing(time, 2600, n * 0.5) - 0.5) * 2;
     const look = outfit(n ? 0.6 : 0.1);
@@ -98,7 +98,7 @@ export function stallLife(
     });
     ticket(ctx, hands.right);
   }
-  const feet = spot(plot, THROWER.along, THROWER.deep, stage);
+  const feet = onSpot(spot, THROWER.along, THROWER.deep, stage);
   const hands = elf(ctx, feet.x, feet.y, {
     ...outfit(0.3),
     left: { x: -6, y: 4 },

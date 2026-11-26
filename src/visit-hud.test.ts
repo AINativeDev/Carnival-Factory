@@ -53,7 +53,7 @@ describe("a square's panel", () => {
   });
 
   it("hides the badges' line for a square the build knows nothing about", () => {
-    const { card } = open({ kind: 'booth', square: square('nobody-here', 'Empty plot') });
+    const { card } = open({ kind: 'booth', square: square('nobody-here', 'Empty spot') });
     expect(card.querySelector<HTMLElement>('.visit-craft')?.hidden).toBe(true);
   });
 

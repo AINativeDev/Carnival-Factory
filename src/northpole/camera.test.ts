@@ -163,8 +163,8 @@ describe('framing', () => {
 
 describe('fronts', () => {
   it('maps each square onto the face we see on its door side', () => {
-    for (const plot of world.plots) {
-      const face = faceOf(plot);
+    for (const spot of world.spots) {
+      const face = faceOf(spot);
       // Left to right on screen, along the ground, stepping out towards the viewer.
       expect(face.a.x).toBeLessThan(face.b.x);
       expect(face.out.y).toBeGreaterThan(0);

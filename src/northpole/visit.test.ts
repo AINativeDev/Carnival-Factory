@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import pinned from './plots.json';
+import pinned from './spots.json';
 import {
   inBox,
-  nearestOpenPlot,
+  nearestOpenSpot,
   placeTag,
   shareLink,
   sharePath,
@@ -12,30 +12,30 @@ import {
   nearYou,
 } from './visit';
 import { walkAlong } from './walking';
-import { type Plot } from './world';
+import { type Spot } from './world';
 import { buildWorld } from './world-build';
 
 const ATTRACTIONS = ['big-top', 'cocoa-stand', 'ferris-wheel', 'frozen-pond', 'sleigh-coaster'];
 const world = buildWorld(ATTRACTIONS, ['elf-0', 'elf-1', 'jedi4ever'], pinned);
-const plotOf = (id: string) => world.plots.find((plot) => plot.id === id)!;
+const spotOf = (id: string) => world.spots.find((spot) => spot.id === id)!;
 
-describe('the plot next door', () => {
-  it('walks to the open plot nearest the player, from their own tile', () => {
-    const from = plotOf('jedi4ever').door;
-    const way = nearestOpenPlot(world, from)!;
-    expect(way.plot.kind).toBe('open');
+describe('the spot next door', () => {
+  it('walks to the open spot nearest the player, from their own tile', () => {
+    const from = spotOf('jedi4ever').door;
+    const way = nearestOpenSpot(world, from)!;
+    expect(way.spot.kind).toBe('open');
     expect(way.path[0]).toEqual(from);
-    expect(way.path.at(-1)).toEqual(way.plot.door);
-    const distance = (plot: Plot) => Math.hypot(plot.door.x - from.x, plot.door.y - from.y);
-    for (const plot of world.plots.filter((p) => p.kind === 'open'))
-      expect(distance(way.plot)).toBeLessThanOrEqual(distance(plot));
+    expect(way.path.at(-1)).toEqual(way.spot.door);
+    const distance = (spot: Spot) => Math.hypot(spot.door.x - from.x, spot.door.y - from.y);
+    for (const spot of world.spots.filter((p) => p.kind === 'open'))
+      expect(distance(way.spot)).toBeLessThanOrEqual(distance(spot));
   });
 
   it('gets the player there', () => {
-    const way = nearestOpenPlot(world, world.start)!;
+    const way = nearestOpenSpot(world, world.start)!;
     const { position, path } = walkAlong(world.start, way.path, 1000);
     expect(path).toEqual([]);
-    expect(position).toEqual(way.plot.door);
+    expect(position).toEqual(way.spot.door);
   });
 });
 

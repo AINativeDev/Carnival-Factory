@@ -20,7 +20,7 @@ A booth is one participant's square on the map: the folder
   Share it as yours and the owner's season card (see
   [visit panel](visit-panel-and-history.md)).
 - A remix starts from "Start from @<login>'s <name>". The factory copies
-  `carnival/booths/<login>/` into the author's folder, except `plot.json`, sets
+  `carnival/booths/<login>/` into the author's folder, except `spot.json`, sets
   `id` to the author's login and credits the original at the top of the
   README. It never touches `carnival/booths/<login>/`.
 
@@ -54,7 +54,7 @@ A booth is one participant's square on the map: the folder
   true to the code (enforced by: Tessl Code Review, review-house-rules lens).
 - A test beside a booth may import `vitest` and its own folder, nothing else
   (enforced by: ESLint house rules, scripts/square-lint.test.ts).
-- `plot.json`, if present, holds only `{ "plot": <number> }` and maybe
+- `spot.json`, if present, holds only `{ "spot": <number> }` and maybe
   `"issue": <number>`, and only a new booth's first pull request writes it
   (enforced by: scripts/square-code.ts in the gate,
   scripts/square-code.test.ts).
@@ -75,5 +75,5 @@ A booth is one participant's square on the map: the folder
 `src/northpole/booths.test.ts`, `scripts/ownership.test.ts`,
 `scripts/square-lint.test.ts`, `src/northpole/links.test.ts`,
 `src/northpole/stall-default.test.ts` (a shape picked from the id),
-`src/northpole/render-pins-plots.test.ts` (every stall shape pinned),
+`src/northpole/render-pins-spots.test.ts` (every stall shape pinned),
 `smoke/stall-shapes.spec.ts`, each booth's own `booth.test.ts`.

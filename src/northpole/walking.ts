@@ -1,11 +1,11 @@
 /**
  * Walking a world step by step: where a walker can stand, moving them with
- * the arrow keys and along a planned walk, which plot's door they're at, and
+ * the arrow keys and along a planned walk, which spot's door they're at, and
  * the elves strolling about on their own. Plain functions, so the map moves
  * the player and the tests check it the same way. Planning a walk is in
  * `pathfinding.ts`.
  */
-import { key, type Plot, type Stroll, type Tile, type World } from './world';
+import { key, type Spot, type Stroll, type Tile, type World } from './world';
 
 /** Whether you can stand on the tile at (x, y). */
 export function walkable(world: World, x: number, y: number): boolean {
@@ -106,13 +106,13 @@ export function walkAlong(
   return { position: at, path: rest };
 }
 
-/** The plot whose door a walker at `position` is standing at, if any. */
-export function plotAtDoor(world: World, position: Tile): Plot | undefined {
-  let best: Plot | undefined;
+/** The spot whose door a walker at `position` is standing at, if any. */
+export function spotAtDoor(world: World, position: Tile): Spot | undefined {
+  let best: Spot | undefined;
   let nearest = 0.75;
-  for (const plot of world.plots) {
-    const gap = Math.hypot(plot.door.x - position.x, plot.door.y - position.y);
-    if (gap < nearest) [best, nearest] = [plot, gap];
+  for (const spot of world.spots) {
+    const gap = Math.hypot(spot.door.x - position.x, spot.door.y - position.y);
+    if (gap < nearest) [best, nearest] = [spot, gap];
   }
   return best;
 }

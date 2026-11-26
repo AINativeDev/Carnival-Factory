@@ -67,7 +67,7 @@ describe('when the intro shows', () => {
       '#/advent',
       '#/season/ana',
       '#/keep-posted',
-      '#/plot/ana',
+      '#/spot/ana',
     ])
       expect(showsOnArrival(hash, false)).toBe(false);
   });

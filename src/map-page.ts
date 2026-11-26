@@ -19,7 +19,7 @@ import { levels } from './northpole/levels';
 import { isNorthPoleLevel } from './northpole/north-pole-levels';
 import { startMap, type MapControls, type SquareKind, type StationEntry } from './northpole/map';
 import { PEOPLES_CHOICE } from './northpole/peoples-choice-standings';
-import { sitesToRemember } from './northpole/plots';
+import { sitesToRemember } from './northpole/spots';
 import { theme } from './northpole/theme';
 import { levelLink, squareLink } from './route';
 
@@ -154,7 +154,7 @@ function renderHud(page: Page, map: MapControls, canvas: HTMLCanvasElement) {
 
   backToTheMap(page, canvas);
   the(app, '.hud-claim', HTMLElement).addEventListener('click', () => {
-    map.walkToOpenPlot();
+    map.walkToOpenSpot();
     canvas.focus();
   });
   overview.addEventListener('click', () => {

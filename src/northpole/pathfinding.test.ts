@@ -8,12 +8,12 @@ import { ATTRACTIONS, booths } from '../test-support/sample-squares';
 describe('finding the way', () => {
   const world = buildWorld(ATTRACTIONS, booths(10));
 
-  it('finds a way from the town square to every plot', () => {
-    for (const plot of world.plots) {
-      const path = findPath(world, world.start, plot.door);
-      assert(path, `${plot.kind} ${plot.id ?? plot.number}`);
+  it('finds a way from the town square to every spot', () => {
+    for (const spot of world.spots) {
+      const path = findPath(world, world.start, spot.door);
+      assert(path, `${spot.kind} ${spot.id ?? spot.number}`);
       for (const step of path) expect(walkable(world, step.x, step.y)).toBe(true);
-      expect(path.at(-1)).toEqual(plot.door);
+      expect(path.at(-1)).toEqual(spot.door);
     }
   });
 

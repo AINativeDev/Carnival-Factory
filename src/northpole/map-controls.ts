@@ -7,7 +7,7 @@
 import { islandBounds, islandCorners } from './camera';
 import { ENTRANCE } from './interior';
 import { resize } from './map-layers';
-import { plotOf } from './map-labels';
+import { spotOf } from './map-labels';
 import { named, select } from './map-open';
 import type { MapControls } from './map-options';
 import { islandBox, replan } from './map-plan';
@@ -15,9 +15,9 @@ import type { MapRun } from './map-state';
 import { walkToward } from './map-walk';
 import { boardAt } from './ride-map';
 import { faceOf } from './faces';
-import { nearYou, nearestOpenPlot } from './visit';
-import { type Plot } from './world';
-import { plotAtDoor } from './walking';
+import { nearYou, nearestOpenSpot } from './visit';
+import { type Spot } from './world';
+import { spotAtDoor } from './walking';
 import { nearestStand } from './walking';
 
 /** The controls for a running map; `stop` stops its frames and lets go of the page. */
@@ -29,26 +29,26 @@ export function mapControls(m: MapRun, stop: () => void): MapControls {
     stop,
     walkTo(kind, id) {
       leaveFirst();
-      const plot = plotOf(m, kind, id);
-      if (!plot) return;
-      select(m, plot);
+      const spot = spotOf(m, kind, id);
+      if (!spot) return;
+      select(m, spot);
       m.selectedAt = undefined;
-      walkToward(m, [plot.door]);
+      walkToward(m, [spot.door]);
       m.trailing = m.path.length > 0;
       m.footprints = [];
     },
     jumpTo(kind, id) {
-      const plot = plotOf(m, kind, id);
-      if (!plot) return;
+      const spot = spotOf(m, kind, id);
+      if (!spot) return;
       leaveFirst();
-      m.player = { ...plot.door };
-      boardAt(m, plot.door);
+      m.player = { ...spot.door };
+      boardAt(m, spot.door);
       m.path = [];
       backToCarnival(m);
       // The camera comes in on the square, and eases back out a little later, as after a walk.
       m.walking = 1;
       m.movedAt = performance.now();
-      select(m, plot);
+      select(m, spot);
       m.selectedAt = undefined;
     },
     get selected() {
@@ -58,8 +58,8 @@ export function mapControls(m: MapRun, stop: () => void): MapControls {
       select(m, undefined);
     },
     nearest(count) {
-      const squares = m.world.plots.filter(
-        (plot) => plot.kind === 'booth' || plot.kind === 'attraction',
+      const squares = m.world.spots.filter(
+        (spot) => spot.kind === 'booth' || spot.kind === 'attraction',
       );
       return nearYou(squares, m.player, count).map(named);
     },
@@ -76,22 +76,22 @@ export function mapControls(m: MapRun, stop: () => void): MapControls {
     },
     get sites() {
       // A construction site's id is the login it's being built for.
-      return m.world.plots.filter((plot) => plot.kind === 'site').map((plot) => String(plot.id));
+      return m.world.spots.filter((spot) => spot.kind === 'site').map((spot) => String(spot.id));
     },
-    walkToOpenPlot() {
+    walkToOpenSpot() {
       leaveFirst();
-      const way = nearestOpenPlot(m.world, m.player);
+      const way = nearestOpenSpot(m.world, m.player);
       if (!way) return;
-      // The open plot is where they're headed now, so its call to action is the one that shows.
+      // The open spot is where they're headed now, so its call to action is the one that shows.
       select(m, undefined);
       m.path = way.path;
     },
     claimNextDoor() {
-      const way = nearestOpenPlot(m.world, m.player);
+      const way = nearestOpenSpot(m.world, m.player);
       if (!way) return;
       select(m, undefined);
       m.path = way.path;
-      m.claiming = way.plot;
+      m.claiming = way.spot;
       m.footprints = [];
     },
     visit: (kind, id) => visit(m, kind, id),
@@ -132,19 +132,19 @@ function backToCarnival(m: MapRun) {
 
 /** Takes the player inside a square, with a short fade. Returns whether it's there. */
 function visit(m: MapRun, kind: string, id: string) {
-  const plot = m.world.plots.find((p) => p.kind === kind && p.id === id);
-  if (!plot) return false;
-  if (m.visiting === plot) return true;
+  const spot = m.world.spots.find((p) => p.kind === kind && p.id === id);
+  if (!spot) return false;
+  if (m.visiting === spot) return true;
   // The player goes in at the door, and whatever walk they were on ends there.
-  if (plotAtDoor(m.world, m.player) !== plot) m.player = { ...plot.door };
+  if (spotAtDoor(m.world, m.player) !== spot) m.player = { ...spot.door };
   // In a ride level the car takes them to the square's station, where they come out again.
-  boardAt(m, plot.door);
+  boardAt(m, spot.door);
   m.path = [];
   m.claiming = undefined;
   m.held.clear();
   backToCarnival(m);
   if (!m.visiting) m.fading = performance.now();
-  m.visiting = plot;
+  m.visiting = spot;
   select(m, undefined);
   m.inside = { ...ENTRANCE };
   m.insideGoal = undefined;
@@ -155,16 +155,16 @@ function visit(m: MapRun, kind: string, id: string) {
 }
 
 /**
- * The world was laid out again, and its plots are new objects: keeps hold of
+ * The world was laid out again, and its spots are new objects: keeps hold of
  * the same squares in it, puts the player on clear ground in case a new site
  * stands where they are, plans what's left of their walk again, and redraws
  * the island.
  */
 function keepHold(m: MapRun) {
-  const same = (plot: Plot | undefined) =>
-    plot &&
-    m.world.plots.find(
-      (p) => p.kind === plot.kind && p.id === plot.id && (p.id || p.number === plot.number),
+  const same = (spot: Spot | undefined) =>
+    spot &&
+    m.world.spots.find(
+      (p) => p.kind === spot.kind && p.id === spot.id && (p.id || p.number === spot.number),
     );
   m.selected = same(m.selected);
   m.near = same(m.near);

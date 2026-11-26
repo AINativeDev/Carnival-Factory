@@ -38,8 +38,8 @@ describe('parseHash', () => {
     });
   });
 
-  it('keeps links from before booths were called plots', () => {
-    expect(parseHash('#/plot/jedi4ever')).toEqual({ view: 'legacy', id: 'jedi4ever' });
+  it('keeps links from before booths were called spots', () => {
+    expect(parseHash('#/spot/jedi4ever')).toEqual({ view: 'legacy', id: 'jedi4ever' });
   });
 
   it('reads a deep link to a booth or an attraction on the map', () => {

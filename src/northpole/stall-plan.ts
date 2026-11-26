@@ -1,6 +1,6 @@
 /**
  * The plan of a booth's stall and an attraction's pavilion, as numbers: how
- * tall each part stands, each stall shape's outline on its plot and its walls
+ * tall each part stands, each stall shape's outline on its spot and its walls
  * and roof, its colours, and where a click opens it. Kept as plain functions
  * apart from the drawing, so the map, the tests and every shape share one plan.
  */
@@ -10,7 +10,7 @@ import type { Owner } from './name-board';
 import { SHAPE_PLANS } from './stall-catalogue';
 import type { NorthPoleSquare, StallShape, StallStyle } from './square';
 import { theme } from './theme';
-import type { Box, Plot, Tile } from './world';
+import type { Box, Spot, Tile } from './world';
 
 const { colors } = theme;
 
@@ -18,9 +18,9 @@ const { colors } = theme;
 export const STALL = { counter: 16, art: 18, wall: 104 };
 export const PAVILION = { stage: 10, art: 24, wall: 150, roof: 64 };
 
-/** Where a click opens a plot: round everything standing on it. */
-export function standing(plot: Box, height: number): Box {
-  const c = corners(plot);
+/** Where a click opens a spot: round everything standing on it. */
+export function standing(spot: Box, height: number): Box {
+  const c = corners(spot);
   return {
     x: c.left.x,
     y: c.top.y - height,
@@ -29,14 +29,14 @@ export function standing(plot: Box, height: number): Box {
   };
 }
 
-/** A point on a stall's plot, `along` its front from 0 to 1, left to right, and `depth` back from it, 0 to 1. */
-export interface OnPlot {
+/** A point on a stall's spot, `along` its front from 0 to 1, left to right, and `depth` back from it, 0 to 1. */
+export interface OnSpot {
   along: number;
   depth: number;
 }
 
-/** The ground outline of each stall shape, on its plot, round it in order. */
-export function stallOutline(shape: StallShape): OnPlot[] {
+/** The ground outline of each stall shape, on its spot, round it in order. */
+export function stallOutline(shape: StallShape): OnSpot[] {
   const { ring } = SHAPE_PLANS[shape];
   if (!ring) {
     return [
@@ -65,8 +65,8 @@ export function stallLook(stall: StallStyle): {
   return { shape: stall.shape, roof: colors[stall.roof], trim: colors[trim] };
 }
 
-/** Where a point on a stall's plot is on screen, `lift` up. */
-export function plotPoint(face: Face, deep: number, at: OnPlot, lift = 0): Tile {
+/** Where a point on a stall's spot is on screen, `lift` up. */
+export function spotPoint(face: Face, deep: number, at: OnSpot, lift = 0): Tile {
   return onFace(face, at.along, lift, -at.depth * deep);
 }
 
@@ -75,7 +75,7 @@ export function stallSignLow(face: Face): number {
   return STALL.art + Math.abs(face.b.x - face.a.x) * 0.84 + 5;
 }
 
-/** How high a stall of `shape` reaches over its plot, with its awning, pennant or finial. */
+/** How high a stall of `shape` reaches over its spot, with its awning, pennant or finial. */
 export function stallReach(shape: StallShape): number {
   const { wall, roof, extra } = SHAPE_PLANS[shape];
   return Math.max(STALL.wall, wall + roof) + extra;
@@ -83,9 +83,9 @@ export function stallReach(shape: StallShape): number {
 
 /** Everything a stall shape's drawing needs: where it stands, which way it faces, its look and its square. */
 export interface StallParts {
-  plot: Plot;
+  spot: Spot;
   face: Face;
-  /** How deep the plot runs back from its front, in tiles. */
+  /** How deep the spot runs back from its front, in tiles. */
   deep: number;
   /** The shape's outline on the ground, on screen. */
   ground: Tile[];

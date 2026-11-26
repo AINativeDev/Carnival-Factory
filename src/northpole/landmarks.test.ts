@@ -10,14 +10,14 @@ import { describe, expect, it } from 'vitest';
 import { drawingOf, pinDrawing } from '../test-support/recording-canvas';
 import { LANDMARK_DRAWERS } from './landmarks';
 import { drawAttraction } from './pavilion';
-import { drawPlot } from './render';
+import { drawSpot } from './render';
 import { LANDMARKS, type Landmark, type NorthPoleSquare, type StallStyle } from './square';
 import { drawStall } from './stall';
 import { PAVILION } from './stall-plan';
-import type { Plot } from './world';
+import type { Spot } from './world';
 
 const TIMES = [0, 4321];
-const left: Plot = {
+const left: Spot = {
   kind: 'attraction',
   id: 'a',
   number: 4,
@@ -27,7 +27,7 @@ const left: Plot = {
   h: 3,
   door: { x: 6, y: 8 },
 };
-const right: Plot = { ...left, door: { x: 8, y: 6 } };
+const right: Spot = { ...left, door: { x: 8, y: 6 } };
 
 const square = (stall?: StallStyle, extra: object = {}): NorthPoleSquare => ({
   id: 'a',
@@ -49,22 +49,22 @@ describe('the landmarks', () => {
   it('draws each one the same, with the door on either side, as it moves', () => {
     const prints: Record<string, string> = {};
     for (const landmark of LANDMARKS)
-      for (const [side, plot] of [left, right].entries())
+      for (const [side, spot] of [left, right].entries())
         prints[`${landmark} ${String(side)}`] = pinDrawing((ctx, paint) =>
-          TIMES.map((t) => drawPlot(ctx, plot, square(asking(landmark)), paint, t)),
+          TIMES.map((t) => drawSpot(ctx, spot, square(asking(landmark)), paint, t)),
         );
     expect(prints).toMatchSnapshot();
   });
 
   it("shows the attraction's own drawing once, under its name, and opens from anywhere on it", () => {
     for (const landmark of LANDMARKS)
-      for (const plot of [left, right]) {
+      for (const spot of [left, right]) {
         let painted = 0;
         let box = { x: 0, y: 0, w: 0, h: 0 };
         const calls = drawingOf((ctx) => {
           box = LANDMARK_DRAWERS[landmark](
             ctx,
-            plot,
+            spot,
             square(asking(landmark)),
             () => {
               painted += 1;
@@ -94,17 +94,17 @@ describe('the landmarks', () => {
     const booth = { ...left, kind: 'booth' as const, w: 2, h: 2, door: { x: 6, y: 7 } };
     const owner = { color: '#123456', you: false };
     expect(
-      pinDrawing((ctx, paint) => drawPlot(ctx, booth, square(stall), paint, 0, false, owner)),
+      pinDrawing((ctx, paint) => drawSpot(ctx, booth, square(stall), paint, 0, false, owner)),
     ).toBe(pinDrawing((ctx, paint) => drawStall(ctx, booth, square(stall), paint, 0, owner)));
   });
 
   it("stands an attraction with no stall as a pavilion, and a level's square as a stall", () => {
-    expect(pinDrawing((ctx, paint) => drawPlot(ctx, left, square(), paint, 0))).toBe(
+    expect(pinDrawing((ctx, paint) => drawSpot(ctx, left, square(), paint, 0))).toBe(
       pinDrawing((ctx, paint) => drawAttraction(ctx, left, square(), paint, 0)),
     );
     const levelSquare = square(undefined, { kind: 'level' });
     const nobody = { color: '#f4c542', you: false, by: '' };
-    expect(pinDrawing((ctx, paint) => drawPlot(ctx, left, levelSquare, paint, 0))).toBe(
+    expect(pinDrawing((ctx, paint) => drawSpot(ctx, left, levelSquare, paint, 0))).toBe(
       pinDrawing((ctx, paint) => drawStall(ctx, left, levelSquare, paint, 0, nobody)),
     );
   });

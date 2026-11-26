@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './coverage';
 import { levelWorld, type NorthPoleLevel } from '../src/northpole/level';
-import type { Plot } from '../src/northpole/world';
+import type { Spot } from '../src/northpole/world';
 import { validateLevel } from '../src/northpole/level-check';
 import { isNorthPoleLevel } from '../src/northpole/north-pole-levels';
 import { stillCamera, walkToDoor } from './level-walk';
@@ -65,8 +65,8 @@ for (const login of logins) {
     expect(validateLevel(level, login, ids)).toEqual([]);
     const world = levelWorld(level);
     // A ride level is ridden in its coaster's car, station to station, instead of walked (ADR 0041).
-    const reach = (plot: Plot) =>
-      level.ride ? rideTo(page, world, plot) : walkToDoor(page, world, plot);
+    const reach = (spot: Spot) =>
+      level.ride ? rideTo(page, world, spot) : walkToDoor(page, world, spot);
     await page.goto(`#/level/${login}`);
     const canvas = page.locator('.map-canvas');
     await expect(page.locator('.hud-level')).toContainText(level.name);
@@ -75,12 +75,12 @@ for (const login of logins) {
     await canvas.screenshot({ path: join(SHOTS, `level-${login}.png`) });
     await canvas.focus({ timeout: 5000 });
 
-    for (const plot of world.plots.filter((p) => p.kind === 'attraction')) {
-      await test.step(`go to ${String(plot.id)}`, () => reach(plot));
-      await test.step(`inside ${plot.id}`, async () => {
+    for (const spot of world.spots.filter((p) => p.kind === 'attraction')) {
+      await test.step(`go to ${String(spot.id)}`, () => reach(spot));
+      await test.step(`inside ${spot.id}`, async () => {
         await page.keyboard.press('e');
-        await expect(page).toHaveURL(new RegExp(`#/level/${login}/${plot.id}$`));
-        const frame = page.locator(`iframe[data-kind="level"][data-id="${login}/${plot.id}"]`);
+        await expect(page).toHaveURL(new RegExp(`#/level/${login}/${spot.id}$`));
+        const frame = page.locator(`iframe[data-kind="level"][data-id="${login}/${spot.id}"]`);
         await expect(frame).toHaveAttribute('data-state', 'ready', { timeout: 5000 });
         // A participant's level credits its owner; the North Pole's own tell their step instead.
         const credit = isNorthPoleLevel(login) ? 'See the factory’s numbers' : `@${login}`;
@@ -95,7 +95,7 @@ for (const login of logins) {
       });
     }
 
-    const home = world.plots.find((p) => p.kind === 'exit')!;
+    const home = world.spots.find((p) => p.kind === 'exit')!;
     await test.step('go to the sleigh home', () => reach(home));
     await page.keyboard.press('e');
     await expect(page).toHaveURL(/#\/$/);

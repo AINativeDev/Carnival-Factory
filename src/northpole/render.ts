@@ -1,6 +1,6 @@
 /**
  * Drawing the isometric North Pole: what the map draws for each thing standing
- * on the ground and for each plot, handed to the file that draws it. Everything
+ * on the ground and for each spot, handed to the file that draws it. Everything
  * is drawn in world pixels, with the town square's centre at (0, 0), and the
  * map moves the camera. The drawings themselves live in small files by what
  * they are (docs/adr/0019-small-files.md), so this file only chooses.
@@ -12,7 +12,7 @@ import { drawArch, drawBanner, drawBunting } from './entrance';
 import { drawCabin, drawStable } from './houses';
 import { drawTent, drawWheel } from './midway';
 import type { Owner } from './name-board';
-import { drawOpenPlot } from './open-plot';
+import { drawOpenSpot } from './open-spot';
 import { drawAttraction } from './pavilion';
 import { drawTownTree, drawTree } from './pines';
 import { drawShow, type ShowKind } from './show';
@@ -22,7 +22,7 @@ import { drawStall } from './stall';
 import { LANDMARK_DRAWERS } from './landmarks';
 import { drawBench, drawCart, drawDrift, drawFence, drawLamp, drawSleigh } from './street-things';
 import { theme } from './theme';
-import type { Box, Plot, Thing, ThingKind } from './world';
+import type { Box, Spot, Thing, ThingKind } from './world';
 
 const { colors } = theme;
 
@@ -63,29 +63,29 @@ export function drawThing(ctx: CanvasRenderingContext2D, thing: Thing, time: num
 }
 
 /**
- * Draws a plot and whatever stands on it. Returns where a click opens it.
- * `near` says the player stands at it, which makes an open plot's sign bounce.
+ * Draws a spot and whatever stands on it. Returns where a click opens it.
+ * `near` says the player stands at it, which makes an open spot's sign bounce.
  */
-export function drawPlot(
+export function drawSpot(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   square: NorthPoleSquare | undefined,
   paint: PaintSquare,
   time: number,
   near = false,
   owner?: Owner,
 ): Box {
-  if (plot.kind === 'open' || !square) return drawOpenPlot(ctx, plot, time, near);
-  const attraction = plot.kind === 'attraction';
+  if (spot.kind === 'open' || !square) return drawOpenSpot(ctx, spot, time, near);
+  const attraction = spot.kind === 'attraction';
   // An attraction stands as the landmark it asked for: only attractions keep one (frame-protocol.ts, stallFor).
   const landmark = attraction ? square.stall?.landmark : undefined;
-  if (landmark) return LANDMARK_DRAWERS[landmark](ctx, plot, square, paint, time);
-  if (attraction && square.stall?.display) return drawDisplay(ctx, plot, square, paint);
+  if (landmark) return LANDMARK_DRAWERS[landmark](ctx, spot, square, paint, time);
+  if (attraction && square.stall?.display) return drawDisplay(ctx, spot, square, paint);
   // An attraction with no stall is a pavilion. A level's square stands on an
-  // attraction's plot too, but it's a stall like a booth's, signed by nobody.
+  // attraction's spot too, but it's a stall like a booth's, signed by nobody.
   const levelSquare = 'kind' in square && square.kind === 'level';
   if (attraction && !square.stall && !levelSquare)
-    return drawAttraction(ctx, plot, square, paint, time);
+    return drawAttraction(ctx, spot, square, paint, time);
   const nobody: Owner = { color: colors.gold, you: false, ...(attraction ? { by: '' } : {}) };
-  return drawStall(ctx, plot, square, paint, time, owner ?? nobody);
+  return drawStall(ctx, spot, square, paint, time, owner ?? nobody);
 }

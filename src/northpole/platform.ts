@@ -2,13 +2,13 @@
  * The sleigh station's platforms, each with a sleigh waiting and a sign saying
  * which level it goes to (docs/specs/levels.md), and the small "Being updated"
  * sign beside a booth while a change to it is built. Both are signs on posts
- * by a plot, drawn apart from the stalls they stand beside.
+ * by a spot, drawn apart from the stalls they stand beside.
  */
 import { block, corners, middle, shadow } from './brushes';
 import { standing } from './stall-plan';
 import { drawSleigh } from './street-things';
 import { canvasFont, theme } from './theme';
-import type { Box, Plot } from './world';
+import type { Box, Spot } from './world';
 
 const { colors } = theme;
 
@@ -32,17 +32,17 @@ const PLATFORM_SIGN = { post: 70, w: 140, h: 40 };
  */
 export function drawPlatform(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   label: PlatformLabel,
   time: number,
   near = false,
 ): Box {
-  const c = corners(plot);
-  const { x, y } = middle(plot);
+  const c = corners(spot);
+  const { x, y } = middle(spot);
   shadow(ctx, x, y + 6, 70);
-  block(ctx, plot, 8, colors.gingerbread, colors.wood, colors.cocoa);
+  block(ctx, spot, 8, colors.gingerbread, colors.wood, colors.cocoa);
   if (!label.closed) {
-    const sleigh = { kind: 'sleigh' as const, x: plot.x + 0.5, y: plot.y + 0.5, w: 1, h: 1 };
+    const sleigh = { kind: 'sleigh' as const, x: spot.x + 0.5, y: spot.y + 0.5, w: 1, h: 1 };
     ctx.save();
     ctx.translate(0, -8);
     drawSleigh(ctx, { ...sleigh, seed: 0, blocks: true });
@@ -67,7 +67,7 @@ export function drawPlatform(
   ctx.font = canvasFont('small');
   ctx.fillText(label.closed ? 'Closed for repairs' : label.by, foot.x, top + 29, w - 10);
   ctx.textBaseline = 'alphabetic';
-  const box = standing(plot, 50);
+  const box = standing(spot, 50);
   const left = Math.min(box.x, foot.x - w / 2 - 4);
   return {
     x: left,
@@ -78,8 +78,8 @@ export function drawPlatform(
 }
 
 /** A small "Being updated" sign on a post at a booth's side, while a change to it is being built. */
-export function drawUpdateSign(ctx: CanvasRenderingContext2D, plot: Plot) {
-  const c = corners(plot);
+export function drawUpdateSign(ctx: CanvasRenderingContext2D, spot: Spot) {
+  const c = corners(spot);
   const foot = { x: (c.bottom.x + c.right.x) / 2 + 10, y: (c.bottom.y + c.right.y) / 2 + 6 };
   const w = 104;
   const h = 22;

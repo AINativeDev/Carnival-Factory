@@ -1,23 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import pinned from './plots.json';
-import { nearestOpenPlot, nearYou, placeTag, platformTag, tagText } from './visit';
+import pinned from './spots.json';
+import { nearestOpenSpot, nearYou, placeTag, platformTag, tagText } from './visit';
 import { key } from './world';
 import { buildWorld } from './world-build';
 
-describe('the plot next door, from right beside one', () => {
+describe('the spot next door, from right beside one', () => {
   const small = buildWorld(['big-top'], ['elf-0'], pinned);
-  const open = small.plots.filter((plot) => plot.kind === 'open');
+  const open = small.spots.filter((spot) => spot.kind === 'open');
 
-  it('is the open plot whose door the player stands at, with nowhere to walk', () => {
+  it('is the open spot whose door the player stands at, with nowhere to walk', () => {
     const first = open.at(0);
-    if (!first) throw new Error('the test world has no open plot');
-    expect(nearestOpenPlot(small, first.door)).toEqual({ plot: first, path: [first.door] });
+    if (!first) throw new Error('the test world has no open spot');
+    expect(nearestOpenSpot(small, first.door)).toEqual({ spot: first, path: [first.door] });
   });
 
-  it('is nowhere when no open plot can be reached', () => {
-    const doors = open.map((plot) => key(plot.door.x, plot.door.y));
+  it('is nowhere when no open spot can be reached', () => {
+    const doors = open.map((spot) => key(spot.door.x, spot.door.y));
     const walledOff = { ...small, blocked: new Set([...small.blocked, ...doors]) };
-    expect(nearestOpenPlot(walledOff, small.start)).toBeUndefined();
+    expect(nearestOpenSpot(walledOff, small.start)).toBeUndefined();
   });
 });
 
@@ -31,7 +31,7 @@ describe('the tag of a square the map knows nothing more of', () => {
     });
   });
 
-  it('still reads for a plot with no id at all', () => {
+  it('still reads for a spot with no id at all', () => {
     expect(tagText({ kind: 'attraction' }, undefined).name).toBe('');
   });
 });

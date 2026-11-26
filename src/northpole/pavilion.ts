@@ -12,7 +12,7 @@ import { inTurn } from './rounds';
 import type { NorthPoleSquare } from './square';
 import { PAVILION, standing } from './stall-plan';
 import { theme } from './theme';
-import type { Box, Plot, Tile } from './world';
+import type { Box, Spot, Tile } from './world';
 
 const { colors } = theme;
 
@@ -30,16 +30,16 @@ const ROOFS: readonly [RoofPair, ...RoofPair[]] = [
 /** One of the North Pole's attractions: a pavilion on a stage, its square on the front and a striped roof. */
 export function drawAttraction(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   square: NorthPoleSquare,
   paint: PaintSquare,
   time: number,
 ): Box {
-  const { x, y } = middle(plot);
+  const { x, y } = middle(spot);
   shadow(ctx, x, y + 8, 80);
-  block(ctx, plot, PAVILION.stage, colors.snowShade, colors.surface, colors.night);
-  const inner = { x: plot.x + 0.2, y: plot.y + 0.2, w: plot.w - 0.4, h: plot.h - 0.4 };
-  const face = faceOf({ ...inner, door: plot.door });
+  block(ctx, spot, PAVILION.stage, colors.snowShade, colors.surface, colors.night);
+  const inner = { x: spot.x + 0.2, y: spot.y + 0.2, w: spot.w - 0.4, h: spot.h - 0.4 };
+  const face = faceOf({ ...inner, door: spot.door });
   const width = Math.abs(face.b.x - face.a.x);
   block(ctx, inner, PAVILION.wall, colors.cream, colors.surface, colors.night);
   // Gold posts at the corners of the front.
@@ -65,8 +65,8 @@ export function drawAttraction(
     SIGN_STYLES.pavilion,
   );
   const eaves = { x: inner.x - 0.25, y: inner.y - 0.25, w: inner.w + 0.5, h: inner.h + 0.5 };
-  stripedRoof(ctx, eaves, PAVILION.wall, PAVILION.roof, inTurn(ROOFS, plot.number), time);
-  return standing(plot, PAVILION.wall + PAVILION.roof + 20);
+  stripedRoof(ctx, eaves, PAVILION.wall, PAVILION.roof, inTurn(ROOFS, spot.number), time);
+  return standing(spot, PAVILION.wall + PAVILION.roof + 20);
 }
 
 /** A pyramid roof in candy stripes over a box, from `height` up to its peak `rise` higher. */

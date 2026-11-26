@@ -7,11 +7,11 @@
  * public/pending.json beside the page. It only reads the open issues labelled
  * `booth-request` and `tessl`, and their pull requests' checks, from the
  * GitHub API. Nothing it works out is ever committed: every deploy works the
- * plots out again. Without it, the build writes an empty list.
+ * spots out again. Without it, the build writes an empty list.
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { boothPlotNumbers, readPlotFile, type PlotFile } from '../src/northpole/plots.ts';
+import { boothSpotNumbers, readSpotFile, type SpotFile } from '../src/northpole/spots.ts';
 import { github, repoPath, type GitHubReader } from './github-api.ts';
 import { checksOf, latestRequests, pendingList, type Request } from './pending.ts';
 
@@ -26,29 +26,29 @@ interface Pull {
   labels: { name: string }[];
 }
 
-/** A booth's own plot.json, or none when it has none or it can't be read, as on the map. */
-function plotFileOf(file: string): PlotFile | undefined {
+/** A booth's own spot.json, or none when it has none or it can't be read, as on the map. */
+function spotFileOf(file: string): SpotFile | undefined {
   try {
-    return readPlotFile(JSON.parse(readFileSync(file, 'utf8')));
+    return readSpotFile(JSON.parse(readFileSync(file, 'utf8')));
   } catch {
     return undefined;
   }
 }
 
-/** Every booth's plot in the checkout at `root`, as the build works it out. */
-export function boothPlots(root: string): Map<string, number> {
-  const pins = JSON.parse(readFileSync(join(root, 'src/northpole/plots.json'), 'utf8')) as {
+/** Every booth's spot in the checkout at `root`, as the build works it out. */
+export function boothSpots(root: string): Map<string, number> {
+  const pins = JSON.parse(readFileSync(join(root, 'src/northpole/spots.json'), 'utf8')) as {
     booths: Record<string, number>;
   };
   const ids = readdirSync(join(root, 'carnival', 'booths'))
     .filter((id) => existsSync(join(root, 'carnival', 'booths', id, 'booth.ts')))
     .sort();
-  const files: Record<string, PlotFile> = {};
+  const files: Record<string, SpotFile> = {};
   for (const id of ids) {
-    const plot = plotFileOf(join(root, 'carnival', 'booths', id, 'plot.json'));
-    if (plot) files[id] = plot;
+    const spot = spotFileOf(join(root, 'carnival', 'booths', id, 'spot.json'));
+    if (spot) files[id] = spot;
   }
-  return boothPlotNumbers(ids, pins.booths, files);
+  return boothSpotNumbers(ids, pins.booths, files);
 }
 
 /** Each login's latest open, accepted booth request in `repository`, with its pull request's stage. */
@@ -96,7 +96,7 @@ if (process.argv[1]?.endsWith('write-pending.ts')) {
   const repository = process.env.GITHUB_REPOSITORY;
   if (!repository) throw new Error('Set GITHUB_TOKEN and GITHUB_REPOSITORY');
   const out = process.argv[2] ?? 'public/pending.json';
-  const booths = boothPlots(join(import.meta.dirname, '..'));
+  const booths = boothSpots(join(import.meta.dirname, '..'));
   const pending = pendingList(await pendingRequests(github, repository), booths);
   writeFileSync(out, `${JSON.stringify(pending, null, 2)}\n`);
   console.log(`Wrote ${pending.length} pending booth request(s) to ${out}.`);

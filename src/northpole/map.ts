@@ -18,7 +18,7 @@ export type { MapControls, SquareKind, StationEntry } from './map-options';
  * Draws the North Pole as a diorama on `canvas`, which fills `frame`: the whole
  * carnival on one fenced, lit snow island under a mountain-and-aurora sky. It
  * lets the player walk round it with WASD, the arrow keys, or by clicking or
- * tapping the ground. Standing at a booth or an attraction, or at an open plot,
+ * tapping the ground. Standing at a booth or an attraction, or at an open spot,
  * `prompt` offers to open it, as do E, Enter and a click on it.
  */
 export function startMap(

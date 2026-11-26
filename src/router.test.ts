@@ -127,8 +127,8 @@ describe('route', () => {
     expect(maps).toHaveLength(2);
   });
 
-  it('keeps links from when booths were plots working', () => {
-    const page = newPage('#/plot/ana');
+  it('keeps links from when booths were spots working', () => {
+    const page = newPage('#/spot/ana');
     route(page);
     expect(location.hash).toBe('#/booth/ana');
     expect(maps).toHaveLength(0);

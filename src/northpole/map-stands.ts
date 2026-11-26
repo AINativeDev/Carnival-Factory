@@ -1,7 +1,7 @@
 /**
- * Every plot's structure in the scene: a square's stall or pavilion with its
+ * Every spot's structure in the scene: a square's stall or pavilion with its
  * drawing on its face, a construction site, a sleigh platform, with the glow,
- * ring and bounce of the plot the player is at or has picked, the sign on a
+ * ring and bounce of the spot the player is at or has picked, the sign on a
  * booth being updated, and the sparkles of one that just landed. Kept apart
  * from the scene because it's where each square's own drawing meets the map.
  */
@@ -12,21 +12,21 @@ import type { PointerTracker } from './map-pointer';
 import type { SceneFrame } from './map-scene';
 import type { MapRun } from './map-state';
 import { onMapping } from './pointer';
-import { drawPlot } from './render';
-import { drawSparkles } from './plot-marks';
-import { drawSelectionRing } from './plot-marks';
+import { drawSpot } from './render';
+import { drawSparkles } from './spot-marks';
+import { drawSelectionRing } from './spot-marks';
 import { drawUpdateSign } from './platform';
 import { type Mapping } from './faces';
 import { drawSite } from './site';
 import { drawPlatform } from './platform';
-import { SPARKLE_TIME } from './plot-marks';
-import { drawPlotGlow } from './plot-marks';
+import { SPARKLE_TIME } from './spot-marks';
+import { drawSpotGlow } from './spot-marks';
 import type { NorthPoleSquare, SquarePointer } from './square';
-import type { Box, Plot, Tile } from './world';
+import type { Box, Spot, Tile } from './world';
 
 /**
  * The square in front under the pointer this frame, if any: the pointer on the
- * screen and in world pixels, and the plot it stands on. `pointed` names it
+ * screen and in world pixels, and the spot it stands on. `pointed` names it
  * once its face is drawn with the pointer on it.
  */
 export interface Aim {
@@ -34,15 +34,15 @@ export interface Aim {
     | {
         pressed: NonNullable<ReturnType<PointerTracker['now']>>;
         aimed: Tile;
-        under: Plot;
+        under: Spot;
         square: NorthPoleSquare;
       }
     | undefined;
   pointed: string;
 }
 
-/** Adds every plot in view to the scene, and notes where each was drawn, for clicks. */
-export function addPlots(
+/** Adds every spot in view to the scene, and notes where each was drawn, for clicks. */
+export function addSpots(
   m: MapRun,
   add: AddToScene,
   shown: (box: Box) => boolean,
@@ -51,48 +51,48 @@ export function addPlots(
   frame: SceneFrame,
 ) {
   const paint = painter(m, aim, frame);
-  for (const plot of m.world.plots) {
-    if (!shown(plot)) continue;
-    add(plot.x + plot.w + plot.y + plot.h - 2, () => {
-      const highlight = plot === m.selected ? picked : 0;
-      const owner = ownerOf(m, plot);
-      const strength = Math.max(plot === m.near ? 0.7 : 0, owner?.you ? 0.45 : 0, highlight);
-      if (strength > 0) drawPlotGlow(m.ctx, plot, strength);
-      drawSelectionRing(m.ctx, plot, highlight);
-      const box = drawStand(m, plot, paint, frame.motion, owner);
-      decorate(m, plot, frame);
-      m.targets.push({ plot, box });
+  for (const spot of m.world.spots) {
+    if (!shown(spot)) continue;
+    add(spot.x + spot.w + spot.y + spot.h - 2, () => {
+      const highlight = spot === m.selected ? picked : 0;
+      const owner = ownerOf(m, spot);
+      const strength = Math.max(spot === m.near ? 0.7 : 0, owner?.you ? 0.45 : 0, highlight);
+      if (strength > 0) drawSpotGlow(m.ctx, spot, strength);
+      drawSelectionRing(m.ctx, spot, highlight);
+      const box = drawStand(m, spot, paint, frame.motion, owner);
+      decorate(m, spot, frame);
+      m.targets.push({ spot, box });
     });
   }
 }
 
-/** Draws a plot's structure, and gives back the box it covers. */
+/** Draws a spot's structure, and gives back the box it covers. */
 function drawStand(
   m: MapRun,
-  plot: Plot,
+  spot: Spot,
   paint: (square: NorthPoleSquare, mapping: Mapping) => void,
   motion: number,
   owner: ReturnType<typeof ownerOf>,
 ): Box {
   const { ctx } = m;
-  const bounce = plot === m.near || plot === m.claiming;
-  if (plot.kind === 'site') return drawSite(ctx, plot, siteLabel(m, plot), motion, plot === m.near);
-  if (plot.kind === 'platform' || plot.kind === 'exit')
-    return drawPlatform(ctx, plot, platformLabel(m, plot), motion, plot === m.near);
-  return drawPlot(ctx, plot, squareOf(m, plot), paint, motion, bounce, owner);
+  const bounce = spot === m.near || spot === m.claiming;
+  if (spot.kind === 'site') return drawSite(ctx, spot, siteLabel(m, spot), motion, spot === m.near);
+  if (spot.kind === 'platform' || spot.kind === 'exit')
+    return drawPlatform(ctx, spot, platformLabel(m, spot), motion, spot === m.near);
+  return drawSpot(ctx, spot, squareOf(m, spot), paint, motion, bounce, owner);
 }
 
 /** A booth's "Being updated" sign, and the sparkles of a booth that replaced its construction site. */
-function decorate(m: MapRun, plot: Plot, { time, still }: SceneFrame) {
-  if (plot.kind !== 'booth') return;
-  const login = String(plot.id);
-  if (m.pending.has(login)) drawUpdateSign(m.ctx, plot);
+function decorate(m: MapRun, spot: Spot, { time, still }: SceneFrame) {
+  if (spot.kind !== 'booth') return;
+  const login = String(spot.id);
+  if (m.pending.has(login)) drawUpdateSign(m.ctx, spot);
   if (!m.landed.has(login)) return;
   // The booth that replaced its construction site sparkles once, the first time it's in view.
   const began = m.landed.get(login) ?? time;
   m.landed.set(login, began);
   if (still || time - began >= SPARKLE_TIME) m.landed.delete(login);
-  else drawSparkles(m.ctx, plot, time - began);
+  else drawSparkles(m.ctx, spot, time - began);
 }
 
 /** Paints a square onto its face of a structure, with the pointer if it's over that square. */

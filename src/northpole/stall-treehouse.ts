@@ -7,7 +7,7 @@
 import { glow, quad } from './brushes';
 import { band } from './faces';
 import { stallFront } from './stall-front';
-import { plotPoint, type StallParts } from './stall-plan';
+import { spotPoint, type StallParts } from './stall-plan';
 import { peakedRoof, prism } from './stall-volumes';
 import { theme } from './theme';
 import type { Tile } from './world';
@@ -33,7 +33,7 @@ export function drawTreehouse(ctx: CanvasRenderingContext2D, parts: StallParts) 
   const ring = (radius: number, sides: number, at = trunk) =>
     Array.from({ length: sides }, (_, n) => {
       const turn = (n / sides) * Math.PI * 2;
-      return plotPoint(face, deep, {
+      return spotPoint(face, deep, {
         along: at.along + Math.cos(turn) * radius,
         depth: at.depth + Math.sin(turn) * radius,
       });
@@ -43,7 +43,7 @@ export function drawTreehouse(ctx: CanvasRenderingContext2D, parts: StallParts) 
     const tierRing = ring(tier.radius, 10);
     peakedRoof(ctx, tierRing, tier.lift, tier.rise, [colors.pine, colors.pineDark]);
     // A dusting of snow on each tier's tip.
-    const tip = shrunk(tierRing, plotPoint(face, deep, trunk), 0.35);
+    const tip = shrunk(tierRing, spotPoint(face, deep, trunk), 0.35);
     peakedRoof(ctx, tip, tier.lift + tier.rise * 0.65, tier.rise * 0.35, [colors.snow]);
   }
   const hut = [
@@ -52,10 +52,10 @@ export function drawTreehouse(ctx: CanvasRenderingContext2D, parts: StallParts) 
     { along: 1, depth: HUT },
     { along: 0, depth: HUT },
   ];
-  const floor = hut.map((at) => plotPoint(face, deep, at));
+  const floor = hut.map((at) => spotPoint(face, deep, at));
   ctx.fillStyle = colors.cocoa;
   for (const along of [0.06, 0.94]) {
-    const foot = plotPoint(face, deep, { along, depth: 0.04 });
+    const foot = spotPoint(face, deep, { along, depth: 0.04 });
     ctx.fillRect(foot.x - 2.5, foot.y - STILTS, 5, STILTS);
   }
   prism(ctx, floor, wall - STILTS, undefined, colors.gingerbread, colors.wood, STILTS);
@@ -66,7 +66,7 @@ export function drawTreehouse(ctx: CanvasRenderingContext2D, parts: StallParts) 
     ctx.fill();
   }
   stallFront(ctx, face, square, paint, owner);
-  const centre = plotPoint(face, deep, { along: 0.5, depth: HUT / 2 });
+  const centre = spotPoint(face, deep, { along: 0.5, depth: HUT / 2 });
   const eaves = shrunk(floor, centre, 1.12);
   peakedRoof(ctx, eaves, wall, roof, [look.roof]);
   peakedRoof(ctx, shrunk(eaves, centre, 0.45), wall + roof * 0.55, roof * 0.45, [colors.snow]);
@@ -88,7 +88,7 @@ function ladder(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const side = right ? 1 : 0;
   const away = right ? 1 : -1;
   const at = (out: number, depth: number, lift: number) =>
-    plotPoint(face, deep, { along: side + away * out, depth }, lift);
+    spotPoint(face, deep, { along: side + away * out, depth }, lift);
   const sill = 64;
   const door = at(0, 0.31, sill + 16);
   glow(ctx, door.x, door.y, 18, 0.8);

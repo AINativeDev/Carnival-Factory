@@ -7,7 +7,7 @@ import { open } from './map-open';
 import type { MapOptions } from './map-options';
 import { promptWords } from './map-prompt';
 import { openRun } from './map-run';
-import type { Plot } from './world';
+import type { Spot } from './world';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -22,7 +22,7 @@ const runOf = (options: MapOptions) =>
     options,
   );
 
-const plot = (kind: Plot['kind'], id?: string): Plot => ({
+const spot = (kind: Spot['kind'], id?: string): Spot => ({
   kind,
   ...(id !== undefined && { id }),
   number: 4,
@@ -33,55 +33,55 @@ const plot = (kind: Plot['kind'], id?: string): Plot => ({
   door: { x: 2, y: 0 },
 });
 
-describe('what plots say', () => {
-  const pending = [{ login: 'blitzen', issue: 12, plot: 9, stage: 'almost' as const }];
+describe('what spots say', () => {
+  const pending = [{ login: 'blitzen', issue: 12, spot: 9, stage: 'almost' as const }];
   const m = runOf(northPoleOptions([], { pending, me: 'comet' }));
 
-  it('finds the square on a booth or attraction plot, and none elsewhere', () => {
-    expect(squareOf(m, plot('booth', 'comet'))?.name).toBe('The comet');
-    expect(squareOf(m, plot('booth'))).toBeUndefined();
-    expect(squareOf(m, plot('site', 'comet'))).toBeUndefined();
+  it('finds the square on a booth or attraction spot, and none elsewhere', () => {
+    expect(squareOf(m, spot('booth', 'comet'))?.name).toBe('The comet');
+    expect(squareOf(m, spot('booth'))).toBeUndefined();
+    expect(squareOf(m, spot('site', 'comet'))).toBeUndefined();
   });
 
   it('labels a platform by its level, or as closed when it has none, and the way home in gold', () => {
-    expect(platformLabel(m, plot('platform', 'tester'))).toMatchObject({ name: 'Test Fair' });
-    expect(platformLabel(m, plot('platform', 'gone'))).toEqual({
+    expect(platformLabel(m, spot('platform', 'tester'))).toMatchObject({ name: 'Test Fair' });
+    expect(platformLabel(m, spot('platform', 'gone'))).toEqual({
       name: 'gone',
       by: '@gone',
       color: expect.any(String) as string,
       closed: true,
     });
-    expect(platformLabel(m, plot('platform')).name).toBe('');
-    expect(platformLabel(m, plot('exit')).closed).toBe(false);
-    expect(platformLabel(m, plot('platform', 'shut')).by).toBe('The North Pole');
+    expect(platformLabel(m, spot('platform')).name).toBe('');
+    expect(platformLabel(m, spot('exit')).closed).toBe(false);
+    expect(platformLabel(m, spot('platform', 'shut')).by).toBe('The North Pole');
   });
 
   it("says a site's stage, and that it's being built when the request is unknown", () => {
-    expect(siteLabel(m, plot('site', 'blitzen')).stage).not.toBe(
-      siteLabel(m, plot('site', 'cupid')).stage,
+    expect(siteLabel(m, spot('site', 'blitzen')).stage).not.toBe(
+      siteLabel(m, spot('site', 'cupid')).stage,
     );
-    expect(siteLabel(m, plot('site')).login).toBe('');
+    expect(siteLabel(m, spot('site')).login).toBe('');
   });
 
   it('puts the right words on the call to action', () => {
-    expect(promptWords(m, plot('open'))).toBe('Build your booth here');
-    expect(promptWords(m, plot('site', 'blitzen'))).toMatch(/^Booth for @blitzen: /);
-    expect(promptWords(m, plot('exit'))).toBe('Take the sleigh back to the North Pole');
-    expect(promptWords(m, plot('platform', 'tester'))).toBe('Take the sleigh to Test Fair');
-    expect(promptWords(m, plot('platform', 'shut'))).toBe('Shut Fair is closed for repairs');
-    expect(promptWords(m, plot('attraction', 'ferris-wheel'))).toBe('Visit The ferris-wheel');
-    expect(promptWords(m, plot('attraction', 'unknown'))).toBe('Visit unknown');
-    expect(promptWords(m, plot('attraction'))).toBe('Visit ');
+    expect(promptWords(m, spot('open'))).toBe('Build your booth here');
+    expect(promptWords(m, spot('site', 'blitzen'))).toMatch(/^Booth for @blitzen: /);
+    expect(promptWords(m, spot('exit'))).toBe('Take the sleigh back to the North Pole');
+    expect(promptWords(m, spot('platform', 'tester'))).toBe('Take the sleigh to Test Fair');
+    expect(promptWords(m, spot('platform', 'shut'))).toBe('Shut Fair is closed for repairs');
+    expect(promptWords(m, spot('attraction', 'ferris-wheel'))).toBe('Visit The ferris-wheel');
+    expect(promptWords(m, spot('attraction', 'unknown'))).toBe('Visit unknown');
+    expect(promptWords(m, spot('attraction'))).toBe('Visit ');
   });
 
   it("gives a booth its owner's colour, and the visitor's own a glow", () => {
-    expect(ownerOf(m, plot('attraction', 'ferris-wheel'))).toBeUndefined();
-    expect(ownerOf(m, plot('booth', 'comet'))).toMatchObject({ you: true });
-    expect(ownerOf(m, plot('booth'))).toMatchObject({ you: false });
+    expect(ownerOf(m, spot('attraction', 'ferris-wheel'))).toBeUndefined();
+    expect(ownerOf(m, spot('booth', 'comet'))).toMatchObject({ you: true });
+    expect(ownerOf(m, spot('booth'))).toMatchObject({ you: false });
   });
 
   it('tints the way home inside a level with its theme', () => {
-    expect(platformLabel(runOf(levelOptions([])), plot('exit')).color).toBe('tint');
+    expect(platformLabel(runOf(levelOptions([])), spot('exit')).color).toBe('tint');
   });
 });
 
@@ -102,7 +102,7 @@ describe('avatars', () => {
   });
 });
 
-describe('opening a plot', () => {
+describe('opening a spot', () => {
   it('opens the booth form at a free spot, and the request for a site', () => {
     const opened: string[] = [];
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
@@ -110,12 +110,12 @@ describe('opening a plot', () => {
     ) {
       opened.push(this.href);
     });
-    const pending = [{ login: 'blitzen', issue: 12, plot: 9, stage: 'almost' as const }];
+    const pending = [{ login: 'blitzen', issue: 12, spot: 9, stage: 'almost' as const }];
     const m = runOf(northPoleOptions([], { pending }));
-    open(m, plot('open'));
-    open(m, plot('site', 'blitzen'));
-    open(m, plot('site', 'cupid'));
-    open(m, plot('booth'));
+    open(m, spot('open'));
+    open(m, spot('site', 'blitzen'));
+    open(m, spot('site', 'cupid'));
+    open(m, spot('booth'));
     expect(opened).toHaveLength(3);
     expect(opened[1]).toMatch(/\/issues\/12$/);
   });
@@ -123,9 +123,9 @@ describe('opening a plot', () => {
   it('takes the sleigh to an open level, not a closed one', () => {
     const told: (string | undefined)[][] = [];
     const m = runOf(northPoleOptions(told));
-    open(m, plot('platform', 'tester'));
-    open(m, plot('platform', 'shut'));
-    open(m, plot('exit'));
+    open(m, spot('platform', 'tester'));
+    open(m, spot('platform', 'shut'));
+    open(m, spot('exit'));
     expect(told).toEqual([
       ['travel', 'tester'],
       ['travel', undefined],
@@ -137,10 +137,10 @@ describe('opening a plot', () => {
     const options = levelOptions([], { onOpen: () => told.push([]) });
     delete options.onTravel;
     const m = runOf(options);
-    open(m, plot('exit'));
-    open(m, plot('platform', 'tester'));
+    open(m, spot('exit'));
+    open(m, spot('platform', 'tester'));
     m.stations.set('tester', { login: 'tester', name: 'Open', color: 'sign', closed: false });
-    open(m, plot('platform', 'tester'));
+    open(m, spot('platform', 'tester'));
     expect(told).toEqual([]);
   });
 });

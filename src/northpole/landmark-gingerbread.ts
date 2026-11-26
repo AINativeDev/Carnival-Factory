@@ -11,7 +11,7 @@ import { block, corners } from './brushes';
 import { onFace, type Face } from './faces';
 import { funHouseLife } from './landmark-gingerbread-life';
 import { framedArt, frontOf, stage, type LandmarkDrawer } from './landmark-parts';
-import { area, gabledRoof, litWindow, sideOf, spot, type Span } from './landmark-kit';
+import { area, gabledRoof, litWindow, sideOf, onSpot, type Span } from './landmark-kit';
 import { inTurn } from './rounds';
 import { SIGN_STYLES } from './sign-styles';
 import { standing } from './stall-plan';
@@ -56,13 +56,13 @@ function icing(ctx: CanvasRenderingContext2D, face: Face, low: number, high: num
     gumdrop(ctx, onFace(face, (n + 0.5) / 6, low, 0.06), 4, inTurn(GUMDROPS, n + seed));
 }
 
-export const drawGingerbreadHouse: LandmarkDrawer = (ctx, plot, square, paint, time) => {
-  stage(ctx, plot, 80);
-  const body = area(plot, ALONG, DEEP);
+export const drawGingerbreadHouse: LandmarkDrawer = (ctx, spot, square, paint, time) => {
+  stage(ctx, spot, 80);
+  const body = area(spot, ALONG, DEEP);
   const eaves = HOUSE.stage + HOUSE.wall;
   block(ctx, body, HOUSE.wall, colors.gingerbread, colors.gingerbread, colors.wood, HOUSE.stage);
-  const front = frontOf(plot, body);
-  const side = sideOf(plot, body);
+  const front = frontOf(spot, body);
+  const side = sideOf(spot, body);
   // Round lit windows down the side, iced round, one a little higher than the other.
   for (const [along, lift] of [
     [0.3, 62],
@@ -86,7 +86,7 @@ export const drawGingerbreadHouse: LandmarkDrawer = (ctx, plot, square, paint, t
     { from: 0.14, to: 0.86, low: 12, board: 36 },
     SIGN_STYLES.kiosk,
   );
-  gabledRoof(ctx, plot, [0.06, 0.94], [0.06, 0.92], {
+  gabledRoof(ctx, spot, [0.06, 0.94], [0.06, 0.92], {
     eaves,
     rise: HOUSE.rise,
     end: colors.gingerbread,
@@ -95,8 +95,8 @@ export const drawGingerbreadHouse: LandmarkDrawer = (ctx, plot, square, paint, t
     sag: HOUSE.sag,
   });
   // A crooked chimney on the slope we see, leaning the other way to the roof.
-  const slope = frontOf(plot).out.x < 0 ? 0.7 : 0.3;
-  const stack = spot(plot, slope, 0.7, eaves + HOUSE.rise * 0.5);
+  const slope = frontOf(spot).out.x < 0 ? 0.7 : 0.3;
+  const stack = onSpot(spot, slope, 0.7, eaves + HOUSE.rise * 0.5);
   ctx.save();
   ctx.translate(stack.x, stack.y);
   ctx.rotate(0.18);
@@ -109,20 +109,20 @@ export const drawGingerbreadHouse: LandmarkDrawer = (ctx, plot, square, paint, t
   ctx.fillRect(-9, -64, 18, 6);
   ctx.restore();
   // Icing piped along the gable's edges.
-  const peak = spot(plot, 0.5 + HOUSE.lean, 0.06, eaves + HOUSE.rise - HOUSE.sag);
+  const peak = onSpot(spot, 0.5 + HOUSE.lean, 0.06, eaves + HOUSE.rise - HOUSE.sag);
   ctx.strokeStyle = colors.snow;
   ctx.lineWidth = 4;
   ctx.beginPath();
-  for (const p of [spot(plot, 0.06, 0.06, eaves), peak, spot(plot, 0.94, 0.06, eaves)])
+  for (const p of [onSpot(spot, 0.06, 0.06, eaves), peak, onSpot(spot, 0.94, 0.06, eaves)])
     ctx.lineTo(p.x, p.y);
   ctx.stroke();
   ctx.lineWidth = 1;
   // A round attic window in the gable, and gumdrops along the crooked ridge.
-  litWindow(ctx, spot(plot, 0.5 + HOUSE.lean * 0.4, 0.06, eaves + 26), 12, 12, time);
+  litWindow(ctx, onSpot(spot, 0.5 + HOUSE.lean * 0.4, 0.06, eaves + 26), 12, 12, time);
   for (let n = 0; n <= 6; n++) {
     const t = n / 6;
-    const at = spot(
-      plot,
+    const at = onSpot(
+      spot,
       0.5 + HOUSE.lean * (1 - 2 * t),
       0.06 + 0.86 * t,
       eaves + HOUSE.rise - HOUSE.sag * (1 - t),
@@ -130,7 +130,7 @@ export const drawGingerbreadHouse: LandmarkDrawer = (ctx, plot, square, paint, t
     gumdrop(ctx, { x: at.x, y: at.y + 2 }, 5, inTurn(GUMDROPS, n));
   }
   const chimney = { x: stack.x + 64 * Math.sin(0.18), y: stack.y - 64 * Math.cos(0.18) };
-  funHouseLife(ctx, plot, time, { front, eaves, peak, chimney });
-  const ridge = spot(plot, 0.5, 0.92, eaves + HOUSE.rise);
-  return standing(plot, corners(plot).top.y - Math.min(ridge.y, stack.y - 64) + 20);
+  funHouseLife(ctx, spot, time, { front, eaves, peak, chimney });
+  const ridge = onSpot(spot, 0.5, 0.92, eaves + HOUSE.rise);
+  return standing(spot, corners(spot).top.y - Math.min(ridge.y, stack.y - 64) + 20);
 };

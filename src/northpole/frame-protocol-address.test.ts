@@ -32,7 +32,7 @@ describe('readFrameAddress', () => {
     for (const hash of [
       '',
       '#booth/',
-      '#plot/jedi4ever',
+      '#spot/jedi4ever',
       '#booth/../northpole',
       '#booth/Jedi4ever',
       '#booth/-elf',

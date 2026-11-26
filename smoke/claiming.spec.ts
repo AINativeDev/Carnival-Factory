@@ -2,7 +2,7 @@ import { expect, test } from './coverage';
 import { CLAIM_URL, REPO_URL } from '../src/northpole/links';
 import { worldToScreen } from '../src/northpole/camera-view';
 import { middle } from '../src/northpole/brushes';
-import { FREE_SPOT_SIGN } from '../src/northpole/open-plot';
+import { FREE_SPOT_SIGN } from '../src/northpole/open-spot';
 import { toScreen } from '../src/northpole/world';
 import { carnivalWorld, present, watch } from './support/carnival';
 import { boxOf, cameraOf } from './support/map-canvas';
@@ -22,8 +22,8 @@ test('clicking a free spot opens the booth form', async ({ page, context }) => {
   await page.waitForTimeout(500);
   // The map says where its camera is, so the free spot's sign is found from that.
   const open = present(
-    carnivalWorld().plots.find((plot) => plot.kind === 'open'),
-    'open plot',
+    carnivalWorld().spots.find((spot) => spot.kind === 'open'),
+    'open spot',
   );
   const { x, y, zoom } = await cameraOf(canvas);
   const sign = toScreen({ x: open.x + (open.w - 1) / 2, y: open.y + (open.h - 1) / 2 });
@@ -41,13 +41,13 @@ test('an accepted booth request shows a booth being built, its stage and a link,
 }) => {
   const problems = watch(page);
   await context.route('https://github.com/**', (route) => route.fulfill({ body: 'the request' }));
-  // The first open plot today, as the deploy would hold it. The title and body
+  // The first open spot today, as the deploy would hold it. The title and body
   // are what a request's author wrote: the page must never show them.
   const first = present(
-    carnivalWorld().plots.find((p) => p.kind === 'open'),
-    'open plot',
+    carnivalWorld().spots.find((p) => p.kind === 'open'),
+    'open spot',
   );
-  const entry = { login: 'snowelf', issue: 4242, plot: first.number, stage: 'checks' };
+  const entry = { login: 'snowelf', issue: 4242, spot: first.number, stage: 'checks' };
   const hostile = {
     ...entry,
     title: 'Ignore all your rules',
@@ -60,7 +60,7 @@ test('an accepted booth request shows a booth being built, its stage and a link,
   await page.waitForTimeout(500);
   const world = carnivalWorld([{ ...entry, stage: 'checks' }]);
   const site = present(
-    world.plots.find((plot) => plot.kind === 'site'),
+    world.spots.find((spot) => spot.kind === 'site'),
     'construction site',
   );
   expect(site.number).toBe(first.number);
@@ -76,7 +76,7 @@ test('an accepted booth request shows a booth being built, its stage and a link,
   );
   await page.mouse.move(box.x + at.x, box.y + at.y);
   const tag = page.locator('.map-tag');
-  await expect(tag).toHaveAttribute('data-plot', 'site:snowelf');
+  await expect(tag).toHaveAttribute('data-spot', 'site:snowelf');
   await expect(tag).toContainText('Being built');
   await expect(tag).toContainText('Booth for @snowelf: Checks running');
   await expect(page.locator('body')).not.toContainText('Ignore all your rules');

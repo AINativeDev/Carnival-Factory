@@ -1,6 +1,6 @@
 /**
  * The player walking: with the keys or along a planned path round the
- * carnival, leaving footprints on the way to a plot, and inside a room toward
+ * carnival, leaving footprints on the way to a spot, and inside a room toward
  * where a click sent them and out through its doorway. Kept apart from the
  * drawing, since it's the one part of a frame that moves the player.
  */
@@ -11,7 +11,7 @@ import { toScreen, type Tile } from './world';
 import { screenDirection } from './walking';
 import { findPathToFirst } from './pathfinding';
 import { walkAlong } from './walking';
-import { plotAtDoor } from './walking';
+import { spotAtDoor } from './walking';
 import { moveBy } from './walking';
 import { tileOf } from './walking';
 
@@ -58,13 +58,13 @@ export function walk(m: MapRun, dt: number) {
   m.moving = m.player !== before;
   const dx = toScreen(m.player).x - toScreen(before).x;
   if (Math.abs(dx) > 0.01) m.facing = Math.sign(dx);
-  m.near = plotAtDoor(m.world, m.player);
+  m.near = spotAtDoor(m.world, m.player);
   // The trail ends once the player arrives at the picked square's door.
   if (m.trailing && !m.path.length) m.trailing = false;
   if (m.claiming || m.trailing) leaveFootprints(m, before);
 }
 
-/** Leaves a footprint each step on the way to a plot, until the player goes somewhere else. */
+/** Leaves a footprint each step on the way to a spot, until the player goes somewhere else. */
 function leaveFootprints(m: MapRun, before: Tile) {
   const lastStep = m.footprints.at(-1)?.at ?? before;
   const { player } = m;

@@ -15,7 +15,7 @@ import { SIGN_STYLES } from './sign-styles';
 import { standing } from './stall-plan';
 import type { NorthPoleSquare } from './square';
 import { theme } from './theme';
-import type { Box, Plot } from './world';
+import type { Box, Spot } from './world';
 
 const { colors } = theme;
 
@@ -25,16 +25,16 @@ const DISPLAY = { plinth: 26, back: 0.45 };
 /** Draws an item on its plinth, and returns where a click opens it. */
 export function drawDisplay(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   square: NorthPoleSquare,
   paint: PaintSquare,
 ): Box {
-  const { x, y } = middle(plot);
+  const { x, y } = middle(spot);
   shadow(ctx, x, y + 6, 40);
-  const plinth = inset(plot, 0.25);
+  const plinth = inset(spot, 0.25);
   const cloth = colors[square.stall?.roof ?? 'gold'];
   block(ctx, plinth, DISPLAY.plinth, cloth, colors.wood, colors.cocoa);
-  const face = faceOf({ ...plinth, door: plot.door });
+  const face = faceOf({ ...plinth, door: spot.door });
   faceSign(ctx, face, 4, DISPLAY.plinth - 4, square.name, '', 0, undefined, SIGN_STYLES.kiosk);
   // The card on top: a gold frame, the square's drawing in it, and a prop behind holding it up.
   const card = Math.abs(face.b.x - face.a.x) * 0.84;
@@ -45,5 +45,5 @@ export function drawDisplay(
   band(ctx, face, 0.04, 0.96, DISPLAY.plinth, low + card + 4, -DISPLAY.back);
   ctx.fill();
   paintOnFace(paint, square, face, 0.08, 0.92, low, -DISPLAY.back);
-  return standing(plot, low + card + 20);
+  return standing(spot, low + card + 20);
 }

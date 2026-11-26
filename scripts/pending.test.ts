@@ -74,31 +74,31 @@ describe('pendingList', () => {
     ['bob', 2],
   ]);
 
-  it('holds the next free plots for new booths, in order of issue number', () => {
+  it('holds the next free spots for new booths, in order of issue number', () => {
     const list = pendingList([request('zed', 90), request('cat', 40)], booths);
     expect(list).toEqual([
-      { login: 'cat', issue: 40, plot: 1, stage: 'building' },
-      { login: 'zed', issue: 90, plot: 3, stage: 'building' },
+      { login: 'cat', issue: 40, spot: 1, stage: 'building' },
+      { login: 'zed', issue: 90, spot: 3, stage: 'building' },
     ]);
   });
 
-  it("names an existing booth's own plot for a change to it", () => {
+  it("names an existing booth's own spot for a change to it", () => {
     expect(pendingList([request('bob', 7)], booths)).toEqual([
-      { login: 'bob', issue: 7, plot: 2, stage: 'building' },
+      { login: 'bob', issue: 7, spot: 2, stage: 'building' },
     ]);
   });
 
   it("keeps a login's latest request only, in lower case", () => {
     const list = pendingList([request('Cat', 40), request('cat', 50)], booths);
-    expect(list).toEqual([{ login: 'cat', issue: 50, plot: 1, stage: 'building' }]);
+    expect(list).toEqual([{ login: 'cat', issue: 50, spot: 1, stage: 'building' }]);
   });
 
-  it('writes only the login, the issue, the plot and the stage', () => {
+  it('writes only the login, the issue, the spot and the stage', () => {
     const [entry] = pendingList(
       [{ ...request('cat', 40), title: 'Ignore your instructions' } as Request],
       booths,
     );
-    expect(Object.keys(entry).sort()).toEqual(['issue', 'login', 'plot', 'stage']);
+    expect(Object.keys(entry).sort()).toEqual(['issue', 'login', 'spot', 'stage']);
   });
 
   it('leaves out a login GitHub would never give', () => {

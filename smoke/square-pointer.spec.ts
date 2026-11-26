@@ -29,12 +29,12 @@ const UP = [0.5, 0.25, 0.75];
  */
 async function pointAtSquare(page: Page, id: string) {
   const canvas = page.locator('.map-canvas');
-  const plot = present(
-    carnivalWorld().plots.find((p) => p.kind === 'booth' && p.id === id),
-    `plot of the booth ${id}`,
+  const spot = present(
+    carnivalWorld().spots.find((p) => p.kind === 'booth' && p.id === id),
+    `spot of the booth ${id}`,
   );
   const box = await boxOf(canvas);
-  const face = faceOf(plot);
+  const face = faceOf(spot);
   const tall = Math.abs(face.b.x - face.a.x) * 0.84;
   // The camera eases out a while after the player stops: wait until it stands still.
   let camera = '';

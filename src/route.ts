@@ -12,7 +12,7 @@ const ID = /^[\w-]+$/;
  * What the page's hash asks for: the map, perhaps focused on one square; the
  * player inside one square, in the world; the factory's numbers or the advent
  * calendar over the map;
- * or a link shared from before booths were called plots.
+ * or a link shared from before booths were called spots.
  */
 export type Route =
   | { view: 'map'; focus?: { kind: SquareKind; id: string } }
@@ -46,7 +46,7 @@ export function parseHash(hash: string): Route {
       : { view: 'level', login };
   }
 
-  const legacy = hash.match(/^#\/plot\/([\w-]+)$/);
+  const legacy = hash.match(/^#\/spot\/([\w-]+)$/);
   if (legacy) return { view: 'legacy', id: legacy[1] };
 
   const page = hash.match(/^#\/(booth|attraction)\/([\w-]+)$/);

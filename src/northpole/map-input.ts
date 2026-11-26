@@ -8,7 +8,7 @@ import { BILLBOARD, onBillboard } from './billboard';
 import { middle } from './brushes';
 import { screenToWorld } from './camera-view';
 import { clickInRoom, roomArea, roomLayout } from './interior';
-import { plotUnder } from './map-labels';
+import { spotUnder } from './map-labels';
 import { enter, open, select } from './map-open';
 import type { MapRun } from './map-state';
 import { KEYS, walkToward } from './map-walk';
@@ -68,8 +68,8 @@ export function onKeyDown(m: MapRun, event: KeyboardEvent) {
 
 /** The call to action, clicked: opens what it invites into. */
 export function onPrompt(m: MapRun) {
-  const plot = inviteFor(m.selected, m.near);
-  if (plot && !m.visiting) enter(m, plot);
+  const spot = inviteFor(m.selected, m.near);
+  if (spot && !m.visiting) enter(m, spot);
 }
 
 /**
@@ -92,14 +92,14 @@ export function onClick(m: MapRun, event: MouseEvent) {
     window.open(BILLBOARD.tickets, '_blank', 'noopener');
     return;
   }
-  const plot = plotUnder(m, point);
+  const spot = spotUnder(m, point);
   const touch = (event as PointerEvent).pointerType === 'touch';
-  if (plot && touch && m.hovered !== plot) {
-    m.hovered = plot;
+  if (spot && touch && m.hovered !== spot) {
+    m.hovered = spot;
     return;
   }
-  if (plot) {
-    open(m, plot);
+  if (spot) {
+    open(m, spot);
     return;
   }
   m.hovered = undefined;

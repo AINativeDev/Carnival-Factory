@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { drawingOf } from '../test-support/recording-canvas';
-import { drawPlot } from './render';
+import { drawSpot } from './render';
 import type { NorthPoleSquare } from './square';
-import type { Plot } from './world';
+import type { Spot } from './world';
 
-const plot: Plot = {
+const spot: Spot = {
   kind: 'attraction',
   id: 'workshop',
   number: 3,
@@ -29,7 +29,7 @@ const texts = (draw: (ctx: CanvasRenderingContext2D) => void) =>
 describe("a level's squares on the map", () => {
   it('stand as the stall each one chose, signed by nobody', () => {
     const signs = texts((ctx) => {
-      drawPlot(ctx, plot, square({ shape: 'cabin', roof: 'pine' }), () => undefined, 0);
+      drawSpot(ctx, spot, square({ shape: 'cabin', roof: 'pine' }), () => undefined, 0);
     });
     expect(signs).toContain('Workshop');
     expect(signs.some((text) => text.includes('@'))).toBe(false);
@@ -37,19 +37,19 @@ describe("a level's squares on the map", () => {
 
   it('draw differently from the pavilion an attraction without a stall gets', () => {
     const cabin = drawingOf((ctx) => {
-      drawPlot(ctx, plot, square({ shape: 'cabin', roof: 'pine' }), () => undefined, 0);
+      drawSpot(ctx, spot, square({ shape: 'cabin', roof: 'pine' }), () => undefined, 0);
     });
     const pavilion = drawingOf((ctx) => {
-      drawPlot(ctx, plot, square(), () => undefined, 0);
+      drawSpot(ctx, spot, square(), () => undefined, 0);
     });
     expect(cabin).not.toEqual(pavilion);
   });
 
   it("keep a booth's own sign, with its owner", () => {
     const signs = texts((ctx) => {
-      drawPlot(
+      drawSpot(
         ctx,
-        { ...plot, kind: 'booth', id: 'ana' },
+        { ...spot, kind: 'booth', id: 'ana' },
         { ...square({ shape: 'shed', roof: 'gold' }), id: 'ana' },
         () => undefined,
         0,

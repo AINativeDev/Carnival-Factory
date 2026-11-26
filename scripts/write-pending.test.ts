@@ -2,14 +2,14 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { boothPlots, pendingRequests } from './write-pending';
+import { boothSpots, pendingRequests } from './write-pending';
 import { fakeGitHub } from './test-support/fake-github';
 
 /** A checkout with these pins and booth folders, each holding these files. */
 function checkout(pins: Record<string, number>, booths: Record<string, Record<string, string>>) {
   const root = mkdtempSync(join(tmpdir(), 'pending-'));
   mkdirSync(join(root, 'src', 'northpole'), { recursive: true });
-  writeFileSync(join(root, 'src/northpole/plots.json'), JSON.stringify({ booths: pins }));
+  writeFileSync(join(root, 'src/northpole/spots.json'), JSON.stringify({ booths: pins }));
   for (const [id, files] of Object.entries(booths)) {
     mkdirSync(join(root, 'carnival', 'booths', id), { recursive: true });
     for (const [name, text] of Object.entries(files)) {
@@ -19,22 +19,22 @@ function checkout(pins: Record<string, number>, booths: Record<string, Record<st
   return root;
 }
 
-describe('boothPlots', () => {
-  it('places each booth by its pin, then its own plot.json, as the map does', () => {
+describe('boothSpots', () => {
+  it('places each booth by its pin, then its own spot.json, as the map does', () => {
     const root = checkout(
       { ana: 30 },
       {
         ana: { 'booth.ts': '' },
-        bob: { 'booth.ts': '', 'plot.json': '{ "plot": 40, "issue": 7 }' },
-        cy: { 'booth.ts': '', 'plot.json': 'not json' },
+        bob: { 'booth.ts': '', 'spot.json': '{ "spot": 40, "issue": 7 }' },
+        cy: { 'booth.ts': '', 'spot.json': 'not json' },
         draft: { 'README.md': '' },
       },
     );
-    const plots = boothPlots(root);
-    expect(plots.get('ana')).toBe(30);
-    expect(plots.get('bob')).toBe(40);
-    expect(plots.has('cy')).toBe(true);
-    expect(plots.has('draft')).toBe(false);
+    const spots = boothSpots(root);
+    expect(spots.get('ana')).toBe(30);
+    expect(spots.get('bob')).toBe(40);
+    expect(spots.has('cy')).toBe(true);
+    expect(spots.has('draft')).toBe(false);
   });
 });
 

@@ -77,9 +77,10 @@ request.
 `docs/specs/` says what each part of the system does; `docs/adr/` says why it
 is that way. Read the spec for the area before you change it.
 [`docs/glossary.md`](docs/glossary.md) defines the words, and the plain ones
-visitors read on the page: a booth, a **free spot** (an open plot, in the
-code), **being built** (a construction site), never "claim" or "plot" in
-visitor text ([ADR 0037](docs/adr/0037-carnival-factory-and-plain-words.md)).
+visitors read on the page: a booth, a **free spot** (`kind: 'open'` in the
+code), **being built** (a construction site), never "claim" or "plot". The
+code says spot too, so the page and the code use one word
+([ADR 0049](docs/adr/0049-spots-in-the-code.md)).
 
 - A change to the map's code, its checks, the factory or the workflows updates
   the matching spec in the same pull request, so the spec stays true.
@@ -100,7 +101,7 @@ visitor text ([ADR 0037](docs/adr/0037-carnival-factory-and-plain-words.md)).
 - **Small files.** A code file has at most 200 lines; split by concern before
   it grows past that ([ADR 0019](docs/adr/0019-small-files.md)).
 - **Meaningful names and comments.** Name things for what they are in the
-  carnival (a booth, a plot, the gate), not how they work, and write comments
+  carnival (a booth, a spot, the gate), not how they work, and write comments
   that say why: purpose, what would break, which ADR or spec they carry out.
   Never a comment that repeats the code ([ADR 0023](docs/adr/0023-meaningful-names-and-docs.md)).
 - **No dead code.** Remove what a change stops using, in the same change
@@ -189,26 +190,26 @@ src/
                             snow slab, lit volumes, glows (plain functions)
     booths.ts               finds every booth folder and puts it on the map
     attractions.ts          finds every attraction folder and puts it on the midway
-    world.ts                the isometric world: its tiles, ground, things and plots,
-                            and the projection (plain functions), with world-plots.ts
-                            (where each numbered plot is), world-build.ts, world-town.ts,
+    world.ts                the isometric world: its tiles, ground, things and spots,
+                            and the projection (plain functions), with world-spots.ts
+                            (where each numbered spot is), world-build.ts, world-town.ts,
                             world-sights.ts and groundwork.ts (laying it out), walking.ts
                             and pathfinding.ts
-    plots.json              the maintainers' pins: which plot each square keeps
-    plots.ts                which plot each booth gets from the pins, its own plot.json
+    spots.json              the maintainers' pins: which spot each square keeps
+    spots.ts                which spot each booth gets from the pins, its own spot.json
                             and the booths being built (plain functions)
     construction-sites.ts   the booths being built: their stages, and reading pending.json
     camera.ts               framing the island: its outline, the zoom and where the
                             camera looks on a laptop and a phone (plain functions), with
                             camera-view.ts for viewport points and dragging and pinching
-    render.ts               drawing the diorama: hands each thing and plot to the small
+    render.ts               drawing the diorama: hands each thing and spot to the small
                             file that draws it: sky.ts, island.ts, ground.ts, pines.ts,
                             houses.ts, street-things.ts, midway.ts, entrance.ts,
                             people.ts; stall.ts and the stall-*.ts files for each
                             booth's chosen shape (stall-catalogue.ts plans each one),
                             pavilion.ts, landmarks.ts and the landmark-*.ts files
-                            for each attraction's landmark, tower.ts, open-plot.ts,
-                            site.ts, platform.ts and plot-marks.ts; faces.ts and
+                            for each attraction's landmark, tower.ts, open-spot.ts,
+                            site.ts, platform.ts and spot-marks.ts; faces.ts and
                             name-board.ts for the signs and drawings on their fronts
     map.ts                  the walkable map (camera, keys, clicks, hover tags,
                             and going inside a square)
@@ -242,7 +243,7 @@ src/
     gallery-*.ts            the gallery room's art, signs, statues, people and party
     links.ts                links to the repository's issue forms
 docs/
-  glossary.md               the words: booth, plot and free spot, being built, and more
+  glossary.md               the words: booth, spot and free spot, being built, and more
   style.md                  the diorama style every square follows by default
   booth-ideas.md            ideas and tips for a booth request
   elf-engineer.md           the Elf Engineer badge, and how to get it
@@ -289,7 +290,7 @@ scripts/
   write-square-history.ts   reads them from the GitHub API and writes square-history.json,
                             with the factory's numbers, before the deploy's build
                             (previews have none)
-  pending.ts                each booth request's stage and held plot (plain functions)
+  pending.ts                each booth request's stage and held spot (plain functions)
   write-pending.ts          reads the accepted booth requests from the GitHub API and
                             writes pending.json before the deploy's build (previews have none)
   booth-dates.ts            when each booth's folder first appeared, from git history,
@@ -352,8 +353,8 @@ for the author's own booth like any other, so the factory builds it in
 
 - Copy the files of `carnival/booths/<login>/` as they are on the base into
   `carnival/booths/<author>/`, replacing any booth the author already had there,
-  except `plot.json`: that holds `<login>`'s plot, never the author's. Keep
-  the author's own `plot.json` if they have one, and for a new booth write
+  except `spot.json`: that holds `<login>`'s spot, never the author's. Keep
+  the author's own `spot.json` if they have one, and for a new booth write
   one only as **Construction sites** says.
 - Set `id` to `<author>`, and change whatever else the request asks for.
 - Say at the top of its `README.md` that it's a remix: "Remixed from
@@ -456,7 +457,7 @@ uses any of it:
 6. A `README.md` that says what the booth shows and stays true to the code.
 7. Within the size budget in `scripts/square-size.ts`: 50 KB of code gzipped,
    and 200 KB of other files.
-8. Optionally, for a new booth, a `plot.json` with the plot its construction
+8. Optionally, for a new booth, a `spot.json` with the spot its construction
    site held (see **Construction sites**). It's the only JSON file a booth
    has, and the gate checks it holds just those two numbers.
 
@@ -482,29 +483,29 @@ from 0 to 20) and passes on as plain values, never the page's own events. So
 with no `ctx.canvas` DOM element, and a square that throws, hangs or never
 loads shows "Under construction" without touching anything else.
 
-**Plots stay put.** The map is an isometric world, and each square stands on a
-numbered plot: attractions round the town square, booths along the lanes. A
-plot's number always means the same place. A booth's plot comes from, in
-order: its pin in `src/northpole/plots.json`, which holds the attractions and the
+**Spots stay put.** The map is an isometric world, and each square stands on a
+numbered spot: attractions round the town square, booths along the lanes. A
+spot's number always means the same place. A booth's spot comes from, in
+order: its pin in `src/northpole/spots.json`, which holds the attractions and the
 booths that were there before construction sites, and only maintainers change;
-else its own `carnival/booths/<login>/plot.json`, `{ "plot": <number>, "issue": <its
-request's issue number> }`; else the next free plot (`src/northpole/plots.ts`). A
-booth with a pin or a `plot.json` never moves. If two booths' `plot.json`s
-claim one plot, the lower issue number keeps it and the other takes the next
-free plot.
+else its own `carnival/booths/<login>/spot.json`, `{ "spot": <number>, "issue": <its
+request's issue number> }`; else the next free spot (`src/northpole/spots.ts`). A
+booth with a pin or a `spot.json` never moves. If two booths' `spot.json`s
+claim one spot, the lower issue number keeps it and the other takes the next
+free spot.
 
 **Construction sites.** While an accepted booth request is being built, the map
-shows a construction site on the plot held for it, with `@login` and its
+shows a construction site on the spot held for it, with `@login` and its
 stage; visitors see it as a booth "Being built". Nothing about it is
 committed: every deploy reads the open requests labelled `booth-request` and `tessl` from the API (`scripts/write-pending.ts`)
-and writes `pending.json` beside the page, holding the next free plots in order
+and writes `pending.json` beside the page, holding the next free spots in order
 of issue number. **When you build a new booth** (no `carnival/booths/<login>/` yet),
 read the live site's `pending.json` (the site is `gh api
 repos/<owner>/<repo>/pages --jq .html_url`), find the entry for the login, and
-write its `plot` and `issue` to `carnival/booths/<login>/plot.json`, so the booth lands
+write its `spot` and `issue` to `carnival/booths/<login>/spot.json`, so the booth lands
 where its site stood. If the login isn't there, or the file can't be read,
-write no `plot.json`: the booth takes the next free plot. A change to an
-existing booth never adds or changes its `plot.json`.
+write no `spot.json`: the booth takes the next free spot. A change to an
+existing booth never adds or changes its `spot.json`.
 
 **The kill switch**, `src/northpole/disabled.json`, has a list of booth logins, a
 separate list of attraction ids, and a list of level logins. A square in either
@@ -536,8 +537,8 @@ A participant's **level** is a whole patch of the North Pole of their own,
 `carnival/levels/<their login>/`, theirs exactly like their booth: the **Booth
 ownership** check lets them change `carnival/booths/<login>/` and `carnival/levels/<login>/`, and
 nothing else. Visitors reach it from the **sleigh station**, one platform per
-participant's level along the main path by the entrance (`platformPlot` in
-`src/northpole/world-plots.ts`); the North Pole's own levels have none, since
+participant's level along the main path by the entrance (`platformSpot` in
+`src/northpole/world-spots.ts`); the North Pole's own levels have none, since
 their landmark attraction is the way in. E, Enter or a click on a platform takes the sleigh there,
 and `#/level/<login>` opens it directly. Inside, the map walks the level's own
 world, `#/level/<login>?square=<id>` puts the player in front of one of its

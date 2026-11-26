@@ -1,7 +1,7 @@
 # Map and world
 
 The North Pole is a small isometric world that visitors walk round. Every
-square stands on a numbered plot, and the page's hash decides what is shown.
+square stands on a numbered spot, and the page's hash decides what is shown.
 
 ## Behaviour
 
@@ -14,12 +14,12 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   visitors read follow the [glossary](../glossary.md).
 
 - The world has a town square in the middle, an avenue off each side and lanes
-  off the avenues. Attractions stand on 3 by 3 plots in rings round the town
-  square, booths on 2 by 2 plots along the lanes. Each attraction stands as
+  off the avenues. Attractions stand on 3 by 3 spots in rings round the town
+  square, booths on 2 by 2 spots along the lanes. Each attraction stands as
   its landmark, and each booth as its stall shape, the one it chose or the
   one its id picks, so no two neighbours need look alike (ADR 0042).
-- There are always 3 open plots on top of the booths and the construction
-  sites, which visitors see as free spots: each has a "Free spot" sign, its
+- There are always 3 free spots on top of the booths and the construction
+  sites: each has a "Free spot" sign, its
   tag says "Free spot", and the call to action at it says "Build your booth
   here". A click, E or Enter at one opens the booth form.
 - The player walks with WASD or the arrow keys, or by clicking a tile, and
@@ -72,8 +72,8 @@ square stands on a numbered plot, and the page's hash decides what is shown.
   from the map goes to its level instead, ADR 0035); `#/level/<login>`,
   `#/level/<login>?square=<id>` and `#/level/<login>/<id>` a level;
   `#/factory`; `#/advent`; `#/season/<login>` a season card; `#/keep-posted`
-  a placeholder page; `#/plot/<id>`, a link from before booths were called
-  plots, is replaced by `#/booth/<id>`. Anything else is the plain map.
+  a placeholder page; `#/spot/<id>`, a link from before booths were called
+  spots, is replaced by `#/booth/<id>`. Anything else is the plain map.
 - A deep link to a booth or attraction that isn't there says so in a note on
   the map, with a "Get a booth" link for a booth.
 - Leaving a square goes back in history when the visit began from the map,
@@ -87,18 +87,18 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 - The world is built from a fixed seed (1225) and the list of squares only,
   never `Math.random()`, so the same squares always make the same world
   (enforced by: src/northpole/world.test.ts).
-- A plot's number always means the same place. Adding a booth never moves an
+- A spot's number always means the same place. Adding a booth never moves an
   attraction or an existing booth, and every square on the map today is
   pinned (enforced by: src/northpole/world.test.ts).
-- A booth's plot comes from, in order: its pin in `src/northpole/plots.json`,
-  else its own `plot.json`, else the lowest free number. A pin wins over a
-  `plot.json`. When two `plot.json`s claim one plot, the lower issue number
-  keeps it and the other takes the next free plot. A `plot.json` plot that is
-  pinned, taken, or at or past booths + 100, falls back to the next free plot
-  (enforced by: src/northpole/plots.test.ts).
-- Only maintainers change `plots.json` (enforced by:
+- A booth's spot comes from, in order: its pin in `src/northpole/spots.json`,
+  else its own `spot.json`, else the lowest free number. A pin wins over a
+  `spot.json`. When two `spot.json`s claim one spot, the lower issue number
+  keeps it and the other takes the next free spot. A `spot.json` spot that is
+  pinned, taken, or at or past booths + 100, falls back to the next free spot
+  (enforced by: src/northpole/spots.test.ts).
+- Only maintainers change `spots.json` (enforced by:
   scripts/check-booth-ownership.ts).
-- There are always open plots (free spots), and every plot is reachable from the town
+- There are always free spots, and every spot is reachable from the town
   square (enforced by: src/northpole/world.test.ts).
 - Route names are lower-cased and must match `[\w-]+`; anything malformed is
   the plain map (enforced by: src/route.test.ts). A name from the address is
@@ -115,40 +115,40 @@ square stands on a numbered plot, and the page's hash decides what is shown.
 `src/main.ts`, `src/router.ts`, `src/page.ts`, `src/map-page.ts`,
 `src/map-page-markup.ts`, `src/map-notes.ts`, `src/dom.ts`, `src/route.ts`,
 `src/updates.ts`, `src/northpole/world.ts`,
-`src/northpole/world-plots.ts`, `src/northpole/world-build.ts`,
+`src/northpole/world-spots.ts`, `src/northpole/world-build.ts`,
 `src/northpole/world-town.ts`, `src/northpole/world-sights.ts`,
 `src/northpole/groundwork.ts`, `src/northpole/walking.ts`,
-`src/northpole/pathfinding.ts`, `src/northpole/plots.ts`,
-`src/northpole/plots.json`, `src/northpole/camera.ts`, `src/northpole/camera-view.ts`
+`src/northpole/pathfinding.ts`, `src/northpole/spots.ts`,
+`src/northpole/spots.json`, `src/northpole/camera.ts`, `src/northpole/camera-view.ts`
 (the zoom's maths: `zoomBy`, `wheelZoom`),
 `src/northpole/map.ts` (starting the map and wiring it to the page) with its
 parts in `src/northpole/map-*.ts`, which share one `MapRun`
 (`map-state.ts`; the zoom buttons, wheel and keys are `map-zoom.ts` and
 `map-zoom-buttons.ts`), `src/northpole/draw-square.ts`, `src/northpole/visit.ts`,
 and the drawing:
-`src/northpole/render.ts`, which hands each thing and plot to the small file
+`src/northpole/render.ts`, which hands each thing and spot to the small file
 that draws it (`ground.ts`, `island.ts`, `sky.ts`, `pines.ts`, `houses.ts`,
 `street-things.ts`, `midway.ts`, `entrance.ts`, `people.ts`, `faces.ts`,
 `name-board.ts`, `stall.ts` with `stall-catalogue.ts`, `stall-default.ts` and
 the `stall-*.ts` files, `pavilion.ts`, `landmarks.ts` with `landmark-parts.ts`
-and the `landmark-*.ts` files, `tower.ts`, `open-plot.ts`, `site.ts`, `platform.ts` and `plot-marks.ts`).
+and the `landmark-*.ts` files, `tower.ts`, `open-spot.ts`, `site.ts`, `platform.ts` and `spot-marks.ts`).
 
 ## Tested by
 
 `src/route.test.ts`, `src/router.test.ts`, `src/router-levels.test.ts`,
 `src/page.test.ts`, `src/map-page.test.ts`, `src/dom.test.ts`,
 `src/updates.test.ts`, `src/northpole/world.test.ts`,
-`src/northpole/world-build.test.ts`, `src/northpole/world-plots.test.ts`,
+`src/northpole/world-build.test.ts`, `src/northpole/world-spots.test.ts`,
 `src/northpole/world-sights.test.ts`, `src/northpole/world-pin.test.ts`,
 `src/northpole/walking.test.ts`, `src/northpole/pathfinding.test.ts`,
-`src/northpole/plots.test.ts`, `src/northpole/camera.test.ts`,
+`src/northpole/spots.test.ts`, `src/northpole/camera.test.ts`,
 `src/northpole/draw-square.test.ts`, `src/northpole/map-*.test.ts` (the
 map running in happy-dom through `src/test-support/map-harness.ts`, with
 `map-pins-*.test.ts` pinning what it draws frame by frame),
 `src/northpole/visit.test.ts`,
-`src/northpole/render-pins-plots.test.ts` and
+`src/northpole/render-pins-spots.test.ts` and
 `src/northpole/render-pins-scene.test.ts` (every drawing, pinned by its
 fingerprint), `smoke/map.spec.ts` (walking, fitting the window),
 `smoke/zoom.spec.ts` (the zoom buttons, the wheel and the keys, at 1500 by 900
 and 390 by 844, and on a level),
-`smoke/deep-links.spec.ts` and `smoke/claiming.spec.ts` (open plots).
+`smoke/deep-links.spec.ts` and `smoke/claiming.spec.ts` (open spots).

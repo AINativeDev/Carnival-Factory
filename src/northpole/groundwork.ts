@@ -1,7 +1,7 @@
 /**
  * The groundwork the North Pole is laid out with: the ground under each tile,
  * the tiles nobody can walk on, the things standing about, and the tiles kept
- * clear for paths and plots so the forest never grows over them. The town, the
+ * clear for paths and spots so the forest never grows over them. The town, the
  * sights and the forest (`world-town.ts`, `world-sights.ts`) all lay their part
  * through it, in the same order every time, so the same squares always make the
  * same world.
@@ -14,7 +14,7 @@ export interface Groundwork {
   /** Every tile you can't walk on. */
   blocked: Set<string>;
   things: Thing[];
-  /** Tiles nothing may grow on: paths, plots and the room round them. */
+  /** Tiles nothing may grow on: paths, spots and the room round them. */
   kept: Set<string>;
   /** Keeps a box of tiles, and `margin` tiles round it, clear of trees and drifts. */
   keep: (box: Box, margin?: number) => void;

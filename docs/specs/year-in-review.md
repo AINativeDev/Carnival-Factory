@@ -7,7 +7,7 @@ visitors gave, moderated and baked in at build
 
 ## Behaviour
 
-- The attraction `the-year-in-review` stands on plot 12 as a `gallery`
+- The attraction `the-year-in-review` stands on spot 12 as a `gallery`
   landmark. Opening it from the map takes the sleigh into the North Pole
   level of the same id; it has no sleigh platform
   ([attractions.md](attractions.md), [levels.md](levels.md)).

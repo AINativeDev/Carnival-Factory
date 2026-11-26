@@ -62,7 +62,7 @@ export interface StallStyle {
 
 /**
  * The landmarks an attraction may stand as on the home map, each drawn at its
- * 3 by 3 plot's size as what it is: The Factory's lettered tower, a big
+ * 3 by 3 spot's size as what it is: The Factory's lettered tower, a big
  * wheel, a merry-go-round, a big top, a coaster, an ice rink, a gingerbread
  * house, a shopfront, a cocoa hut, a game stall, a schoolhouse, a studio and a gallery.
  * Only attractions get one: the map drops it from a booth's or a level's

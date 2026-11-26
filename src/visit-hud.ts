@@ -37,7 +37,7 @@ export interface VisitHudOptions {
   invite: boolean;
   /** Leaves the square: Esc, or the Leave button. */
   onClose(): void;
-  /** Claim the plot next door. */
+  /** Claim the spot next door. */
   onClaim(): void;
   /** Says the visitor shared this booth as theirs, so the map knows who they are. */
   onMine?(): void;
@@ -163,7 +163,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
     offerLevelNext(card);
   });
 
-  // Someone who came by a shared link to a booth can claim the plot next door instead.
+  // Someone who came by a shared link to a booth can claim the spot next door instead.
   const claim = options.invite && kind === 'booth';
   $<HTMLElement>('.visit-claim').hidden = !claim;
   $<HTMLElement>('.visit-build').hidden = claim;

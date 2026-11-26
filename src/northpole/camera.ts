@@ -17,7 +17,7 @@ const HEADROOM = 140;
 export const MARGIN = 32;
 /** The room left round the carnival on a laptop, in CSS pixels. */
 export const CARNIVAL_MARGIN = 12;
-/** How far the pavilions' roofs rise over their plots, in world pixels. */
+/** How far the pavilions' roofs rise over their spots, in world pixels. */
 const CARNIVAL_HEADROOM = 240;
 /** How near the camera ever comes on a laptop. */
 const MAX_ZOOM = 1.25;
@@ -71,14 +71,14 @@ export function tilesOnScreen(box: Box): Box {
 }
 
 /**
- * The box round the carnival itself: every plot and what stands on it, the
+ * The box round the carnival itself: every spot and what stands on it, the
  * town square, the ends of the avenues and the entrance, without the forest
  * and the sights round it. It grows with the booths, as the island does.
  */
 export function carnivalBounds(world: World): Box {
-  const plots = union(world.plots.map(tilesOnScreen));
+  const spots = union(world.spots.map(tilesOnScreen));
   return union([
-    { ...plots, y: plots.y - CARNIVAL_HEADROOM, h: plots.h + CARNIVAL_HEADROOM },
+    { ...spots, y: spots.y - CARNIVAL_HEADROOM, h: spots.h + CARNIVAL_HEADROOM },
     tilesOnScreen({ x: world.start.x, y: world.start.y - 1, w: 1, h: 3 }),
   ]);
 }

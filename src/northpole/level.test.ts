@@ -117,16 +117,16 @@ describe('validateLevel', () => {
 });
 
 describe('levelWorld', () => {
-  it('centres the level, with its squares and exits on plots and visitors at the arrival', () => {
+  it('centres the level, with its squares and exits on spots and visitors at the arrival', () => {
     const world = levelWorld(small());
     expect(world.extent).toBe(5);
     expect(world.start).toEqual({ x: 0, y: 3 });
-    expect(world.plots.map((p) => [p.kind, p.id, p.x, p.y, p.door])).toEqual([
+    expect(world.spots.map((p) => [p.kind, p.id, p.x, p.y, p.door])).toEqual([
       ['attraction', 'hut', -1, -3, { x: 1, y: -3 }],
       ['exit', 'north-pole', -4, 3, { x: -2, y: 3 }],
     ]);
     expect(walkable(world, -5, -5)).toBe(false);
-    expect(findPath(world, world.start, world.plots[0].door)).toBeDefined();
+    expect(findPath(world, world.start, world.spots[0].door)).toBeDefined();
   });
 });
 

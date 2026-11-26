@@ -13,7 +13,7 @@
 import { rideCoaster } from './coaster-ride';
 import { LEVEL_PROPS, propPlace, type LevelPropKind } from './level-props';
 import { theme } from './theme';
-import { type Box, type Ground, key, type Plot, type Thing, type Tile, type World } from './world';
+import { type Box, type Ground, key, type Spot, type Thing, type Tile, type World } from './world';
 
 /** The ground a level may lay. Snow is everywhere else, or wooden floor indoors. */
 export const LEVEL_GROUNDS = ['snow', 'ice', 'path', 'water', 'bridge', 'floor', 'carpet'] as const;
@@ -98,7 +98,7 @@ export interface NorthPoleLevel {
   ride?: boolean;
 }
 
-/** A square's or an exit's plot inside a level, in the level's own tiles. */
+/** A square's or an exit's spot inside a level, in the level's own tiles. */
 export const standBox = (at: Tile): Box => ({ x: at.x, y: at.y, w: 2, h: 2 });
 export const standDoor = (at: Tile): Tile => ({ x: at.x + 2, y: at.y });
 
@@ -148,7 +148,7 @@ export function levelWorld(level: NorthPoleLevel): World {
   const at = (tile: Tile): Tile => ({ x: tile.x - half, y: tile.y - half });
   const ground = new Map<string, Ground>();
   const blocked = new Set<string>();
-  const plots: Plot[] = [];
+  const spots: Spot[] = [];
 
   const lay = (box: Box, tile: Ground) => {
     for (const t of tilesOf(box)) {
@@ -167,7 +167,7 @@ export function levelWorld(level: NorthPoleLevel): World {
 
   const stand = (kind: 'attraction' | 'exit', id: string, number: number, place: Tile) => {
     const box = { ...at(place), w: 2, h: 2 };
-    plots.push({ kind, id, number, ...box, door: at(standDoor(place)) });
+    spots.push({ kind, id, number, ...box, door: at(standDoor(place)) });
     for (const t of tilesOf(box)) blocked.add(key(t.x, t.y));
   };
   for (const [n, square] of (level.squares ?? []).entries())
@@ -178,7 +178,7 @@ export function levelWorld(level: NorthPoleLevel): World {
     ground,
     blocked,
     things,
-    plots,
+    spots,
     pond,
     paddock: { x: 0, y: 0, w: 0, h: 0 },
     strolls: [],

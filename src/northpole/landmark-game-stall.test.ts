@@ -8,9 +8,9 @@ import { elf, outfit } from './elf';
 import { drawGameStall, wobble } from './landmark-game-stall';
 import { releaseFrom, throwingArm } from './landmark-game-stall-life';
 import type { NorthPoleSquare } from './square';
-import type { Plot } from './world';
+import type { Spot } from './world';
 
-const plot: Plot = {
+const spot: Spot = {
   kind: 'attraction',
   id: 'snowball-toss',
   number: 4,
@@ -69,7 +69,7 @@ describe('the game stall’s throw', () => {
 describe('the game stall', () => {
   it('draws the same through a throw, and differently at each moment of it', () => {
     const prints = [0, 0.1, 0.5, 0.9].map((t) =>
-      pinDrawing((ctx, paint) => drawGameStall(ctx, plot, square, paint, t * THROW)),
+      pinDrawing((ctx, paint) => drawGameStall(ctx, spot, square, paint, t * THROW)),
     );
     expect(prints).toMatchSnapshot();
     expect(new Set(prints).size).toBe(prints.length);
@@ -78,7 +78,7 @@ describe('the game stall', () => {
   it('puts a snowball in the thrower’s hand as it winds up', () => {
     const arcs = (t: number) =>
       drawingOf((ctx) => {
-        drawGameStall(ctx, plot, square, () => undefined, t * THROW);
+        drawGameStall(ctx, spot, square, () => undefined, t * THROW);
       }).filter(([name]) => name === 'arc').length;
     expect(arcs(0.5)).toBe(arcs(0.1) + 1);
   });

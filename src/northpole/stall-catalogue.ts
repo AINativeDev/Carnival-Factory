@@ -11,7 +11,7 @@ import type { StallShape, ThemeColor } from './square';
 /** What the walls of a stall's room are made of inside. */
 export type WallMaterial = 'logs' | 'stripes' | 'planks' | 'blocks';
 
-/** A round or many-sided outline: its number of sides, its radius as a share of the plot, and its turn. */
+/** A round or many-sided outline: its number of sides, its radius as a share of the spot, and its turn. */
 interface Ring {
   sides: number;
   radius: number;

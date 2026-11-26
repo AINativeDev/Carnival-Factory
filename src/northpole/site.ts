@@ -1,5 +1,5 @@
 /**
- * The construction site on a plot held for a booth being built
+ * The construction site on a spot held for a booth being built
  * (docs/specs/construction-sites.md): trampled snow, scaffolding with a plank
  * floor, a few crates, an elf at work, and a sign with `@login` and its stage.
  */
@@ -7,7 +7,7 @@ import { block, corners, diamond, middle, shadow } from './brushes';
 import { drawPerson } from './people';
 import { standing } from './stall-plan';
 import { canvasFont, theme } from './theme';
-import { toScreen, type Box, type Plot, type Tile } from './world';
+import { toScreen, type Box, type Spot, type Tile } from './world';
 
 const { colors } = theme;
 
@@ -27,25 +27,25 @@ const SITE = { scaffold: 84, post: 34, w: 132, h: 44 };
  */
 export function drawSite(
   ctx: CanvasRenderingContext2D,
-  plot: Plot,
+  spot: Spot,
   label: SiteLabel,
   time: number,
   near = false,
 ): Box {
-  const c = corners(plot);
-  const { x, y } = middle(plot);
+  const c = corners(spot);
+  const { x, y } = middle(spot);
   shadow(ctx, x, y + 6, 70);
-  // Trampled snow, roped off like an open plot.
+  // Trampled snow, roped off like an open spot.
   ctx.fillStyle = colors.snowShade;
   diamond(ctx, c, 0);
   ctx.fill();
-  scaffolding(ctx, { x: plot.x + 0.3, y: plot.y + 0.2, w: plot.w - 0.75, h: plot.h - 0.75 });
-  cratesAndElf(ctx, plot, time);
+  scaffolding(ctx, { x: spot.x + 0.3, y: spot.y + 0.2, w: spot.w - 0.75, h: spot.h - 0.75 });
+  cratesAndElf(ctx, spot, time);
   // The sign on its post, at the front: who it's for and how far along it is.
   const foot = { x: (c.left.x + c.bottom.x) / 2, y: (c.left.y + c.bottom.y) / 2 + 4 };
   const top = siteSign(ctx, foot, label, near ? Math.abs(Math.sin(time / 180)) * 6 : 0);
   const { w } = SITE;
-  const box = standing(plot, SITE.scaffold + 10);
+  const box = standing(spot, SITE.scaffold + 10);
   const left = Math.min(box.x, foot.x - w / 2 - 4);
   return {
     x: left,
@@ -104,14 +104,14 @@ function scaffolding(ctx: CanvasRenderingContext2D, inner: Box) {
 }
 
 /** Crates stacked by the front, and the elf at work beside them, swinging a hammer. */
-function cratesAndElf(ctx: CanvasRenderingContext2D, plot: Plot, time: number) {
+function cratesAndElf(ctx: CanvasRenderingContext2D, spot: Spot, time: number) {
   const crate = (box: Box, lift = 0) => {
     block(ctx, box, 12, colors.gingerbread, colors.wood, colors.cocoa, lift);
   };
-  crate({ x: plot.x + plot.w - 0.95, y: plot.y + 0.05, w: 0.4, h: 0.4 });
-  crate({ x: plot.x + plot.w - 0.95, y: plot.y + 0.5, w: 0.4, h: 0.4 });
-  crate({ x: plot.x + plot.w - 0.95, y: plot.y + 0.25, w: 0.4, h: 0.4 }, 12);
-  const elf = { x: plot.x + plot.w - 0.75, y: plot.y + plot.h - 0.95 };
+  crate({ x: spot.x + spot.w - 0.95, y: spot.y + 0.05, w: 0.4, h: 0.4 });
+  crate({ x: spot.x + spot.w - 0.95, y: spot.y + 0.5, w: 0.4, h: 0.4 });
+  crate({ x: spot.x + spot.w - 0.95, y: spot.y + 0.25, w: 0.4, h: 0.4 }, 12);
+  const elf = { x: spot.x + spot.w - 0.75, y: spot.y + spot.h - 0.95 };
   drawPerson(ctx, elf, { coat: colors.pine, hat: colors.berry, scale: 0.8 }, -1, false, 0);
   const hand = toScreen(elf);
   const swing = -0.5 + 0.45 * Math.sin(time / 320);

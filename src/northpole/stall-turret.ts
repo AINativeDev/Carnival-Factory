@@ -8,7 +8,7 @@
 import { glow, quad } from './brushes';
 import { band } from './faces';
 import { stallFront } from './stall-front';
-import { plotPoint, STALL, type StallParts } from './stall-plan';
+import { spotPoint, STALL, type StallParts } from './stall-plan';
 import { peakedRoof, prism } from './stall-volumes';
 import { theme } from './theme';
 import type { Tile } from './world';
@@ -22,7 +22,7 @@ const CORBEL = 8;
 /** The turret: its courses, the corbel and roof, its flag and arrow slits, then the board. */
 export function drawTurret(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const { face, deep, ground, wall, roof, look, square, paint, owner, time } = parts;
-  const centre = plotPoint(face, deep, { along: 0.5, depth: 0.5 });
+  const centre = spotPoint(face, deep, { along: 0.5, depth: 0.5 });
   const courses = Math.round(wall / COURSE);
   for (let k = 0; k < courses; k++) {
     // Blocks staggered course by course, light and lighter stone on the lit side.

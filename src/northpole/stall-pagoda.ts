@@ -9,14 +9,14 @@ import { glow } from './brushes';
 import { band } from './faces';
 import { sidesOf } from './rounds';
 import { stallFront } from './stall-front';
-import { plotPoint, type StallParts } from './stall-plan';
+import { spotPoint, type StallParts } from './stall-plan';
 import { prism } from './stall-volumes';
 import { theme } from './theme';
 import type { Tile } from './world';
 
 const { colors } = theme;
 
-/** One tier of roof: how far its eaves reach and how far in its top, as scales of the plot, and its lifts. */
+/** One tier of roof: how far its eaves reach and how far in its top, as scales of the spot, and its lifts. */
 interface Tier {
   eaves: number;
   top: number;
@@ -30,7 +30,7 @@ const SWEEP = 9;
 /** The pagoda: the walls and front, the lower roof, the upper storey and roof, the spire, then lanterns. */
 export function drawPagoda(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const { face, deep, ground, wall, roof, look, square, paint, owner, time } = parts;
-  const centre = plotPoint(face, deep, { along: 0.5, depth: 0.5 });
+  const centre = spotPoint(face, deep, { along: 0.5, depth: 0.5 });
   prism(ctx, ground, wall, undefined, colors.cream, colors.snowShade, 0, true);
   ctx.fillStyle = colors.berry;
   for (const [from, to] of [

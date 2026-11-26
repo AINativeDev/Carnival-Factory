@@ -8,7 +8,7 @@ import { bulb, quad, twinkle } from './brushes';
 import { band } from './faces';
 import { inTurn, sidesOf } from './rounds';
 import { stallFront } from './stall-front';
-import { plotPoint, STALL, type StallParts } from './stall-plan';
+import { spotPoint, STALL, type StallParts } from './stall-plan';
 import { prism } from './stall-volumes';
 import { theme } from './theme';
 import type { Tile } from './world';
@@ -25,7 +25,7 @@ const EAVES = 1.1;
 /** The gazebo: deck, posts and rails back to front, the roof, its lights, then the board. */
 export function drawGazebo(ctx: CanvasRenderingContext2D, parts: StallParts) {
   const { face, deep, ground, wall, roof, look, square, paint, owner, time } = parts;
-  const centre = plotPoint(face, deep, { along: 0.5, depth: 0.5 });
+  const centre = spotPoint(face, deep, { along: 0.5, depth: 0.5 });
   prism(ctx, ground, DECK, colors.snowShade, colors.wood, colors.cocoa);
   const posts = shrunk(ground, centre, 0.92);
   // Each side's rail and the post at its start, farthest first, so nearer ones cover them.

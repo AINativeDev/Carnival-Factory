@@ -69,13 +69,13 @@ export interface MapControls {
   nearest(count: number): { kind: SquareKind; id: string }[];
   /** Says who the visitor is, so their own booth stands out, or that the page doesn't know. */
   setMe(login: string | undefined): void;
-  /** Shows the booth requests being built: construction sites on their plots, and "Being updated" on booths. */
+  /** Shows the booth requests being built: construction sites on their spots, and "Being updated" on booths. */
   setPending(pending: readonly PendingBooth[]): void;
   /** The logins whose booths are being built, on construction sites now. */
   readonly sites: string[];
-  /** Walks the player to the nearest open plot. */
-  walkToOpenPlot(): void;
-  /** Walks the player to the open plot nearest them, leaving footprints, and bounces its sign. */
+  /** Walks the player to the nearest open spot. */
+  walkToOpenSpot(): void;
+  /** Walks the player to the open spot nearest them, leaving footprints, and bounces its sign. */
   claimNextDoor(): void;
   /** Takes the player inside a square, with a short fade. Returns whether it's there. */
   visit(kind: SquareKind, id: string): boolean;

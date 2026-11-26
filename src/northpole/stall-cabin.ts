@@ -7,26 +7,26 @@
 import { block, quad } from './brushes';
 import type { Face } from './faces';
 import { stallFront } from './stall-front';
-import { plotPoint, type StallParts } from './stall-plan';
+import { spotPoint, type StallParts } from './stall-plan';
 import { theme } from './theme';
 import type { Tile } from './world';
 
 const { colors } = theme;
 
-/** A point on the cabin's plot, `along` its front, `depth` back from it and `lift` up. */
+/** A point on the cabin's spot, `along` its front, `depth` back from it and `lift` up. */
 type CabinPoint = (along: number, depth: number, lift: number) => Tile;
 
-/** How far the roof hangs over the walls, front and back and either side, as a share of the plot. */
+/** How far the roof hangs over the walls, front and back and either side, as a share of the spot. */
 const OVER = 0.08;
 
 /** The cabin stall: log walls, the front, and the pitched roof over them. */
 export function drawCabinStall(ctx: CanvasRenderingContext2D, parts: StallParts) {
-  const { plot, face, deep, wall, roof, look, square, paint, owner } = parts;
-  block(ctx, plot, wall, colors.snowShade, colors.wood, colors.cocoa);
+  const { spot, face, deep, wall, roof, look, square, paint, owner } = parts;
+  block(ctx, spot, wall, colors.snowShade, colors.wood, colors.cocoa);
   // Logs along the walls, a round end on each at the front corners.
   const sides: [Tile, Tile][] = [
     [face.a, face.b],
-    [face.b, plotPoint(face, deep, { along: 1, depth: 1 })],
+    [face.b, spotPoint(face, deep, { along: 1, depth: 1 })],
   ];
   for (let k = 0; k < 8; k++) {
     const lift = (wall * (k + 0.5)) / 8;
@@ -63,7 +63,7 @@ function cabinRoof(
   rise: number,
   color: string,
 ) {
-  const at: CabinPoint = (along, depth, lift) => plotPoint(face, deep, { along, depth }, lift);
+  const at: CabinPoint = (along, depth, lift) => spotPoint(face, deep, { along, depth }, lift);
   // The far slope first, then the gable end in logs over it, then the near slope.
   const near = face.out.x > 0 ? 0 : 1;
   cabinSlope(ctx, at, near === 0 ? 1 : 0, wall, rise, color);
