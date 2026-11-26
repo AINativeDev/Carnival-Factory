@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { advance, autopilotTarget, newRun, restart, speedAt, type Run } from './game';
+import { autopilotTarget } from './autopilot';
+import { advance, newRun, restart, speedAt, type Run } from './game';
 
 /** Runs the van with a steering rule for `seconds`, in 30 ms steps. */
 function drive(run: Run, seconds: number, steer: (state: Run) => number): Run {
@@ -32,6 +33,23 @@ describe('advance', () => {
     const later = drive(hit, 2, () => 0);
     expect(later.crashed).toBe(true);
     expect(later.van.speed).toBeLessThan(hit.van.speed);
+  });
+
+  it('keeps the street, the traffic and the sparkles moving together through a crash', () => {
+    const run = newRun(1);
+    run.traffic.push({ kind: 'bus', x: 0, z: 1 }, { kind: 'van', x: 0.7, z: 60 });
+    run.parcels.push({ x: -0.6, z: 40 });
+    run.sparks.push({ at: 0 });
+    const hit = advance(run, 0.03, 0);
+    let later = hit;
+    for (let step = 0; step < 5; step += 1) later = advance(later, 0.2, 0);
+    const rolled = later.dist - hit.dist;
+    expect(rolled).toBeGreaterThan(0);
+    expect(later.traffic[1]?.z).toBeCloseTo((hit.traffic[1]?.z ?? 0) - rolled);
+    expect(later.parcels[0]?.z).toBeCloseTo((hit.parcels[0]?.z ?? 0) - rolled);
+    expect(later.time).toBeCloseTo(hit.time + 1);
+    expect(later.sparks).toHaveLength(0);
+    expect(later.score).toBe(hit.score);
   });
 
   it('lets traffic in another lane go by', () => {

@@ -1,7 +1,6 @@
 /**
  * North Pole Night Run's rules, as plain functions: the van's speed and its
- * slide on the ice, the traffic and parcels coming up the road, a crash, and
- * the autopilot that plays the stall's front when nobody is steering.
+ * slide on the ice, the traffic and parcels coming up the road, and a crash.
  * Distances are metres down the road and sideways positions run from -1 (the
  * left kerb) to 1 (the right); `z` is how far ahead of the van something is.
  */
@@ -11,7 +10,7 @@ export type TrafficKind = 'sleigh' | 'plough' | 'van' | 'bus';
 /** The traffic's mix, with sleighs twice as common as the rest. */
 const TRAFFIC_KINDS: readonly TrafficKind[] = ['sleigh', 'plough', 'van', 'bus', 'sleigh'];
 /** How far from its middle a kind of traffic still hits the van. */
-function halfWidth(kind: TrafficKind): number {
+export function halfWidth(kind: TrafficKind): number {
   if (kind === 'plough') return 0.3;
   if (kind === 'bus') return 0.28;
   return kind === 'van' ? 0.22 : 0.2;
@@ -59,8 +58,10 @@ const SPAWN_Z = 150;
 const START_SPEED = 14;
 const TOP_SPEED = 34;
 const ONCOMING = 5;
-const SIDE_LIMIT = 0.85;
-const VAN_HALF = 0.2;
+/** How near the kerb the van may go. */
+export const SIDE_LIMIT = 0.85;
+/** How far from its middle the van still hits something. */
+export const VAN_HALF = 0.2;
 const CRASH_LENGTH = 2.5;
 const PARCEL_POINTS = 10;
 
@@ -130,11 +131,23 @@ function steered(van: Run['van'], dt: number, target: number): Run['van'] {
 
 /** The run `dt` seconds on, with the van steering for sideways position `target`. */
 export function advance(run: Run, dt: number, target: number): Run {
-  if (run.crashed) {
-    const van = { ...run.van, speed: run.van.speed * Math.max(0, 1 - dt * 2.5) };
-    return { ...run, van, crashTime: run.crashTime + dt, dist: run.dist + van.speed * dt };
-  }
   const time = run.time + dt;
+  if (run.crashed) {
+    // Everyone stops for the spin-out, so the traffic and parcels roll by with
+    // the road, and the sparkles still fade, while the score stays put.
+    const van = { ...run.van, speed: run.van.speed * Math.max(0, 1 - dt * 2.5) };
+    const rolled = van.speed * dt;
+    return {
+      ...run,
+      time,
+      van,
+      crashTime: run.crashTime + dt,
+      dist: run.dist + rolled,
+      traffic: run.traffic.map((car) => ({ ...car, z: car.z - rolled })),
+      parcels: run.parcels.map((parcel) => ({ ...parcel, z: parcel.z - rolled })),
+      sparks: run.sparks.filter((burst) => time - burst.at < 0.7),
+    };
+  }
   const van = { ...steered(run.van, dt, target), speed: speedAt(time) };
   const step = van.speed * dt;
   const closing = (van.speed + ONCOMING) * dt;
@@ -170,26 +183,4 @@ export function advance(run: Run, dt: number, target: number): Run {
     best: Math.max(run.best, score),
     crashed: hit,
   });
-}
-
-/** Where the autopilot steers: the clear line through the traffic that picks up parcels. */
-export function autopilotTarget(run: Run): number {
-  let bestX = 0;
-  let bestCost = Infinity;
-  for (let x = -SIDE_LIMIT; x <= SIDE_LIMIT + 1e-9; x += 0.05) {
-    let cost = Math.abs(x - run.van.x) * 0.4 + Math.abs(x) * 0.2;
-    for (const car of run.traffic) {
-      if (car.z < -3 || car.z > 90) continue;
-      const room = Math.abs(x - car.x) - halfWidth(car.kind) - VAN_HALF;
-      if (room < 0.18) cost += 200 / (1 + car.z * 0.04);
-    }
-    for (const parcel of run.parcels) {
-      if (parcel.z > 0 && parcel.z < 60 && Math.abs(x - parcel.x) < 0.12) cost -= 1.5;
-    }
-    if (cost < bestCost) {
-      bestCost = cost;
-      bestX = x;
-    }
-  }
-  return bestX;
 }

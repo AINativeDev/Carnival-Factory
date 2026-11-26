@@ -24,12 +24,15 @@ export function drawSnowfall(ctx: Ctx, size: number, time: number, dist: number,
     const flake = flakeAt(i, time, dist, speed);
     const x = flake.x * size;
     const y = flake.y * size;
-    ctx.lineWidth = Math.max(0.5, size * 0.004);
+    ctx.lineWidth = size * 0.004;
     ctx.beginPath();
     ctx.moveTo(x, y);
-    ctx.lineTo(x + (x - size / 2) * flake.streak * 0.3, y + flake.streak * size * 0.6 + 1);
+    ctx.lineTo(
+      x + (x - size / 2) * flake.streak * 0.3,
+      y + flake.streak * size * 0.6 + size * 0.004,
+    );
     ctx.stroke();
-    circle(ctx, x, y, Math.max(0.5, size * 0.004));
+    circle(ctx, x, y, size * 0.004);
   }
   ctx.globalAlpha = 1;
 }

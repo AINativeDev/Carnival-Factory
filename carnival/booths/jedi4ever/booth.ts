@@ -5,23 +5,59 @@
  */
 import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
 import { drawDashboard } from './dashboard';
-import { advance, autopilotTarget, newRun, restart, type Run } from './game';
+import { autopilotTarget } from './autopilot';
+import { advance, newRun, restart, type Run } from './game';
 import { drawSky, drawSkyline } from './sky';
 import { drawPuff, drawSnowfall, drawSparkles } from './snow';
 import { drawRoad, drawTrails, roadside, type Roadside } from './street';
 import { drawDeliveryVan, drawParcel, drawTraffic } from './vehicles';
 import { FAR, project, VAN_DEPTH } from './view';
 
-/** The run in progress, when the last frame was, and who is steering until when. */
+/** Who is steering, towards where and until when, and where the pointer was last frame. */
+interface Steering {
+  target: number;
+  until: number;
+  lastX: number;
+}
+
+/** The run in progress, when the last frame was, and who is steering. */
 let run: Run = newRun(1);
 let lastTime = Number.NaN;
-let steering = { target: 0, until: -Infinity };
+let steering: Steering = { target: 0, until: -Infinity, lastX: Number.NaN };
 let runs = 1;
 
 /** Where the pointer wants the van: its side of the square, or a half-turn on a tap. */
 export function steerFrom(pointer: SquarePointer, size: number, vanX: number): number {
   if (pointer.presses > 0) return vanX + (pointer.x < size / 2 ? -0.55 : 0.55);
   return (pointer.x / size - 0.5) * 2;
+}
+
+/**
+ * The steering after this frame's pointer. A pointer that hasn't moved keeps
+ * the turn it set, so a tap's half-turn isn't undone by the frames that keep
+ * reporting the finger where it tapped.
+ */
+export function steerWith(
+  prev: Steering,
+  pointer: SquarePointer,
+  size: number,
+  vanX: number,
+  time: number,
+): Steering {
+  const fresh = pointer.presses > 0 || pointer.x !== prev.lastX;
+  const target = fresh ? steerFrom(pointer, size, vanX) : prev.target;
+  return { target, until: time + 1500, lastX: pointer.x };
+}
+
+/**
+ * The steps, in seconds, that play `ms` between frames: none small enough to
+ * jump past a car or a parcel, and none at all past a second, which is a
+ * pause rather than driving.
+ */
+export function frameSteps(ms: number): number[] {
+  const elapsed = Number.isNaN(ms) ? 0 : Math.max(0, Math.min(1, ms / 1000));
+  const count = Math.ceil(elapsed / 0.05);
+  return Array.from({ length: count }, () => elapsed / count);
 }
 
 /** The traffic, parcels and roadside, sorted far to near. */
@@ -61,21 +97,24 @@ const booth: NorthPoleSquare = {
     'Drive a little red delivery van down a snowy street at dusk, weaving through traffic for parcels.',
   stall: { shape: 'food-truck', roof: 'berry', trim: 'gold' },
   draw(ctx, size, time, pointer?: SquarePointer) {
-    const dt = Number.isNaN(lastTime) ? 0 : Math.max(0, Math.min(0.05, (time - lastTime) / 1000));
+    const steps = frameSteps(time - lastTime);
     lastTime = time;
     if (pointer) {
-      const target = steerFrom(pointer, size, run.van.x);
-      steering = { target, until: time + 1500 };
+      steering = steerWith(steering, pointer, size, run.van.x, time);
       if (pointer.presses > 0 && run.crashed && run.crashTime > 0.6) {
         runs += 1;
         run = restart(run, runs);
       }
-    } else if (run.crashed && run.crashTime > (steering.until > time ? 6 : 2.5)) {
-      runs += 1;
-      run = restart(run, runs);
+    } else {
+      steering = { ...steering, lastX: Number.NaN };
+      if (run.crashed && run.crashTime > (steering.until > time ? 6 : 2.5)) {
+        runs += 1;
+        run = restart(run, runs);
+      }
     }
-    const target = steering.until > time ? steering.target : autopilotTarget(run);
-    run = advance(run, dt, target);
+    for (const dt of steps) {
+      run = advance(run, dt, steering.until > time ? steering.target : autopilotTarget(run));
+    }
 
     drawSky(ctx, size, time);
     drawSkyline(ctx, size, run.dist);

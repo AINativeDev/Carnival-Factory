@@ -104,9 +104,9 @@ function shop(size: number, dist: number, side: number, index: number): Roadside
       polygon(ctx, [at(0.82, 0), at(0.94, 0), at(0.94, 0.5), at(0.82, 0.5)], colors.cocoa);
       const [wx, wy] = at(0.88, 0.3);
       ctx.fillStyle = colors.pine;
-      circle(ctx, wx, wy, Math.max(1, a.scale * size * 0.02));
+      circle(ctx, wx, wy, a.scale * size * 0.02);
       ctx.fillStyle = colors.berry;
-      circle(ctx, wx, wy - a.scale * size * 0.012, Math.max(0.5, a.scale * size * 0.006));
+      circle(ctx, wx, wy - a.scale * size * 0.012, a.scale * size * 0.006);
     },
   };
 }
@@ -135,15 +135,10 @@ function lamp(size: number, dist: number, side: number, index: number): Roadside
       ctx.fill();
       ctx.globalAlpha = 1;
       ctx.fillStyle = colors.ink;
-      ctx.fillRect(
-        foot.x - foot.scale * size * 0.01,
-        top,
-        Math.max(1, foot.scale * size * 0.02),
-        foot.y - top,
-      );
+      ctx.fillRect(foot.x - foot.scale * size * 0.01, top, foot.scale * size * 0.02, foot.y - top);
       glow(ctx, foot.x, top, foot.scale * size * 0.25);
       ctx.fillStyle = colors.glow;
-      circle(ctx, foot.x, top, Math.max(1, foot.scale * size * 0.03));
+      circle(ctx, foot.x, top, foot.scale * size * 0.03);
     },
   };
 }

@@ -13,7 +13,7 @@ function headlights(ctx: Ctx, w: number, y: number, spread: number) {
   for (const side of [-1, 1]) {
     glow(ctx, side * spread * w, y, w * 0.35, 0.8);
     ctx.fillStyle = colors.glow;
-    circle(ctx, side * spread * w, y, Math.max(0.6, w * 0.06));
+    circle(ctx, side * spread * w, y, w * 0.06);
   }
 }
 

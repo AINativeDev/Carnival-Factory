@@ -27,8 +27,10 @@ above it.
 Everything is drawn from the run's state and `time`. The booth remembers only
 the run in progress, who is steering and the best score, for one visit.
 
-- `booth.ts` puts the scene together back to front and handles the pointer.
-- `game.ts` is the rules: `advance`, `autopilotTarget`, `speedAt`, `newRun`
-  and `restart`, tested in `game.test.ts`.
+- `booth.ts` puts the scene together back to front, handles the pointer
+  (`steerWith`) and plays the time since the last frame in small steps
+  (`frameSteps`).
+- `game.ts` is the rules: `advance`, `speedAt`, `newRun` and `restart`, and
+  `autopilot.ts` the `autopilotTarget`, tested in `game.test.ts`.
 - `view.ts` is the chase camera (`project`, `bend`); `sky.ts`, `street.ts`,
   `snow.ts` and `vehicles.ts` draw the scene; `dashboard.ts` the dials.

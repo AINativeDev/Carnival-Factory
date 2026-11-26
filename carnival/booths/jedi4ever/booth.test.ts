@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import booth, { steerFrom } from './booth';
+import booth, { frameSteps, steerFrom, steerWith } from './booth';
 import { dialSpeed } from './dashboard';
 import { starAt } from './sky';
 import { flakeAt } from './snow';
@@ -83,6 +83,38 @@ describe('steerFrom', () => {
   it('turns towards the half that was tapped', () => {
     expect(steerFrom({ x: 10, y: 0, down: true, presses: 1 }, 100, 0.1)).toBeLessThan(0);
     expect(steerFrom({ x: 90, y: 0, down: true, presses: 1 }, 100, 0.1)).toBeGreaterThan(0.1);
+  });
+});
+
+describe('steerWith', () => {
+  const none = { target: 0, until: -Infinity, lastX: Number.NaN };
+
+  it("keeps a tap's turn while the finger rests where it tapped", () => {
+    const tap = steerWith(none, { x: 55, y: 50, down: true, presses: 1 }, 100, 0.5, 0);
+    expect(tap.target).toBeCloseTo(1.05);
+    const held = steerWith(tap, { x: 55, y: 50, down: false, presses: 0 }, 100, 0.6, 50);
+    expect(held.target).toBeCloseTo(1.05);
+    expect(held.until).toBe(1550);
+  });
+
+  it('follows the pointer again once it moves', () => {
+    const tap = steerWith(none, { x: 55, y: 50, down: true, presses: 1 }, 100, 0.5, 0);
+    const moved = steerWith(tap, { x: 10, y: 50, down: false, presses: 0 }, 100, 0.6, 50);
+    expect(moved.target).toBeCloseTo(-0.8);
+  });
+});
+
+describe('frameSteps', () => {
+  it('plays every moment of a slow frame in small steps', () => {
+    const steps = frameSteps(100);
+    expect(steps.reduce((sum, dt) => sum + dt, 0)).toBeCloseTo(0.1);
+    expect(Math.max(...steps)).toBeLessThanOrEqual(0.05);
+  });
+
+  it('skips a long pause, and nothing before the first frame', () => {
+    expect(frameSteps(60_000).reduce((sum, dt) => sum + dt, 0)).toBeCloseTo(1);
+    expect(frameSteps(Number.NaN)).toEqual([]);
+    expect(frameSteps(-5)).toEqual([]);
   });
 });
 
