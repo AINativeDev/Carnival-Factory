@@ -29,7 +29,8 @@ const GENERIC_NAMES = new Set(
 
 const isCode = (path: string) => /\.(ts|js)$/.test(path);
 const isTest = (path: string) => /\.test\.ts$/.test(path);
-const lineCount = (text: string) => text.replace(/\n$/, '').split('\n').length;
+/** Lines of text; a final newline ends the last line rather than starting another. */
+const lineCount = (text: string) => text.split('\n').length - (text.endsWith('\n') ? 1 : 0);
 const parse = (path: string, text: string) =>
   ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
 
@@ -55,27 +56,32 @@ function testProblems(files: SquareFiles): string[] {
 
 /** Whether a statement has a doc comment (one that opens with two asterisks) before it. */
 const hasDoc = (node: ts.Node, text: string) =>
-  (ts.getLeadingCommentRanges(text, node.getFullStart()) ?? []).some((range) =>
-    text.slice(range.pos, range.pos + 3).startsWith('/**'),
-  );
+  ts
+    .getLeadingCommentRanges(text, node.getFullStart())
+    ?.some((range) => text.startsWith('/**', range.pos)) ?? false;
+
+/** Whether a statement is marked `export`. */
+const isExported = (node: ts.HasModifiers) =>
+  ts.getModifiers(node)?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) ?? false;
 
 /** The names a statement exports, if it exports any. */
 function exportedNames(statement: ts.Statement): string[] {
-  const exported = ts.canHaveModifiers(statement)
-    ? (ts.getModifiers(statement) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
-    : false;
-  if (!exported) return [];
-  if (ts.isVariableStatement(statement))
+  if (ts.isVariableStatement(statement) && isExported(statement))
     return statement.declarationList.declarations.map((d) => d.name.getText());
-  if (ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement))
+  if (
+    (ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement)) &&
+    isExported(statement)
+  )
     return [statement.name?.getText() ?? 'default'];
   return [];
 }
 
+/** The words in a text: what stands between spaces with a letter or a digit in it. */
+const wordCount = (text: string) => text.split(/\s/).filter((word) => /\w/.test(word)).length;
+
 function docProblems(files: SquareFiles): string[] {
   const problems: string[] = [];
-  const readme = files['README.md'] ?? '';
-  if (readme.split(/\s+/).filter((word) => /\w/.test(word)).length < MIN_README_WORDS)
+  if (!('README.md' in files) || wordCount(files['README.md']) < MIN_README_WORDS)
     problems.push(
       'README.md says too little: describe what the square shows and does, in a few sentences.',
     );
@@ -90,8 +96,8 @@ function docProblems(files: SquareFiles): string[] {
   return problems;
 }
 
-/** Every name the code declares: variables, functions, classes and parameters. */
-function declaredNames(source: ts.SourceFile): string[] {
+/** The generic names the code declares, as variables, functions, classes or parameters. */
+function genericNames(source: ts.SourceFile): string[] {
   const names: string[] = [];
   const visit = (node: ts.Node) => {
     if (
@@ -100,7 +106,8 @@ function declaredNames(source: ts.SourceFile): string[] {
         ts.isClassDeclaration(node) ||
         ts.isParameter(node)) &&
       node.name &&
-      ts.isIdentifier(node.name)
+      ts.isIdentifier(node.name) &&
+      GENERIC_NAMES.has(node.name.text.toLowerCase())
     )
       names.push(node.name.text);
     ts.forEachChild(node, visit);
@@ -116,11 +123,10 @@ function nameProblems(files: SquareFiles): string[] {
     if (!/^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z]+)+$/.test(fileName) && fileName !== 'README.md')
       problems.push(`${path}: name files in kebab-case, such as penguin-pond.ts.`);
     if (!isCode(path)) continue;
-    for (const name of new Set(declaredNames(parse(path, text))))
-      if (GENERIC_NAMES.has(name.toLowerCase()))
-        problems.push(
-          `${path}: ${name} says nothing about what it holds; name it for what it is in the scene.`,
-        );
+    for (const name of new Set(genericNames(parse(path, text))))
+      problems.push(
+        `${path}: ${name} says nothing about what it holds; name it for what it is in the scene.`,
+      );
   }
   return problems;
 }

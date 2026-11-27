@@ -12,6 +12,7 @@ import type { SourceFile } from './problems.ts';
 
 /** Each source file sits at `/<its path>`, so imports between them resolve as in the repository. */
 export function squareProgram(sources: readonly SourceFile[]): ts.Program {
+  // Stryker disable next-line BooleanLiteral: the type checker binds every file before a rule walks it, and binding sets each node's parent anyway
   const host = ts.createCompilerHost({}, true);
   const byName = new Map(sources.map((file) => [`/${file.path}`, file.text]));
   const libHost: ts.CompilerHost = {
@@ -21,7 +22,8 @@ export function squareProgram(sources: readonly SourceFile[]): ts.Program {
     getSourceFile: (name, languageVersion) => {
       const text = byName.get(name);
       return text !== undefined
-        ? ts.createSourceFile(name, text, languageVersion, true)
+        ? // Stryker disable next-line BooleanLiteral: the type checker binds every file before a rule walks it, and binding sets each node's parent anyway
+          ts.createSourceFile(name, text, languageVersion, true)
         : host.getSourceFile(name, languageVersion);
     },
     getCurrentDirectory: () => '/',
