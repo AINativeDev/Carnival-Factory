@@ -25,6 +25,14 @@ What runs on every pull request, and what each check guarantees.
   (`smoke/coverage.ts`, `COVERAGE=1`) and adds it to the unit tests' line by
   line (`npm run coverage:combined`), listing the files with the most untested
   lines ([ADR 0032](../adr/0032-browser-coverage-counts.md)).
+- Mutation testing (Stryker, `stryker.config.mjs`,
+  [ADR 0061](../adr/0061-mutation-testing.md)): on a pull request, CI mutates
+  the code files it changes in `src/`, `scripts/` and `lint/`, and each needs
+  90% of the changes its tests run caught. Older files below that are frozen
+  at their debt in `lint/mutation-baseline.json`, which only shrinks. The
+  whole of it runs weekly in `.github/workflows/mutation.yml`, and
+  `npm run mutation` runs it locally (enforced by: scripts/mutation-score.test.ts,
+  scripts/mutation-check.ts, scripts/baselines-shrink.ts).
 - Claude Code hooks (`.claude/settings.json`) check each file an agent edits,
   and run types, Knip and the tests before it finishes. When the installed packages
   don't match `package-lock.json`, the Stop hook says only that, and asks for

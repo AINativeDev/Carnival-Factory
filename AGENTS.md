@@ -49,7 +49,9 @@ instead ([ADR 0053](docs/adr/0053-square-only-check.md)). `npm run check` is:
 
 On a pull request, CI also runs `npm run test:changed` (99% of the lines it adds
 to `src/`, `scripts/` and `lint/`, and of the branches on them, must run under
-the tests) and checks shell
+the tests), mutation-tests the code files it changes there (`npm run
+mutation:changed`: the tests must catch 90% of small changes to each, see
+[ADR 0061](docs/adr/0061-mutation-testing.md)) and checks shell
 scripts and workflows with ShellCheck and actionlint (`npm run lint:shell`
 locally, if both are installed). The smoke run also records the page's coverage
 (`COVERAGE=1 npm run smoke`, then `npm test` and `npm run coverage:combined`), and
