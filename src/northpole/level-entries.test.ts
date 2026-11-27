@@ -1,69 +1,98 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import starter from '../../carnival/levels/jedi4ever/level';
-import { levelEntries, squaresByLevel, type LevelEntry } from './levels';
+import { levelEntries, squaresByLevel } from './levels';
+import { validateLevel } from './level-check';
+import { sandboxedSquare } from './sandbox';
 
-const STARTER = '../../carnival/levels/jedi4ever/level.ts';
-const starterSquares = (starter.squares ?? []).map(
-  ({ id }) => `../../carnival/levels/jedi4ever/squares/${id}/square.ts`,
-);
+// Each square of an open level runs in its own frame: the test only sees which frames it asks for.
+vi.mock('./sandbox', () => ({
+  sandboxedSquare: vi.fn((kind: string, id: string) => ({ id, kind })),
+}));
+const sandboxed = vi.mocked(sandboxedSquare);
 
-/** The one level in `entries`, or a failed test. */
-const onlyLevel = (entries: LevelEntry[]) => {
-  const entry = entries.at(0);
-  if (!entry || entries.length > 1)
-    throw new Error(`expected one level, got ${String(entries.length)}`);
-  return entry;
-};
+/**
+ * The station's levels from their files, without the real folders: which
+ * squares belong to which level, and an open, a broken and a switched-off one.
+ */
+const levelFile = (login: string) => `../../carnival/levels/${login}/level.ts`;
+const squareFile = (login: string, id: string) =>
+  `../../carnival/levels/${login}/squares/${id}/square.ts`;
+const starterSquares = (starter.squares ?? []).map(({ id }) => squareFile('jedi4ever', id));
 
 afterEach(() => {
   vi.restoreAllMocks();
+  sandboxed.mockClear();
 });
 
-describe("each level's own squares", () => {
-  it('are found by login from their folders', () => {
-    expect(squaresByLevel(['../../carnival/levels/ana/squares/igloo/square.ts'])).toEqual(
-      new Map([['ana', ['igloo']]]),
-    );
+describe('squaresByLevel', () => {
+  it("names each level's squares by their folders, in order, by the level's folder", () => {
+    const byLevel = squaresByLevel([
+      squareFile('bo', 'z'),
+      squareFile('al', 'y'),
+      squareFile('bo', 'x'),
+    ]);
+    expect([...byLevel]).toEqual([
+      ['al', ['y']],
+      ['bo', ['x', 'z']],
+    ]);
   });
 });
 
-describe('the levels at the station', () => {
-  it('opens a level that passes its checks, with each of its squares sandboxed', () => {
-    const entry = onlyLevel(levelEntries({ [STARTER]: starter }, starterSquares, new Set()));
-    expect(starterSquares).not.toHaveLength(0);
-    expect(entry.closed).toBeUndefined();
-    expect(entry.name).toBe(starter.name);
-    expect(entry.squares.map((square) => square.id).sort()).toEqual(
-      (starter.squares ?? []).map(({ id }) => id).sort(),
+describe('levelEntries', () => {
+  it('opens a valid level with its data, its owner and its squares, sandboxed by their ids', () => {
+    const entry = levelEntries({ [levelFile('jedi4ever')]: starter }, starterSquares, new Set()).at(
+      0,
     );
+    const ids = [...(starter.squares ?? []).map(({ id }) => id)].sort();
+    expect(entry).toMatchObject({
+      login: 'jedi4ever',
+      name: starter.name,
+      description: starter.description,
+      owner: '@jedi4ever',
+      level: starter,
+    });
+    expect(entry?.closed).toBeUndefined();
+    expect(entry?.squares.map((square) => square.id)).toEqual(ids);
+    expect(sandboxed.mock.calls).toEqual(ids.map((id) => ['level', id, 'jedi4ever']));
   });
 
-  it('closes a broken level, says why in the console, and runs none of its squares', () => {
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const entry = onlyLevel(
-      levelEntries({ '../../carnival/levels/ana/level.ts': {} }, [], new Set()),
-    );
-    expect(entry.login).toBe('ana');
-    expect(entry.squares).toEqual([]);
-    expect(entry.closed).toBeTruthy();
-    expect(error).toHaveBeenCalledOnce();
+  it('opens a level with no squares and no square folders', () => {
+    const bare = { ...starter, squares: [] };
+    const entry = levelEntries({ [levelFile('jedi4ever')]: bare }, [], new Set()).at(0);
+    expect(entry?.closed).toBeUndefined();
+    expect(entry?.squares).toEqual([]);
   });
 
-  it('closes a switched-off level without checking it', () => {
+  it('closes a level that fails its checks, says why once, and runs none of its squares', () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const entry = onlyLevel(
-      levelEntries({ '../../carnival/levels/ana/level.ts': {} }, [], new Set(['ana'])),
+    const broken = { ...starter, id: 'broken' };
+    const why = validateLevel(broken, 'broken', []).join('; ');
+    expect(why).not.toBe('');
+    expect(levelEntries({ [levelFile('broken')]: broken }, [], new Set())).toEqual([
+      {
+        login: 'broken',
+        name: 'broken',
+        description: '',
+        owner: '@broken',
+        squares: [],
+        closed: why,
+      },
+    ]);
+    expect(error.mock.calls).toEqual([[`The level broken is closed for repairs: ${why}`]]);
+  });
+
+  it('closes a switched-off level without checking it, and sorts the station by login', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const entries = levelEntries(
+      { [levelFile('zed')]: {}, [levelFile('jedi4ever')]: starter, [levelFile('amy')]: {} },
+      starterSquares,
+      new Set(['zed', 'amy']),
     );
-    expect(entry.closed).toBe('off');
+    expect(entries.map(({ login, closed }) => [login, closed])).toEqual([
+      ['amy', 'off'],
+      ['jedi4ever', undefined],
+      ['zed', 'off'],
+    ]);
     expect(error).not.toHaveBeenCalled();
-  });
-
-  it('lists the levels in order of login', () => {
-    const files = {
-      '../../carnival/levels/zed/level.ts': {},
-      '../../carnival/levels/amy/level.ts': {},
-    };
-    const logins = levelEntries(files, [], new Set(['amy', 'zed'])).map((entry) => entry.login);
-    expect(logins).toEqual(['amy', 'zed']);
   });
 });

@@ -46,6 +46,18 @@ describe('plainText', () => {
     expect(plainText('\u200B \n', 10)).toBeUndefined();
     expect(plainText(42, 10)).toBeUndefined();
   });
+
+  it('turns a control character into a space, and squeezes runs of them to one', () => {
+    expect(plainText('a\u0000b', 10)).toBe('a b');
+    expect(plainText('a \u0007\u0007 b', 10)).toBe('a b');
+    expect(plainText('a\u200B\u200Bb', 10)).toBe('ab');
+  });
+
+  it('keeps words exactly at the cap, and cuts the space before the ellipsis', () => {
+    expect(plainText('abcd', 4)).toBe('abcd');
+    expect(plainText('abcde', 4)).toBe('abc…');
+    expect(plainText('ab cdef', 4)).toBe('ab…');
+  });
 });
 
 const answer = (extra: object = {}) => ({
@@ -86,6 +98,9 @@ describe('cleanYearInReview', () => {
   it('drops anything that isn’t an answer, an item or a list', () => {
     expect(cleanYearInReview(undefined)).toEqual({});
     expect(cleanYearInReview('nope')).toEqual({});
+    expect(cleanYearInReview(null)).toEqual({});
+    expect(cleanYearInReview(Object.assign(() => 0, { 'hot-take': [answer()] }))).toEqual({});
+    expect(cleanYearInReview({ 'hot-take': [Object.assign(() => 0, answer())] })).toEqual({});
     expect(
       cleanYearInReview({
         'not-a-question': [answer()],
@@ -103,6 +118,29 @@ describe('cleanYearInReview', () => {
         ],
       }),
     ).toEqual({});
+  });
+
+  it('keeps a date written out to forty characters, and drops a longer one', () => {
+    const forty = '2026-11-20T10:00:00.0000000000000000000Z';
+    expect(forty).toHaveLength(40);
+    expect(cleanYearInReview({ 'hot-take': [answer({ at: forty })] })).toEqual({
+      'hot-take': [answer({ at: forty })],
+    });
+    const longer = forty.replace('Z', '0Z');
+    expect(Date.parse(longer)).not.toBeNaN();
+    expect(cleanYearInReview({ 'hot-take': [answer({ at: longer })] })).toEqual({});
+  });
+
+  it('drops a guestbook answer whose question is blank, and keeps its question clean', () => {
+    expect(cleanYearInReview({ [OWN_QUESTIONS]: [answer({ question: ' \u200B ' })] })).toEqual({});
+    expect(
+      cleanYearInReview({ [OWN_QUESTIONS]: [answer({ question: ' Best\ncocoa? ' })] }),
+    ).toEqual({ [OWN_QUESTIONS]: [answer({ question: 'Best cocoa?' })] });
+  });
+
+  it("reads only the data's own items, never one it inherits", () => {
+    const inherited: object = Object.create({ 'hot-take': [answer()] }) as object;
+    expect(cleanYearInReview(inherited)).toEqual({});
   });
 
   it('shows at most the hundred newest on an item', () => {

@@ -32,12 +32,23 @@ export interface PendingBooth {
 /** The most entries the page reads from `pending.json`. */
 export const MAX_PENDING = 100;
 
-/** A GitHub login: letters, digits and single hyphens, at most 39 characters. */
-const LOGIN = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+/**
+ * Whether `text` is a GitHub login: letters, digits and single hyphens, at most
+ * 39 characters. Written inside the function, so mutation testing (ADR 0061)
+ * checks the pattern with the tests that call it, rather than only as the
+ * module loads.
+ */
+function isLogin(text: string): boolean {
+  return /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(text);
+}
 
 /** A spot number: a whole number from 0 up to the island's furthest. */
 export const isSpot = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isInteger(value) && value >= 0 && value < 10000;
+  Number.isInteger(value) && (value as number) >= 0 && (value as number) < 10000;
+
+/** An issue's number: a whole number from 1. */
+export const isIssue = (value: unknown): value is number =>
+  Number.isInteger(value) && (value as number) > 0;
 
 /**
  * `pending.json`'s entries the page can trust: valid logins, issue and spot
@@ -51,8 +62,8 @@ export function readPending(value: unknown): PendingBooth[] {
   for (const entry of value.slice(0, MAX_PENDING)) {
     if (!entry || typeof entry !== 'object') continue;
     const { login, issue, spot, stage } = entry as Record<string, unknown>;
-    if (typeof login !== 'string' || !LOGIN.test(login)) continue;
-    if (typeof issue !== 'number' || !Number.isInteger(issue) || issue <= 0) continue;
+    if (typeof login !== 'string' || !isLogin(login)) continue;
+    if (!isIssue(issue)) continue;
     if (!isSpot(spot)) continue;
     if (typeof stage !== 'string' || !Object.hasOwn(STAGE_TEXT, stage)) continue;
     const id = login.toLowerCase();

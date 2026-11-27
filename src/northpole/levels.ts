@@ -35,11 +35,11 @@ export interface LevelEntry {
 }
 
 /** The folder `up` levels above a file: 1 is the file's own folder. Empty past the top. */
-const folderOf = (path: string, up: number) =>
-  path
-    .split('/')
-    .slice(-up - 1, -up)
-    .join('');
+const folderOf = (path: string, up: number) => {
+  const folder = path.split('/').slice(-up - 1, -up);
+  // Stryker disable next-line StringLiteral: the slice holds one part at most, so no separator shows
+  return folder.join('');
+};
 
 /** The ids of the squares in each level's `squares/` folder, by login. */
 export function squaresByLevel(paths: readonly string[]): Map<string, string[]> {

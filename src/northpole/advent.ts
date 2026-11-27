@@ -35,6 +35,7 @@ const isDay = (day: unknown): day is number =>
 export function cleanCalendar(data: unknown): AdventCalendar {
   const { year, challenges } = (data ?? {}) as Record<string, unknown>;
   const byDay = new Map<number, AdventChallenge>();
+  // Stryker disable next-line ArrayDeclaration: whatever stands in for the empty list isn't a challenge, so it's skipped too
   for (const entry of Array.isArray(challenges) ? (challenges as unknown[]) : []) {
     if (!entry || typeof entry !== 'object') continue;
     const { day, title, do: what, check, docs } = entry as Record<string, unknown>;
@@ -103,8 +104,14 @@ export function decorationsFor(count: number | undefined): AdventDecorations {
   };
 }
 
-/** A GitHub login, in lower case, as a booth's folder is named. */
-const LOGIN = /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/;
+/**
+ * Whether `text` is a GitHub login, in lower case, as a booth's folder is named.
+ * Written inside the function, so mutation testing (ADR 0061) checks the pattern
+ * with the tests that call it, rather than only as the module loads.
+ */
+function isLogin(text: string): boolean {
+  return /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/.test(text);
+}
 
 /** The counts from untrusted JSON: well-formed logins in lower case, each with 1 to 24 challenges. */
 export function cleanCounts(data: unknown): Record<string, number> {
@@ -112,7 +119,7 @@ export function cleanCounts(data: unknown): Record<string, number> {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return counts;
   for (const [login, count] of Object.entries(data as Record<string, unknown>)) {
     const lower = login.toLowerCase();
-    if (LOGIN.test(lower) && isDay(count)) counts[lower] = count;
+    if (isLogin(lower) && isDay(count)) counts[lower] = count;
   }
   return counts;
 }
