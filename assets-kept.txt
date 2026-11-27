@@ -1,5 +1,7 @@
 2026-11-27 frame-protocol-CkofhHfA.js
 2026-11-27 main-DHpkiZSV.css
+2026-11-27 square-aH-QvbAU.js
+2026-11-27 main-DsVJDGC3.js
 2026-11-27 main-DiBP6Qlc.js
 2026-11-27 square-C11RGtvD.js
 2026-11-27 main-Blm73MEu.js
