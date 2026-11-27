@@ -130,8 +130,14 @@ export const ANSWER_ITEMS: readonly string[] = [
   OWN_QUESTIONS,
 ];
 
-/** A GitHub login as GitHub writes it, in any case. */
-const LOGIN = /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/i;
+/**
+ * Whether `text` is a GitHub login as GitHub writes it, in any case.
+ * Written inside the function, so mutation testing (ADR 0061) checks the pattern
+ * with the tests that call it, rather than only as the module loads.
+ */
+function isLogin(text: string): boolean {
+  return /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/i.test(text);
+}
 
 /**
  * A visitor's words as plain text on one line: control characters become
@@ -160,7 +166,7 @@ export function plainText(text: unknown, max: number): string | undefined {
 function cleanAnswer(item: unknown, own: boolean): YearAnswer | undefined {
   if (!item || typeof item !== 'object') return undefined;
   const { login, answer, at, question } = item as Record<string, unknown>;
-  if (typeof login !== 'string' || !LOGIN.test(login)) return undefined;
+  if (typeof login !== 'string' || !isLogin(login)) return undefined;
   const words = plainText(answer, MAX_ANSWER);
   if (!words || typeof at !== 'string' || at.length > 40 || Number.isNaN(Date.parse(at)))
     return undefined;
@@ -178,7 +184,8 @@ export function cleanYearInReview(data: unknown): YearInReview {
   const clean: YearInReview = {};
   if (!data || typeof data !== 'object') return clean;
   for (const id of ANSWER_ITEMS) {
-    const list: unknown = Object.hasOwn(data, id) ? (data as Record<string, unknown>)[id] : [];
+    if (!Object.hasOwn(data, id)) continue;
+    const list: unknown = (data as Record<string, unknown>)[id];
     if (!Array.isArray(list)) continue;
     const answers = list
       .map((item: unknown) => cleanAnswer(item, id === OWN_QUESTIONS))

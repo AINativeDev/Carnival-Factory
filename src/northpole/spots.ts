@@ -12,7 +12,7 @@
  * accepted booth requests and holds the next free spots for them, in order of
  * issue number, in `pending.json` (read in `construction-sites.ts`).
  */
-import { isSpot, MAX_PENDING, type PendingBooth } from './construction-sites.ts';
+import { isIssue, isSpot, MAX_PENDING, type PendingBooth } from './construction-sites.ts';
 
 /** What a booth's own `spot.json` says: its spot, and the issue that asked for the booth. */
 export interface SpotFile {
@@ -35,7 +35,7 @@ export function readSpotFile(value: unknown): SpotFile | undefined {
   if (!value || typeof value !== 'object') return undefined;
   const { spot, issue } = value as Record<string, unknown>;
   if (!isSpot(spot)) return undefined;
-  if (typeof issue === 'number' && Number.isInteger(issue) && issue > 0) return { spot, issue };
+  if (isIssue(issue)) return { spot, issue };
   return { spot };
 }
 
@@ -68,7 +68,8 @@ export function boothSpotNumbers(
     .sort(
       (a, b) =>
         (a.file.issue ?? Infinity) - (b.file.issue ?? Infinity) ||
-        Number(a.id > b.id) - Number(a.id < b.id),
+        // Stryker disable next-line EqualityOperator: no two booths share an id, so `<=` orders them the same
+        (a.id < b.id ? -1 : 1),
     );
   const limit = spotLimit(ids.length);
   for (const { id, file } of claims) {

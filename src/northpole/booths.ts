@@ -32,6 +32,7 @@ export function spotFilesByLogin(
   for (const [path, value] of Object.entries(files)) {
     const spot = readSpotFile(value);
     // The file's own folder, the path's second-to-last part, is its booth's login.
+    // Stryker disable next-line StringLiteral: the slice holds one part at most, so no separator shows
     if (spot) valid[path.split('/').slice(-2, -1).join('')] = spot;
   }
   return valid;

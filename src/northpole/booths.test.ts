@@ -1,7 +1,7 @@
 import { readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { boothRegistry as registry } from './booths';
+import { boothRegistry as registry, spotFilesByLogin } from './booths';
 import disabled from './disabled.json';
 import { fromFolders, type NorthPoleSquare } from './square';
 
@@ -38,5 +38,17 @@ describe('every booth', () => {
       expect(booth.name.trim(), booth.id).not.toBe('');
       expect(booth.description.trim(), booth.id).not.toBe('');
     }
+  });
+});
+
+describe("the booths' own spot.json files", () => {
+  it('reads each valid one by the folder it sits in, and drops the rest', () => {
+    expect(
+      spotFilesByLogin({
+        '../../carnival/booths/amy/spot.json': { spot: 4, issue: 12 },
+        '../../carnival/booths/bob/spot.json': { spot: 'four' },
+        '../../carnival/booths/cat/spot.json': { spot: 0 },
+      }),
+    ).toStrictEqual({ amy: { spot: 4, issue: 12 }, cat: { spot: 0 } });
   });
 });
