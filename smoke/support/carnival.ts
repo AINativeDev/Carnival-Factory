@@ -20,10 +20,11 @@ mkdirSync(SHOTS, { recursive: true });
 
 // CI's browsers draw without a GPU, in software, several times slower than a
 // laptop, so they get a looser budget. It still catches a real slowdown there,
-// without failing on the runner's speed.
+// without failing on the runner's speed: 16 ms failed squares that draw in 1-2 ms
+// on a laptop when the shared runner hiccuped for one frame (ADR 0062).
 const ON_CI = !!process.env.CI;
 /** Milliseconds a square may spend drawing one frame. */
-export const FRAME_BUDGET_MS = ON_CI ? 16 : 8;
+export const FRAME_BUDGET_MS = ON_CI ? 20 : 8;
 /** Milliseconds the map may spend drawing one frame, on average, while the player walks. */
 export const MAP_FRAME_BUDGET_MS = ON_CI ? 25 : 12;
 

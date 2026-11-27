@@ -45,7 +45,8 @@ What runs on every pull request, and what each check guarantees.
   `smoke/safari.spec.ts`. Every test starts with the first-visit intro seen
   (`storageState`), except `smoke/intro.spec.ts`, which tests it.
 - The smoke test plays every booth and attraction not switched off: it opens,
-  draws within budget (slowest frame after 5 warm-up frames: 16 ms on CI,
+  draws within budget (slowest frame after 5 warm-up frames: 20 ms on CI,
+  [ADR 0062](../adr/0062-frame-budget-slack.md),
   8 ms locally) and stays quiet (no console errors, uncaught errors or
   requests to another origin). It also checks the sandbox keeps a square from
   the network, storage and the page, the map's own frame budget (25 ms on CI),
