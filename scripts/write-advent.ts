@@ -9,6 +9,7 @@
  *
  * Run by .github/workflows/pages.yml with GITHUB_TOKEN and GITHUB_REPOSITORY set.
  */
+import { safePath } from './safe-path.ts';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { cleanCalendar } from '../src/northpole/advent.ts';
 import { adventCounts, type AdventRecord } from './advent.ts';
@@ -60,7 +61,7 @@ if (process.argv[1]?.endsWith('write-advent.ts')) {
     ),
   );
   const counts = await readAdventCounts(github, repository, year);
-  writeFileSync(out, JSON.stringify(counts, null, 2) + '\n');
+  writeFileSync(safePath(out), JSON.stringify(counts, null, 2) + '\n');
   console.log(`${Object.keys(counts).length} participant(s) with accepted advent challenges.`);
 }
 /* v8 ignore stop */

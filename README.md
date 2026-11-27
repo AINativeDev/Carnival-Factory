@@ -51,34 +51,18 @@ something people play with, not just watch.
 6. **Change it** whenever you like: open **Your booth** again. Your latest
    request is the one that counts.
 
-**Want a whole place of your own?** Once you have a booth, open **Your level**
-for a level: a patch of the North Pole laid out how you like, with up to 8
-squares, that visitors reach by sleigh. Levels unlock after a booth. [Level ideas](docs/level-ideas.md) and
-[booth ideas](docs/booth-ideas.md) help you write the request.
-[How your request is built](docs/how-it-works.md) explains every step.
-
-## Vote for your favourite
-
-Every booth has a comment on the pinned **People's Choice** issue, and a 👍 on
-it is a vote: a booth's page links to it with **Vote for this booth**. One vote
-per GitHub account, and your vote for your own booth doesn't count. Voting
-closes at the end of 31 December 2026 (UTC), and the top three get a trophy on
-their sign.
+[Booth ideas](docs/booth-ideas.md) help you write the request, and
+[how your request is built](docs/how-it-works.md) explains every step.
 
 ## Feedback and ideas
 
 We love kudos and ideas. Open **Issues → New issue → Feedback on the factory**
 or **An idea**: they stay open, and the maintainers read every one.
 
-Looking back on the year? The **Year in Review** gallery at the North Pole asks
-13 questions about AI in '26 and '27: answer one, or ask your own, with
-**Issues → New issue → Year in review**. Friendly answers hang in the room
-after the next update of the map.
-
 ## The rules of the map
 
 - **Your booth is yours alone.** A change for you only ever touches your own
-  booth or level.
+  booth.
 - **Issues, not pull requests.** Every change starts as an issue; a pull request
   from outside is closed with a pointer to the forms.
 - **A booth can't break the map.** Every booth runs sandboxed, with no network,

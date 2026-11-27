@@ -150,6 +150,7 @@ export function evaluateGate(facts: GateFacts): GateDecision {
   return { decision, steps };
 }
 
+// deepcode ignore NoHardcodedPasswords: `pass` is a check's state, Passed, not a password.
 const STATE = { pass: 'Passed', wait: 'Waiting', fail: 'Not passed' } as const;
 
 /**

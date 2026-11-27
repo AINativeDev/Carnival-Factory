@@ -139,6 +139,7 @@ describe('opening a spot', () => {
     const m = runOf(options);
     open(m, spot('exit'));
     open(m, spot('platform', 'tester'));
+    // deepcode ignore NoHardcodedCredentials/test: a made-up participant's login, not a credential.
     m.stations.set('tester', { login: 'tester', name: 'Open', color: 'sign', closed: false });
     open(m, spot('platform', 'tester'));
     expect(told).toEqual([]);

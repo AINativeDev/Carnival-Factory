@@ -7,6 +7,7 @@
  *
  * Run by .github/workflows/pages.yml with GITHUB_TOKEN and GITHUB_REPOSITORY set.
  */
+import { safePath } from './safe-path.ts';
 import { writeFileSync } from 'node:fs';
 import { graphql, type AskGraphQL } from './github-api.ts';
 import { ACCEPTED_LABEL, yearInReview, type RawYearIssue } from './year-in-review.ts';
@@ -65,7 +66,7 @@ if (process.argv[1]?.endsWith('write-year-in-review.ts')) {
   }
   const [owner = '', name = ''] = repository.split('/');
   const answers = yearInReview(await readYearIssues(graphql, owner, name));
-  writeFileSync(out, JSON.stringify(answers, null, 2) + '\n');
+  writeFileSync(safePath(out), JSON.stringify(answers, null, 2) + '\n');
   const count = Object.values(answers).reduce((sum, list) => sum + (list?.length ?? 0), 0);
   console.log(`Wrote ${out}: ${String(count)} accepted Year in Review answers.`);
 }

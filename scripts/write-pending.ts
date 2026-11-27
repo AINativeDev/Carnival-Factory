@@ -9,6 +9,7 @@
  * GitHub API. Nothing it works out is ever committed: every deploy works the
  * spots out again. Without it, the build writes an empty list.
  */
+import { safePath } from './safe-path.ts';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { boothSpotNumbers, readSpotFile, type SpotFile } from '../src/northpole/spots.ts';
@@ -98,7 +99,7 @@ if (process.argv[1]?.endsWith('write-pending.ts')) {
   const out = process.argv[2] ?? 'public/pending.json';
   const booths = boothSpots(join(import.meta.dirname, '..'));
   const pending = pendingList(await pendingRequests(github, repository), booths);
-  writeFileSync(out, `${JSON.stringify(pending, null, 2)}\n`);
+  writeFileSync(safePath(out), `${JSON.stringify(pending, null, 2)}\n`);
   console.log(`Wrote ${pending.length} pending booth request(s) to ${out}.`);
 }
 /* v8 ignore stop */

@@ -13,6 +13,7 @@
  * GITHUB_TOKEN and GITHUB_REPOSITORY set. The badge holders come from
  * BADGE_HOLDERS_FILE, which scripts/badge-holders.ts writes first.
  */
+import { safePath } from './safe-path.ts';
 import { SETTINGS } from '../src/settings.ts';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -100,7 +101,7 @@ const result = standings({
   disabled,
   closes: VOTING_CLOSES,
 });
-writeFileSync(out, JSON.stringify(result, null, 2) + '\n');
+writeFileSync(safePath(out), JSON.stringify(result, null, 2) + '\n');
 console.log(
   `Wrote ${out}: ${result.booths.length} booths and ${result.factories.length} home factories, ${added} new entries.`,
 );

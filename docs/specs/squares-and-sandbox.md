@@ -61,6 +61,11 @@ base-uri 'none'`. No network, storage or access to the page (enforced by:
 - The map checks every message from a frame: name capped at 60 characters,
   description at 200, a bitmap only at the size it asked for; anything else is
   ignored (enforced by: src/northpole/frame-protocol.test.ts).
+- The frame sends only to the map's own origin, and hears only messages from
+  its parent window at that origin (`MAP_ORIGIN`, the frame's address, since
+  its own origin is opaque). The map sends to the frame with `'*'`: an opaque
+  origin has nothing else to name, and a draw request carries nothing private
+  (enforced by: src/northpole/frame.test.ts).
 - The frame checks every draw request (size up to 2048) and pointer: finite
   `x`, `y` within `0..size`, boolean `down`, `presses` a whole number from 0
   to 20. Only those four fields reach the square (enforced by:

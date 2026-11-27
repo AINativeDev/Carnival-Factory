@@ -17,8 +17,15 @@ import { readDrawRequest } from './frame-protocol';
 /** How long a square may take to load, or to draw one frame, before it's stopped. */
 const HANG_MS = 1000;
 
+/**
+ * The map's own origin. This frame's is opaque ("null"), sandboxed without
+ * allow-same-origin, but its address is still the map's, so only the map
+ * can hear what it sends, and only the map's messages are heard.
+ */
+const MAP_ORIGIN = location.origin;
+
 const toMap = (message: object, transfer: Transferable[] = []) =>
-  parent.postMessage(message, '*', transfer);
+  parent.postMessage(message, MAP_ORIGIN, transfer);
 
 const worker = new SquareWorker();
 
@@ -63,6 +70,7 @@ const expect = (next: Exclude<Pending, 'start' | undefined>) => {
   );
 };
 
+// deepcode ignore InsufficientPostmessageValidation: a dedicated worker's messages have no origin; only this frame's own worker can send them, and each is checked against what the frame is waiting for.
 worker.addEventListener('message', (event: MessageEvent) => {
   const data = event.data as { type?: unknown; bitmap?: unknown };
   const type = typeof data?.type === 'string' ? data.type : undefined;
@@ -93,7 +101,7 @@ worker.addEventListener('error', (event) => {
 });
 
 addEventListener('message', (event) => {
-  if (event.source !== parent || stopped || pending) return;
+  if (event.source !== parent || event.origin !== MAP_ORIGIN || stopped || pending) return;
   const request = readDrawRequest(event.data);
   if (!request) return;
   expect('draw');

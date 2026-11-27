@@ -9,6 +9,7 @@
  * and pull requests from the GitHub API. The page itself never reaches the
  * network: the build bundles the file.
  */
+import { safePath } from './safe-path.ts';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { siteUrl } from './share-pages.ts';
@@ -144,7 +145,7 @@ if (process.argv[1]?.endsWith('write-square-history.ts')) {
   const requests = await readRequests((q, v) => graphql(q, v, deadline), owner, name);
   const squares = squaresOnDisk(join(import.meta.dirname, '..'));
   const history = historyOf(requests, squares, siteUrl(process.env), new Date().toISOString());
-  writeFileSync(out, JSON.stringify(history));
+  writeFileSync(safePath(out), JSON.stringify(history));
   console.log(
     `Wrote ${out}: ${Object.keys(history.squares).length} squares, ${requests.issues.length} issues, ${requests.pulls.length} pull requests.`,
   );
