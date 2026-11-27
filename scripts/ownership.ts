@@ -21,6 +21,27 @@ export const MAINTAINERS: readonly { login: string; id: number }[] = [
 /** The bots whose pull requests are for the person who wrote the linked issue. */
 export const FACTORY_BOTS = ['tessl-app[bot]'];
 
+/** Dependabot's own account, matched by its numeric id like a maintainer (ADR 0060). */
+export const DEPENDABOT = { login: 'dependabot[bot]', id: 49699333 } as const;
+
+/** The packages' files and the workflows: all a Dependabot pull request may change. */
+const isDependencyFile = (file: string) =>
+  file === 'package.json' ||
+  file === 'package-lock.json' ||
+  /^\.github\/workflows\/[\w.-]+\.ya?ml$/.test(file);
+
+/**
+ * Whether a pull request is Dependabot keeping a package or a workflow's
+ * action up to date: its own account, by id, changing only those files. It
+ * never merges on its own: the merge gate takes booths only, so a maintainer
+ * reviews it.
+ */
+export function isDependencyUpdate(author: Author, files: readonly string[]): boolean {
+  return (
+    author.isBot && author.id === DEPENDABOT.id && files.length > 0 && files.every(isDependencyFile)
+  );
+}
+
 export function boothFolder(login: string): string {
   return `carnival/booths/${login.toLowerCase()}/`;
 }

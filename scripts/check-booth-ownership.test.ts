@@ -4,7 +4,9 @@ import { ownershipVerdict } from './check-booth-ownership';
 const ana = { login: 'Ana', id: 1, type: 'User' };
 const maintainer = { login: 'jedi4ever', id: 70908, type: 'User' };
 const factory = { login: 'tessl-app[bot]', id: 2, type: 'Bot' };
+// A bot that took Dependabot's login, but not its id.
 const otherBot = { login: 'dependabot[bot]', id: 3, type: 'Bot' };
+const dependabot = { login: 'dependabot[bot]', id: 49699333, type: 'Bot' };
 
 /** The repository's API as a table of answers; anything else is an error, as `need` makes it. */
 function api(answers: Record<string, unknown>) {
@@ -112,5 +114,23 @@ describe('ownershipVerdict', () => {
     });
     const verdict = await ownershipVerdict(toPull, 'o/r', '7');
     expect(verdict).toEqual({ lines: [expect.stringMatching(noOwner)], failed: true });
+  });
+
+  it("passes Dependabot's own pull request when it changes only the packages and the workflows", async () => {
+    const read = api(
+      pullRequest(dependabot, [
+        { filename: 'package.json' },
+        { filename: 'package-lock.json' },
+        { filename: '.github/workflows/ci.yml' },
+      ]),
+    );
+    expect(await ownershipVerdict(read, 'o/r', '7')).toEqual({
+      lines: [
+        'Dependabot changes only the packages and the workflows, for a maintainer to review.',
+      ],
+      failed: false,
+    });
+    const further = api(pullRequest(dependabot, [{ filename: 'src/main.ts' }]));
+    expect((await ownershipVerdict(further, 'o/r', '7')).failed).toBe(true);
   });
 });

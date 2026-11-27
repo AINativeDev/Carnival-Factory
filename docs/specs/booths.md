@@ -33,8 +33,12 @@ A booth is one participant's square on the map: the folder
   `carnival/booths/<owner>/` and `carnival/levels/<owner>/`. The owner is the
   pull request's author, or, for the factory's pull request
   (`tessl-app[bot]`), the person who wrote the issue it links with a
-  `tessl-factory:issue` marker or a single `Closes #n`. Any other bot's pull
-  request has no owner and fails (enforced by: scripts/check-booth-ownership.ts,
+  `tessl-factory:issue` marker or a single `Closes #n`. Dependabot's own
+  account, matched by numeric id (`DEPENDABOT`), passes when it changes only
+  `package.json`, `package-lock.json` and `.github/workflows/*.yml`, for a
+  maintainer to review ([ADR 0060](../adr/0060-dependabot.md),
+  `.github/dependabot.yml`). Any other bot's pull request has no owner and
+  fails (enforced by: scripts/check-booth-ownership.ts,
   scripts/ownership.test.ts, .github/workflows/booth-ownership.yml).
 - Maintainers, matched by numeric user id in `MAINTAINERS`, may change any
   file. So may a factory pull request for an issue where the latest `tessl`

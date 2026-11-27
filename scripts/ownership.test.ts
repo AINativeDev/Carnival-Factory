@@ -5,6 +5,7 @@ import {
   boothOwner,
   escapeCommand,
   filesOutsideBooth,
+  isDependencyUpdate,
   isMaintainer,
   linkedIssue,
 } from './ownership';
@@ -167,5 +168,22 @@ describe('approvedByMaintainer', () => {
   it('ignores other labels, and issues never labelled', () => {
     expect(approvedByMaintainer([labeled(70908, 'booth-request')])).toBe(false);
     expect(approvedByMaintainer([])).toBe(false);
+  });
+});
+
+describe('a dependency update', () => {
+  const dependabot = { login: 'dependabot[bot]', id: 49699333, isBot: true };
+
+  it("is Dependabot's own account, by id, changing only the packages and the workflows", () => {
+    expect(isDependencyUpdate(dependabot, ['package.json', 'package-lock.json'])).toBe(true);
+    expect(isDependencyUpdate(dependabot, ['.github/workflows/pages.yml'])).toBe(true);
+  });
+
+  it('is nothing else: another file, no files, a nested workflow folder, its login without its id, or a person', () => {
+    expect(isDependencyUpdate(dependabot, ['package.json', 'src/main.ts'])).toBe(false);
+    expect(isDependencyUpdate(dependabot, [])).toBe(false);
+    expect(isDependencyUpdate(dependabot, ['.github/workflows/x/ci.yml'])).toBe(false);
+    expect(isDependencyUpdate({ ...dependabot, id: 3 }, ['package.json'])).toBe(false);
+    expect(isDependencyUpdate({ ...dependabot, isBot: false }, ['package.json'])).toBe(false);
   });
 });
