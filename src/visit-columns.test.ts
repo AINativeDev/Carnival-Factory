@@ -25,6 +25,11 @@ describe('the columns either side of a drawing', () => {
     expect(columnWidth('279,0,800,800', 1)).toBe(279);
     expect(columnWidth('100,0,800,800', 1)).toBeUndefined();
     expect(columnWidth(undefined, 1)).toBeUndefined();
+    // A pixel short is rounding; two short is a narrow screen. A drawing of no width has no columns.
+    expect(columnWidth('278,0,800,800', 1)).toBeUndefined();
+    expect(columnWidth('558,0,800,800', 2)).toBe(279);
+    expect(columnWidth('300,0,0,800', 1)).toBeUndefined();
+    expect(columnWidth('300,0,1,800', 1)).toBe(300);
   });
 
   it('take the name and description left of the drawing while there is room, and give them back', async () => {
@@ -71,5 +76,34 @@ describe('the columns either side of a drawing', () => {
     const panel = frame.firstElementChild as HTMLElement;
     visitColumns(frame, panel, panel.firstElementChild as HTMLElement).stop();
     expect(panel.children).toHaveLength(1);
+  });
+});
+
+describe('the left column itself', () => {
+  it('is a labelled section, gone with its width once the visit stops', () => {
+    const { frame, panel, intro, canvas } = page();
+    canvas.dataset.stage = '300,0,800,800';
+    const columns = visitColumns(frame, panel, intro);
+    const left = frame.querySelector('.visit-left');
+    expect([left?.tagName, left?.getAttribute('aria-label')]).toEqual([
+      'SECTION',
+      'About this square',
+    ]);
+    columns.stop();
+    expect(frame.style.getPropertyValue('--visit-column')).toBe('');
+  });
+
+  it('keeps the focus where it was, without scrolling, as it moves', async () => {
+    const { frame, panel, intro, canvas } = page();
+    const name = document.createElement('h2');
+    name.tabIndex = -1;
+    intro.append(name);
+    name.focus();
+    const focus = vi.spyOn(name, 'focus');
+    visitColumns(frame, panel, intro);
+    canvas.dataset.stage = '300,0,800,800';
+    await settle();
+    expect(focus.mock.calls.every(([options]) => options?.preventScroll === true)).toBe(true);
+    expect(document.activeElement).toBe(name);
   });
 });

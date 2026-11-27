@@ -11,6 +11,7 @@ declare const __PEOPLES_CHOICE__: unknown;
  */
 export const PEOPLES_CHOICE: PeoplesChoice | undefined = cleanChoice(
   typeof __PEOPLES_CHOICE__ === 'undefined' ? undefined : __PEOPLES_CHOICE__,
+  // Stryker disable next-line ArrayDeclaration: the build already dropped closed booths, and a mutant's text is never a login
   [],
   REPO_URL,
 );

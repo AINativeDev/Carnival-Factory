@@ -17,6 +17,9 @@ describe('analyticsConfig: off until it is set', () => {
       analyticsConfig({ VITE_POSTHOG_KEY: 'phc_test', VITE_POSTHOG_HOST: `${config.host}/` }),
     ).toEqual(config);
     expect(
+      analyticsConfig({ VITE_POSTHOG_KEY: 'phc_test', VITE_POSTHOG_HOST: `${config.host}///` }),
+    ).toEqual(config);
+    expect(
       analyticsConfig({ VITE_POSTHOG_KEY: 'phc_test', VITE_POSTHOG_HOST: 'http://x.test' }),
     ).toBeUndefined();
   });

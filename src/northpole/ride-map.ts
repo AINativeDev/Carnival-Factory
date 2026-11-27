@@ -41,6 +41,7 @@ export function rideAlong(m: MapRun, ride: Ride, button: HTMLButtonElement, dt: 
   const stopped = waiting(m.ride);
   m.moving = !stopped;
   const dx = toScreen(m.player).x - toScreen(before).x;
+  // Stryker disable next-line EqualityOperator: a car never moves exactly 0.01 pixels across in a frame
   if (Math.abs(dx) > 0.01) m.facing = Math.sign(dx);
   // At a station, its stall is the one invited into; between stations, none is.
   m.near = stopped ? spotAtDoor(m.world, m.player) : undefined;

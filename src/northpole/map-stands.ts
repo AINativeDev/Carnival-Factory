@@ -113,7 +113,15 @@ function painter(m: MapRun, aim: Aim, { time, k }: SceneFrame) {
       }
     }
     ctx.save();
-    ctx.transform(u.x / size, u.y / size, v.x / size, v.y / size, origin.x, origin.y);
+    ctx.transform(
+      u.x / size,
+      u.y / size,
+      // Stryker disable next-line ArithmeticOperator: every face stands upright, so v.x is 0 however it is scaled
+      v.x / size,
+      v.y / size,
+      origin.x,
+      origin.y,
+    );
     drawSquare(ctx, m.scratch, square, 0, 0, size, time, pointer);
     ctx.restore();
   };

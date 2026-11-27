@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { focusBack } from './focus-back';
 
 /** A map frame with its canvas, and a button on the page outside it. */
@@ -32,6 +32,13 @@ describe('focus after a panel closes', () => {
       focusBack(before, frame);
       expect(document.activeElement).toBe(canvas);
     }
+  });
+
+  it('moves focus without scrolling the page', () => {
+    const { frame, search } = page();
+    const focus = vi.spyOn(search, 'focus');
+    focusBack(search, frame);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
   });
 
   it('stays put when there is no canvas to go to', () => {

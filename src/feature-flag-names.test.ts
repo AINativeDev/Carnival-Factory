@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { attractionShown, readFeatureFlags } from './feature-flag-names';
 
 const ALL_OFF = {
@@ -39,5 +39,15 @@ describe('attractionShown', () => {
 
   it('shows every attraction no flag holds back', () => {
     expect(attractionShown('ferris-wheel', ALL_OFF)).toBe(true);
+  });
+});
+
+describe('the attractions held back, as the page first loads them', () => {
+  it('are the Gift Shop and the Year in Review, each behind its own flag', async () => {
+    vi.resetModules();
+    const fresh = await import('./feature-flag-names');
+    expect(fresh.attractionShown('gift-shop', { ...ALL_OFF, yearInReview: true })).toBe(false);
+    expect(fresh.attractionShown('the-year-in-review', { ...ALL_OFF, giftShop: true })).toBe(false);
+    expect(fresh.attractionShown('gift-shop', { ...ALL_OFF, giftShop: true })).toBe(true);
   });
 });

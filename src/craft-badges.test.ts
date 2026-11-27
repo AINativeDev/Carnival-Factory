@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { REPO_URL } from './northpole/links';
 import { cleanCraft, craftKey, earnedBadges, renderCraft, type Maker } from './craft-badges';
 
 describe('cleanCraft: the badges baked into the page, checked', () => {
@@ -13,6 +14,17 @@ describe('cleanCraft: the badges baked into the page, checked', () => {
     ).toEqual({ 'booth/ana': ['tested', 'small-files'], 'level/bo/hut': ['documented'] });
     expect(cleanCraft(null)).toEqual({});
     expect(cleanCraft([])).toEqual({});
+    expect(cleanCraft('booth/ana')).toEqual({});
+    expect(
+      cleanCraft({
+        'xbooth/ana': ['tested'],
+        'booth/ana/x': ['tested'],
+        'level/bo': ['tested'],
+        'level/bo/hut/x': ['tested'],
+        'shop/ana': ['tested'],
+        'attraction/big-top': [7, 'tested'],
+      }),
+    ).toEqual({ 'attraction/big-top': ['tested'] });
   });
 });
 
@@ -21,6 +33,7 @@ describe('craftKey', () => {
     expect(craftKey('booth', 'Ana')).toBe('booth/ana');
     expect(craftKey('attraction', 'big-top')).toBe('attraction/big-top');
     expect(craftKey('attraction', 'hut', 'bo')).toBe('level/bo/hut');
+    expect(craftKey('booth', 'hut', 'Bo')).toBe('level/bo/hut');
   });
 });
 
@@ -33,6 +46,21 @@ describe('earnedBadges', () => {
     ]);
     expect(earnedBadges(craft, 'booth/ana')[0]?.title).toMatch(/200 lines/);
     expect(earnedBadges(craft, 'booth/nobody')).toEqual([]);
+    const all = { 'booth/ana': ['clear-names', 'documented', 'tested', 'small-files'] };
+    expect(earnedBadges(all, 'booth/ana')).toEqual([
+      { id: 'small-files', label: 'Small files', title: 'Every code file is 200 lines or fewer.' },
+      { id: 'tested', label: 'Tested', title: 'Tests check what its code does.' },
+      {
+        id: 'documented',
+        label: 'Documented',
+        title: 'A README, and a comment on everything it shares saying what it is for.',
+      },
+      {
+        id: 'clear-names',
+        label: 'Clear names',
+        title: 'Its names say what things are in the scene.',
+      },
+    ]);
   });
 });
 
@@ -78,7 +106,16 @@ describe('renderCraft', () => {
     const link = line.children.at(2);
     expect(label).toMatchObject({ className: 'visit-craft-label', textContent: 'Code:' });
     expect(badge).toMatchObject({ className: 'visit-craft-badge', textContent: 'Tested' });
-    expect(link?.href).toMatch(/docs\/specs\/booth-craft\.md$/);
+    expect(link).toMatchObject({
+      tag: 'a',
+      className: 'visit-craft-about',
+      textContent: 'How squares are checked',
+      href: `${REPO_URL}/blob/main/docs/specs/booth-craft.md`,
+      target: '_blank',
+      rel: 'noopener',
+    });
+    expect(badge?.title).toBe('Tests check what its code does.');
+    expect([label?.tag, badge?.tag]).toEqual(['span', 'span']);
     expect(line.hidden).toBe(false);
   });
 

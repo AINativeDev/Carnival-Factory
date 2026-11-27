@@ -71,6 +71,7 @@ describe('an item to discover', () => {
       ...square(undefined),
       stall: { display: true } as NorthPoleSquare['stall'] & object,
     });
+    expect(fingerprint(plain.calls)).toMatchInlineSnapshot(`"9daa09cc9a36cb40 (80 calls)"`);
     expect(fingerprint(plain.calls)).not.toBe(
       fingerprint(drawn(spot, square({ shape: 'kiosk', roof: 'mint', display: true })).calls),
     );
@@ -78,6 +79,16 @@ describe('an item to discover', () => {
     const style = { shape: 'kiosk', roof: 'mint' } as const;
     expect(fingerprint(drawn(booth, square({ ...style, display: true })).calls)).toBe(
       fingerprint(drawn(booth, square(style)).calls),
+    );
+  });
+
+  it('faces the visitor from a door on its other side', () => {
+    const { calls, painted } = drawn(
+      { ...spot, door: { x: 2, y: 4 } },
+      square({ shape: 'kiosk', roof: 'berry', display: true }),
+    );
+    expect(fingerprint([...calls, ['painted', painted]])).toMatchInlineSnapshot(
+      `"69bb5ec69a7fee0a (81 calls)"`,
     );
   });
 });

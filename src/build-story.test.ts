@@ -44,9 +44,11 @@ describe('storySteps: how a square was built, oldest first', () => {
     request(143, 'jedi4ever', [pull(151, { findings: 0, fixed: 0 })]),
     request(70, 'sjmaple', [pull(102), pull(72)]),
   ];
-  const steps = storySteps(history, { maker: 'sjmaple', improvers: ['jedi4ever'] });
+  // Told afresh in each test, so each test runs the whole of it.
+  const story = () => storySteps(history, { maker: 'sjmaple', improvers: ['jedi4ever'] });
 
   it('tells it from the first request to the map', () => {
+    const steps = story();
     expect(steps.map((step) => step.kind)).toEqual([
       'asked',
       'built',
@@ -58,6 +60,7 @@ describe('storySteps: how a square was built, oldest first', () => {
   });
 
   it('says who asked, for what and when, linking the request', () => {
+    const steps = story();
     expect(steps[0]).toMatchObject({
       label: 'Asked for by',
       who: 'sjmaple',
@@ -69,6 +72,7 @@ describe('storySteps: how a square was built, oldest first', () => {
   });
 
   it('shows what the factory built, with its review findings and fixes', () => {
+    const steps = story();
     expect(steps[1]).toMatchObject({
       label: 'Built by the factory',
       link: { href: 'https://github.com/o/r/pull/72', text: '#72' },
@@ -81,6 +85,7 @@ describe('storySteps: how a square was built, oldest first', () => {
   });
 
   it('ends on the map only once something merged', () => {
+    const steps = story();
     expect(steps.at(-1)).toEqual({ kind: 'live', label: 'On the map' });
     const waiting = storySteps([request(9, 'ana', [openPull(10)])], undefined);
     expect(waiting.map((step) => step.kind)).toEqual(['asked', 'built']);

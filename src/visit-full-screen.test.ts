@@ -110,3 +110,41 @@ describe("the browser's own full screen", () => {
     full.stop();
   });
 });
+
+describe("the Full screen pill's words", () => {
+  it('is a plain button titled for what it does next, in the tools it is given', () => {
+    const map = frame();
+    const tools = document.createElement('div');
+    map.append(tools);
+    const full = fullScreenPill(map, tools);
+    expect(full.pill.parentElement).toBe(tools);
+    expect([full.pill.type, full.pill.className, full.pill.title]).toEqual([
+      'button',
+      'visit-full',
+      'Full screen',
+    ]);
+    expect(full.pill.querySelector('.visit-full-label')?.textContent).toBe('Full screen');
+    full.pill.click();
+    expect(full.pill.title).toBe('Exit full screen');
+    const esc = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    document.body.dispatchEvent(esc);
+    expect(esc.defaultPrevented).toBe(true);
+    expect(full.pill.title).toBe('Full screen');
+    const again = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    document.body.dispatchEvent(again);
+    expect(again.defaultPrevented).toBe(false);
+    full.stop();
+  });
+
+  it('stops hearing Esc and the browser once the visit ends', () => {
+    const map = frame();
+    const full = fullScreenPill(map);
+    full.stop();
+    map.dataset.full = '';
+    const esc = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    document.body.dispatchEvent(esc);
+    document.dispatchEvent(new Event('fullscreenchange'));
+    expect(esc.defaultPrevented).toBe(false);
+    expect(map.dataset.full).toBe('');
+  });
+});
