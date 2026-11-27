@@ -18,13 +18,22 @@ export interface BadgeHolder {
   tier?: BadgeTier;
 }
 
-/** A GitHub login, in lower case, as a booth's folder is named. */
-const LOGIN = /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/;
-/** A repository as `owner/name`. */
-const REPO = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}\/[A-Za-z0-9._-]{1,100}$/;
+/**
+ * Whether `text` is a GitHub login, in lower case, as a booth's folder is named.
+ * Written inside the function, so mutation testing (ADR 0061) checks the pattern
+ * with the tests that call it, rather than only as the module loads.
+ */
+function isLogin(text: string): boolean {
+  return /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/.test(text);
+}
 
-const isLogin = (text: string) => LOGIN.test(text);
-export const isRepo = (text: string) => REPO.test(text) && !/\/\.\.?$/.test(text);
+/** Whether `text` is a repository as `owner/name`, with a name that isn't `.` or `..`. */
+export function isRepo(text: string): boolean {
+  return (
+    /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}\/[A-Za-z0-9._-]{1,100}$/.test(text) &&
+    !/\/\.\.?$/.test(text)
+  );
+}
 
 /**
  * The holders from untrusted JSON: only well-formed entries, logins in lower
@@ -51,7 +60,7 @@ declare const __BADGE_HOLDERS__: unknown;
 
 /** Everyone holding the badge, as the build found them. */
 export const BADGE_HOLDERS: readonly BadgeHolder[] = cleanHolders(
-  typeof __BADGE_HOLDERS__ === 'undefined' ? [] : __BADGE_HOLDERS__,
+  typeof __BADGE_HOLDERS__ === 'undefined' ? undefined : __BADGE_HOLDERS__,
 );
 
 /** The badge a booth's owner holds, if they hold one. */

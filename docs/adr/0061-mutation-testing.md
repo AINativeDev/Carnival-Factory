@@ -24,7 +24,9 @@ like coverage to a high standard, and chose 90% for new and changed code.
   files it changes (`node scripts/mutation-check.ts --changed`).
 - Every older file below 90% is frozen at its debt, `100 - score`, in
   `lint/mutation-baseline.json`, which only shrinks
-  (`scripts/baselines-shrink.ts`), like the strict-types baseline.
+  (`scripts/baselines-shrink.ts`), like the strict-types baseline. A
+  baseline new to the base branch starts as it is: only maintainers add one,
+  since the list of baselines is in that script.
 - `.github/workflows/mutation.yml` runs the whole of it every week, and on
   demand, against the baseline, and keeps the report. It runs as four parts in
   parallel, so each stays well inside a job's six hours on a standard runner

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { BANNED_GLOBALS, BANNED_PROPERTIES } from '../square-code.ts';
 import { rules } from './test-booth.ts';
 
@@ -29,6 +29,16 @@ describe('the banned names', () => {
   it('are exactly the ones written out here', () => {
     expect([...BANNED_GLOBALS].sort()).toEqual([...GLOBALS].sort());
     expect([...BANNED_PROPERTIES].sort()).toEqual([...PROPERTIES].sort());
+  });
+
+  it('are the same when loaded afresh, and every one is barred as a string', async () => {
+    // Loaded inside the test, so mutation testing sees this test read the lists
+    // as the module builds them (docs/adr/0061-mutation-testing.md).
+    vi.resetModules();
+    const fresh = await import('./banned-names.ts');
+    expect([...fresh.BANNED_GLOBALS].sort()).toEqual([...GLOBALS].sort());
+    expect([...fresh.BANNED_PROPERTIES].sort()).toEqual([...PROPERTIES].sort());
+    expect([...fresh.NOT_A_GLOBAL].sort()).toEqual([...GLOBALS, ...PROPERTIES].sort());
   });
 
   it.each(GLOBALS)('catches the global %s', (name) => {

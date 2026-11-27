@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rules } from './test-booth.ts';
+import { problems, rules } from './test-booth.ts';
 
 describe('computed property access', () => {
   it.each([
@@ -75,5 +75,36 @@ describe('checkSquareCode, on computed access and syntax', () => {
       'syntax',
     );
     expect(rules(`export const x = () => new OffscreenCanvas(1, 1);`)).toContain('global');
+  });
+});
+
+describe('checkSyntax, word for word', () => {
+  const said = (code: string) => problems(code).map(({ rule, message }) => [rule, message]);
+
+  it('says which statement it stopped', () => {
+    expect(said(`export const x = (o: object) => { with (o) {} };`)).toEqual([
+      ['syntax', 'No with statements.'],
+    ]);
+    expect(said(`export const x = () => { debugger; };`)).toEqual([
+      ['syntax', 'No debugger statements.'],
+    ]);
+    expect(said('const t = (s: TemplateStringsArray) => s; export const x = t`a`;')).toEqual([
+      ['syntax', 'No tagged templates: they call a function with raw text.'],
+    ]);
+  });
+
+  it('names the canvas it stopped', () => {
+    expect(said(`export const x = () => new OffscreenCanvas(1, 1);`)).toEqual([
+      ['global', "Creates a OffscreenCanvas: a square draws only on the one it's given."],
+    ]);
+  });
+
+  it('stops only a canvas made with new, by a name that ends in Canvas', () => {
+    const own = `class MyCanvas {}\nclass Canvasser {}\nconst parts = { MyCanvas };\n`;
+    expect(rules(`${own}export const x = () => new Canvasser();`)).toEqual([]);
+    expect(rules(`${own}export const x = () => new parts.MyCanvas();`)).toEqual([]);
+    expect(rules(`${own}export const x = () => (MyCanvas as unknown as () => void)();`)).toEqual(
+      [],
+    );
   });
 });
