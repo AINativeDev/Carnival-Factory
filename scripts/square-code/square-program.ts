@@ -10,15 +10,30 @@
 import ts from 'typescript';
 import type { SourceFile } from './problems.ts';
 
-/** Each source file sits at `/<its path>`, so imports between them resolve as in the repository. */
+/** Each source file sits at `/<its path>`, in folders TypeScript can see, so imports between them resolve as in the repository. */
 export function squareProgram(sources: readonly SourceFile[]): ts.Program {
   // Stryker disable next-line BooleanLiteral: the type checker binds every file before a rule walks it, and binding sets each node's parent anyway
   const host = ts.createCompilerHost({}, true);
   const byName = new Map(sources.map((file) => [`/${file.path}`, file.text]));
+  // Every folder the square's files sit in: TypeScript looks a folder up before
+  // it looks for a file in it, so without these an import between the square's
+  // own files resolves to nothing, and what it imports is typed `any`. Its own
+  // library it finds by itself, and it reads the square's files through
+  // getSourceFile, so neither needs the disk's folders or readFile.
+  const folders = new Set(
+    [...byName.keys()].flatMap((name) =>
+      name
+        .split('/')
+        .slice(1, -1)
+        .map((_, n, parts) => `/${parts.slice(0, n + 1).join('/')}`),
+    ),
+  );
   const libHost: ts.CompilerHost = {
     ...host,
+    // Stryker disable next-line ConditionalExpression: a folder that "exists" with no file in it holds nothing to import
+    directoryExists: (name) => folders.has(name),
+    // Stryker disable next-line ConditionalExpression: a file that "exists" but isn't the square's has no source, so it stays unresolved
     fileExists: (name) => byName.has(name) || host.fileExists(name),
-    readFile: (name) => byName.get(name) ?? host.readFile(name),
     getSourceFile: (name, languageVersion) => {
       const text = byName.get(name);
       return text !== undefined
