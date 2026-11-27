@@ -71,6 +71,17 @@ describe("the People's Choice standings the build found", () => {
   });
 });
 
+describe('a page loaded with no build at all, where nothing is even declared', () => {
+  it('starts each baked list empty rather than failing to load', async () => {
+    // An earlier test's stub leaves its name behind, set to undefined: a page never has it.
+    for (const name of ['__ADVENT_COUNTS__', '__BADGE_HOLDERS__', '__YEAR_IN_REVIEW__'])
+      Reflect.deleteProperty(globalThis, name);
+    expect((await import('./advent')).adventCountFor('ana')).toBe(0);
+    expect((await import('./badges')).BADGE_HOLDERS).toEqual([]);
+    expect((await import('./year-in-review-answers')).YEAR_ANSWERS).toEqual({});
+  });
+});
+
 describe("the Year in Review's answers the build found", () => {
   it('keeps the clean answers of the room’s items, and nothing else', async () => {
     const answer = { login: 'ana', answer: 'Yes.', at: '2026-11-20T00:00:00Z' };

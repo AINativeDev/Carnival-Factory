@@ -43,6 +43,8 @@ export function nearestStand(world: World, position: Tile): Tile {
     let best: Tile | undefined;
     for (let dx = -ring; dx <= ring; dx++)
       for (let dy = -ring; dy <= ring; dy++) {
+        // Only the ring itself: every tile inside it already failed in an earlier ring.
+        // Stryker disable next-line ConditionalExpression: trying the inner tiles again finds nothing new
         if (Math.max(Math.abs(dx), Math.abs(dy)) !== ring) continue;
         const tile = { x: x + dx, y: y + dy };
         if (!canStand(world, tile)) continue;
