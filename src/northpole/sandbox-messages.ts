@@ -29,7 +29,8 @@ export function hearFrame(run: SquareRun, iframe: HTMLIFrameElement, data: unkno
         stall: stallFor(run.kind, message.stall),
       };
       setState(run, iframe, 'ready');
-      if (run.frames > 0) break; // a restarted frame: the page already knows its name
+      // Everyone still waiting hears it, a restarted frame's too: each listener is
+      // taken off as it's called, so none hears twice and none is left behind.
       for (const listener of run.listeners.splice(0)) {
         // One page's listener failing mustn't keep the others from hearing.
         try {

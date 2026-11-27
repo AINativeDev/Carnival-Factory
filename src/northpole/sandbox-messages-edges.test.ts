@@ -58,14 +58,15 @@ describe('what counts as a picture from the frame', () => {
 });
 
 describe("the page's listeners", () => {
-  it("leaves a restarted frame's listeners waiting, since the page already knows its name", () => {
+  it('tells a page that asked while a released frame restarted, once, and keeps no listener', () => {
     const run = newRun('booth', 'elf');
     run.frames = 3;
     const listener = vi.fn();
     run.listeners.push(listener);
     const { iframe } = frameElement();
     hearFrame(run, iframe, { type: 'ready', name: 'Elf Shop', description: '' });
-    expect(listener).not.toHaveBeenCalled();
+    expect(listener).toHaveBeenCalledExactlyOnceWith(run.info);
+    expect(run.listeners).toEqual([]);
     expect(run.info.name).toBe('Elf Shop');
     expect(iframe.dataset.state).toBe('ready');
   });
