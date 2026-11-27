@@ -51,6 +51,12 @@ describe("when each booth's folder first appeared", () => {
     const log = '\0not a date\nbooths/x/booth.ts\0' + '2026-11-01T00:00:00Z\nbooths/y/README.md\n';
     expect(boothAddedDates(log)).toEqual({});
   });
+
+  it('reads lines with space around them, and only whole booth paths', () => {
+    const log =
+      '\0 2026-11-01T00:00:00Z \r\n booths/ana/booth.ts \r\nx/booths/bo/booth.ts\nbooths/cy/booth.ts.orig\n';
+    expect(boothAddedDates(log)).toEqual({ ana: '2026-11-01T00:00:00Z' });
+  });
 });
 
 describe('readBoothAddedDates', () => {

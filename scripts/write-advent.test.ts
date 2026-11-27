@@ -18,6 +18,15 @@ describe('commentsByIssue', () => {
     expect([...grouped.keys()]).toEqual([1, 2]);
     expect(grouped.get(1)).toHaveLength(2);
   });
+
+  it('places a comment only by the number its address ends with', () => {
+    const at = (url: string) => ({ ...accept(1, 1), issue_url: url });
+    const grouped = commentsByIssue([
+      at('https://api.github.com/repos/o/r/issues/12'),
+      at('https://api.github.com/repos/o/r/issues/5/comments'),
+    ]);
+    expect([...grouped.keys()]).toEqual([12]);
+  });
 });
 
 describe('readAdventCounts', () => {
@@ -36,5 +45,17 @@ describe('readAdventCounts', () => {
       ],
     });
     expect(await readAdventCounts(reader, 'o/r', 2026)).toEqual({ ana: 2 });
+  });
+
+  it('writes the year in four digits, as the API reads a date', async () => {
+    const reader = fakeGitHub({
+      'repos/o/r/issues?labels=advent-done,accepted&state=all': [
+        { number: 1, user: { login: 'ana' } },
+      ],
+      'repos/o/r/issues/comments?since=0999-11-30T00:00:00Z&sort=created&direction=asc': [
+        accept(1, 1),
+      ],
+    });
+    expect(await readAdventCounts(reader, 'o/r', 999)).toEqual({ ana: 1 });
   });
 });

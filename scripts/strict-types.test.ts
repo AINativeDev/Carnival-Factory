@@ -11,6 +11,11 @@ describe('errorsByFile', () => {
     ].join('\n');
     expect(errorsByFile(output)).toEqual({ 'src/a.ts': 2, 'scripts/b.ts': 1 });
   });
+
+  it('reads many-digit positions, and only an error that starts its line', () => {
+    const output = 'src/a.ts(12,34): error TS2532: x src/b.ts(1,1): error TS1: quoted';
+    expect(errorsByFile(output)).toEqual({ 'src/a.ts': 1 });
+  });
 });
 
 describe('compare', () => {
@@ -28,6 +33,10 @@ describe('compare', () => {
     });
   });
 
+  it('says nothing about a file at exactly its baseline', () => {
+    expect(compare({ 'src/a.ts': 2 }, { 'src/a.ts': 2 })).toEqual({ worse: [], better: [] });
+  });
+
   it('lets a carnival file improve without touching the baseline, which is outside its folder', () => {
     expect(compare({}, { 'carnival/booths/ana/booth.ts': 3 }).better).toEqual([]);
   });
@@ -37,5 +46,8 @@ describe('linesAbout', () => {
   it("keeps only the compiler's lines about the files that got worse", () => {
     const output = 'src/a.ts(1,1): error TS1: x\nsrc/b.ts(2,2): error TS2: y';
     expect(linesAbout(output, ['src/b.ts'])).toBe('src/b.ts(2,2): error TS2: y');
+    expect(linesAbout(`${output}\nsrc/c.ts(3,3): error TS3: z`, ['src/a.ts', 'src/c.ts'])).toBe(
+      'src/a.ts(1,1): error TS1: x\nsrc/c.ts(3,3): error TS3: z',
+    );
   });
 });

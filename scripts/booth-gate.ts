@@ -109,7 +109,8 @@ export function evaluateGate(facts: GateFacts): GateDecision {
       .join('; ') || undefined,
   );
 
-  const pending = REQUIRED_CHECKS.filter((name) => (facts.checks[name] ?? 'missing') !== 'success');
+  // A check with no state yet is missing, and so not a success.
+  const pending = REQUIRED_CHECKS.filter((name) => facts.checks[name] !== 'success');
   const failed = pending.filter((name) => facts.checks[name] === 'failure');
   add(
     'Checks pass',

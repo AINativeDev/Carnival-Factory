@@ -28,6 +28,15 @@ describe('smokeScope', () => {
   });
 });
 
+describe('smokeScope at its edges', () => {
+  it('reads each name without the space around it, and needs a file in carnival/booths/<login>/', () => {
+    expect(smokeScope(['  carnival/booths/ana/booth.ts  ', ''])).toBe('booth/ana');
+    expect(smokeScope(['north/booths/ana/booth.ts'])).toBeUndefined();
+    expect(smokeScope(['carnival/booths/ana'])).toBeUndefined();
+    expect(smokeScope([])).toBeUndefined();
+  });
+});
+
 describe('scopeOutput', () => {
   it("prints the scope on its own line for git diff's list, or nothing for a full run", () => {
     expect(scopeOutput('carnival/booths/ana/booth.ts\n')).toBe('booth/ana\n');

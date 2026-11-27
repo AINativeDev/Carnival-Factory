@@ -71,10 +71,30 @@ describe('combinedLines: a line counts if either kind of test ran it', () => {
     expect(lines.covered).toBe(lines.total);
     expect(lines.files['/repo/src/pick.ts']).toEqual({ covered: lines.total, total: lines.total });
     expect(combinedLines([none]).covered).toBe(0);
+    expect(combinedLines([once, none]).covered).toBe(lines.total);
   });
 
   it('reports nothing measured as fully covered rather than dividing by zero', () => {
     expect(combinedLines([]).percent).toBe(100);
+  });
+
+  it('gives the share of lines covered as a percentage to two places', () => {
+    const at = (line: number) => ({ start: { line, column: 0 }, end: { line, column: 1 } });
+    const file = {
+      path: '/repo/src/a.ts',
+      statementMap: { 0: at(1), 1: at(2), 2: at(3) },
+      s: { 0: 1, 1: 0, 2: 0 },
+      fnMap: {},
+      f: {},
+      branchMap: {},
+      b: {},
+    };
+    expect(combinedLines([{ '/repo/src/a.ts': file }])).toEqual({
+      covered: 1,
+      total: 3,
+      percent: 33.33,
+      files: { '/repo/src/a.ts': { covered: 1, total: 3 } },
+    });
   });
 });
 
@@ -90,6 +110,7 @@ describe('finding the code that counts', () => {
       '/repo/src/map.ts': {},
       '/repo/node_modules/x/index.js': {},
       '/elsewhere/y.ts': {},
+      '/repo/scripts/z.ts': {},
     };
     expect(Object.keys(ownCode('/repo', data as never))).toEqual(['/repo/src/map.ts']);
   });

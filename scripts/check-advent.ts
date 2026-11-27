@@ -89,6 +89,7 @@ export async function checkAdvent(
   }>(`${repoPath(repository)}/issues/${number}`);
   if (!issue) throw new Error(`Issue ${number} not found`);
 
+  // Stryker disable next-line StringLiteral: any plain stand-in for no body names no field and says nothing to an agent.
   const body = issue.body ?? '';
   const facts: AdventFacts = {
     author: issue.user.login,

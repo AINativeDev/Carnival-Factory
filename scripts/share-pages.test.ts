@@ -10,12 +10,15 @@ import {
 } from './share-pages';
 
 describe('share pages', () => {
-  const page = sharePage(
-    { kind: 'booth', id: 'elf', name: "Santa's <Toy> Factory", description: 'Toys & "elves"' },
-    'https://x.github.io/repo/share/map.png',
-  );
+  // Made inside each test, so a test sees the page as the code makes it then.
+  const boothPage = () =>
+    sharePage(
+      { kind: 'booth', id: 'elf', name: "Santa's <Toy> Factory", description: 'Toys & "elves"' },
+      'https://x.github.io/repo/share/map.png',
+    );
 
   it('unfurls with a title, a description and the map as the image', () => {
+    const page = boothPage();
     expect(page).toContain(
       `<meta property="og:title" content="Santa&#39;s &lt;Toy&gt; Factory, by @elf, at Carnival Factory" />`,
     );
@@ -30,6 +33,10 @@ describe('share pages', () => {
   });
 
   it('sends the browser on to the world, inside the square, with no scripts', () => {
+    const page = boothPage();
+    expect(page).toContain(
+      '<a href="../#/booth/elf">Visit Santa&#39;s &lt;Toy&gt; Factory at Carnival Factory</a>',
+    );
     expect(page).toContain('<meta http-equiv="refresh" content="0; url=../#/booth/elf" />');
     expect(page).toContain('<a href="../#/booth/elf">');
     expect(page).not.toMatch(/<script/i);
@@ -54,6 +61,10 @@ describe('share pages', () => {
     );
     expect(factory).toContain('<meta http-equiv="refresh" content="0; url=../#/factory" />');
     expect(factory).not.toMatch(/<script/i);
+    expect(factory).toContain(
+      '<meta name="description" content="How many booths a software factory has built for Carnival Factory – Christmas edition, and how busy it is." />',
+    );
+    expect(factory).toContain('<a href="../#/factory">See the factory&#39;s numbers</a>');
   });
 
   it("reads a square's name and description from its source", () => {
@@ -74,6 +85,12 @@ describe('share pages', () => {
     // Without the id, or with one the source never sets, it reads the first.
     expect(readSquareInfo(source).name).toBe('Stocking stuffer');
     expect(readSquareInfo(source, 'elsewhere').name).toBe('Stocking stuffer');
+    expect(readSquareInfo("name: 'First'").name).toBe('First');
+  });
+
+  it('finds an id with characters a pattern would read otherwise', () => {
+    const source = `const a = { name: 'Other' };\nconst b = { id: 'a.b', name: 'Own' };`;
+    expect(readSquareInfo(source, 'a.b').name).toBe('Own');
   });
 
   it('decodes escapes as the square itself sees them', () => {
@@ -81,6 +98,7 @@ describe('share pages', () => {
     expect(readSquareInfo(source)).toEqual({ name: 'Snow☃man', description: 'One\ntwo' });
     expect(decodeLiteral(String.raw`\x41\u{1F384}\'\\\q`)).toBe("A🎄'\\q");
     expect(decodeLiteral('a\\\nb')).toBe('ab');
+    expect(decodeLiteral(String.raw`\u2603`)).toBe('☃');
   });
 
   it('knows the site from SITE_URL, or from the repository on GitHub Pages', () => {
@@ -90,6 +108,10 @@ describe('share pages', () => {
       'https://ainativedev.github.io/Northpole/',
     );
     expect(siteUrl({})).toBeUndefined();
-    expect(escapeHtml(`<a href="x">'</a>`)).toBe('&lt;a href=&quot;x&quot;&gt;&#39;&lt;/a&gt;');
+    expect(siteUrl({ GITHUB_REPOSITORY: 'north/pole/extra' })).toBeUndefined();
+    expect(siteUrl({ GITHUB_REPOSITORY: 'the north/pole' })).toBeUndefined();
+    expect(escapeHtml(`<a href="x">'&</a>`)).toBe(
+      '&lt;a href=&quot;x&quot;&gt;&#39;&amp;&lt;/a&gt;',
+    );
   });
 });

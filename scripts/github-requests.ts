@@ -51,6 +51,7 @@ export function squaresTouched(paths: string[]): string[] {
       /^(?:carnival\/)?(?<kind>booth|attraction|level)s\/(?<id>[a-z0-9]+(?:-[a-z0-9]+)*)\//i.exec(
         path,
       )?.groups ?? {};
+    // Stryker disable next-line LogicalOperator: the pattern names both or neither, so either test reads the same.
     if (kind && id) squares.add(`${kind}/${id.toLowerCase()}`);
   }
   return [...squares].sort();

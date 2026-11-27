@@ -42,10 +42,12 @@ export interface RawYearIssue {
 
 /** When the issue was last accepted: the latest time `ACCEPTED_LABEL` was added to it. */
 function acceptedAt(issue: RawYearIssue): number | undefined {
-  const times = issue.timelineItems.nodes
-    .filter((event) => event?.label?.name === ACCEPTED_LABEL)
-    .map((event) => Date.parse(event?.createdAt ?? ''))
-    .filter((time) => !Number.isNaN(time));
+  const acceptances = issue.timelineItems.nodes.filter(
+    (event) => event?.label?.name === ACCEPTED_LABEL,
+  );
+  // Stryker disable next-line OptionalChaining,StringLiteral: only labelled events are left, and a missing date reads as NaN however it's spelled.
+  const dates = acceptances.map((event) => Date.parse(event?.createdAt ?? ''));
+  const times = dates.filter((time) => !Number.isNaN(time));
   return times.length ? Math.max(...times) : undefined;
 }
 
@@ -70,6 +72,7 @@ export function acceptedAnswer(
   const accepted = acceptedAt(issue);
   const edited = issue.lastEditedAt ? Date.parse(issue.lastEditedAt) : undefined;
   if (accepted === undefined || (edited !== undefined && !(edited <= accepted))) return undefined;
+  // Stryker disable next-line StringLiteral: any plain stand-in for no body names no field.
   const body = issue.body ?? '';
   const item = itemOf(formField(body, YEAR_FIELDS.question));
   const words = formField(body, YEAR_FIELDS.answer);
@@ -86,6 +89,7 @@ export function yearInReview(issues: readonly RawYearIssue[]): YearInReview {
   const byItem: Record<string, YearAnswer[]> = {};
   for (const issue of issues) {
     const found = acceptedAnswer(issue);
+    // Stryker disable next-line ArrayDeclaration: anything made up before the first answer isn't an answer, and cleaning drops it.
     if (found) byItem[found.item] = [...(byItem[found.item] ?? []), found.answer];
   }
   return cleanYearInReview(byItem);

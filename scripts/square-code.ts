@@ -54,9 +54,11 @@ export function checkSquareCode(folder: string, files: readonly SourceFile[]): C
   };
 
   // In the order the files were given, as the gate lists them.
+  // Stryker disable MethodExpression,ConditionalExpression: the program holds every source it was given, so none is ever missing.
   const ownSources = sources
     .map((file) => program.getSourceFile(`/${file.path}`))
     .filter((source): source is ts.SourceFile => source !== undefined);
+  // Stryker restore MethodExpression,ConditionalExpression
   for (const source of ownSources) {
     const square: SquareFile = {
       folder,

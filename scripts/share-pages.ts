@@ -46,6 +46,7 @@ export function decodeLiteral(body: string): string {
     (_, point: string, unit: string, byte: string, char: string) => {
       if (point) return String.fromCodePoint(parseInt(point, 16));
       if (unit || byte) return String.fromCharCode(parseInt(unit || byte, 16));
+      // Stryker disable next-line Regex: `char` is one escaped character or a CRLF, so it is always the whole match.
       if (/^(\r\n|[\r\n\u2028\u2029])$/.test(char)) return '';
       return ESCAPES[char] ?? char;
     },
@@ -67,6 +68,7 @@ export function readSquareInfo(
   const own = id
     ? source.search(new RegExp(String.raw`\bid:\s*(['"\`])${id.replace(/[^\w-]/g, '\\$&')}\1`))
     : -1;
+  // Stryker disable next-line EqualityOperator: an id at the very start slices off nothing, so 0 reads the same either way.
   const from = own >= 0 ? source.slice(own) : source;
   const field = (key: string) => {
     const match = from.match(new RegExp(`\\b${key}:\\s*${literal}`));

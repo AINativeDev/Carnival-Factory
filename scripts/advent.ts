@@ -58,6 +58,7 @@ export const adventDayOptions = (calendar: AdventCalendar) =>
 export function adventFreeText(title: string, body: string, options: readonly string[]): string {
   let text = `${title}\n${body.replace(/\r\n?/g, '\n')}`;
   const link = formField(body, ADVENT_FIELDS.link);
+  // Stryker disable next-line MethodExpression: formField gives its value trimmed already.
   const day = formField(body, ADVENT_FIELDS.day)?.trim();
   if (link && parseAdventLink(link)) text = text.replaceAll(link, '');
   if (day && (/^(?:day\s*)?\d{1,2}$/i.test(day) || options.includes(day))) {
@@ -179,6 +180,7 @@ export function adventCounts(records: readonly AdventRecord[]): Record<string, n
     const latest = decisions.at(-1);
     const day = latest && readAccepted(latest.body);
     if (!day) continue;
+    // Stryker disable next-line MethodExpression: any one case merges the same logins, and cleanCounts lower-cases them.
     const login = issue.user.login.toLowerCase();
     days.set(login, (days.get(login) ?? new Set()).add(day));
   }

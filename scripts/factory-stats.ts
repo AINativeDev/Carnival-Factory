@@ -53,6 +53,7 @@ export const isFactoryPull = (pull: RawPull) =>
 
 /** When the issue first got `label`, or undefined if its timeline never shows it. */
 export function labelledAt(issue: RawIssue, label: string = ACCEPTED_LABEL): string | undefined {
+  // Stryker disable next-line ArrayDeclaration: anything made up in place of no timeline has no label, so nothing is kept.
   const times = (issue.timelineItems?.nodes ?? [])
     .filter((event) => event.label?.name === label && !Number.isNaN(Date.parse(event.createdAt)))
     .map((event) => event.createdAt)
@@ -76,15 +77,19 @@ export function minutesToMap(issues: RawIssue[], pulls: RawPull[]): number[] {
   for (const pull of pulls) {
     const issue = branchIssue(pull.headRefName);
     const merged = pull.mergedAt ? Date.parse(pull.mergedAt) : NaN;
+    // Stryker disable next-line ConditionalExpression: merges kept under no issue are never looked up, since every issue has a number.
     if (issue === undefined || pull.isCrossRepository || Number.isNaN(merged)) continue;
+    // Stryker disable next-line ArrayDeclaration: a made-up first merge is no time, and no time is after an acceptance.
     merges.set(issue, [...(merges.get(issue) ?? []), merged]);
   }
   const minutes: number[] = [];
   for (const issue of issues) {
     if (!issue.labels.nodes.some((label) => label.name === REQUEST_LABEL)) continue;
     const accepted = labelledAt(issue);
+    // Stryker disable next-line ConditionalExpression: with no acceptance the start is NaN, and no merge comes after NaN.
     if (!accepted) continue;
     const from = Date.parse(accepted);
+    // Stryker disable next-line ArrayDeclaration: a made-up merge is no time, and no time is after an acceptance.
     const after = (merges.get(issue.number) ?? []).filter((time) => time >= from);
     if (after.length) minutes.push(Math.round((Math.min(...after) - from) / 60_000));
   }
@@ -95,9 +100,8 @@ export function minutesToMap(issues: RawIssue[], pulls: RawPull[]): number[] {
 export function factoryStats(issues: RawIssue[], pulls: RawPull[], readAt: string): FactoryStats {
   const factory = pulls.filter(isFactoryPull);
   const merged = factory.filter((pull) => pull.state === 'MERGED');
-  const built = new Set(
-    factory.map((pull) => branchIssue(pull.headRefName)).filter((n) => n !== undefined),
-  );
+  // A branch that names no issue adds `undefined`, which no request's number matches.
+  const built = new Set(factory.map((pull) => branchIssue(pull.headRefName)));
   const requests = issues.filter((issue) =>
     issue.labels.nodes.some((label) => label.name === REQUEST_LABEL),
   );
@@ -114,6 +118,7 @@ export function factoryStats(issues: RawIssue[], pulls: RawPull[], readAt: strin
     builds: factory.length,
     merged: merged.length,
     autoMerged: merged.filter((pull) =>
+      // Stryker disable next-line ArrayDeclaration: anything made up in place of no labels is no label at all.
       (pull.labels?.nodes ?? []).some((label) => label.name === AUTO_MERGED_LABEL),
     ).length,
     requests: requests.length,

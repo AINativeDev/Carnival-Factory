@@ -51,6 +51,9 @@ describe('installFeedback', () => {
     expect(installFeedback([])).toBeUndefined();
     const many = Array.from({ length: 12 }, (_, n) => `package-${n} (not installed)`);
     expect(installFeedback(many)).toMatch(/package-9 \(not installed\), and 2 more\.$/);
+    expect(installFeedback(many.slice(0, 10))).toBe(
+      `The installed packages don't match package-lock.json, so the project checks can't be trusted yet. Run npm install, then finish. Out of step: ${many.slice(0, 10).join(', ')}.`,
+    );
   });
 });
 
@@ -62,5 +65,7 @@ describe('parseLockfile', () => {
     expect(parseLockfile('{"name": "x"}')).toBeUndefined();
     expect(parseLockfile('{"packages": null}')).toBeUndefined();
     expect(parseLockfile('null')).toBeUndefined();
+    expect(parseLockfile('{"packages": 5}')).toBeUndefined();
+    expect(parseLockfile('7')).toBeUndefined();
   });
 });

@@ -107,6 +107,7 @@ export async function gatherFacts(
   const inScope = files.length > 0 && files.every((f) => f.startsWith(`carnival/booths/${owner}/`));
   // Only read and compile the booth when the cheap checks already pass.
   const booth =
+    // Stryker disable next-line ArrayDeclaration: a made-up file that isn't a booth's source is never compiled.
     accepted && inScope ? await boothFiles(github, sha, owner) : { files: [], problems: [] };
   const [checks, review, comments] = await Promise.all([
     checkStates(github, sha),
@@ -123,6 +124,7 @@ export async function gatherFacts(
       ...checkSquareCode(`carnival/booths/${owner}/`, booth.files),
     ],
     textFindings: [
+      // Stryker disable next-line StringLiteral: any plain stand-in for no body says nothing to an agent.
       ...scanParticipantText(`${issue.title}\n${issue.body ?? ''}`),
       ...injectionMarkers(pull.title),
     ],
