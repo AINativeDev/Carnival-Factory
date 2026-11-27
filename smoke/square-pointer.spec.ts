@@ -8,7 +8,7 @@ import { STALL } from '../src/northpole/stall-plan';
 /**
  * Hover and taps reaching a square: on the map through its stall's front,
  * where a click still goes inside, and inside on the back wall, with a mouse
- * and with a finger at phone width, and decorating the Gingerbread Fun House
+ * and with a finger at phone width, and playing the Gingerbread Fun House
  * from inside. Apart from the visit tests because these
  * aim the pointer at a square's drawing rather than walk the player.
  */
@@ -155,7 +155,7 @@ for (const viewport of [
   { width: 1200, height: 1000, touch: false },
   { width: 390, height: 844, touch: true },
 ]) {
-  test(`inside the Gingerbread Fun House, taps decorate it at ${viewport.width} wide`, async ({
+  test(`inside the Gingerbread Fun House, taps play its echo game at ${viewport.width} wide`, async ({
     browser,
   }) => {
     const context = await browser.newContext({ hasTouch: viewport.touch, viewport });
@@ -168,7 +168,7 @@ for (const viewport of [
     await expect(canvas).toHaveAttribute('data-stage', /^\d+,\d+,\d+,\d+$/);
     const room = await canvas.getAttribute('data-stage');
     const stage = await stageOf(page);
-    // A few taps on the house's wall and roof, each sticking a treat on it.
+    // A few taps on the house: the first starts a game of Icing Echo, the rest play it.
     for (const [x, y] of [
       [0.35, 0.45],
       [0.45, 0.55],
@@ -186,7 +186,7 @@ for (const viewport of [
       await page.waitForTimeout(150);
     }
     await page.waitForTimeout(500);
-    // Decorating keeps the visit inside, and the house still drawing where it was.
+    // Playing keeps the visit inside, and the house still drawing where it was.
     await expect(canvas).toHaveAttribute('data-stage', present(room, 'stage'));
     await expect(frame).toHaveAttribute('data-state', 'ready');
     expect(problems).toEqual([]);

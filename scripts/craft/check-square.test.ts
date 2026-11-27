@@ -19,6 +19,10 @@ describe('readSquare', () => {
       'README.md',
       'attraction.test.ts',
       'attraction.ts',
+      'elves.ts',
+      'game.test.ts',
+      'game.ts',
+      'hud.ts',
       'ride.ts',
       'view.ts',
     ]);

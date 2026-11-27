@@ -1,12 +1,12 @@
 /**
  * The Gingerbread Fun House itself: a crooked gingerbread house on the snow,
- * with icing trim, a candy-cane door, gumdrop lights and two round fun-house
- * mirror windows.
+ * with a chocolate roof thick with icing and gumdrop lights chasing along its
+ * eaves. Its windows, door and roof gumdrops are Icing Echo's notes, drawn by
+ * `fixtures.ts` on top of it.
  */
 import { box, glow, iso, shadow, type Point } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
-import { lean, LEAN_FROM } from './decorating';
-import { MIRRORS } from './mirrors';
+import { LEAN_FROM } from './decorating';
 
 const { colors } = theme;
 
@@ -25,11 +25,8 @@ export function gumdropLit(light: number, count: number, time: number): boolean 
 /** The treat colours: the gumdrop lights, and the treats visitors stick on. */
 export const GUMDROPS = [colors.berry, colors.mint, colors.gold, colors.violet];
 
-/** How wide a mirror window is, in the scene's units. */
-const MIRROR_R = 4.4;
-
 /** A path round points on the ground, given as [gx, gy, z]. */
-function path(
+export function path(
   ctx: CanvasRenderingContext2D,
   points: readonly (readonly [number, number, number])[],
 ) {
@@ -43,32 +40,34 @@ function path(
 }
 
 /**
- * Draws `paint` leaning with the house at `time`: the house sways about the
- * foot of its front wall, and so do the treats stuck on it.
+ * Draws `paint` leaning with the house, turned `turn` radians: the house sways
+ * and wobbles about the foot of its front wall, and so does all that's on it.
  */
-export function leaning(ctx: CanvasRenderingContext2D, time: number, paint: () => void) {
+export function leaning(ctx: CanvasRenderingContext2D, turn: number, paint: () => void) {
   ctx.save();
   ctx.translate(LEAN_FROM.x, LEAN_FROM.y);
-  ctx.rotate(lean(time));
+  ctx.rotate(turn);
   ctx.translate(-LEAN_FROM.x, -LEAN_FROM.y);
   paint();
   ctx.restore();
 }
 
-/** What shows in a mirror window: given the window's middle, its radius, and which mirror it is. */
-export type InMirror = (at: Point, r: number, mirror: (typeof MIRRORS)[number]) => void;
-
 /**
- * The gingerbread fun house, leaning: icing trim, a candy-cane door, two round
- * mirror windows showing whatever `inMirror` draws, and gumdrop lights chasing
- * along its eaves.
+ * The gingerbread fun house, turned `turn` radians: its walls, its iced roof,
+ * the warm light by its door, whatever `fixtures` draws on it, and gumdrop
+ * lights chasing along its eaves.
  */
-export function drawHouse(ctx: CanvasRenderingContext2D, time: number, inMirror: InMirror) {
+export function drawHouse(
+  ctx: CanvasRenderingContext2D,
+  turn: number,
+  time: number,
+  fixtures: () => void,
+) {
   const wall = 20;
   const ridge = 32;
   const base = iso(0, 10);
   shadow(ctx, base.x + 4, base.y - 6, 62);
-  leaning(ctx, time, () => {
+  leaning(ctx, turn, () => {
     box(ctx, -14, -10, 28, 20, wall, colors.gingerbread, colors.gingerbread, colors.wood);
     // The gable end, in the shade.
     ctx.fillStyle = colors.wood;
@@ -120,45 +119,10 @@ export function drawHouse(ctx: CanvasRenderingContext2D, time: number, inMirror:
       ctx.fill();
     }
 
-    // A candy-cane door, lit warm from inside.
+    // The doorway's warm light, under whatever the door shows.
     const door = iso(0, 10, 6);
     glow(ctx, door.x, door.y, 13, 0.8);
-    ctx.fillStyle = colors.berry;
-    path(ctx, [
-      [-3, 10, 0],
-      [3, 10, 0],
-      [3, 10, 12],
-      [-3, 10, 12],
-    ]);
-    ctx.fill();
-    ctx.fillStyle = colors.snow;
-    for (let z = 1.5; z < 12; z += 3.5) {
-      path(ctx, [
-        [-3, 10, z],
-        [3, 10, z],
-        [3, 10, z + 1.2],
-        [-3, 10, z + 1.2],
-      ]);
-      ctx.fill();
-    }
-
-    // The fun-house mirror windows: silvered ice, with what they catch inside.
-    for (const mirror of MIRRORS) {
-      const p = iso(mirror.gx, 10, 11);
-      ctx.save();
-      ctx.fillStyle = colors.ice;
-      ctx.beginPath();
-      ctx.ellipse(p.x, p.y, MIRROR_R, MIRROR_R * 1.2, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.clip();
-      inMirror(p, MIRROR_R, mirror);
-      ctx.restore();
-      ctx.strokeStyle = colors.snowLit;
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
-      ctx.ellipse(p.x, p.y, MIRROR_R, MIRROR_R * 1.2, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    }
+    fixtures();
 
     // Gumdrop lights along the eaves, chasing each other.
     const lights = 9;

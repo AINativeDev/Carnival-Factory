@@ -1,118 +1,50 @@
 /**
- * The Sleigh-Ride Coaster: a tap launches the sleigh from the station, up the
- * hill and down the other side, and fills the cheer meter one more. Puts the
- * track, the meter and the sleigh together, back to front, and keeps the
- * attraction's one memory of the pointer.
+ * The Sleigh-Ride Coaster, played as Boost & Brake: hold to push Santa's
+ * sleigh along the candy-cane rail, let go to coast, get over every hill
+ * without flying off the rails at a crest, and catch the presents floating
+ * over them before the clock runs out. Puts the scrolling hill, the presents,
+ * the sleigh, the gauge and the cards together, back to front, and keeps the
+ * attraction's one memory of the visit.
  */
-import type { NorthPoleSquare, SquarePointer } from '../../../src/northpole/square';
-import { scene, shadow } from '../../../src/northpole/diorama';
-import { theme } from '../../../src/northpole/theme';
-import { drawCheerMeter, drawLever } from './cheer-meter';
-import { handsUp, launch, rideTime, riding, WAITING, type Ride } from './ride';
-import { drawSleigh } from './sleigh';
-import { ridePoint, sleighPose, trackY } from './track';
+import type { NorthPoleSquare } from '../../../src/northpole/square';
+import { scene } from '../../../src/northpole/diorama';
+import { drawCard } from './card';
+import { advance, type Coaster, newCoaster } from './game';
+import { drawGauge } from './gauge';
+import { drawBanner, drawChips, drawHint, drawPresents } from './hud';
+import { crestReading } from './physics';
+import { driftOf, poseOf, tumbled } from './pose';
+import { camOf, drawScenery } from './scenery';
+import { drawDrift, drawPuffs, drawSleigh } from './sleigh';
 
-const { colors } = theme;
+/** The ride, the run and the best of the visit. */
+let coaster: Coaster | undefined;
 
-/** When the sleigh last left the station, and how full the cheer meter is. */
-let ride: Ride = WAITING;
-
-/** A sleigh-ride roller coaster that loops over a snowy hill. */
+/** A sleigh-ride roller coaster game over a long, snowy, ever steeper hill. */
 const attraction: NorthPoleSquare = {
   id: 'sleigh-coaster',
   name: 'Sleigh-Ride Coaster',
-  description: "Tap to launch Santa's sleigh up the hill and whoosh it down the other side.",
+  description:
+    'Boost & Brake: hold to push the sleigh over the hills, let go before a crest or fly off the rails, and catch the presents in the air.',
   // How it stands on the home map: what it is, not a pavilion (ADR 0042).
   stall: { shape: 'shed', roof: 'berry', trim: 'gold', landmark: 'coaster' },
-  draw(ctx, size, time, pointer?: SquarePointer) {
-    ride = launch(ride, time, pointer?.presses ?? 0);
+  draw(ctx, size, time, pointer) {
+    const state = advance(coaster ?? newCoaster(time), time, pointer);
+    coaster = state;
     scene(ctx, size, time, () => {
-      const near = 3;
-      const far = -3;
-      const hill = 7;
-
-      shadow(ctx, 50, 70, 86);
-
-      // The snowy hill under the track: its slopes lit where they face the light.
-      for (let x = 0; x < 100; x += 2) {
-        const rising = trackY(x + 2) < trackY(x);
-        ctx.fillStyle = rising ? colors.snowLit : colors.snowShade;
-        const top = [
-          ridePoint(x, near + 3, hill),
-          ridePoint(x + 2, near + 3, hill),
-          ridePoint(x + 2, far - 3, hill),
-          ridePoint(x, far - 3, hill),
-        ];
-        ctx.beginPath();
-        top.forEach((p, n) => (n ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
-        ctx.fill();
-      }
-      // Its near side, in one piece.
-      ctx.fillStyle = colors.slab;
-      ctx.beginPath();
-      for (let x = 0; x <= 100; x += 2) {
-        const p = ridePoint(x, near + 3, hill);
-        if (x === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
-      }
-      for (const x of [100, 0]) {
-        const p = ridePoint(x, near + 3, 99);
-        ctx.lineTo(p.x, p.y);
-      }
-      ctx.fill();
-
-      // The trestles holding the track up, near and far.
-      ctx.strokeStyle = colors.wood;
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
-      for (let x = 4; x < 100; x += 8) {
-        for (const gy of [far, near]) {
-          const a = ridePoint(x, gy);
-          const b = ridePoint(x, gy, hill);
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-        }
-      }
-      ctx.stroke();
-
-      // The far rail in the shade, the ties, and the near one a candy-cane rail.
-      const rail = (gy: number) => {
-        ctx.beginPath();
-        for (let x = 0; x <= 100; x += 1) {
-          const p = ridePoint(x, gy);
-          if (x === 0) ctx.moveTo(p.x, p.y);
-          else ctx.lineTo(p.x, p.y);
-        }
-        ctx.stroke();
-      };
-      ctx.strokeStyle = colors.shadow;
-      ctx.lineWidth = 1.2;
-      rail(far);
-      ctx.strokeStyle = colors.cocoa;
-      ctx.lineWidth = 0.7;
-      ctx.beginPath();
-      for (let x = 2; x < 100; x += 4) {
-        const a = ridePoint(x, far);
-        const b = ridePoint(x, near);
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-      }
-      ctx.stroke();
-      ctx.lineWidth = 1.6;
-      ctx.setLineDash([2.4, 2.4]);
-      for (const [color, offset] of [
-        [colors.snow, 0],
-        [colors.berry, 2.4],
-      ] as const) {
-        ctx.strokeStyle = color;
-        ctx.lineDashOffset = offset;
-        rail(near);
-      }
-      ctx.setLineDash([]);
-
-      drawLever(ctx, ridePoint(12, near + 3, 99), !riding(ride, time), time);
-      drawCheerMeter(ctx, ride.cheers, time);
-      drawSleigh(ctx, sleighPose(rideTime(ride, time), near), handsUp(ride, time));
+      const cam = camOf(state.sleigh.x);
+      drawScenery(ctx, cam, state.phase === 'demo' && state.sleigh.x < 1);
+      drawPresents(ctx, state, cam, time);
+      const pose = poseOf(state, cam, time);
+      if (state.pushing && !state.sleigh.air) drawPuffs(ctx, pose, time);
+      drawSleigh(ctx, pose);
+      // In front of the sleigh, so it lands half buried in the snow.
+      if (state.sleigh.off) drawDrift(ctx, driftOf(state, cam), tumbled(state, time));
+      if (state.phase === 'demo') drawBanner(ctx, state.best, time);
+      else drawChips(ctx, state, time);
+      drawGauge(ctx, crestReading(state.sleigh));
+      drawHint(ctx, state, pose, time);
+      drawCard(ctx, state, time);
     });
   },
 };

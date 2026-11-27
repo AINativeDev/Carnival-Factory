@@ -1,9 +1,12 @@
 /**
  * Santa's red sleigh and its two elf riders, drawn tilted with the track:
- * their hands go up on the drop, and rest on the rim the rest of the ride.
+ * their hands go up on the drops and in the air, and rest on the rim the rest
+ * of the ride. Puffs of snow fly from its runners while it's pushed, and the
+ * snowdrift it tumbles into catches it with a soft burst of snow.
  */
 import { glow } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
+import type { Pose } from './pose';
 
 const { colors } = theme;
 
@@ -41,11 +44,8 @@ function drawRider(ctx: CanvasRenderingContext2D, x: number, hat: string, up: bo
 }
 
 /** The sleigh at `pose`, with a sack of presents behind the riders and a lantern ahead. */
-export function drawSleigh(
-  ctx: CanvasRenderingContext2D,
-  pose: { x: number; y: number; angle: number },
-  up: boolean,
-) {
+export function drawSleigh(ctx: CanvasRenderingContext2D, pose: Pose) {
+  const { up } = pose;
   ctx.save();
   ctx.translate(pose.x, pose.y);
   ctx.rotate(pose.angle);
@@ -71,4 +71,51 @@ export function drawSleigh(
   ctx.fillRect(-7, -5, 15, 3);
   ctx.globalAlpha = 1;
   ctx.restore();
+}
+
+/** Puffs of snow kicked up behind the runners while the sleigh is pushed, drifting back as they fade. */
+export function drawPuffs(ctx: CanvasRenderingContext2D, pose: Pose, time: number) {
+  ctx.save();
+  ctx.translate(pose.x, pose.y);
+  ctx.rotate(pose.angle);
+  ctx.fillStyle = colors.snowLit;
+  for (let k = 0; k < 4; k++) {
+    const age = (time / 260 + k / 4) % 1;
+    ctx.globalAlpha = (1 - age) * 0.75;
+    ctx.beginPath();
+    ctx.arc(-6 - age * 9, -1 - age * 2.5 - (k % 2) * 1.2, 0.8 + age * 1.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+/** The snowdrift at `at`, and the burst of snow as the tumbling sleigh lands in it, `t` from 0 to 1 through the tumble. */
+export function drawDrift(ctx: CanvasRenderingContext2D, at: { x: number; y: number }, t: number) {
+  ctx.fillStyle = colors.snowShade;
+  ctx.beginPath();
+  ctx.ellipse(at.x + 0.8, at.y + 0.8, 11, 6.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = colors.snowLit;
+  ctx.beginPath();
+  ctx.ellipse(at.x - 0.6, at.y - 0.2, 9.6, 5.8, 0, 0, Math.PI * 2);
+  ctx.fill();
+  if (t < 0.7) return;
+  // The burst: a ring of snow thrown up as it lands, settling as the card comes up.
+  const burst = (t - 0.7) / 0.3;
+  ctx.fillStyle = colors.snow;
+  ctx.globalAlpha = 1 - burst * 0.7;
+  for (let k = 0; k < 7; k++) {
+    const a = Math.PI * (1.05 + (k / 6) * 0.9);
+    const r = 3 + burst * 7;
+    ctx.beginPath();
+    ctx.arc(
+      at.x + Math.cos(a) * r,
+      at.y - 1 + Math.sin(a) * r * 0.7,
+      1.4 - burst * 0.5,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 }

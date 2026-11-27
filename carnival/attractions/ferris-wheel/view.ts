@@ -1,152 +1,171 @@
 /**
- * The view from the top of the ferris wheel: a little North Pole skyline at
- * dusk, its windows and its tree twinkling slowly, seen past the car's rail.
- * It opens out as a round window from the boarded car and closes the same way.
+ * Drawing the ferris wheel itself, in the square's 0 to 100 units: its wooden
+ * A-frame, the rims and spokes, the bauble cars in red, gold, mint and violet
+ * with their riders peeking out, and the glowing marker at the gate that says
+ * when to send the next elf.
  */
-import { backdrop, glow } from '../../../src/northpole/diorama';
+import { glow, stringLights } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
+import { elfHead } from './elves';
+import type { Riders } from './game';
+import { CARS, FULL, GATE, HUB, baubleOf, carSpots, type Spot } from './ride';
 
 const { colors } = theme;
 
-/** The rooftops along the skyline: left edge, width, wall height and roof colour. */
-const HOUSES: readonly (readonly [x: number, w: number, h: number, roof: string])[] = [
-  [2, 14, 12, colors.berry],
-  [18, 10, 16, colors.pine],
-  [58, 12, 14, colors.violet],
-  [72, 14, 10, colors.berry],
-  [88, 11, 15, colors.pine],
-];
+/** The baubles' colours, round the rim. */
+const BAUBLES = [colors.berry, colors.gold, colors.mint, colors.violet];
+/** How big a bauble car is. */
+const BAUBLE = 4.6;
+/** Where the A-frame's feet stand. */
+const FOOT = 76;
 
-/** Where the street meets the houses' feet. */
-const STREET = 74;
-
-/**
- * How bright twinkling light `n` is at `time`: a slow swell over several
- * seconds, so the town glimmers and never blinks (docs/style.md, Motion).
- */
-export function twinkle(time: number, n: number): number {
-  return 0.55 + 0.45 * Math.sin(time / 1_300 + n * 2.3);
+/** The A-frame's two legs, offset by (dx, dy). */
+function legs(ctx: CanvasRenderingContext2D, dx: number, dy: number, color: string) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.moveTo(HUB.x + dx - 19, FOOT + dy);
+  ctx.lineTo(HUB.x + dx, HUB.y + dy);
+  ctx.lineTo(HUB.x + dx + 19, FOOT + dy);
+  ctx.stroke();
+  // A cross brace, as a wooden frame has.
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(HUB.x + dx - 12, FOOT + dy - 13);
+  ctx.lineTo(HUB.x + dx + 12, FOOT + dy - 13);
+  ctx.stroke();
 }
 
-function house(ctx: CanvasRenderingContext2D, time: number, index: number) {
-  const [x, w, h, roof] = HOUSES[index] ?? [0, 0, 0, colors.berry];
-  const top = STREET - h;
-  ctx.fillStyle = colors.slab;
-  ctx.fillRect(x, top, w, h);
-  // The shaded side, on the right, away from the light.
-  ctx.fillStyle = colors.slabShade;
-  ctx.fillRect(x + w * 0.7, top, w * 0.3, h);
-  ctx.fillStyle = roof;
+/** A rim and its spokes to each hook, offset by (dx, dy). */
+function rim(ctx: CanvasRenderingContext2D, hooks: readonly Spot[], dx: number, dy: number) {
+  const near = dx === 0;
+  ctx.strokeStyle = near ? colors.snowShade : colors.mountain;
+  ctx.lineWidth = 0.7;
   ctx.beginPath();
-  ctx.moveTo(x - 1.5, top);
-  ctx.lineTo(x + w / 2, top - w * 0.45);
-  ctx.lineTo(x + w + 1.5, top);
-  ctx.fill();
-  ctx.fillStyle = colors.snow;
-  ctx.beginPath();
-  ctx.moveTo(x + w * 0.2, top - w * 0.36);
-  ctx.lineTo(x + w / 2, top - w * 0.45);
-  ctx.lineTo(x + w * 0.8, top - w * 0.36);
-  ctx.fill();
-  for (let row = 0; row < 2; row++) {
-    for (let col = 0; col < 2; col++) {
-      const n = index * 4 + row * 2 + col;
-      ctx.globalAlpha = twinkle(time, n);
-      ctx.fillStyle = colors.lantern;
-      ctx.fillRect(x + w * (0.18 + col * 0.38), top + 2.5 + row * (h / 2.4), 2.4, 2.6);
-    }
+  for (const { x, y } of hooks) {
+    ctx.moveTo(HUB.x + dx, HUB.y + dy);
+    ctx.lineTo(x + dx, y + dy);
   }
-  ctx.globalAlpha = 1;
-}
-
-/** The town's great tree in the square between the houses, hung with slowly twinkling lights. */
-function tree(ctx: CanvasRenderingContext2D, time: number) {
-  glow(ctx, 44, 58, 22, 0.5);
-  ctx.fillStyle = colors.pineDark;
+  ctx.stroke();
+  ctx.strokeStyle = near ? colors.gold : colors.mountain;
+  ctx.lineWidth = 1.6;
   ctx.beginPath();
-  ctx.moveTo(44, 34);
-  ctx.lineTo(34, STREET - 2);
-  ctx.lineTo(54, STREET - 2);
-  ctx.fill();
-  ctx.fillStyle = colors.pine;
-  ctx.beginPath();
-  ctx.moveTo(44, 34);
-  ctx.lineTo(34, STREET - 2);
-  ctx.lineTo(44, STREET - 2);
-  ctx.fill();
-  ctx.fillStyle = colors.gold;
-  ctx.beginPath();
-  ctx.arc(44, 33.5, 1.8, 0, Math.PI * 2);
-  ctx.fill();
-  const bulbs = [colors.berry, colors.gold, colors.mint, colors.violet];
-  for (let n = 0; n < 14; n++) {
-    const down = 0.15 + (n / 14) * 0.8;
-    const across = ((n * 0.37) % 1) - 0.5;
-    ctx.globalAlpha = twinkle(time, n + 20);
-    ctx.fillStyle = bulbs[n % bulbs.length] ?? colors.gold;
-    ctx.beginPath();
-    ctx.arc(44 + across * down * 18, 34 + down * (STREET - 36), 0.9, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
-
-/** The skyline itself: the dusk, the factory's tower far off, the houses, the tree and the street. */
-function skyline(ctx: CanvasRenderingContext2D, time: number) {
-  backdrop(ctx);
-  // The factory's tower in the distance, its lamp glowing at the top.
-  ctx.fillStyle = colors.mountain;
-  ctx.fillRect(28, 30, 7, STREET - 30);
-  ctx.fillRect(26.5, 28, 10, 3);
-  glow(ctx, 31.5, 26, 7, twinkle(time, 40));
-  for (let i = 0; i < HOUSES.length; i++) house(ctx, time, i);
-  tree(ctx, time);
-  ctx.fillStyle = colors.snow;
-  ctx.fillRect(0, STREET, 100, 100 - STREET);
-  ctx.fillStyle = colors.snowShade;
-  ctx.fillRect(0, STREET + 6, 100, 1.2);
+  ctx.arc(HUB.x + dx, HUB.y + dy, HUB.radius, 0, FULL);
+  ctx.stroke();
 }
 
 /**
- * Opens the view out from the car at (x, y), `open` from 0 to 1, as a round
- * window that grows until it fills the square. The car's rail and a bauble's
- * rim frame the bottom, and the whole view sways a little, as a car does.
+ * The glowing ring at the gate, where a car's middle must be when the elf is
+ * sent: gold while an empty car is in reach, berry while a full one is, and dim
+ * between cars. Its dashes creep slowly round, and its middle dot is perfect.
  */
-export function drawView(
-  ctx: CanvasRenderingContext2D,
-  time: number,
-  open: number,
-  x: number,
-  y: number,
-) {
-  if (open <= 0) return;
-  const radius = open * 105;
-  ctx.save();
+function gateRing(ctx: CanvasRenderingContext2D, ready: number, full: boolean, time: number) {
+  const tint = full ? colors.berry : colors.gold;
+  if (ready > 0 && !full) glow(ctx, GATE.x, GATE.y, 10, ready);
+  ctx.globalAlpha = 0.5 + ready * 0.5;
+  ctx.strokeStyle = ready > 0 ? tint : colors.snowLit;
+  ctx.lineWidth = 0.6 + ready * 0.6;
+  ctx.setLineDash([1.6, 1.1]);
+  ctx.lineDashOffset = -time / 250;
   ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.save();
-  ctx.translate(0, Math.sin(time / 1_600) * 0.8);
-  skyline(ctx, time);
-  ctx.restore();
-  // The car: its gold rail across the front and its rounded rim below.
-  ctx.fillStyle = colors.berry;
+  ctx.arc(GATE.x, GATE.y, 6.4, 0, FULL);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = ready > 0 ? tint : colors.snowLit;
   ctx.beginPath();
-  ctx.ellipse(50, 108, 62, 22, 0, 0, Math.PI * 2);
+  ctx.arc(GATE.x, GATE.y + 8.2, 0.9, 0, FULL);
+  ctx.moveTo(GATE.x - 1.4, GATE.y - 8.6);
+  ctx.lineTo(GATE.x + 1.4, GATE.y - 8.6);
+  ctx.lineTo(GATE.x, GATE.y - 7);
   ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+/** One bauble car hanging from its hook, open at the top, with its riders' heads over its rim. */
+function car(ctx: CanvasRenderingContext2D, hook: Spot, n: number, riders: Riders, time: number) {
+  const g = { x: hook.x + HUB.depth.x / 2, y: hook.y + HUB.depth.y / 2 };
+  const b = baubleOf(hook);
+  const lip = b.y - 1.6;
+  const half = Math.sqrt(BAUBLE ** 2 - 1.6 ** 2);
+  ctx.strokeStyle = colors.snowShade;
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(b.x - half, lip);
+  ctx.lineTo(g.x, g.y);
+  ctx.lineTo(b.x + half, lip);
+  ctx.stroke();
+  ctx.fillStyle = colors.shadow;
+  ctx.beginPath();
+  ctx.ellipse(b.x, lip, half, 1.1, 0, 0, FULL);
+  ctx.fill();
+  if (riders !== 'empty') elfHead(ctx, b.x, lip, riders === 'guests', time + n * 400);
+  ctx.fillStyle = BAUBLES.at(n % BAUBLES.length) ?? colors.berry;
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, BAUBLE, -0.356, Math.PI + 0.356);
+  ctx.closePath();
+  ctx.fill();
+  // Shaded on the right, a highlight where the light falls on the upper left, and a gold band.
   ctx.fillStyle = colors.shadow;
   ctx.globalAlpha = 0.3;
-  ctx.fillRect(50, 86, 50, 14);
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, BAUBLE, -0.356, Math.PI / 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = colors.snowLit;
+  ctx.globalAlpha = 0.6;
+  ctx.beginPath();
+  ctx.arc(b.x - 2, b.y + 0.2, 0.9, 0, FULL);
+  ctx.fill();
   ctx.globalAlpha = 1;
   ctx.fillStyle = colors.gold;
-  ctx.fillRect(0, 86, 100, 2.4);
-  ctx.restore();
-  // A thin gold edge round the window while it opens and closes.
-  if (open < 1) {
-    ctx.strokeStyle = colors.gold;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.stroke();
-  }
+  ctx.fillRect(b.x - BAUBLE + 0.4, b.y + 1.4, BAUBLE * 2 - 0.8, 0.9);
+  ctx.fillRect(b.x - half, lip - 0.3, half * 2, 0.6);
+}
+
+/** What the wheel shows besides its angle: who's in each car, and how ready the gate is. */
+export interface WheelLook {
+  cars: readonly Riders[];
+  /** The car hidden while its elf is still hopping in, or -1. */
+  hopping: number;
+  /** From 0 to 1, how near the gate's reach a car is, and whether that car is full. */
+  ready: number;
+  full: boolean;
+  /** From 0 to 1, the warm light of a full wheel's victory lap. */
+  cheer: number;
+}
+
+/** The wheel at `angle`: far frame, rims, lights, marker, cars and the near frame. */
+export function drawWheel(
+  ctx: CanvasRenderingContext2D,
+  angle: number,
+  time: number,
+  look: WheelLook,
+) {
+  const hooks = carSpots(angle);
+  const { depth } = HUB;
+  legs(ctx, depth.x, depth.y, colors.night);
+  rim(ctx, hooks, depth.x, depth.y);
+  ctx.strokeStyle = colors.gold;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(HUB.x, HUB.y);
+  ctx.lineTo(HUB.x + depth.x, HUB.y + depth.y);
+  ctx.stroke();
+  if (look.cheer > 0) glow(ctx, HUB.x, HUB.y, HUB.radius + 6, look.cheer * 0.6);
+  rim(ctx, hooks, 0, 0);
+  const between = Array.from({ length: CARS * 2 }, (_, n) => {
+    const a = angle + ((n + 0.5) / (CARS * 2)) * FULL;
+    return { x: HUB.x + Math.cos(a) * HUB.radius, y: HUB.y + Math.sin(a) * HUB.radius };
+  });
+  stringLights(ctx, between, look.cheer > 0 ? [colors.gold] : [colors.lantern], time);
+  legs(ctx, 0, 0, colors.wood);
+  hooks.forEach((hook, n) => {
+    const riders = n === look.hopping ? 'empty' : (look.cars.at(n) ?? 'empty');
+    car(ctx, hook, n, riders, time);
+  });
+  gateRing(ctx, look.ready, look.full, time);
+  ctx.fillStyle = colors.berry;
+  ctx.beginPath();
+  ctx.arc(HUB.x, HUB.y, 2.4, 0, FULL);
+  ctx.fill();
 }

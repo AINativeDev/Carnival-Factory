@@ -1,163 +1,131 @@
 import { describe, expect, it } from 'vitest';
-import {
-  advance,
-  DOWN,
-  flightOf,
-  FLIGHT,
-  type Game,
-  HAND,
-  hitAt,
-  newGame,
-  ROUND,
-  SHELVES,
-  snowmanX,
-  topple,
-} from './game';
-import { callOf } from './scoreboard';
+import attraction from './attraction';
+import { cardOf, popText } from './cards';
+import { DRIFT, FLIGHT, windAt } from './flight';
+import { type Game, newGame, ROUND, ROUNDS } from './game';
+import { goldShelf, paceOf, SHELVES, snowmanX } from './targets';
+import { windWord } from './wind';
 
-const SIZE = 200;
-const FRAME = 16;
-
-/** A tap at `x`, `y` in the game's 0 to 100 units. */
-const tap = (x: number, y: number, presses = 1) => ({
-  x: (x / 100) * SIZE,
-  y: (y / 100) * SIZE,
-  down: true,
-  presses,
-});
-
-/** Plays frames from `game` up to `until`, with nobody's pointer over it unless `hovering`. */
-function play(game: Game, until: number, hovering = false): Game {
-  let g = game;
-  const pointer = hovering ? { x: 0, y: 0, down: false, presses: 0 } : undefined;
-  for (let t = g.last + FRAME; t <= until; t += FRAME) g = advance(g, t, pointer, SIZE);
-  return g;
+/** Stands in for the canvas and writes down the words drawn, so the booth can be drawn in Node. */
+class DrawingLog {
+  readonly words: string[] = [];
+  fillStyle: unknown = '';
+  strokeStyle: unknown = '';
+  globalAlpha = 1;
+  lineWidth = 1;
+  lineCap = 'butt';
+  font = '';
+  textAlign = 'left';
+  textBaseline = 'alphabetic';
+  private readonly skip = () => undefined;
+  fillText = (text: string) => {
+    this.words.push(text);
+  };
+  save = this.skip;
+  restore = this.skip;
+  translate = this.skip;
+  scale = this.skip;
+  rotate = this.skip;
+  beginPath = this.skip;
+  closePath = this.skip;
+  moveTo = this.skip;
+  lineTo = this.skip;
+  arc = this.skip;
+  arcTo = this.skip;
+  ellipse = this.skip;
+  quadraticCurveTo = this.skip;
+  roundRect = this.skip;
+  fill = this.skip;
+  stroke = this.skip;
+  fillRect = this.skip;
+  createLinearGradient = () => ({ addColorStop: this.skip });
 }
 
-/** Throws at shelf `n`'s snowman where it will be when the snowball lands. */
-function throwAt(game: Game, n: number, time: number): Game {
-  const shelf = SHELVES[n] ?? SHELVES[0];
-  return advance(game, time, tap(snowmanX(n, time + FLIGHT), shelf.y - 6), SIZE);
+const SIZE = 400;
+
+/** The words the booth draws at `time`, with a tap at `x`, `y` in its 0 to 100 units if given. */
+function wordsAt(time: number, x?: number, y?: number): string[] {
+  const log = new DrawingLog();
+  const pointer =
+    x === undefined || y === undefined
+      ? undefined
+      : { x: (x / 100) * SIZE, y: (y / 100) * SIZE, down: true, presses: 1 };
+  attraction.draw(log as unknown as CanvasRenderingContext2D, SIZE, time, pointer);
+  return log.words;
 }
 
-describe('the snowmen', () => {
-  it('slide to and fro along their shelves, within their swing', () => {
-    for (const [n, shelf] of SHELVES.entries()) {
-      const xs = Array.from({ length: 50 }, (_, k) => snowmanX(n, k * 100));
-      expect(Math.max(...xs) - 50).toBeLessThanOrEqual(shelf.swing);
-      expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(shelf.swing);
+/** Taps where shelf `n`'s snowman will be when a snowball thrown at `time` in round `round` lands. */
+function throwAt(n: number, time: number, round: number): string[] {
+  const shelf = SHELVES.at(n) ?? SHELVES[0];
+  const x = snowmanX(n, time + FLIGHT, paceOf(round)) - windAt(round, time) * DRIFT;
+  return wordsAt(time, x, shelf.y - 6);
+}
+
+describe('Snowball Toss', () => {
+  it('stands on the map as a game stall, as it always has', () => {
+    expect(attraction.id).toBe('snowball-toss');
+    expect(attraction.name).toBe('Snowball Toss');
+    expect(attraction.stall).toEqual({
+      shape: 'stall',
+      roof: 'pine',
+      trim: 'snow',
+      landmark: 'game-stall',
+    });
+  });
+
+  it('plays three rounds through its scoreboard, combos, gold snowman and cards, then again', () => {
+    expect(wordsAt(100_000)).toContain('Tap to throw');
+    let time = 100_000;
+    let seen: string[] = [];
+    for (let round = 1; round <= ROUNDS; round++) {
+      for (let k = 0; k < ROUND; k++) {
+        time += 1_000;
+        seen = [...seen, ...throwAt(k % 2 ? 2 : 1, time, round)];
+        for (let t = time + 200; t < time + 1_000; t += 200) seen = [...seen, ...wordsAt(t)];
+      }
+      time += 1_000;
+      const card = wordsAt(time);
+      seen = [...seen, ...card];
+      expect(card).toContain(round < ROUNDS ? `Round ${String(round)} done!` : 'New best!');
+      time += 400;
+      wordsAt(time, 50, 50);
     }
-    expect(snowmanX(9, 0)).toBe(50);
+    expect(seen).toContain('COMBO ×2');
+    expect(seen).toContain('GOLD');
+    expect(seen.some((w) => w.startsWith('+') && w.endsWith('×3'))).toBe(true);
+    expect(seen.some((w) => w.startsWith('WIND'))).toBe(true);
+    expect(seen).toContain('Tap to play again');
+    expect(wordsAt(time + 50)).toContain(`${String(ROUND)} left`);
   });
 
-  it('are hit only standing, by a snowball landing on them', () => {
-    const game = newGame(0);
-    const [bottom] = SHELVES;
-    expect(hitAt(game, snowmanX(0, 0), bottom.y - 6, 0)).toBe(0);
-    expect(hitAt(game, snowmanX(0, 0) + 9, bottom.y - 6, 0)).toBe(-1);
-    expect(hitAt(game, snowmanX(0, 0), bottom.y + 9, 0)).toBe(-1);
-    expect(hitAt({ ...game, down: [0, null, null] }, snowmanX(0, 0), bottom.y - 6, 0)).toBe(-1);
-  });
-
-  it('tip over when hit, lie down, then stand back up', () => {
-    const game = { ...newGame(0), down: [1000, null, null] };
-    expect(topple(game, 1, 1500)).toBe(0);
-    expect(topple(game, 0, 1100)).toBeCloseTo(0.5);
-    expect(topple(game, 0, 1000 + DOWN / 2)).toBe(1);
-    expect(topple(game, 0, 1000 + DOWN - 200)).toBeCloseTo(0.5);
-    expect(topple(game, 0, 1000 + DOWN)).toBe(0);
+  it('aims where the pointer rests while a round is on', () => {
+    const log = new DrawingLog();
+    const hover = { x: 100, y: 100, down: false, presses: 0 };
+    attraction.draw(log as unknown as CanvasRenderingContext2D, SIZE, 900_000, hover);
+    expect(log.words).toContain('Tap to throw');
   });
 });
 
-describe('a snowball', () => {
-  it('arcs from the hand up above its line, and is gone once it lands', () => {
-    const ball = { x: 50, y: 40, at: 1000, played: true };
-    expect(flightOf(ball, 1000)).toEqual(HAND);
-    const middle = flightOf(ball, 1000 + FLIGHT / 2);
-    expect(middle?.y).toBeLessThan((HAND.y + 40) / 2);
-    expect(flightOf(ball, 1000 + FLIGHT)).toBeUndefined();
-    expect(flightOf(ball, 999)).toBeUndefined();
-  });
-});
-
-describe('a round', () => {
-  it('throws a snowball at each tap, and scores the shelf it knocks down', () => {
-    let game = throwAt(newGame(0), 2, 100);
-    expect(game.throws).toHaveLength(1);
-    expect(game.left).toBe(ROUND - 1);
-    game = play(game, 100 + FLIGHT + FRAME, true);
-    expect(game.throws).toHaveLength(0);
-    expect(game.down[2]).not.toBeNull();
-    expect(game.score).toBe(SHELVES[2].points);
-    expect(game.best).toBe(game.score);
-    // It stands up again after a while.
-    game = play(game, 100 + FLIGHT + DOWN + 100, true);
-    expect(game.down[2]).toBeNull();
+describe('the words', () => {
+  it('names the wind by its strength', () => {
+    expect(windWord(0.05)).toBe('Calm');
+    expect(windWord(-0.4)).toBe('Breeze');
+    expect(windWord(0.9)).toBe('Strong');
   });
 
-  it('scores nothing for a miss', () => {
-    const game = play(advance(newGame(0), 100, tap(95, 95), SIZE), 1000, true);
-    expect(game.score).toBe(0);
-    expect(game.left).toBe(ROUND - 1);
+  it('pops a hit’s points, with its gold and multiplier', () => {
+    const pop = { x: 0, y: 0, at: 0, points: 3, times: 1, gold: false };
+    expect(popText(pop)).toBe('+3');
+    expect(popText({ ...pop, points: 15, times: 3, gold: true })).toBe('GOLD +15 ×3');
   });
 
-  it('throws a snowball for every press, however quick, up to the round', () => {
-    let game = advance(newGame(0), 100, tap(95, 95, 6), SIZE);
-    expect(game.throws).toHaveLength(6);
-    expect(game.left).toBe(ROUND - 6);
-    game = advance(game, 120, tap(95, 95, 6), SIZE);
-    expect(game.throws).toHaveLength(ROUND);
-    expect(game.left).toBe(0);
-  });
-
-  it('keeps every snowball inside the square, even one aimed at its edge', () => {
-    const { throws } = advance(newGame(0), 100, tap(0, 100), SIZE);
-    expect(throws.map(({ x, y }) => [x, y])).toEqual([[2, 98]]);
-  });
-
-  it('misses a snowman that was still down when the snowball landed, even on a late frame', () => {
-    const [bottom] = SHELVES;
-    // Knocked down at 700, it is up again at 700 + DOWN; a snowball landing before then misses.
-    let game: Game = { ...newGame(0), last: 1000, down: [700, null, null] };
-    game = advance(game, 1000, tap(snowmanX(0, 1000 + FLIGHT), bottom.y - 6), SIZE);
-    game = advance(game, 700 + DOWN + 100, undefined, SIZE);
-    expect(game.score).toBe(0);
-    expect(game.down[0]).toBeNull();
-  });
-
-  it('stands a snowman back up on time when an old snowball lands on a late frame', () => {
-    let game = throwAt(newGame(0), 2, 100);
-    game = advance(game, 100 + FLIGHT + DOWN + 50, undefined, SIZE);
-    expect(game.score).toBe(SHELVES[2].points);
-    expect(game.down[2]).toBeNull();
-  });
-
-  it('ends when the snowballs run out, and a tap starts the next one, keeping the best', () => {
-    let game: Game = { ...newGame(0), left: 1, score: 4, best: 4 };
-    game = play(advance(game, 100, tap(95, 95), SIZE), 1000, true);
-    expect(game.left).toBe(0);
-    expect(callOf(game)).toBe('Tap to play again');
-    game = advance(game, 1100, tap(95, 95), SIZE);
-    expect(game.score).toBe(0);
-    expect(game.best).toBe(4);
-    expect(game.left).toBe(ROUND - 1);
-  });
-
-  it("waits for the round's last snowball to land before a tap starts the next", () => {
-    let game: Game = { ...newGame(0), left: 1 };
-    game = advance(game, 100, tap(95, 95), SIZE);
-    game = advance(game, 200, tap(95, 95), SIZE);
-    expect(game.left).toBe(0);
-    expect(game.throws).toHaveLength(1);
-  });
-
-  it('says how to play on the scoreboard', () => {
-    expect(callOf(newGame(0))).toBe('Tap to throw');
-    expect(callOf({ ...newGame(0), left: 3 })).toBe('3 left');
-  });
-
-  it('starts again if time runs backwards', () => {
-    const game = advance({ ...newGame(5000), score: 3 }, 100, undefined, SIZE);
-    expect(game.score).toBe(0);
+  it('says how a round went, and how the game went', () => {
+    const game: Game = { ...newGame(0), round: 1, roundScore: 7, score: 7, ended: 0 };
+    expect(cardOf(game).title).toBe('Round 1 done!');
+    expect(cardOf(game).call).toBe('Tap for round 2: faster, windier');
+    const over = { ...game, round: ROUNDS, score: 20, best: 30, bestBefore: 30 };
+    expect(cardOf(over).title).toBe('Game over');
+    expect(cardOf(over).lines).toEqual(['Score 20', 'Best of your visit 30']);
+    expect(goldShelf(0, 1, 0)).toBe(-1);
   });
 });

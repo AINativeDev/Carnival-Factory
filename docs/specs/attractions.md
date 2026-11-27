@@ -46,10 +46,31 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 - Inside, the visit panel has no Remix link. It says attractions belong to the
   North Pole and offers "Get a booth" beside it.
 - The ferris wheel is the Booths panel's Featured square.
-- Inside the Gingerbread Fun House, each tap or click on its drawing sticks a
-  treat on the house where it lands (a gumdrop, an icing swirl and a candy in
-  turn, up to 24, kept only while its frame runs), and an elf strolling past its two mirror
-  windows shows in them stretched tall or squashed wide.
+- Inside, every attraction is a mini game: a score, a challenge that rises,
+  an end card with the best of the visit, a tap to play again, and a demo that
+  plays itself while nobody does, which is what the map shows. Each one's
+  README says how it plays:
+  - Santa's Big Top, Juggling Elf: tap each falling bauble to toss it back up;
+    a ringside elf throws in another every 5 catches; a drop ends the act.
+  - Hot Cocoa Stand, Cocoa Rush: build each elf's order from five topping
+    buttons, in order, before their patience runs out; three walk-offs end the
+    shift.
+  - Ferris Wheel, Boarding Time: tap as an empty car passes the gate to board
+    the next elf; a full wheel earns a lap bonus; three misses close the ride.
+  - Frozen Pond, Curling: drag back and let go to throw, tap to sweep; five
+    stones an end, three ends, wind each end.
+  - Gingerbread Fun House, Icing Echo: tap back the tune the house lights on
+    its windows, door and gumdrop; it grows each round, and the mirrors swap
+    notes from round 4. Each right note sticks a treat on the house.
+  - Reindeer Carousel, Ring Grab: tap as your reindeer passes the brass arm to
+    grab its ring, silver or gold; three misses end the ride.
+  - Sleigh-Ride Coaster, Boost & Brake: hold to push, let go to coast; too
+    fast over a crest flies the sleigh off the rails; catch presents in the air.
+  - Snowball Toss: three rounds of eight snowballs at the sliding tin snowmen,
+    with wind, combos and a gold snowman.
+  - The Factory, the Recording Studio, the Academy and AI DevCon have their own
+    games, which open their links from inside
+    ([ADR 0058](../adr/0058-tessl-places-open-as-booths.md)).
 - The Factory, The Academy, The Recording Studio and The Year in Review are landmarks: with
   `levels` on, opening one from the map, by a click, E or Enter, takes the
   sleigh into the North Pole's level of the same id rather than into a room.
@@ -77,10 +98,6 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   so it isn't on the map, in the Booths panel's Attractions, at
   `#/attraction/gift-shop` (which says it isn't there) or among the share
   pages, and its pinned spot stays empty.
-- The Sleigh-Ride Coaster is played inside: its sleigh waits at the station
-  until a tap, with a mouse or a finger, launches it over the hill, its
-  riders' hands go up on each drop, and each launch lights one more bulb of
-  its cheer meter, five to fill it. A tap while the sleigh rides does nothing.
 
 ## Rules
 
@@ -113,12 +130,12 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
 attraction's own `attraction.test.ts`, `smoke/squares-play.spec.ts`,
 `smoke/flashing.spec.ts`, `smoke/the-factory.spec.ts`,
 `smoke/north-pole-places.spec.ts`, `smoke/square-pointer.spec.ts` (a tap inside the
-Sleigh-Ride Coaster), `src/route.test.ts` (a landmark opens its
+Sleigh-Ride Coaster starts a run), `src/route.test.ts` (a landmark opens its
 level), `src/visit-help.test.ts`, `src/visit-hud-links.test.ts`,
 `src/northpole/north-pole-places-pins.test.ts`, `src/northpole/landmarks.test.ts`
 (each landmark pinned, its drawing painted once under its name),
 `src/northpole/landmark-gingerbread.test.ts`, `smoke/square-pointer.spec.ts`
-(decorating the fun house with a mouse and a finger),
+(playing the fun house with a mouse and a finger),
 `src/northpole/frame-protocol-stall.test.ts`, `src/northpole/sandbox-messages.test.ts`
 (only an attraction keeps its landmark), `src/map-page.test.ts` (no platform
 for the North Pole's own levels).

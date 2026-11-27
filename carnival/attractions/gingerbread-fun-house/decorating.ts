@@ -1,11 +1,12 @@
 /**
- * Decorating the house: each tap sticks a treat where it lands, a gumdrop, an
- * icing swirl and a candy in turn. The house leans and sways, so a treat is
- * kept where it landed on the house, not on the screen, and sways with it.
- * What the house remembers is these few treats and how many were placed.
+ * The leaning house and the treats stuck on it. The house leans and sways,
+ * and wobbles hard when a wrong note cracks its icing, so a tap is turned back
+ * onto the house before anything uses it, and a treat is kept where it landed
+ * on the house, swaying with it. Each note echoed right sticks a gumdrop, an
+ * icing swirl or a candy where it was tapped, in turn.
  */
 
-/** The treats a tap places, in turn. */
+/** The treats a right note sticks on, in turn. */
 export const TREATS = ['gumdrop', 'swirl', 'candy'] as const;
 type Treat = (typeof TREATS)[number];
 
@@ -25,6 +26,9 @@ export const EDGE = 10;
 /** Where the house leans from: the middle of its front wall's foot, in the scene's 0 to 100 units. */
 export const LEAN_FROM = { x: 40, y: 71 } as const;
 
+/** How long the house wobbles after a wrong note, in milliseconds. */
+export const WOBBLE = 2_000;
+
 /** One treat on the house: where on the house, which treat and colour, and when it was placed. */
 export interface Decoration {
   x: number;
@@ -35,7 +39,7 @@ export interface Decoration {
   at: number;
 }
 
-/** Everything the house remembers between frames. */
+/** Every treat on the house, and how many were ever placed. */
 export interface Decorating {
   placed: Decoration[];
   count: number;
@@ -49,46 +53,39 @@ export function lean(time: number): number {
   return Math.sin(time / 1500) * 0.03 - 0.03;
 }
 
-/** Where a point on the screen at `time` is on the house, undoing its lean. */
-export function onHouse(x: number, y: number, time: number): { x: number; y: number } {
-  const turn = -lean(time);
+/**
+ * How far the house turns `since` ms after a wrong note: a shudder about two
+ * times a second that dies away. Before the note, and once it's over, none.
+ */
+export function wobble(since: number): number {
+  if (since < 0 || since > WOBBLE) return 0;
+  return 0.09 * Math.sin(since / 85) * (1 - since / WOBBLE) ** 2;
+}
+
+/** Where a point on the screen is on the house while it's turned `turn` radians. */
+export function onHouse(x: number, y: number, turn: number): { x: number; y: number } {
+  const back = -turn;
   const dx = x - LEAN_FROM.x;
   const dy = y - LEAN_FROM.y;
   return {
-    x: LEAN_FROM.x + dx * Math.cos(turn) - dy * Math.sin(turn),
-    y: LEAN_FROM.y + dx * Math.sin(turn) + dy * Math.cos(turn),
+    x: LEAN_FROM.x + dx * Math.cos(back) - dy * Math.sin(back),
+    y: LEAN_FROM.y + dx * Math.sin(back) + dy * Math.cos(back),
   };
 }
 
-/**
- * The house after `presses` taps at (x, y) on the screen at `time`. Taps that
- * came between two frames land in a little ring round the spot, so each shows.
- */
-export function decorate(
-  house: Decorating,
-  x: number,
-  y: number,
-  time: number,
-  presses: number,
-): Decorating {
-  const placed = [...house.placed];
-  let count = house.count;
-  for (let n = 0; n < presses; n++) {
-    const spot = onHouse(
-      x + Math.cos(n * 2.4) * 3 * Math.sign(n),
-      y + Math.sin(n * 2.4) * 3 * Math.sign(n),
-      time,
-    );
-    placed.push({
-      x: Math.min(100 - EDGE, Math.max(EDGE, spot.x)),
-      y: Math.min(100 - EDGE, Math.max(EDGE, spot.y)),
-      treat: TREATS[count % TREATS.length] ?? 'gumdrop',
-      tint: count,
+/** The house with one more treat stuck at `x`, `y` on it at `time`, kept clear of the edges. */
+export function decorate(house: Decorating, x: number, y: number, time: number): Decorating {
+  const placed = [
+    ...house.placed,
+    {
+      x: Math.min(100 - EDGE, Math.max(EDGE, x)),
+      y: Math.min(100 - EDGE, Math.max(EDGE, y)),
+      treat: TREATS[house.count % TREATS.length] ?? 'gumdrop',
+      tint: house.count,
       at: time,
-    });
-    count += 1;
-  }
-  return { placed: placed.slice(-MOST), count };
+    },
+  ];
+  return { placed: placed.slice(-MOST), count: house.count + 1 };
 }
 
 /** How big a treat placed at `at` is drawn at `time`: it pops on a little too big, then settles. */

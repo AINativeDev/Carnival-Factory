@@ -1,18 +1,19 @@
 /**
- * The carousel's ride: it turns at its own steady pace from `time`, speeds up
- * while a visitor holds it and slows gently back once let go, and the elf a
- * visitor seats on a reindeer. Plain functions, so the tests can play it.
+ * The carousel's ride: it turns at its own steady pace from `time`, gathers
+ * speed smoothly when Ring Grab asks it to go faster and eases back when the
+ * ride is over, and the six reindeer rise and fall on their poles as it turns.
+ * Plain functions, so the tests can play it.
  */
 
 /** One full turn of the carousel at its own pace, in milliseconds. */
 export const TURN = 9_000;
 /** Its own pace, in radians a millisecond. */
-const PACE = (Math.PI * 2) / TURN;
-/** How much faster than its own pace it turns at most, held: three times as fast in all. */
-export const MAX_BOOST = PACE * 2;
-/** How long, in milliseconds, it takes to gain most of its speed while held. */
+export const PACE = (Math.PI * 2) / TURN;
+/** The fastest it ever turns, as times its own pace. */
+export const MAX_PACE = 4;
+/** How long, in milliseconds, it takes to gain most of a faster pace. */
 const GATHER = 1_200;
-/** How long it takes to lose most of the extra speed once let go: slower, so it eases off. */
+/** How long it takes to lose most of its extra speed: slower, so it eases off. */
 const EASE = 2_400;
 
 /**
@@ -30,15 +31,15 @@ export interface Ride {
 export const AT_PACE: Ride = { ahead: 0, boost: 0, at: -Infinity };
 
 /**
- * The ride at `time`, given whether it's held now. The extra speed moves
- * towards its target exponentially, worked out over the whole time since the
- * last draw, so it moves the same however often the carousel is drawn.
+ * The ride at `time`, turning towards `pace` times its own pace. The extra
+ * speed moves towards its target exponentially, worked out over the whole
+ * time since the last draw, so it moves the same however often it's drawn.
  */
-export function stepRide(ride: Ride, holding: boolean, time: number): Ride {
+export function stepRide(ride: Ride, pace: number, time: number): Ride {
   // Before the first draw there is no time to count.
   const dt = Number.isFinite(ride.at) ? Math.max(0, time - ride.at) : 0;
-  const target = holding ? MAX_BOOST : 0;
-  const settle = holding ? GATHER : EASE;
+  const target = (Math.min(MAX_PACE, Math.max(1, pace)) - 1) * PACE;
+  const settle = target >= ride.boost ? GATHER : EASE;
   const fade = Math.exp(-dt / settle);
   const boost = target + (ride.boost - target) * fade;
   const ahead = ride.ahead + target * dt + (ride.boost - target) * settle * (1 - fade);
@@ -50,7 +51,7 @@ export function turnOf(ride: Ride, time: number): number {
   return PACE * time + ride.ahead;
 }
 
-/** How fast the ride turns, from 1 at its own pace to 3 at its fastest. */
+/** How fast the ride turns, from 1 at its own pace to `MAX_PACE` at its fastest. */
 export function paceOf(ride: Ride): number {
   return 1 + ride.boost / PACE;
 }
@@ -85,57 +86,10 @@ export function riderSpot({ across, depth, lift }: Rider) {
   return { x: 50 + across * 26, y: foot - 12 - lift * 6, foot };
 }
 
-/** The canopy's hem, its half-width and height, and the centre column's half-width, as the scene draws them. */
-const HEM = 40;
-const CANOPY = 35;
-const PEAK = 24;
-const COLUMN = 4;
-
-/** Whether `x`, `y` is under the canopy: its striped cone and the half-ellipse of its hem, drawn over every reindeer. */
-function underCanopy(x: number, y: number): boolean {
-  const off = Math.abs(x - 50) / CANOPY;
-  if (y <= HEM) return off <= (y - (HEM - PEAK)) / PEAK;
-  return off <= 1 && y <= HEM + (CANOPY / 2) * Math.sqrt(1 - off * off);
-}
-
-/**
- * Which reindeer a tap at `x`, `y` (0 to 100 units) lands on, or -1 for none.
- * The nearest the front wins, since it's drawn over the ones behind it, and
- * one hidden by the canopy or, at the back, by the centre column is never picked.
- */
-export function reindeerAt(riders: readonly Rider[], x: number, y: number): number {
-  if (underCanopy(x, y)) return -1;
-  let picked = -1;
-  let nearest = -Infinity;
-  riders.forEach((rider, index) => {
-    const spot = riderSpot(rider);
-    const hidden = rider.depth < 0 && Math.abs(x - 50) <= COLUMN;
-    const on = !hidden && Math.abs(x - spot.x) <= 8 && y >= spot.y - 14 && y <= spot.y + 6;
-    if (on && rider.depth > nearest) {
-      picked = index;
-      nearest = rider.depth;
-    }
-  });
-  return picked;
-}
-
-/** Who rides after a tap on reindeer `tapped`: a tap on the elf's own reindeer lets it hop off. */
-export function seatAfterTap(seated: number, tapped: number): number {
-  if (tapped < 0) return seated;
-  return tapped === seated ? -1 : tapped;
-}
-
-/** Who rides after `presses` taps on reindeer `tapped` since the last frame, each one counted. */
-export function seatAfterTaps(seated: number, tapped: number, presses: number): number {
-  let now = seated;
-  for (let n = 0; n < presses; n++) now = seatAfterTap(now, tapped);
-  return now;
-}
-
 /**
  * How bright bulb `n` of `count` is: a bright spot chases round the canopy
  * four times a turn, so it runs faster as the ride does. At the ride's fastest
- * each bulb brightens a little under twice a second, a soft swell, never a flash.
+ * each bulb brightens under twice a second, a soft swell, never a flash.
  */
 export function chaseBrightness(turn: number, n: number, count: number): number {
   return 0.75 + 0.25 * Math.cos(turn * 4 - (n / count) * Math.PI * 4);

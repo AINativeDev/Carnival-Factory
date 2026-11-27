@@ -72,4 +72,33 @@ export class DrawingLog {
   fillRect = (...args: unknown[]) => {
     this.note('fillRect', args);
   };
+  fillText = (...args: unknown[]) => {
+    this.note('fillText', args);
+  };
+  arcTo = (...args: unknown[]) => {
+    this.note('arcTo', args);
+  };
+  rect = (...args: unknown[]) => {
+    this.note('rect', args);
+  };
+  roundRect = (...args: unknown[]) => {
+    this.note('roundRect', args);
+  };
+  quadraticCurveTo = (...args: unknown[]) => {
+    this.note('quadraticCurveTo', args);
+  };
+  setLineDash = (...args: unknown[]) => {
+    this.note('setLineDash', args);
+  };
+  createRadialGradient = (...args: unknown[]) => {
+    this.note('createRadialGradient', args);
+    return this;
+  };
+  measureText = (text: string) => ({ width: text.length * 10 });
+  /** The words written so far, in order. */
+  get texts(): string[] {
+    return this.calls
+      .filter((call) => call.startsWith('fillText('))
+      .map((call) => call.slice(9, call.indexOf(',')));
+  }
 }

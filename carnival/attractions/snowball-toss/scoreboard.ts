@@ -1,55 +1,52 @@
 /**
- * The little scoreboard hung on the left wall: this round's score, the best of
- * the visit, and a dot for each snowball left, with the call to throw under
- * it. Its text is the attraction's own, drawn with `fillText`.
+ * The scoreboard hung at the top left: the game's score, the best of the
+ * visit, the round, a dot for each snowball left and the combo, with the call
+ * to throw under it. Its text is the attraction's own, drawn with `fillText`.
  */
-import { canvasFont, theme } from '../../../src/northpole/theme';
-import { type Game, ROUND } from './game';
+import { theme } from '../../../src/northpole/theme';
+import { type Game, ROUND, ROUNDS } from './game';
+import { multiplier } from './landing';
+import { letter, panel } from './lettering';
 
 const { colors } = theme;
 
-function label(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, width: number) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(0.3, 0.3);
-  ctx.fillText(text, 0, 0, width / 0.3);
-  ctx.restore();
-}
-
-/** What the board says under the score: how to play, or how to play again. */
+/** What the board says under the score: how to play, how many are left, or how to go on. */
 export function callOf(game: Game): string {
-  if (game.left === 0 && game.throws.every((ball) => !ball.played)) return 'Tap to play again';
-  return game.left === ROUND ? 'Tap to throw' : `${String(game.left)} left`;
+  if (!game.started) return 'Tap to throw';
+  if (game.ended !== null) {
+    return game.round < ROUNDS ? `Tap for round ${String(game.round + 1)}` : 'Tap to play again';
+  }
+  return `${String(game.left)} left`;
 }
 
 /** The scoreboard, at the top left of the drawing. */
 export function scoreboard(ctx: CanvasRenderingContext2D, game: Game) {
-  ctx.fillStyle = colors.gold;
-  ctx.beginPath();
-  ctx.roundRect(3, 4, 27, 19, 2);
-  ctx.fill();
-  ctx.fillStyle = colors.surface;
-  ctx.beginPath();
-  ctx.roundRect(4, 5, 25, 17, 1.5);
-  ctx.fill();
-  ctx.font = canvasFont('title', 'bold');
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = colors.text;
-  label(ctx, `Score ${String(game.score)}`, 6, 9, 21);
-  ctx.fillStyle = colors.gold;
-  label(ctx, `Best ${String(game.best)}`, 6, 14.5, 21);
+  panel(ctx, 3, 3, 28, 27);
+  const left = { x: 6, align: 'left' as const, width: 23 };
+  letter(ctx, `Score ${String(game.score)}`, {
+    ...left,
+    y: 7.4,
+    height: 4,
+    colour: colors.snowLit,
+  });
+  letter(ctx, `Best ${String(game.best)}`, { ...left, y: 12, height: 3, colour: colors.gold });
+  const round = `Round ${String(game.round)} of ${String(ROUNDS)}`;
+  letter(ctx, round, { ...left, y: 16.2, height: 2.6, colour: colors.muted });
   // A dot for each snowball of the round: lit while it's still to throw.
   for (let k = 0; k < ROUND; k++) {
     ctx.fillStyle = k < game.left ? colors.snowLit : colors.muted;
-    ctx.globalAlpha = k < game.left ? 1 : 0.4;
+    ctx.globalAlpha = k < game.left ? 1 : 0.35;
     ctx.beginPath();
-    ctx.arc(6.5 + k * 2.2, 19.3, 0.8, 0, Math.PI * 2);
+    ctx.arc(7.2 + k * 2.8, 20.6, 1, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.globalAlpha = 1;
-  ctx.font = canvasFont('small', 'bold');
-  ctx.fillStyle = colors.snowLit;
-  ctx.textAlign = 'center';
-  label(ctx, callOf(game), 16.5, 26.5, 26);
+  letter(ctx, callOf(game), { x: 17, y: 26, height: 3, colour: colors.mint, width: 25 });
+  const times = multiplier(game.combo);
+  if (game.ended !== null || times < 2) return;
+  ctx.fillStyle = colors.berry;
+  ctx.beginPath();
+  ctx.roundRect(7, 32, 20, 5, 2.5);
+  ctx.fill();
+  letter(ctx, `COMBO ×${String(times)}`, { x: 17, y: 34.6, height: 3, colour: colors.snowLit });
 }
