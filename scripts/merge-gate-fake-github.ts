@@ -92,9 +92,8 @@ export function scriptedGitHub(routes: Routes) {
         path,
         init.body === undefined ? undefined : JSON.parse(init.body),
       );
-      return new Response(status === 204 || data === undefined ? null : JSON.stringify(data), {
-        status,
-      });
+      // No data, as with a 204 or a 404, stringifies to undefined: an empty body.
+      return new Response(JSON.stringify(data), { status });
     };
   }
 

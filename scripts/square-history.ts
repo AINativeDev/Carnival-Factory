@@ -112,7 +112,9 @@ export function shapeHistory(options: ShapeOptions): SquareHistory {
   const pullsFor = new Map<number, { pull: RawPull; squares: string[] }[]>();
   for (const pull of options.pulls) {
     const issue = branchIssue(pull.headRefName);
+    // Stryker disable next-line ConditionalExpression: with no issue, `issues.has` is false and it skips just the same.
     if (issue === undefined || pull.isCrossRepository || !issues.has(issue)) continue;
+    // Stryker disable next-line ArrayDeclaration: any made-up path touches no square, just as no path does.
     const squares = squaresTouched((pull.files?.nodes ?? []).map((file) => file.path));
     pullsFor.set(issue, [...(pullsFor.get(issue) ?? []), { pull, squares }]);
   }
@@ -124,6 +126,7 @@ export function shapeHistory(options: ShapeOptions): SquareHistory {
     const pulls = (pullsFor.get(issue.number) ?? []).sort((a, b) => b.pull.number - a.pull.number);
     const author = issue.author?.login ?? 'ghost';
     const where = new Set(pulls.flatMap((p) => p.squares));
+    // Stryker disable next-line MethodExpression: another label makes an `undefined/<login>` key, which no square has.
     for (const label of labels.filter((name) => Object.hasOwn(REQUEST_KINDS, name)))
       where.add(`${REQUEST_KINDS[label]}/${author.toLowerCase()}`);
     for (const square of [...where].filter((s) => known.has(s)).sort()) {

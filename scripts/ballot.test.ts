@@ -40,6 +40,17 @@ describe('findBallot', () => {
     const ballot = await findBallot(graphql, 'o', 'r', new Set([MAINTAINER]), "People's Choice");
     expect(ballot).toEqual({ id: '2', url: 'https://github.com/o/r/issues/2' });
     expect(asked[1]?.variables.after).toBe('next');
+    expect(asked[0]?.variables).toEqual({ owner: 'o', name: 'r', after: null });
+    expect(asked[0]?.query).toContain(
+      'issues(first: 100, after: $after, orderBy: { field: CREATED_AT, direction: ASC })',
+    );
+  });
+
+  it('never takes a deleted account for a maintainer', async () => {
+    const { graphql } = fakeApi([
+      { repository: { issues: page([issue('1', "People's Choice", null)]) } },
+    ]);
+    expect(await findBallot(graphql, 'o', 'r', new Set([1]), "People's Choice")).toBeUndefined();
   });
 
   it('finds nothing when no maintainer opened one', async () => {
@@ -85,6 +96,19 @@ describe('readBallotComments', () => {
     expect(comments[0]).toMatchObject({ body: 'entry 10', viewerDidAuthor: true });
     expect(asked[0]?.query).toContain('... on Issue');
     expect(asked[2]?.query).toContain('... on IssueComment');
+    expect(asked.map((a) => a.variables)).toEqual([
+      { id: 'BALLOT', after: null },
+      { id: 'BALLOT', after: 'c1' },
+      { id: '10', after: 'r1' },
+    ]);
+  });
+
+  it('reads no more 👍 when GitHub says there are none, whatever cursor it gives', async () => {
+    const last = { ...comment('10', [vote(1)]) };
+    last.reactions = { nodes: [vote(1)], pageInfo: { hasNextPage: false, endCursor: 'r1' } };
+    const { graphql, asked } = fakeApi([{ node: { comments: page([last]) } }]);
+    await readBallotComments(graphql, 'BALLOT');
+    expect(asked).toHaveLength(1);
   });
 });
 

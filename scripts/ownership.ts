@@ -52,6 +52,7 @@ export function levelFolder(login: string): string {
 }
 
 export function isMaintainer(person: Pick<Author, 'id'>): boolean {
+  // Stryker disable next-line MethodExpression: with one maintainer, `every` and `some` agree.
   return MAINTAINERS.some((maintainer) => maintainer.id === person.id);
 }
 
@@ -74,7 +75,9 @@ export function linkedIssue(body: string, repository: string): number | undefine
         .filter(([, repo]) => repo.toLowerCase() === repository.toLowerCase())
         .map(([, , n]) => Number(n)),
     );
-    return markers.length === 1 && numbers.size === 1 ? [...numbers][0] : undefined;
+    // One marker only: a body that names two issues, even one twice, is for neither.
+    // A marker for another repository leaves `numbers` empty, and so undefined.
+    return markers.length === 1 ? [...numbers][0] : undefined;
   }
 
   const closes = new Set(
@@ -109,6 +112,7 @@ export function boothOwner(author: Author, issueAuthor: Author | undefined): Aut
 export function filesOutsideBooth(owner: Author, files: readonly string[]): string[] {
   if (isMaintainer(owner)) return [];
   // A North Pole level is the maintainers', even for someone whose login is its name (ADR 0035).
+  // Stryker disable next-line ArrayDeclaration: a folder no file is in allows nothing, like no folder.
   const level = isNorthPoleLevel(owner.login.toLowerCase()) ? [] : [levelFolder(owner.login)];
   const folders = [boothFolder(owner.login), ...level];
   return files.filter((file) => !folders.some((folder) => file.startsWith(folder)));

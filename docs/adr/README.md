@@ -107,3 +107,4 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0059](0059-one-settings-file.md) | One settings file | Accepted |
 | [0060](0060-dependabot.md) | Dependabot keeps the packages up to date | Accepted |
 | [0061](0061-mutation-testing.md) | Mutation testing holds the tests to catching changes | Accepted |
+| [0062](0062-frame-budget-slack.md) | A little more slack for a square's frame on CI | Accepted |

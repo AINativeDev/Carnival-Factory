@@ -15,6 +15,7 @@ export function installDrift(lock: Lockfile, installed: Lockfile | undefined): s
   const drift: string[] = [];
   for (const [path, wanted] of Object.entries(lock.packages)) {
     if (path === '' || wanted.optional === true) continue;
+    // Stryker disable next-line Regex: a leading `.*` matches from the start anyway, so the anchor changes nothing.
     const name = path.replace(/^.*node_modules\//, '');
     const got = have[path];
     if (!got) drift.push(`${name} (not installed)`);
@@ -34,14 +35,13 @@ export function installFeedback(drift: string[]): string | undefined {
 
 /** A lockfile's text, read as one; undefined when it isn't one, so a broken file reads as nothing installed. */
 export function parseLockfile(text: string | undefined): Lockfile | undefined {
-  if (text === undefined) return undefined;
   try {
-    const data: unknown = JSON.parse(text);
-    if (!data || typeof data !== 'object' || !('packages' in data)) return undefined;
-    const packages: unknown = data.packages;
-    if (!packages || typeof packages !== 'object') return undefined;
-    return { packages: packages as Lockfile['packages'] };
+    // No text, text that isn't JSON, and `null` all throw here, and read as no lockfile.
+    const { packages } = JSON.parse(text ?? '') as { packages?: unknown };
+    if (packages && typeof packages === 'object')
+      return { packages: packages as Lockfile['packages'] };
   } catch {
-    return undefined;
+    // Not a lockfile: nothing installed.
   }
+  return undefined;
 }

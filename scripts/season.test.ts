@@ -45,7 +45,13 @@ describe('countSeason', () => {
           {
             number: 5,
             merged: true,
-            threads: [thread(true, `${REVIEWER}[bot]`), thread(true), thread(true, 'someone[bot]')],
+            threads: [
+              thread(true, `${REVIEWER}[bot]`),
+              thread(true),
+              thread(true, 'someone[bot]'),
+              thread(true, `[bot]${REVIEWER}`),
+              thread(true, null),
+            ],
           },
         ],
       },
@@ -120,6 +126,11 @@ describe('readSeason', () => {
   it('turns anything malformed into an empty season, or drops the bad part', () => {
     expect(readSeason(null)).toEqual(EMPTY_SEASON);
     expect(readSeason({ participants: 'x' })).toEqual(EMPTY_SEASON);
+    for (const value of [undefined, 5, 'text']) expect(readSeason(value)).toEqual(EMPTY_SEASON);
+    for (const participants of ['x', null])
+      expect(readSeason({ countedAt: AT, participants })).toEqual(EMPTY_SEASON);
+    const odd = { 'a<b': {}, '<b>a': {}, five: 5, gone: null, ok: {} };
+    expect(Object.keys(readSeason({ participants: odd }).participants)).toEqual(['ok']);
     const season = readSeason({
       countedAt: 3,
       participants: { '<b>': { requests: 1 }, ok: { requests: -1, shipped: 1.5 } },

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   flashingArea,
+  flashTimes,
   luminance,
   MAX_FLASHING_AREA,
   MAX_PER_SECOND,
@@ -19,6 +20,10 @@ describe('luminance', () => {
   it('runs from black to white', () => {
     expect(luminance(0, 0, 0)).toBe(0);
     expect(luminance(255, 255, 255)).toBeCloseTo(1);
+  });
+
+  it('is linear in the darkest shades', () => {
+    expect(luminance(10, 10, 10)).toBeCloseTo(10 / 255 / 12.92, 8);
   });
 });
 
@@ -41,7 +46,27 @@ describe('maxFlashesPerSecond', () => {
   });
 });
 
+/** One sample every 100 ms, with these brightnesses. */
+const every100ms = (...levels: number[]): Sample[] =>
+  levels.map((brightness, i) => ({ t: i * 100, brightness }));
+
+describe('flashTimes', () => {
+  it('marks a flash when a swing of exactly the threshold comes back', () => {
+    expect(flashTimes(every100ms(0, 0.1, 0, 0.05))).toEqual([200]);
+  });
+
+  it('measures the first swing from where the samples start', () => {
+    expect(flashTimes(every100ms(1, 0, 1))).toEqual([200]);
+  });
+});
+
 describe('flash counting', () => {
+  it('allows exactly the most flashes a second', () => {
+    const three = every100ms(0, 1, 0, 1, 0, 1, 0);
+    expect(maxFlashesPerSecond(three)).toBe(MAX_PER_SECOND);
+    expect(flashingArea([three])).toBe(0);
+  });
+
   it('counts a swing and its return as one flash, without overlap', () => {
     // A change every 250 ms: two full cycles a second, so two flashes.
     const slow = sample(4000, 25, (t) => (Math.floor(t / 250) % 2 ? 1 : 0));

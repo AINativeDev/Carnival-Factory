@@ -46,7 +46,70 @@ describe('cleanHolders', () => {
   });
 });
 
+describe('cleanHolders, at the edges of a login', () => {
+  const holder = (login: unknown, repo: unknown = 'a/b') => ({ login, repo });
+
+  it('takes a login of up to 39 letters, digits and single hyphens inside', () => {
+    const longest = 'a'.repeat(39);
+    expect(cleanHolders([holder(longest), holder('a-b-c'), holder('7')])).toEqual([
+      { login: longest, repo: 'a/b' },
+      { login: 'a-b-c', repo: 'a/b' },
+      { login: '7', repo: 'a/b' },
+    ]);
+  });
+
+  it('turns down a longer login, hyphens at either end or doubled, and anything not text', () => {
+    const logins = ['a'.repeat(40), '-ab', 'ab-', 'a--b', '', 'a.b', 'x<y', 7, undefined];
+    expect(cleanHolders(logins.map((login) => holder(login)))).toEqual([]);
+    expect(cleanHolders([holder('ok', 7), holder('ok', ['a/b']), 'ok', 7])).toEqual([]);
+    expect(cleanHolders([Object.assign(() => 0, holder('ok'))])).toEqual([]);
+    expect(cleanHolders({ 0: holder('ok') })).toEqual([]);
+  });
+
+  it('moves a login given again to where its last entry stands', () => {
+    expect(
+      cleanHolders([holder('amy', 'amy/one'), holder('bob'), holder('Amy', 'amy/two')]),
+    ).toEqual([
+      { login: 'bob', repo: 'a/b' },
+      { login: 'amy', repo: 'amy/two' },
+    ]);
+  });
+
+  it('keeps every known tier, and nothing that only looks like one', () => {
+    const tiers = cleanHolders(
+      ['bronze', 'silver', 'gold', 'Gold', ['gold']].map((tier, n) => ({
+        login: `elf-${n}`,
+        repo: 'a/b',
+        tier,
+      })),
+    ).map((entry) => entry.tier);
+    expect(tiers).toEqual(['bronze', 'silver', 'gold', undefined, undefined]);
+  });
+});
+
 describe('isRepo', () => {
+  it('takes an owner of up to 39 characters and a name of up to 100', () => {
+    expect(isRepo(`${'a'.repeat(39)}/b`)).toBe(true);
+    expect(isRepo(`${'a'.repeat(40)}/b`)).toBe(false);
+    expect(isRepo(`a/${'b'.repeat(100)}`)).toBe(true);
+    expect(isRepo(`a/${'b'.repeat(101)}`)).toBe(false);
+    expect(isRepo('Oct-o-Cat/My_Repo.v2')).toBe(true);
+    expect(isRepo('a/')).toBe(false);
+  });
+
+  it('turns down an owner with a hyphen at either end or doubled', () => {
+    for (const repo of ['a-/b', 'a--b/c', ' a/b', 'a/b ', 'a/b\nc/d'])
+      expect(isRepo(repo), repo).toBe(false);
+  });
+
+  it('turns down a name that is only a dot or two, and nothing else with dots', () => {
+    expect(isRepo('a/.')).toBe(false);
+    expect(isRepo('a/..')).toBe(false);
+    expect(isRepo('a/...')).toBe(true);
+    expect(isRepo('a/.x')).toBe(true);
+    expect(isRepo('a/x.')).toBe(true);
+  });
+
   it('takes owner/name only', () => {
     expect(isRepo('octocat/hello-world.js')).toBe(true);
     expect(isRepo('octocat')).toBe(false);
@@ -80,6 +143,7 @@ describe('the badge on the site', () => {
 
   it('gives a snippet that shows the badge and links back to the map', () => {
     const site = 'https://ainativedev.github.io/Carnival-Factory/';
+    expect(badgeSnippet(site)).toBe(`[![Elf Engineer](${site}badges/elf-engineer.svg)](${site})`);
     expect(badgeSnippet(site, 'silver')).toBe(
       `[![Elf Engineer: silver](${site}badges/elf-engineer-silver.svg)](${site})`,
     );

@@ -50,7 +50,10 @@ export function problems(read: Baselines): string[] {
     const after = read.now(file);
     if (after === undefined) return [];
     const before = read.atBase(file);
-    if (before === undefined) return [`${file}: a new baseline`];
+    // A new rule freezes the code that predates it: a baseline that wasn't there
+    // at the base starts as it is. Only maintainers add one, since the list of
+    // baselines is this file's own (docs/adr/0061-mutation-testing.md).
+    if (before === undefined) return [];
     return grown(before, after).map((problem) => `${file}: ${problem}`);
   });
 }

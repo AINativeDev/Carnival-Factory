@@ -56,6 +56,47 @@ describe('cleanCalendar', () => {
 
   it('reads nonsense as an empty calendar', () => {
     expect(cleanCalendar(null)).toEqual({ year: 0, challenges: [] });
+    expect(cleanCalendar({ year: 2026, challenges: 'all of them' })).toEqual({
+      year: 2026,
+      challenges: [],
+    });
+  });
+
+  it('keeps the first and the last day, and a challenge exactly as written', () => {
+    const clean = cleanCalendar({
+      year: 2026,
+      challenges: [
+        { ...challenge, day: 24 },
+        { day: 1, title: ' T ', do: 'D', check: 'C', docs: 'https://docs.tessl.io/x', more: 1 },
+      ],
+    });
+    expect(clean.challenges).toEqual([
+      { day: 1, title: ' T ', do: 'D', check: 'C', docs: 'https://docs.tessl.io/x' },
+      { ...challenge, day: 24 },
+    ]);
+  });
+
+  it('drops a day that is not a whole number, and a field that is missing or not text', () => {
+    const clean = cleanCalendar({
+      year: 2026,
+      challenges: [
+        { ...challenge, day: 1.5 },
+        { ...challenge, day: '2' },
+        { ...challenge, day: 3, title: 7 },
+        { ...challenge, day: 4, do: undefined },
+        { ...challenge, day: 5, title: '' },
+        { ...challenge, day: 6, docs: 'see https://docs.tessl.io/' },
+        { ...challenge, day: 7, docs: 'http://docs.tessl.io/' },
+        Object.assign(() => 0, { ...challenge, day: 8 }),
+        null,
+      ],
+    });
+    expect(clean.challenges).toEqual([]);
+  });
+
+  it('reads a year that is not a whole number as none', () => {
+    expect(cleanCalendar({ year: '2026', challenges: [] }).year).toBe(0);
+    expect(cleanCalendar({ year: 2026.5, challenges: [] }).year).toBe(0);
   });
 });
 
@@ -106,6 +147,11 @@ describe('decorationsFor', () => {
     expect(decorationsFor(99)).toEqual(decorationsFor(24));
     expect(decorationsFor(Number.NaN)).toEqual(decorationsFor(0));
   });
+
+  it('counts only whole challenges', () => {
+    expect(decorationsFor(6.9)).toEqual({ ornaments: 6, lights: false, star: false, sign: false });
+    expect(decorationsFor(0.5).ornaments).toBe(0);
+  });
 });
 
 describe('cleanCounts', () => {
@@ -118,6 +164,17 @@ describe('cleanCounts', () => {
   it('reads nonsense as no counts', () => {
     expect(cleanCounts([1, 2])).toEqual({});
     expect(cleanCounts(null)).toEqual({});
+    expect(cleanCounts('ab')).toEqual({});
+    const counted = Object.assign(() => 0, { ana: 3 });
+    expect(cleanCounts(counted)).toEqual({});
+  });
+
+  it('keeps a count of 1 and of 24, the first and the last day', () => {
+    expect(cleanCounts({ ana: 1, bob: 24, 'a-b': 2, '-ab': 2, ['a'.repeat(40)]: 2 })).toEqual({
+      ana: 1,
+      bob: 24,
+      'a-b': 2,
+    });
   });
 });
 

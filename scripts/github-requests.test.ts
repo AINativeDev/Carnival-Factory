@@ -57,3 +57,21 @@ describe('countFindings', () => {
     expect(countFindings(pr)).toEqual({ findings: 2, fixed: 1 });
   });
 });
+
+describe('the edges of what is read off a request', () => {
+  it('finds squares and factory branches only from the start', () => {
+    expect(squaresTouched(['docs/booths/ana/booth.ts'])).toEqual([]);
+    expect(branchIssue('old-tessl/issue-5')).toBeUndefined();
+  });
+
+  it('takes [bot] off the end of a login only, and passes over threads with no author', () => {
+    const odd = (login: string | null, comments = true) => ({
+      isResolved: false,
+      comments: { nodes: comments ? [{ author: login === null ? null : { login } }] : [] },
+    });
+    const threads = [odd('[bot]tessl-reviewer'), odd(null), odd('x', false)];
+    expect(
+      countFindings(pull(1, 'tessl/issue-1', [], { reviewThreads: { nodes: threads } })),
+    ).toEqual({ findings: 0, fixed: 0 });
+  });
+});

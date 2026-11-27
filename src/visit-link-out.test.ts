@@ -61,4 +61,65 @@ describe("a North Pole place's game opening its links", () => {
     ask(0);
     expect(opened).not.toHaveBeenCalled();
   });
+
+  it('opens the link asked for up to a second and a half after the tap, and no later', () => {
+    vi.useFakeTimers();
+    const opened = vi.spyOn(window, 'open').mockReturnValue(null);
+    const frame = document.createElement('div');
+    const { square, ask } = asking();
+    followLinkAsks(frame, square, 'attraction', 'the-studio');
+    frame.dispatchEvent(new Event('pointerdown'));
+    vi.advanceTimersByTime(1500);
+    ask(0);
+    expect(opened).toHaveBeenCalledExactlyOnceWith(
+      expect.stringContaining('podcast'),
+      '_blank',
+      'noopener',
+    );
+    frame.dispatchEvent(new Event('pointerdown'));
+    vi.advanceTimersByTime(1501);
+    ask(0);
+    expect(opened).toHaveBeenCalledOnce();
+  });
+
+  it("hears a tap on the place's frame before anything inside it can stop it", () => {
+    const opened = vi.spyOn(window, 'open').mockReturnValue(null);
+    const frame = document.createElement('div');
+    const inside = document.createElement('canvas');
+    frame.append(inside);
+    inside.addEventListener('pointerdown', (event) => {
+      event.stopPropagation();
+    });
+    const { square, ask } = asking();
+    followLinkAsks(frame, square, 'attraction', 'the-studio');
+    inside.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    ask(1);
+    expect(opened).toHaveBeenCalledOnce();
+  });
+
+  it('stops hearing taps once the visit ends', () => {
+    const frame = document.createElement('div');
+    const removed = vi.spyOn(frame, 'removeEventListener');
+    const added = vi.spyOn(frame, 'addEventListener');
+    followLinkAsks(frame, asking().square, 'attraction', 'the-studio').stop();
+    expect(added).toHaveBeenCalledExactlyOnceWith('pointerdown', expect.any(Function), true);
+    expect(removed).toHaveBeenCalledExactlyOnceWith('pointerdown', added.mock.calls[0]?.[1], true);
+  });
+
+  it("follows a level's own place, and opens only links on its list", () => {
+    const opened = vi.spyOn(window, 'open').mockReturnValue(null);
+    const frame = document.createElement('div');
+    const { square, ask } = asking();
+    followLinkAsks(frame, square, 'level', 'the-studio');
+    frame.dispatchEvent(new Event('pointerdown'));
+    ask(2);
+    ask(-3);
+    expect(opened).not.toHaveBeenCalled();
+    ask(-1);
+    expect(opened).toHaveBeenCalledExactlyOnceWith(
+      expect.stringContaining('youtube.com'),
+      '_blank',
+      'noopener',
+    );
+  });
 });

@@ -41,7 +41,8 @@ export function nearestOpenSpot(
 
 /**
  * The `count` squares whose doors are nearest the player, nearest first, in
- * tiles. Squares at the same distance keep the order they came in.
+ * tiles. Squares at the same distance keep the order they came in, since a
+ * sort is stable.
  */
 export function nearYou<T extends { door: { x: number; y: number } }>(
   squares: readonly T[],
@@ -50,8 +51,8 @@ export function nearYou<T extends { door: { x: number; y: number } }>(
 ): T[] {
   const far = (square: T) => Math.hypot(square.door.x - player.x, square.door.y - player.y);
   return squares
-    .map((square, n) => ({ square, n, far: far(square) }))
-    .sort((a, b) => a.far - b.far || a.n - b.n)
+    .map((square) => ({ square, far: far(square) }))
+    .sort((a, b) => a.far - b.far)
     .slice(0, count)
     .map(({ square }) => square);
 }

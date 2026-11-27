@@ -22,6 +22,19 @@ describe('addedLines', () => {
   it('reads the lines each file gains from every hunk', () => {
     expect(addedLines(diff).get('src/spot.ts')).toEqual(new Set([2, 3, 4, 12]));
   });
+
+  it('reads many-digit hunks, and no header or hunk inside an added line', () => {
+    const lines = [
+      '@@ -1 +1 @@',
+      '+++ b/src/a.ts',
+      '@@ -12,34 +5,12 @@',
+      '+@@ -1 +40 @@',
+      '-+++ b/src/fake.ts',
+    ].join('\n');
+    const added = addedLines(lines);
+    expect([...added.keys()]).toEqual(['src/a.ts']);
+    expect(added.get('src/a.ts')).toEqual(new Set(Array.from({ length: 12 }, (_, n) => n + 5)));
+  });
 });
 
 describe('isGated', () => {
@@ -31,6 +44,10 @@ describe('isGated', () => {
     expect(isGated('carnival/booths/ana/booth.ts')).toBe(false);
     expect(isGated('src/world.test.ts')).toBe(false);
     expect(isGated('lint/file-size.d.ts')).toBe(false);
+    expect(isGated('docs/src/a.ts')).toBe(false);
+    expect(isGated('src/a.tsx')).toBe(false);
+    expect(isGated('src/data.json')).toBe(false);
+    expect(isGated('src/a.d.ts.js')).toBe(true);
   });
 });
 
@@ -53,6 +70,8 @@ describe('diffCoverage', () => {
   it('counts every added line of a gated file no test loaded as missing', () => {
     const added = new Map([['scripts/new.ts', new Set([1, 2])]]);
     expect(diffCoverage(added, {}).missing).toEqual(['scripts/new.ts:1', 'scripts/new.ts:2']);
+    const unordered = new Map([['scripts/new.ts', new Set([10, 9])]]);
+    expect(diffCoverage(unordered, {}).missing).toEqual(['scripts/new.ts:9', 'scripts/new.ts:10']);
   });
 });
 
@@ -92,8 +111,15 @@ describe('diffBranchCoverage', () => {
       ['carnival/booths/ana/booth.ts', new Set([1])],
       ['src/spot.test.ts', new Set([1])],
       ['scripts/plain.ts', new Set([1])],
+      ['scripts/unloaded.ts', new Set([1])],
     ]);
-    expect(diffBranchCoverage(added, { 'scripts/plain.ts': { statementMap: {}, s: {} } })).toEqual({
+    const square = { ...coverage['src/spot.ts'], branchMap: { 0: { locations: [arm(1)] } } };
+    const data = {
+      'scripts/plain.ts': { statementMap: {}, s: {} },
+      'carnival/booths/ana/booth.ts': square,
+      'src/spot.test.ts': square,
+    };
+    expect(diffBranchCoverage(added, data as Record<string, FileCoverage>)).toEqual({
       total: 0,
       covered: 0,
       missing: [],

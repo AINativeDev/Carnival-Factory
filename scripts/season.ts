@@ -80,9 +80,10 @@ export function seasonStats(season: SeasonData, login: string): SeasonStats | un
 
 /** Reads a season file, keeping only well-formed counts, so a bad file is an empty season. */
 export function readSeason(value: unknown): SeasonData {
-  if (typeof value !== 'object' || value === null) return EMPTY_SEASON;
-  const { countedAt, participants } = value as Record<string, unknown>;
+  // Anything but an object has no participants of its own, so it reads as the empty season below.
+  const { countedAt, participants } = (value ?? {}) as Record<string, unknown>;
   if (typeof participants !== 'object' || participants === null) return EMPTY_SEASON;
+  // Stryker disable next-line EqualityOperator: zero is zero whether it is kept or replaced by zero.
   const count = (n: unknown) => (Number.isInteger(n) && (n as number) >= 0 ? (n as number) : 0);
   const out: Record<string, SeasonStats> = {};
   for (const [login, stats] of Object.entries(participants)) {

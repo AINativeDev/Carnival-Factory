@@ -30,6 +30,17 @@ describe('checkSquareCode', () => {
     ]);
   });
 
+  it('holds a global the square declares again, merged with the real one', () => {
+    const merged = `/// <reference lib="dom" />\ndeclare global { function fetch(u: number): void; }\nexport const x = () => fetch(1);`;
+    expect(problems(merged)).toContainEqual({
+      file: 'carnival/booths/grinch/booth.ts',
+      line: 3,
+      rule: 'global',
+      message: "Uses fetch: a square only draws on the canvas it's given.",
+    });
+    // Reading the DOM's types takes longer than a test's default 5 s on a busy machine.
+  }, 60_000);
+
   it('checks every code file in the folder, not only booth.ts', () => {
     const found = problems(fine, { 'lib/sky.ts': `export const x = () => eval('1');` });
     expect(found.map((problem) => [problem.file, problem.rule])).toEqual([

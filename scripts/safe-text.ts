@@ -15,6 +15,7 @@ export function safeInline(text: string, max = 120): string {
   for (const char of text) {
     const code = char.codePointAt(0)!;
     // Control characters, including newlines: the text stays on one line.
+    // Stryker disable next-line EqualityOperator: a space (0x20) becomes a space either way.
     if (code < 0x20 || code === 0x7f) {
       out += ' ';
       continue;

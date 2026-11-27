@@ -49,6 +49,25 @@ describe('the data a build bakes into the page', () => {
     ).toEqual({});
   });
 
+  it('keeps the badge holders the deploy wrote', () => {
+    const holder = { login: 'ana', repo: 'ana/factory', tier: 'gold' };
+    expect(badgeHolders(written([holder]))).toEqual([holder]);
+  });
+
+  it('leaves out of the standings a booth the kill switch closed', () => {
+    const at = mkdtempSync(join(tmpdir(), 'build-data-root-'));
+    mkdirSync(join(at, 'src/northpole'), { recursive: true });
+    writeFileSync(join(at, 'src/northpole/disabled.json'), '{ "booths": ["grinch"] }');
+    const ballot = `${REPO_URL}/issues/9`;
+    const entry = (login: string) => ({ login, url: `${ballot}#issuecomment-1`, votes: 1 });
+    const standings = { ballot, booths: [entry('ana'), entry('grinch')], factories: [] };
+    expect(peoplesChoice(written(standings), at)).toEqual({
+      ballot,
+      booths: [entry('ana')],
+      factories: [],
+    });
+  });
+
   it("knows every square's craft badges, from the repository itself", () => {
     const craft = squareCraft(root);
     expect(craft['attraction/ferris-wheel']).toContain('small-files');

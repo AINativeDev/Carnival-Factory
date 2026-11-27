@@ -99,6 +99,24 @@ describe('acceptedAnswer', () => {
     expect(acceptedAnswer(issue({ timelineItems: undated }))).toBeUndefined();
   });
 
+  it('goes by the latest acceptance, and only the acceptances', () => {
+    const at = (day: number, name = 'year-in-review-accepted') => ({
+      createdAt: `2026-11-${String(day)}T10:00:00Z`,
+      label: { name },
+    });
+    const timeline = (...nodes: object[]) => ({ timelineItems: { nodes } });
+    const editedOn22 = { lastEditedAt: '2026-11-22T10:00:00Z' };
+    expect(acceptedAnswer(issue({ ...editedOn22, ...timeline(at(21), at(23)) }))).toBeDefined();
+    expect(acceptedAnswer(issue({ ...editedOn22, ...timeline(at(23), at(21)) }))).toBeDefined();
+    expect(
+      acceptedAnswer(issue({ ...editedOn22, ...timeline(at(21), at(23, 'year-in-review')) })),
+    ).toBeUndefined();
+    expect(acceptedAnswer(issue({ ...editedOn22, ...timeline(at(22)) }))).toBeDefined();
+    expect(
+      acceptedAnswer(issue(timeline({ createdAt: '2026-11-20T10:00:00Z' }, at(21)))),
+    ).toBeDefined();
+  });
+
   it('takes nothing without an answer, a known question or an author', () => {
     expect(acceptedAnswer(issue({ body: body(HOT_TAKE) }))).toBeUndefined();
     expect(acceptedAnswer(issue({ body: body('Anything?', 'Yes.') }))).toBeUndefined();
