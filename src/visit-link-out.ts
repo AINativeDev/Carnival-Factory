@@ -20,6 +20,7 @@ export function followLinkAsks(
   id: string,
   level?: string,
 ) {
+  // Stryker disable next-line StringLiteral: no text but a North Pole place's name has links, so any fallback gives none.
   const links = northPoleLinks(linksHome(kind, id, level) ?? '');
   if (!links.length || !('onLink' in square)) return { stop: () => undefined };
   let tapped = Number.NEGATIVE_INFINITY;
@@ -29,6 +30,7 @@ export function followLinkAsks(
   frame.addEventListener('pointerdown', onTap, true);
   const stopListening = (square as SandboxedSquare).onLink((link) => {
     // Only an address on the maintainers' own list opens, and it's the list's copy that does.
+    // Stryker disable next-line StringLiteral: no text but a link on the list is allowed out, so any fallback opens nothing.
     const out = allowedLinkOut(links.at(link)?.href ?? '');
     if (!out || performance.now() - tapped > AFTER_A_TAP) return;
     tapped = Number.NEGATIVE_INFINITY;
