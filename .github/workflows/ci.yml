@@ -57,11 +57,9 @@ jobs:
       # not just run it (docs/adr/0061-mutation-testing.md).
       - name: Mutation testing of changed code
         if: github.event_name == 'pull_request' && env.SQUARE_SCOPE == ''
-        env:
-          BASE: ${{ github.base_ref }}
-        run: |
-          git fetch --no-tags --depth=1 origin "$BASE"
-          node scripts/mutation-check.ts --changed "origin/$BASE"
+        # Against the merge commit's own base (HEAD^1), as the Check step reads it:
+        # a newer main would count its own changes as this pull request's.
+        run: node scripts/mutation-check.ts --changed HEAD^1
       # Baselines only shrink: no debt added or raised (AGENTS.md).
       - name: Baselines only shrink
         if: github.event_name == 'pull_request'
