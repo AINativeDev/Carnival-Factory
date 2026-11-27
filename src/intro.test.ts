@@ -148,17 +148,24 @@ describe('the intro as a dialog', () => {
     expect(walking).not.toHaveBeenCalled();
   });
 
-  it('keeps keyboard focus inside while open, going round its two buttons', () => {
+  it('keeps keyboard focus inside while open, going round its first step and its two buttons', () => {
     page();
-    const explore = the('.intro-explore');
+    const write = the('.intro-beat-link');
     const build = the('.intro-build');
     build.focus();
     expect(key(build, 'Tab').defaultPrevented).toBe(true);
-    expect(document.activeElement).toBe(explore);
-    expect(key(explore, 'Tab', true).defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(write);
+    expect(key(write, 'Tab', true).defaultPrevented).toBe(true);
     expect(document.activeElement).toBe(build);
-    explore.focus();
-    expect(key(explore, 'Tab').defaultPrevented).toBe(false);
+    write.focus();
+    expect(key(write, 'Tab').defaultPrevented).toBe(false);
+  });
+
+  it('closes as Get a booth does when "Write an issue" opens the form', () => {
+    page();
+    the('.intro-beat-link').click();
+    expect(told).toEqual(['opened', 'build']);
+    expect(document.querySelector('.intro')).toBeNull();
   });
 
   it('reopens from "What is this?", once, and gives focus back to it', () => {

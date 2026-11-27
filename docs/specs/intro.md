@@ -34,6 +34,9 @@ easy to skip.
   **Write an issue** (an elf holds up a letter that writes itself),
   **The factory builds it** (a workshop with a lit window, a turning gear and
   smoke), and **It lands on the map** (a stall pops up on a free spot).
+- **Write an issue**, its scene and its line, is a link: like **Get a booth**
+  it opens the booth form in a new tab and closes the intro, since it's the
+  step people reach for. The other two beats are nothing to click.
 - Then **Explore the North Pole**, which closes it, and **Get a booth**,
   which opens the booth form (`BOOTH_REQUEST_URL`) in a new tab and
   closes it too.

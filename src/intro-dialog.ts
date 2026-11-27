@@ -18,15 +18,24 @@ function make<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, 
   return element;
 }
 
-/** One beat: its scene, which only decorates, then its title and line. */
-function beat({ title, line }: { title: string; line: string }) {
+/**
+ * One beat: its scene, which only decorates, then its title and line. The first
+ * beat, writing an issue, is the one people reach for, so it opens the booth
+ * form itself, as Get a booth does.
+ */
+function beat({ title, line }: { title: string; line: string }, index: number) {
   const canvas = make('canvas', 'intro-scene');
   canvas.width = canvas.height = SCENE_SIZE;
   canvas.setAttribute('aria-hidden', 'true');
   const words = make('p', 'intro-line', ` ${line}`);
   words.prepend(make('strong', '', title));
   const item = make('li', 'intro-beat');
-  item.append(canvas, words);
+  if (index === 0) {
+    const link = make('a', 'intro-beat-link');
+    Object.assign(link, { href: BOOTH_REQUEST_URL, target: '_blank', rel: 'noopener' });
+    link.append(canvas, words);
+    item.append(link);
+  } else item.append(canvas, words);
   return { item, ctx: canvas.getContext('2d') };
 }
 
@@ -50,5 +59,7 @@ export function buildDialog() {
   actions.append(explore, build);
   dialog.append(title, lead, list, actions);
   backdrop.append(dialog);
-  return { backdrop, dialog, explore, build, scenes: beats.map(({ ctx }) => ctx) };
+  // The first step's link: it asks for a booth, as Get a booth does.
+  const write = beats[0]?.item.firstElementChild as HTMLAnchorElement;
+  return { backdrop, dialog, explore, build, write, scenes: beats.map(({ ctx }) => ctx) };
 }
