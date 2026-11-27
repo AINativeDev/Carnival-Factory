@@ -1,132 +1,91 @@
 /**
- * The visitor's own cup of cocoa on the counter, and the urn that pours it:
- * the cocoa rising inside, the toppings dropping in, and steam once it's full.
+ * The cup being built on the counter: the cocoa poured in, each topping
+ * dropping in on top of the last, steam once there's cocoa in it, and the cup
+ * tipped over in a puddle when a wrong topping spills it.
  */
 import { drum, glow } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
-import { dropping, steam, type Cocoa } from './cocoa';
+import { icon } from './icons';
+import { SPILL } from './rush';
 
 const { colors } = theme;
 
 /** The cup's size in scene units: how round, and how tall. */
-const RX = 4;
-const HEIGHT = 7;
+const RX = 3.8;
+const HEIGHT = 6.4;
+/** How long a topping takes to drop in, in ms. */
+const DROP = 260;
 
-/** How far below the brim the cocoa stands in a cup `fill` full. */
-const sunk = (fill: number) => (1 - fill) * (HEIGHT - 2);
-
-/** The urn on the counter, with its spout reaching over the cup standing at (x, y). */
-export function drawUrn(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  drum(ctx, x - 12, y - 6, 3.5, 9, [colors.gold, colors.cream], 4, 0.4, colors.cocoa);
-  ctx.fillStyle = colors.wood;
-  ctx.fillRect(x - 8.5, y - 13.5, 9.5, 1.4);
-  ctx.fillRect(x - 0.6, y - 13.5, 1.6, 2.5);
-}
-
-/** The stream of cocoa from the spout down to the cocoa in the cup at (x, y). */
-export function drawPour(ctx: CanvasRenderingContext2D, x: number, y: number, fill: number) {
-  ctx.fillStyle = colors.cocoa;
-  ctx.fillRect(x - 0.1, y - 11, 0.8, 11 - HEIGHT + sunk(fill));
-}
-
-/** The marshmallows floating on the cocoa, around (x, y). */
-function marshmallows(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.fillStyle = colors.snowLit;
-  for (const [dx, dy] of [
-    [-1.8, -0.2],
-    [0.4, 0.6],
-    [1.6, -0.6],
-  ] as const) {
-    ctx.fillRect(x + dx - 0.8, y + dy - 0.6, 1.6, 1.2);
-  }
-}
-
-/** A swirl of cream, three soft rings piled up from (x, y). */
-function cream(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.fillStyle = colors.snowLit;
-  [2.8, 2, 1.1].forEach((r, n) => {
-    ctx.beginPath();
-    ctx.ellipse(x - n * 0.3, y - n * 1.2, r, r / 2, 0, 0, Math.PI * 2);
-    ctx.fill();
-  });
-}
-
-/** A candy cane leaning out of the cup from (x, y), striped white and red. */
-function candyCane(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.lineCap = 'round';
-  ctx.lineWidth = 1.1;
-  const path = () => {
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + 2.4, y - 8);
-    ctx.arc(x + 3.8, y - 8, 1.4, Math.PI, 0);
-  };
-  ctx.strokeStyle = colors.snowLit;
-  path();
-  ctx.stroke();
-  ctx.setLineDash([1, 1]);
+/** The cup's body standing at (x, y): its handle, its stripes and its dark inside. */
+function body(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.strokeStyle = colors.berry;
-  path();
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
-
-const TOPPING_DRAWS = [marshmallows, cream, candyCane];
-
-/**
- * The cup standing on (x, y): the cocoa at its level inside, the toppings in so
- * far, the newest still dropping in, and, when `fade` is below 1, fading as
- * it's carried away.
- */
-export function drawCup(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  cup: Cocoa,
-  time: number,
-  fade: number,
-) {
-  ctx.save();
-  ctx.globalAlpha = fade;
-  // The handle, then the cup with its dark, empty inside.
-  ctx.strokeStyle = colors.berry;
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.6;
   ctx.beginPath();
-  ctx.arc(x + RX + 0.4, y - HEIGHT / 2, 2, -Math.PI / 2, Math.PI / 2);
+  ctx.arc(x + RX + 0.3, y - HEIGHT / 2, 1.9, -Math.PI / 2, Math.PI / 2);
   ctx.stroke();
   drum(ctx, x, y, RX, HEIGHT, [colors.berry, colors.cream], 3, 0.3, colors.ink);
-  const brim = y - HEIGHT;
-  if (cup.fill > 0) {
-    // The cocoa's surface, sunk below the brim as far as the cup is empty,
-    // seen through the cup's round mouth.
-    ctx.save();
-    ctx.beginPath();
-    ctx.ellipse(x, brim, RX - 0.4, (RX - 0.4) / 2, 0, 0, Math.PI * 2);
-    ctx.clip();
-    ctx.fillStyle = colors.cocoa;
-    ctx.beginPath();
-    ctx.ellipse(x, brim + sunk(cup.fill), RX, RX / 2, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-  const lift = dropping(cup, time) * 10;
-  TOPPING_DRAWS.slice(0, cup.toppings).forEach((draw, n) => {
-    draw(ctx, x, brim - (n === cup.toppings - 1 ? lift : 0));
-  });
-  ctx.restore();
 }
 
-/** Steam curling up from the full cup standing at (x, y), three wisps in turn. */
-export function drawCupSteam(ctx: CanvasRenderingContext2D, x: number, base: number, time: number) {
-  const y = base - HEIGHT - 2;
-  glow(ctx, x, y, 8, 0.35);
+/**
+ * The cup on the counter at (x, y) with `made` in it so far, the newest
+ * dropping in since `newest`. With nothing in it, it stands empty.
+ */
+export function cup(
+  ctx: CanvasRenderingContext2D,
+  at: { x: number; y: number },
+  made: readonly number[],
+  newest: number,
+  time: number,
+) {
+  const { x, y } = at;
+  const brim = y - HEIGHT;
+  const fresh = Math.max(0, 1 - (time - newest) / DROP);
+  if (made.length === 1 && fresh > 0) {
+    // The cocoa pouring in from the hatch above.
+    ctx.fillStyle = colors.cocoa;
+    ctx.fillRect(x - 0.6, brim - 14, 1.2, 14);
+  }
+  body(ctx, x, y);
+  if (made.length > 0) {
+    ctx.fillStyle = colors.cocoa;
+    ctx.beginPath();
+    ctx.ellipse(x, brim + fresh * 3, RX - 0.5, (RX - 0.5) / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    steam(ctx, x, brim, time);
+  }
+  made.slice(1).forEach((item, n) => {
+    const lift = n === made.length - 2 ? fresh * 10 : 0;
+    icon(ctx, item, x, brim - 1.5 - n * 1.6 - lift, 0.65);
+  });
+}
+
+/** Steam curling up from the cocoa at (x, y), three wisps rising in turn. */
+function steam(ctx: CanvasRenderingContext2D, x: number, y: number, time: number) {
+  glow(ctx, x, y - 2, 8, 0.3);
   ctx.fillStyle = colors.snowLit;
   for (let wisp = 0; wisp < 3; wisp++) {
-    const { rise, curl } = steam(wisp, time);
-    ctx.globalAlpha = 0.55 * (1 - rise);
+    const rise = (((time / 2_400 + wisp * 0.37) % 1) + 1) % 1;
+    ctx.globalAlpha = 0.45 * (1 - rise);
     ctx.beginPath();
-    ctx.arc(x + curl * 2, y - rise * 18, 1 + rise * 2, 0, Math.PI * 2);
+    ctx.arc(x + Math.sin(rise * 6 + wisp) * 2, y - 4 - rise * 14, 1 + rise * 2, 0, Math.PI * 2);
     ctx.fill();
   }
+  ctx.globalAlpha = 1;
+}
+
+/** The spilled cup at (x, y) `since` ms after a wrong topping: tipped over, cocoa spreading, then wiped away. */
+export function spill(ctx: CanvasRenderingContext2D, at: { x: number; y: number }, since: number) {
+  const t = Math.min(1, since / 180);
+  const fade = since < SPILL * 0.7 ? 1 : Math.max(0, 1 - (since - SPILL * 0.7) / (SPILL * 0.3));
+  ctx.globalAlpha = fade;
+  ctx.fillStyle = colors.cocoa;
+  ctx.beginPath();
+  ctx.ellipse(at.x + 4, at.y - 0.5, 3 + t * 6, 1 + t * 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.save();
+  ctx.translate(at.x, at.y);
+  ctx.rotate(t * 1.35);
+  body(ctx, 0, 0);
+  ctx.restore();
   ctx.globalAlpha = 1;
 }

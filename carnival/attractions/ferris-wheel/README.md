@@ -4,31 +4,41 @@ An attraction of the North Pole: it belongs to the map, not to a participant.
 
 A little diorama at dusk, in the [diorama style](../../../docs/style.md): a
 ferris wheel on a wooden A-frame, standing on a low base on a slab of snow,
-with its far rim and legs in the shade behind. Eight bauble cars in red,
-gold, mint and violet hang from it, lit from the upper left. The wheel turns
-slowly, once every 24 seconds, and each bauble hangs straight down from the
-rim as it goes round, between lantern lights that shimmer gently. Two faint
-ribbons of northern lights, green and violet, ripple across the dusk sky, and
-a lamp glows warm at the wheel's foot.
+with its far rim and legs in the shade behind. Eight bauble cars in red, gold,
+mint and violet hang from it, open at the top, between lantern lights that
+shimmer gently. Two faint ribbons of northern lights ripple across the sky, and
+a lamp glows warm on the snow. At the wheel's foot, a queue of elves in red
+hats waits on a wooden boarding deck behind a rope line.
 
-## How to ride
+## Boarding Time
 
-Go inside the Ferris Wheel, then tap or click one of the bauble cars. A car
-glows warm while the pointer is over it.
+The wheel turns, and each car swings past the gate at the bottom, where a
+dashed ring marks the spot. Tap, anywhere on the square, to send the next elf
+in the queue hopping into the car in the ring.
 
-1. The wheel turns on, a little quicker than usual, until your car is at the
-   top, and stops there.
-2. The view opens out from your car like a round window: the North Pole's
-   rooftops, the great tree in the town square and the Factory's tower far
-   off, at dusk, their windows and lights twinkling slowly. The car sways
-   gently, its gold rail across the front.
-3. After a few seconds the view closes, and the wheel carries your car on
-   round at its usual pace. Tap a car to ride again.
+- **The ring** glows gold while an empty car is in it, and berry while a full
+  one is. Its middle dot is the perfect moment.
+- **A good boarding** scores 10, and a **perfect** one 25. The elf rides on in
+  the car, its head and hat over the rim.
+- **A miss** sends the elf off to sulk on the snow under a little grey cloud: a
+  tap with no car in the ring ("Too early!", "Too late!"), a tap on a car that
+  is already full, or an empty car let go round. One mistake never costs two.
+- **Fill every car** for a lap bonus of 100 times the lap: "Full wheel!", the
+  lights turn gold and the wheel whirls a victory lap while its riders hop off
+  and walk away. Then it turns quicker, up to 2.4 times its first pace.
+- **Guests** in violet hats climb aboard during the victory lap, one more each
+  lap up to three. Their car must not be boarded: let it pass the gate, they
+  hop off, and it comes round empty next time.
+- **Three misses** close the ride. The card shows the score and the best of the
+  visit; tap to go again.
 
-Taps while a car is rising or at the top are ignored: tap again once the ride
-is over. The ride is kept for one visit only, and nothing in it flashes.
+A new game waits for its first boarding before an empty car going round counts
+as a miss. With nobody playing, the attendant shows the game, boarding every
+car perfectly and filling the wheel on a loop, under a sign that says how to
+play. The score and the best are kept for one visit only, and nothing flashes.
 
-The ride's logic, where the wheel is and which car a tap picks, is in
-`ride.ts`; the view from the top is drawn in `view.ts`.
+The wheel's turning and where each car is are in `ride.ts`, the game's rules in
+`game.ts`; the wheel is drawn in `view.ts`, the elves in `elves.ts` and the
+signs in `hud.ts`.
 
 Preview it at `#/attraction/ferris-wheel`.

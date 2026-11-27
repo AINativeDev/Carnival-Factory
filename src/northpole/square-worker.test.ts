@@ -98,6 +98,7 @@ describe('loading a square', () => {
     });
   });
 
+  // It loads every attraction's and level square's code, about 3 s alone: room for a busy machine.
   it("loads every one of the North Pole's attractions and every level's own squares", async () => {
     const addresses = [
       ...Object.keys(import.meta.glob('../../carnival/attractions/*/attraction.ts')).map(
@@ -113,7 +114,7 @@ describe('loading a square', () => {
       await startWorker();
       expect((await load(hash)).type, hash).toBe('ready');
     }
-  });
+  }, 30_000);
 
   it.each([
     ['#nowhere', 'Not a square: #nowhere'],

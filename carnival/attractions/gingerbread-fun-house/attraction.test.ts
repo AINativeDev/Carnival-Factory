@@ -1,18 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import type { SquarePointer } from '../../../src/northpole/square';
 import attraction, { CHASE, gumdropLit } from './attraction';
-import {
-  bare,
-  decorate,
-  EDGE,
-  lean,
-  LEAN_FROM,
-  MOST,
-  onHouse,
-  POP,
-  popScale,
-  TREATS,
-} from './decorating';
 import { MIRRORS, PATH, REACH, reflection, STROLL, strollAt } from './mirrors';
+import { SLOTS } from './slots';
 
 const litAt = (time: number) => Array.from({ length: 9 }, (_, i) => gumdropLit(i, 9, time));
 
@@ -30,92 +20,6 @@ describe('gumdropLit', () => {
 
   it('starts again after a full chase', () => {
     expect(litAt(CHASE)).toEqual(litAt(0));
-  });
-});
-
-describe('decorating the house', () => {
-  it('places a gumdrop, an icing swirl and a candy in turn, one a tap', () => {
-    let house = bare();
-    for (let tap = 0; tap < 4; tap++) house = decorate(house, 40, 50, tap * 1000, 1);
-    expect(house.placed.map((placed) => placed.treat)).toEqual([...TREATS, 'gumdrop']);
-    expect(house.placed.map((placed) => placed.tint)).toEqual([0, 1, 2, 3]);
-    expect(house.count).toBe(4);
-  });
-
-  it('places nothing without a press', () => {
-    expect(decorate(bare(), 40, 50, 0, 0)).toEqual(bare());
-  });
-
-  it('shows every tap that came between two frames, round the spot', () => {
-    const house = decorate(bare(), 40, 50, 0, 3);
-    expect(house.placed).toHaveLength(3);
-    expect(new Set(house.placed.map((placed) => `${placed.x},${placed.y}`)).size).toBe(3);
-    for (const placed of house.placed) {
-      expect(Math.hypot(placed.x - 40, placed.y - 50)).toBeLessThan(4);
-    }
-  });
-
-  it('keeps the newest treats once the house is full', () => {
-    const house = decorate(bare(), 40, 50, 0, MOST + 5);
-    expect(house.placed).toHaveLength(MOST);
-    expect(house.count).toBe(MOST + 5);
-    expect(house.placed[0]?.tint).toBe(5);
-  });
-
-  it('keeps every treat whole inside the square, however the house sways', () => {
-    // Its glow at the top of its pop, scaled like the drawing, reaches this far from its middle.
-    const reach = 3.5 * Math.max(...Array.from({ length: POP + 1 }, (_, t) => popScale(0, t)));
-    for (const [x, y] of [
-      [0, 0],
-      [100, 0],
-      [0, 100],
-      [100, 100],
-      [1, 50],
-    ] as const) {
-      const house = decorate(bare(), x, y, 0, 3);
-      for (const placed of house.placed) {
-        for (let time = 0; time < 10000; time += 250) {
-          // Where the swaying house carries the treat on the screen at `time`.
-          const turn = lean(time);
-          const dx = placed.x - LEAN_FROM.x;
-          const dy = placed.y - LEAN_FROM.y;
-          const sx = LEAN_FROM.x + dx * Math.cos(turn) - dy * Math.sin(turn);
-          const sy = LEAN_FROM.y + dx * Math.sin(turn) + dy * Math.cos(turn);
-          for (const at of [sx, sy]) {
-            expect(at - reach).toBeGreaterThanOrEqual(0);
-            expect(at + reach).toBeLessThanOrEqual(100);
-          }
-        }
-      }
-    }
-    expect(EDGE).toBeLessThan(15);
-  });
-
-  it('sticks a treat where it landed on the leaning house', () => {
-    for (const time of [0, 1200, 4321]) {
-      const spot = onHouse(30, 45, time);
-      // Turning the spot back with the house's lean lands on the tap.
-      const turn = lean(time);
-      const dx = spot.x - LEAN_FROM.x;
-      const dy = spot.y - LEAN_FROM.y;
-      expect(LEAN_FROM.x + dx * Math.cos(turn) - dy * Math.sin(turn)).toBeCloseTo(30);
-      expect(LEAN_FROM.y + dx * Math.sin(turn) + dy * Math.cos(turn)).toBeCloseTo(45);
-    }
-    expect(onHouse(LEAN_FROM.x, LEAN_FROM.y, 999)).toEqual(LEAN_FROM);
-  });
-
-  it('leans only a little, and always the same way', () => {
-    for (let time = 0; time < 20_000; time += 250) {
-      expect(lean(time)).toBeLessThanOrEqual(0);
-      expect(lean(time)).toBeGreaterThanOrEqual(-0.06);
-    }
-  });
-
-  it('pops a treat on a little too big, then settles', () => {
-    expect(popScale(1000, 900)).toBe(0);
-    expect(popScale(1000, 1000 + POP / 2)).toBeGreaterThan(0.8);
-    expect(popScale(1000, 1000 + POP * 0.7)).toBeGreaterThan(popScale(1000, 1000 + POP));
-    expect(popScale(1000, 1000 + POP * 10)).toBeCloseTo(1);
   });
 });
 
@@ -148,43 +52,91 @@ describe('the fun-house mirrors', () => {
   });
 });
 
-describe('the drawing', () => {
-  const texts: unknown[] = [];
-  const gradient = { addColorStop: () => undefined };
-  const noop = () => undefined;
-  const ctx = {
-    ...Object.fromEntries(
-      [
-        'save',
-        'restore',
-        'scale',
-        'translate',
-        'rotate',
-        'fillRect',
-        'beginPath',
-        'closePath',
-        'arc',
-        'ellipse',
-        'fill',
-        'stroke',
-        'moveTo',
-        'lineTo',
-        'clip',
-      ].map((name) => [name, noop]),
-    ),
-    fillText: (text: unknown) => texts.push(text),
-    createLinearGradient: () => gradient,
-    createRadialGradient: () => gradient,
-  } as unknown as CanvasRenderingContext2D;
+/** A stand-in canvas that takes every call the fun house makes, keeps its words and draws nothing. */
+class DrawingLog {
+  texts: string[] = [];
+  globalAlpha = 1;
+  fillStyle = '';
+  strokeStyle = '';
+  lineWidth = 1;
+  lineCap = '';
+  lineJoin = '';
+  font = '';
+  textAlign = '';
+  textBaseline = '';
+  fillText(text: string) {
+    this.texts.push(text);
+  }
+  save() {}
+  restore() {}
+  scale() {}
+  translate() {}
+  rotate() {}
+  fillRect() {}
+  beginPath() {}
+  closePath() {}
+  moveTo() {}
+  lineTo() {}
+  arc() {}
+  arcTo() {}
+  ellipse() {}
+  quadraticCurveTo() {}
+  fill() {}
+  stroke() {}
+  clip() {}
+  createLinearGradient() {
+    return { addColorStop() {} };
+  }
+  createRadialGradient() {
+    return { addColorStop() {} };
+  }
+}
 
-  it('invites a tap until the first treat goes on, then plays on', () => {
-    attraction.draw(ctx, 200, 0);
-    expect(texts).toEqual(['Tap to decorate!']);
-    // The elf passes each mirror as it strolls, and each treat pops on.
-    for (let time = 0; time < STROLL; time += 100)
-      attraction.draw(ctx, 200, time, { x: 80, y: 90, down: true, presses: time < 400 ? 1 : 0 });
-    texts.length = 0;
-    attraction.draw(ctx, 200, STROLL);
-    expect(texts).toEqual([]);
+describe('the drawing', () => {
+  const log = new DrawingLog();
+  const ctx = log as unknown as CanvasRenderingContext2D;
+  const draw = (time: number, pointer?: SquarePointer) => {
+    log.texts.length = 0;
+    attraction.draw(ctx, 200, time, pointer);
+    return log.texts.join(' | ');
+  };
+
+  it('keeps its id, name and the gingerbread house landmark', () => {
+    expect(attraction.id).toBe('gingerbread-fun-house');
+    expect(attraction.name).toBe('Gingerbread Fun House');
+    expect(attraction.stall).toEqual({
+      shape: 'cabin',
+      roof: 'gingerbread',
+      trim: 'snow',
+      landmark: 'gingerbread-house',
+    });
+  });
+
+  it('plays its own demo, then a game a tap starts, until a wrong note ends it', () => {
+    expect(draw(0)).toContain('Icing Echo');
+    // The demo plays and echoes its tunes as the elf strolls past the mirrors.
+    for (let time = 0; time < STROLL * 2; time += 100) draw(time);
+    const start = STROLL * 2;
+    expect(draw(start, { x: 5, y: 190, down: true, presses: 1 })).toContain('Watch the house');
+    // Taps while the house plays only ripple.
+    draw(start + 300, { x: 5, y: 190, down: true, presses: 1 });
+    let time = start + 400;
+    while (!draw(time).includes('Your turn')) time += 100;
+    // Tapping off the notes is no wrong note, but a tap on the wrong one is.
+    expect(draw(time, { x: 5, y: 190, down: true, presses: 1 })).toContain('Your turn: 0');
+    // Tapping the places in turn soon plays a wrong note, and the icing cracks.
+    let said = '';
+    for (let n = 0; n < 400 && !said.includes('cracked'); n++) {
+      time += 100;
+      const at = SLOTS.at(n % 4)?.at ?? { x: 0, y: 0 };
+      said = draw(time, { x: at.x * 2, y: at.y * 2, down: true, presses: 1 });
+      if (!said.includes('cracked')) said = draw((time += 100));
+    }
+    expect(said).toContain('cracked');
+    for (let t = time; t < time + 3000; t += 100) draw(t);
+    expect(draw(time + 3000)).toContain('Tap to go again');
+    expect(draw(time + 3100, { x: 5, y: 190, down: true, presses: 1 })).toContain(
+      'Watch the house',
+    );
   });
 });

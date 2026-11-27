@@ -1,19 +1,4 @@
 {
-  "carnival/attractions/cocoa-stand/attraction.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 4
-    }
-  },
-  "carnival/attractions/sleigh-coaster/attraction.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 2
-    }
-  },
-  "carnival/attractions/snowball-toss/attraction.ts": {
-    "@typescript-eslint/no-confusing-void-expression": {
-      "count": 2
-    }
-  },
   "scripts/booth-gate.ts": {
     "@typescript-eslint/no-non-null-assertion": {
       "count": 1

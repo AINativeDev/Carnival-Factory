@@ -1,157 +1,149 @@
 import { describe, expect, it } from 'vitest';
 import attraction from './attraction';
 import {
-  baubleOf,
-  board,
-  canBoard,
-  carAt,
+  BOTTOM,
   CARS,
-  carSpots,
-  OPENING,
-  riseTime,
+  FULL,
+  GATE,
+  HUB,
+  SPIN,
   TURN,
-  VIEW,
-  viewOpen,
-  wheelAngle,
+  WINDOW,
+  angleAt,
+  baubleOf,
+  carSpots,
+  ease,
+  fromGate,
+  lapSpeed,
+  nearestCar,
+  passedGate,
+  paused,
+  spinning,
+  wheelFrom,
 } from './ride';
-import { twinkle } from './view';
 
-const FULL = Math.PI * 2;
-
-/** Where car `car` is on the rim, as an angle from 0 to a full turn. */
-function carAngle(time: number, car: number, ride?: Parameters<typeof wheelAngle>[1]) {
-  const angle = wheelAngle(time, ride) + (car / CARS) * FULL;
-  return ((angle % FULL) + FULL) % FULL;
+/** A stand-in canvas that takes every call the wheel makes, draws nothing, and counts what's written. */
+class DrawingLog {
+  words: string[] = [];
+  globalAlpha = 1;
+  fillStyle = '';
+  strokeStyle = '';
+  lineWidth = 1;
+  lineCap = '';
+  font = '';
+  textAlign = '';
+  textBaseline = '';
+  lineDashOffset = 0;
+  save() {}
+  restore() {}
+  scale() {}
+  translate() {}
+  beginPath() {}
+  closePath() {}
+  moveTo() {}
+  lineTo() {}
+  quadraticCurveTo() {}
+  arc() {}
+  ellipse() {}
+  roundRect() {}
+  rect() {}
+  setLineDash() {}
+  fill() {}
+  stroke() {}
+  fillRect() {}
+  clip() {}
+  fillText(text: string) {
+    this.words.push(text);
+  }
+  measureText() {
+    return { width: 40 };
+  }
+  createLinearGradient() {
+    return { addColorStop() {} };
+  }
+  createRadialGradient() {
+    return { addColorStop() {} };
+  }
 }
 
-describe('carSpots', () => {
-  it('spaces the cars evenly round the rim', () => {
-    const [first, second, third, fourth] = carSpots(4, 0, 50, 50, 10);
-    expect(first.x).toBeCloseTo(60);
-    expect(first.y).toBeCloseTo(50);
-    expect(second.x).toBeCloseTo(50);
-    expect(second.y).toBeCloseTo(60);
-    expect(third.x).toBeCloseTo(40);
-    expect(fourth.y).toBeCloseTo(40);
+const canvas = (log: DrawingLog) => log as unknown as CanvasRenderingContext2D;
+
+describe('the wheel', () => {
+  it('keeps its id, name and big-wheel landmark', () => {
+    expect(attraction.id).toBe('ferris-wheel');
+    expect(attraction.name).toBe('Ferris Wheel');
+    expect(attraction.stall?.landmark).toBe('big-wheel');
+  });
+
+  it('turns once every TURN on the first lap, quicker on later ones, up to a limit', () => {
+    const wheel = wheelFrom(0, 0, lapSpeed(1));
+    expect(angleAt(wheel, TURN)).toBeCloseTo(FULL);
+    expect(lapSpeed(3)).toBeGreaterThan(lapSpeed(2));
+    expect(lapSpeed(99)).toBeCloseTo(lapSpeed(50));
+  });
+
+  it('whirls one extra turn in a victory lap, smoothly', () => {
+    const wheel = { ...wheelFrom(0, 0, 0), spinAt: 1_000 };
+    expect(angleAt(wheel, 1_000)).toBe(0);
+    expect(spinning(wheel, 1_000 + SPIN / 2)).toBe(true);
+    expect(angleAt(wheel, 1_000 + SPIN / 2)).toBeCloseTo(Math.PI);
+    expect(angleAt(wheel, 1_000 + SPIN)).toBeCloseTo(FULL);
+    expect(spinning(wheel, 1_000 + SPIN)).toBe(false);
+    expect(ease(-1)).toBe(0);
+  });
+
+  it('holds still while paused', () => {
+    const wheel = { ...wheelFrom(1, 0, lapSpeed(1)), spinAt: 500 };
+    const held = paused(wheel, 2_000);
+    expect(angleAt(held, 3_000)).toBeCloseTo(angleAt(wheel, 1_000));
+  });
+
+  it('knows how far each car is from the gate, and which is nearest', () => {
+    expect(fromGate(BOTTOM, 0)).toBeCloseTo(0);
+    expect(fromGate(BOTTOM - 0.1, 0)).toBeCloseTo(-0.1);
+    expect(fromGate(BOTTOM + 0.1 + FULL * 3, 0)).toBeCloseTo(0.1);
+    const step = FULL / CARS;
+    const nearest = nearestCar(BOTTOM - step * 2 + 0.05);
+    expect(nearest.car).toBe(2);
+    expect(nearest.off).toBeCloseTo(0.05);
+  });
+
+  it('notes each car going out past the gate, once', () => {
+    expect(passedGate(BOTTOM, BOTTOM + WINDOW - 0.01)).toEqual([]);
+    expect(passedGate(BOTTOM, BOTTOM + WINDOW + 0.01)).toEqual([0]);
+    expect(passedGate(BOTTOM, BOTTOM + FULL)).toHaveLength(CARS);
+  });
+
+  it('hangs a car at the gate right below the hub', () => {
+    const atGate = carSpots(BOTTOM).at(0);
+    expect(atGate?.y).toBeCloseTo(HUB.y + HUB.radius);
+    expect(baubleOf(atGate ?? GATE)).toEqual(GATE);
   });
 });
 
-describe('wheelAngle', () => {
-  it('turns once every TURN with nobody riding', () => {
-    expect(wheelAngle(TURN / 4)).toBeCloseTo(Math.PI / 2);
-    expect(wheelAngle(TURN)).toBeCloseTo(FULL);
-  });
+describe('drawing Boarding Time', () => {
+  const at = (x: number, y: number) => ({ x, y, down: true, presses: 1 });
 
-  it('carries the boarded car to the top, holds it there for the view, then turns on', () => {
-    const ride = board(3, 5_000);
-    const rise = riseTime(ride.lift);
-    expect(wheelAngle(5_000, ride)).toBeCloseTo(wheelAngle(5_000));
-    expect(carAngle(5_000 + rise, 3, ride)).toBeCloseTo((3 * Math.PI) / 2);
-    expect(carAngle(5_000 + rise + VIEW, 3, ride)).toBeCloseTo((3 * Math.PI) / 2);
-    const after = wheelAngle(5_000 + rise + VIEW + TURN / 4, ride);
-    expect(after - wheelAngle(5_000 + rise + VIEW, ride)).toBeCloseTo(Math.PI / 2);
-  });
-
-  it('never turns backwards, and lifts a car already at the top no further', () => {
-    for (let car = 0; car < CARS; car++) {
-      const ride = board(car, 1_234);
-      expect(ride.lift).toBeGreaterThanOrEqual(0);
-      expect(ride.lift).toBeLessThan(FULL);
+  it('shows the attendant sign, then a game, a closed ride and a fresh one', () => {
+    const idle = new DrawingLog();
+    for (let time = 0; time <= 40_000; time += 200) attraction.draw(canvas(idle), 300, time);
+    expect(idle.words).toContain('Boarding Time');
+    expect(idle.words).not.toContain('SCORE');
+    // A tap starts a game; taps at the wrong time are misses, and three close the ride.
+    const game = new DrawingLog();
+    attraction.draw(canvas(game), 300, 40_200, at(10, 10));
+    let time = 40_200;
+    for (let n = 0; n < 3; n++) {
+      time += 3_000;
+      attraction.draw(canvas(game), 300, time, at(10, 10));
     }
-    const atTop = board(6, 0);
-    expect(atTop.lift).toBeCloseTo(0);
-  });
-
-  it('boards from where the last ride left the wheel, so it never jumps', () => {
-    const first = board(0, 0);
-    const later = 40_000;
-    const second = board(2, later, first);
-    expect(second.from).toBeCloseTo(wheelAngle(later, first));
-  });
-});
-
-describe('carAt', () => {
-  const spots = carSpots(CARS, 0, 48, 40, 26);
-
-  it('picks the car whose bauble is tapped', () => {
-    spots.forEach((spot, car) => {
-      const bauble = baubleOf(spot);
-      expect(carAt(bauble.x + 1, bauble.y - 1, spots)).toBe(car);
-    });
-  });
-
-  it('picks no car for a tap on the sky or the axle', () => {
-    expect(carAt(2, 2, spots)).toBe(-1);
-    expect(carAt(48, 40, spots)).toBe(-1);
-  });
-});
-
-describe('canBoard and viewOpen', () => {
-  it('lets a visitor board before any ride, and again once the view has closed', () => {
-    expect(canBoard(0)).toBe(true);
-    const ride = board(1, 0);
-    const rise = riseTime(ride.lift);
-    expect(canBoard(rise / 2, ride)).toBe(false);
-    expect(canBoard(rise + VIEW / 2, ride)).toBe(false);
-    expect(canBoard(rise + VIEW, ride)).toBe(true);
-  });
-
-  it('opens the view once the car is at the top, and closes it before it comes down', () => {
-    expect(viewOpen(1_000)).toBe(0);
-    const ride = board(1, 0);
-    const rise = riseTime(ride.lift);
-    expect(viewOpen(rise / 2, ride)).toBe(0);
-    expect(viewOpen(rise + OPENING / 2, ride)).toBeCloseTo(0.5);
-    expect(viewOpen(rise + VIEW / 2, ride)).toBe(1);
-    expect(viewOpen(rise + VIEW - OPENING / 2, ride)).toBeCloseTo(0.5);
-    expect(viewOpen(rise + VIEW, ride)).toBe(0);
-  });
-});
-
-describe('twinkle', () => {
-  it('swells slowly between dim and bright, never off', () => {
-    for (let time = 0; time < 10_000; time += 250) {
-      const light = twinkle(time, 3);
-      expect(light).toBeGreaterThanOrEqual(0.1);
-      expect(light).toBeLessThanOrEqual(1);
-      // A quarter of a second later it has barely changed: a glimmer, not a blink.
-      expect(Math.abs(twinkle(time + 250, 3) - light)).toBeLessThan(0.1);
-    }
-  });
-});
-
-describe('riding the wheel', () => {
-  /** A canvas that draws nothing, and notes when the view's round window clips it. */
-  function noting(calls: string[]): CanvasRenderingContext2D {
-    const gradient = { addColorStop: () => undefined };
-    const nothing = () => undefined;
-    return {
-      ...Object.fromEntries(
-        ['save', 'restore', 'scale', 'translate', 'beginPath', 'closePath', 'moveTo', 'lineTo']
-          .concat(['quadraticCurveTo', 'bezierCurveTo', 'arc', 'ellipse', 'rect', 'fill'])
-          .concat(['stroke', 'fillRect', 'strokeRect', 'setLineDash'])
-          .map((name) => [name, nothing]),
-      ),
-      clip: () => calls.push('clip'),
-      createLinearGradient: () => gradient,
-      createRadialGradient: () => gradient,
-    } as unknown as CanvasRenderingContext2D;
-  }
-
-  it('boards the tapped car, and opens the view once it reaches the top', () => {
-    const [car] = carSpots(CARS, wheelAngle(0), 48, 40, 26);
-    const bauble = baubleOf(car);
-    const size = 200;
-    const tap = { x: (bauble.x * size) / 100, y: (bauble.y * size) / 100, down: true, presses: 1 };
-    const before: string[] = [];
-    attraction.draw(noting(before), size, 0, tap);
-    expect(before).not.toContain('clip');
-    const ride = board(0, 0);
-    const atTheTop: string[] = [];
-    attraction.draw(noting(atTheTop), size, riseTime(ride.lift) + VIEW / 2);
-    expect(atTheTop).toContain('clip');
-    const after: string[] = [];
-    attraction.draw(noting(after), size, riseTime(ride.lift) + VIEW + 1);
-    expect(after).not.toContain('clip');
+    for (let n = 0; n < 50; n++) attraction.draw(canvas(game), 300, (time += 100));
+    expect(game.words).toContain('SCORE');
+    expect(game.words).toContain('Ride closed!');
+    expect(game.words).toContain('Tap to go again');
+    const again = new DrawingLog();
+    attraction.draw(canvas(again), 300, time + 100, at(150, 150));
+    attraction.draw(canvas(again), 300, time + 200);
+    expect(again.words).not.toContain('Ride closed!');
   });
 });
