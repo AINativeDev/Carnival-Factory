@@ -1,0 +1,63 @@
+name: Mutation testing
+
+# The whole of src/, scripts/ and lint/ once a week, against each file's debt in
+# lint/mutation-baseline.json (docs/adr/0061-mutation-testing.md). Pull requests
+# mutate only the code they change (ci.yml); this catches the rest drifting.
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mutation:
+    # Four parts in parallel, each well inside a job's six hours on a standard
+    # runner. The bar is per file, so each part checks its own files.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - part: northpole-a-l
+            mutate: 'src/northpole/[a-l]*.ts,!**/*.test.ts,!**/*.d.ts'
+          - part: northpole-m-z
+            mutate: 'src/northpole/[m-z]*.ts,!**/*.test.ts,!**/*.d.ts'
+          - part: src-and-lint
+            mutate: 'src/*.ts,lint/**/*.ts,!**/*.test.ts,!**/*.d.ts'
+          - part: scripts
+            mutate: 'scripts/**/*.ts,!**/*.test.ts,!**/*.d.ts'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          # The build reads when each booth was added from the whole history.
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Last week's results: Stryker tests again only the mutants whose code or
+      # tests changed since, so a quiet week takes minutes.
+      - uses: actions/cache@v4
+        with:
+          path: reports/stryker-incremental-${{ matrix.part }}.json
+          key: mutation-${{ matrix.part }}-${{ github.run_id }}
+          restore-keys: mutation-${{ matrix.part }}-
+      - name: Mutate ${{ matrix.part }}
+        env:
+          MUTATE: ${{ matrix.mutate }}
+          PART: ${{ matrix.part }}
+        run: |
+          npx stryker run --mutate "$MUTATE" --incremental \
+            --incrementalFile "reports/stryker-incremental-$PART.json"
+          node scripts/mutation-check.ts
+      # The report, to see which changes the tests miss, file by file.
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: mutation-report-${{ matrix.part }}
+          path: reports/mutation/

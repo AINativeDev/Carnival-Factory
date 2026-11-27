@@ -26,3 +26,6 @@ public/pending.json
 
 # Browser coverage the smoke tests record (smoke/coverage.ts)
 coverage-browser/
+
+# Mutation testing's reports and scratch folder (stryker.config.mjs)
+reports/

@@ -12,7 +12,11 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 
 /** The baselines, each a JSON file of debts. */
-export const BASELINES = ['lint/strict-types-baseline.json', 'eslint-suppressions.json'];
+export const BASELINES = [
+  'lint/strict-types-baseline.json',
+  'eslint-suppressions.json',
+  'lint/mutation-baseline.json',
+];
 
 /** Every number in a baseline, keyed by its path in the file, such as `src/a.ts › rule › count`. */
 export function debts(value: unknown, path: string[] = []): Map<string, number> {
@@ -46,7 +50,10 @@ export function problems(read: Baselines): string[] {
     const after = read.now(file);
     if (after === undefined) return [];
     const before = read.atBase(file);
-    if (before === undefined) return [`${file}: a new baseline`];
+    // A new rule freezes the code that predates it: a baseline that wasn't there
+    // at the base starts as it is. Only maintainers add one, since the list of
+    // baselines is this file's own (docs/adr/0061-mutation-testing.md).
+    if (before === undefined) return [];
     return grown(before, after).map((problem) => `${file}: ${problem}`);
   });
 }

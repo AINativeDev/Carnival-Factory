@@ -52,6 +52,16 @@ jobs:
         run: |
           git fetch --no-tags --depth=1 origin "$BASE"
           node scripts/diff-coverage.ts "origin/$BASE"
+      # The code a pull request changes in src/, scripts/ and lint/ needs a
+      # mutation score of 90%: its tests must catch most small changes to it,
+      # not just run it (docs/adr/0061-mutation-testing.md).
+      - name: Mutation testing of changed code
+        if: github.event_name == 'pull_request' && env.SQUARE_SCOPE == ''
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE"
+          node scripts/mutation-check.ts --changed "origin/$BASE"
       # Baselines only shrink: no debt added or raised (AGENTS.md).
       - name: Baselines only shrink
         if: github.event_name == 'pull_request'

@@ -106,3 +106,4 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0058](0058-tessl-places-open-as-booths.md) | The Tessl places and AI DevCon open as booths | Accepted |
 | [0059](0059-one-settings-file.md) | One settings file | Accepted |
 | [0060](0060-dependabot.md) | Dependabot keeps the packages up to date | Accepted |
+| [0061](0061-mutation-testing.md) | Mutation testing holds the tests to catching changes | Accepted |
