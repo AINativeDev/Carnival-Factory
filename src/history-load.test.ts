@@ -9,7 +9,13 @@ const answer =
 
 describe('loading the history a preview has beside it', () => {
   it('reads the file the deploy put next to the page', async () => {
-    expect(await loadHistoryFile(answer(history))).toEqual(history);
+    const asked: string[] = [];
+    const fetchFile = (url: string) => {
+      asked.push(url);
+      return answer(history)();
+    };
+    expect(await loadHistoryFile(fetchFile)).toEqual(history);
+    expect(asked).toEqual(['square-history.json']);
   });
 
   it('treats a missing, unreadable or malformed file as no history', async () => {
@@ -24,6 +30,11 @@ describe('readHistory', () => {
     expect(readHistory(history)).toEqual(history);
     expect(readHistory(null)).toBeUndefined();
     expect(readHistory([])).toBeUndefined();
+    expect(readHistory('history')).toBeUndefined();
+    expect(readHistory({})).toBeUndefined();
+    expect(readHistory({ squares: null })).toBeUndefined();
+    expect(readHistory({ squares: 'booth/ana' })).toBeUndefined();
+    expect(readHistory({ squares: {} })).toEqual({ squares: {} });
     expect(readHistory({ squares: { 'booth/ana': 'nope' } })).toBeUndefined();
   });
 });

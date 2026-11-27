@@ -101,6 +101,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   // A preview has no history baked in: the deploy puts the live site's beside it.
   if (!SQUARE_HISTORY && !level)
     void loadHistoryFile().then((data) => {
+      // Stryker disable next-line ConditionalExpression,LogicalOperator: no file tells the story the panel already told, and a closed panel is seen by nobody
       if (card.isConnected && data) tellStory(data);
     });
   renderCraft(

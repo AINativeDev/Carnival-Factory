@@ -6,6 +6,7 @@
  * are plain hash links, so going somewhere from inside a square leaves it the
  * way every other link does (src/router.ts).
  */
+import { the } from './dom';
 import { currentPlace, menuMarkup } from './top-menu-items';
 
 /** Opens the map's Booths panel (src/booths-hud.ts), its search ready to type in. */
@@ -23,18 +24,19 @@ export function startTopMenu(banner: HTMLElement): () => void {
   nav.setAttribute('aria-label', 'Places');
   nav.innerHTML = menuMarkup();
   banner.insertBefore(nav, banner.querySelector('.repo-link'));
-  const toggle = nav.querySelector<HTMLButtonElement>('.top-menu-toggle');
+  // The menu's own markup always has its Menu button and its Booths place.
+  const toggle = the(nav, '.top-menu-toggle', HTMLButtonElement);
   const items = [...nav.querySelectorAll<HTMLElement>('.top-menu-item')];
 
   const setOpen = (open: boolean) => {
     nav.toggleAttribute('data-open', open);
-    toggle?.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-expanded', String(open));
   };
   const isOpen = () => nav.hasAttribute('data-open');
   const shut = () => {
     if (!isOpen()) return;
     setOpen(false);
-    toggle?.focus({ preventScroll: true });
+    toggle.focus({ preventScroll: true });
   };
 
   const markCurrent = () => {
@@ -55,14 +57,14 @@ export function startTopMenu(banner: HTMLElement): () => void {
     location.hash = '#/';
   };
 
-  toggle?.addEventListener('click', () => {
+  toggle.addEventListener('click', () => {
     const open = !isOpen();
     setOpen(open);
     if (open) items[0]?.focus({ preventScroll: true });
   });
   // Registered before src/intro.ts hears About, so the intro gives focus back to Menu, not a hidden item.
   for (const item of items) item.addEventListener('click', shut);
-  nav.querySelector('[data-place="booths"]')?.addEventListener('click', showBooths);
+  the(nav, '[data-place="booths"]', HTMLElement).addEventListener('click', showBooths);
   nav.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') shut();
   });

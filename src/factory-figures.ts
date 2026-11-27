@@ -19,6 +19,7 @@ export interface SquareCounts {
 export const squareCounts = (booths: string[], attractions: string[]): SquareCounts => ({
   booths: booths.length,
   attractions: attractions.length,
+  // Stryker disable next-line MethodExpression: logins in upper case count each person once just the same
   people: new Set(booths.map((id) => id.toLowerCase())).size,
 });
 

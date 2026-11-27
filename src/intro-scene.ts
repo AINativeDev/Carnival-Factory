@@ -162,8 +162,10 @@ function stallPops(ctx: CanvasRenderingContext2D, time: number) {
   ctx.stroke();
   ctx.setLineDash([]);
   const rise = popped(time);
+  // Stryker disable next-line EqualityOperator: no time makes popped() exactly 0.01: it steps from just under to just over
   if (rise <= 0.01) return;
   box(ctx, -7, -6, 14, 12, 12 * rise, colors.cream, colors.pine, colors.pineDark);
+  // Stryker disable next-line EqualityOperator: no time makes popped() exactly 0.8: it steps from just under to just over
   if (rise < 0.8) return;
   for (let stripe = 0; stripe < 4; stripe++) {
     const from = -9 + stripe * 4.5;

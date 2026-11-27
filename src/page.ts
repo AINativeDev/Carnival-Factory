@@ -106,6 +106,7 @@ export function showFactory(page: Page, fromHistory: boolean) {
   page.card = openFactoryHud(the(page.app, '.map-frame', HTMLElement), {
     squares: squareCounts(
       boothRegistry.all().map((square) => square.id),
+      // Stryker disable next-line ArrowFunction: only how many attractions there are is counted, never their ids
       attractionRegistry.all().map((square) => square.id),
     ),
     stats: readFactoryStats(SQUARE_HISTORY?.factory),

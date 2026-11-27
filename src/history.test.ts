@@ -70,12 +70,17 @@ describe('day', () => {
   it('reads the same everywhere', () => {
     expect(day('2026-11-24T23:59:00Z')).toBe('24 Nov 2026');
     expect(day('not a date')).toBe('');
+    expect(day('2027-01-05T00:00:00Z')).toBe('5 Jan 2027');
+    expect(day('2026-12-31T12:00:00Z')).toBe('31 Dec 2026');
   });
 });
 
 describe('pullSummary and pullState', () => {
   it('says how a pull request went', () => {
     expect(pullSummary(merged)).toBe('2 review findings, 1 fixed, 3 commits');
+    expect(pullSummary({ ...merged, findings: 1, fixed: 0, commits: 1 })).toBe(
+      '1 review finding, 0 fixed, 1 commit',
+    );
     expect(pullSummary({ ...merged, findings: 0, fixed: 0, commits: 1 })).toBe(
       'no review findings, 1 commit',
     );
@@ -95,6 +100,7 @@ describe('decisionText', () => {
     expect(decisionText('accepted')).toBe('Accepted');
     expect(decisionText('question')).toBe('Asked a question');
     expect(decisionText('waiting')).toBe('Waiting for the assessment');
+    expect(decisionText('declined')).toBe('Declined');
   });
 });
 
@@ -102,5 +108,13 @@ describe('safeHref', () => {
   it('keeps https links and drops anything else', () => {
     expect(safeHref('https://github.com/o/r/issues/1')).toBe('https://github.com/o/r/issues/1');
     expect(safeHref('javascript:alert(1)')).toBe('#');
+    expect(safeHref('HTTPS://github.com')).toBe('HTTPS://github.com');
+    for (const href of [
+      'http://github.com',
+      ' https://github.com',
+      'xhttps://github.com',
+      'https:/x',
+    ])
+      expect(safeHref(href), href).toBe('#');
   });
 });

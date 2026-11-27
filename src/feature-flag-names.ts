@@ -29,7 +29,9 @@ export type FeatureFlags = Record<FeatureFlag, boolean>;
  * it names are on, every other one is off, and a name it doesn't know is ignored.
  */
 export function readFeatureFlags(list: string | undefined): FeatureFlags {
-  const on = new Set((list ?? '').split(',').map((name) => name.trim()));
+  // Stryker disable next-line StringLiteral: any text no flag is named reads the same as none
+  const named = list ?? '';
+  const on = new Set(named.split(',').map((name) => name.trim()));
   const flags = {} as FeatureFlags;
   for (const name of FEATURE_FLAG_NAMES) flags[name] = on.has(name);
   return flags;

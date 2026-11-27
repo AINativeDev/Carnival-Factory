@@ -53,6 +53,10 @@ describe('what the Booths panel remembers', () => {
     expect([hud.me, mine?.value]).toEqual(['ana', 'ana']);
     hud.setMe('nobody');
     expect([hud.me, mine?.value]).toEqual(['nobody', '']);
+    // The list shows "Pick your booth" again, not a blank.
+    expect(mine?.selectedIndex).toBe(0);
+    hud.setMe(undefined);
+    expect(mine?.selectedIndex).toBe(0);
     if (mine) mine.value = '';
     mine?.dispatchEvent(new Event('change'));
     expect(hud.me).toBeUndefined();

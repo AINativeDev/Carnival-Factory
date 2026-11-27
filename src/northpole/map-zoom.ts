@@ -22,23 +22,21 @@ const ZOOM_KEYS = new Map([
 /**
  * Zooms the camera by `factor`, between the whole island and the nearest it
  * comes, keeping what's at `at` on the screen there, or else what it looks at.
- * Returns whether the zoom changed: it doesn't inside a square, before the
- * first frame, or past a limit.
+ * It doesn't inside a square, before the first frame, or past a limit.
  */
-function zoomAround(m: MapRun, factor: number, at?: Tile): boolean {
+function zoomAround(m: MapRun, factor: number, at?: Tile) {
   const { camera } = m;
-  if (m.visiting || !camera) return false;
+  if (m.visiting || !camera) return;
   const width = m.frame.clientWidth;
   const height = m.frame.clientHeight;
   const aimed = aimedZoom(m, want(m), width, height);
   const next = zoomBy(aimed.zoom, factor, aimed.fit);
-  if (next === aimed.zoom) return false;
+  if (next === aimed.zoom) return;
   if (at) {
     const centre = m.panned ? frameCentre(m.bounds, width, height, aimed.zoom, m.panned) : camera;
     m.panned = pinchCentre(m.bounds, width, height, aimed.zoom, next, centre, at, at);
   }
   m.chosen = next;
-  return true;
 }
 
 /** The wheel, or a pinch on a trackpad, zooms round the pointer, and the page doesn't scroll under the map. */
@@ -62,8 +60,12 @@ function onZoomKey(m: MapRun, event: KeyboardEvent) {
 /** Listens for the zoom buttons, the wheel and the keys. Returns what stops listening. */
 export function listenForZoom(m: MapRun) {
   const { nearer, farther } = m.zoomButtons;
-  const zoomIn = () => zoomAround(m, ZOOM_STEP);
-  const zoomOut = () => zoomAround(m, 1 / ZOOM_STEP);
+  const zoomIn = () => {
+    zoomAround(m, ZOOM_STEP);
+  };
+  const zoomOut = () => {
+    zoomAround(m, 1 / ZOOM_STEP);
+  };
   const wheel = (event: WheelEvent) => {
     onWheel(m, event);
   };

@@ -49,6 +49,7 @@ function ridges(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = colors.snowShade;
     ctx.globalAlpha = 0.7;
     peaks.forEach((peak, n) => {
+      // Stryker disable next-line EqualityOperator: no two neighbouring peaks are the same height
       if (peak < (peaks[n - 1] ?? 0) || peak < (peaks[n + 1] ?? 0)) return;
       const x = n * step;
       const y = base - peak;

@@ -116,7 +116,8 @@ function followNames(
 /** Highlights the entries of the map's picked square, and no others. */
 function showSelected(panel: HTMLElement, next: { kind: SquareKind; id: string } | undefined) {
   for (const button of panel.querySelectorAll<HTMLButtonElement>('.hud-go')) {
-    const on = next?.kind === button.dataset.kind && next?.id === button.dataset.id;
+    const on =
+      next !== undefined && next.kind === button.dataset.kind && next.id === button.dataset.id;
     button.classList.toggle('selected', on);
     button.setAttribute('aria-pressed', `${on}`);
   }

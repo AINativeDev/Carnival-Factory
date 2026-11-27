@@ -23,6 +23,7 @@ export function loadMemory(): PanelMemory {
     const { me, closed } = readState(localStorage.getItem(STORAGE_KEY));
     return { me, closed };
   } catch {
+    // Stryker disable next-line ArrayDeclaration: no section is called by a mutant's text, so every one stays open alike
     return { me: undefined, closed: [] };
   }
 }

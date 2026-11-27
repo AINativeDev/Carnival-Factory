@@ -69,6 +69,7 @@ export function recentlyAdded<T extends PanelEntry>(
   added: Readonly<Record<string, string>>,
   count = RECENT_COUNT,
 ): T[] {
+  // Stryker disable next-line StringLiteral: no date and any text that isn't one both parse as no time
   const when = (booth: T) => Date.parse(added[booth.id.toLowerCase()] ?? '');
   return booths
     .filter((booth) => !Number.isNaN(when(booth)))

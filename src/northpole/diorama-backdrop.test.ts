@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { drawingOf } from '../test-support/recording-canvas';
+import { drawingOf, fingerprint } from '../test-support/recording-canvas';
 import { backdropAndSlab } from './diorama-backdrop';
 
 /** A stand-in for a worker's OffscreenCanvas whose 2D context is `context`. */
@@ -9,8 +9,8 @@ function offscreenWith(context: unknown) {
     constructor(...size: number[]) {
       made.push(size);
     }
-    getContext() {
-      return context;
+    getContext(type: string) {
+      return type === '2d' ? context : null;
     }
   }
   vi.stubGlobal('OffscreenCanvas', FakeOffscreenCanvas);
@@ -44,5 +44,53 @@ describe('the backdrop and slab in a worker', () => {
     });
     expect(calls.some(([name]) => name === 'drawImage')).toBe(false);
     expect(calls.length).toBeGreaterThan(100);
+  });
+
+  it('scales the copy to its size, draws the backdrop and slab on it, and copies it to fill the square', () => {
+    let kept: unknown[] = [];
+    const recorded = drawingOf((layered) => {
+      const made = offscreenWith(layered);
+      const frames = [500, 500, 250].map((size) =>
+        drawingOf((ctx) => {
+          backdropAndSlab(ctx, size);
+        }),
+      );
+      expect(made).toEqual([
+        [500, 500],
+        [250, 250],
+      ]);
+      kept = frames.map((calls) => calls.map(([name, , ...rest]) => [name, ...rest]));
+    });
+    expect(kept).toEqual([
+      [['drawImage', 0, 0, 100, 100]],
+      [['drawImage', 0, 0, 100, 100]],
+      [['drawImage', 0, 0, 100, 100]],
+    ]);
+    const scales = recorded.filter(([name]) => name === 'scale');
+    expect(scales).toEqual([
+      ['scale', 5, 5],
+      ['scale', 2.5, 2.5],
+    ]);
+    const straight = drawingOf((ctx) => {
+      vi.stubGlobal('OffscreenCanvas', undefined);
+      backdropAndSlab(ctx, 500);
+    });
+    const once = recorded.slice(
+      1,
+      recorded.findIndex(([name], n) => n > 0 && name === 'scale'),
+    );
+    expect(once).toEqual(straight);
+  });
+});
+
+describe('the backdrop and slab, as a worker first loads them', () => {
+  it('draw the same sky, stars, ridges, hills and drifts', async () => {
+    vi.stubGlobal('OffscreenCanvas', undefined);
+    vi.resetModules();
+    const fresh = await import('./diorama-backdrop');
+    const calls = drawingOf((ctx) => {
+      fresh.backdropAndSlab(ctx, 240);
+    });
+    expect(fingerprint(calls)).toMatchInlineSnapshot(`"454d973de0e9a9c7 (200 calls)"`);
   });
 });

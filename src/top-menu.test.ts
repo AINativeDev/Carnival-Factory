@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { the as find } from './dom';
 import { startTopMenu } from './top-menu';
 
@@ -33,6 +33,7 @@ beforeEach(() => {
 
 afterEach(() => {
   stop?.();
+  vi.restoreAllMocks();
 });
 
 describe('the top bar menu', () => {
@@ -120,5 +121,30 @@ describe('the top bar menu', () => {
     stop?.();
     stop = undefined;
     expect(document.querySelector('.top-menu')).toBeNull();
+  });
+
+  it('moves focus without scrolling the page, and stays open for a click inside it', () => {
+    page('#/');
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    toggle().click();
+    the('.top-menu').click();
+    expect(toggle().getAttribute('aria-expanded')).toBe('true');
+    key(item('map'), 'Escape');
+    item('booths').click();
+    expect(focus.mock.calls).toEqual([
+      [{ preventScroll: true }],
+      [{ preventScroll: true }],
+      [{ preventScroll: true }],
+    ]);
+  });
+
+  it('stops marking the current place once stopped', () => {
+    page('#/');
+    const map = item('map');
+    stop?.();
+    stop = undefined;
+    history.replaceState(null, '', '#/factory');
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    expect(map.getAttribute('aria-current')).toBe('page');
   });
 });

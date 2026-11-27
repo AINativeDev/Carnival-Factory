@@ -66,4 +66,21 @@ describe('showYearAnswers', () => {
     showYearAnswers(description(), 'guest-sofa', 'the-year-in-review', ANSWERS);
     expect(document.querySelectorAll('.year-answers')).toHaveLength(0);
   });
+
+  it('marks up each answer as one quiet list, after the description', () => {
+    showYearAnswers(description(), OWN_QUESTIONS, 'the-year-in-review', ANSWERS);
+    showYearAnswers(description(), 'finally-fixed', 'the-year-in-review', ANSWERS);
+    expect(document.body.innerHTML).toBe(
+      '<section><p class="visit-description"></p><section class="year-answers">' +
+        '<h3 class="visit-eyebrow">Your answers</h3>' +
+        `<p class="year-answers-empty">${NO_ANSWERS}</p></section></section>`,
+    );
+    showYearAnswers(description(), OWN_QUESTIONS, 'the-year-in-review', ANSWERS);
+    expect(document.querySelector('.year-answers')?.outerHTML).toBe(
+      '<section class="year-answers"><h3 class="visit-eyebrow">Your questions, and your answers</h3>' +
+        '<ol class="year-answer-list"><li class="year-answer">' +
+        '<p class="year-answer-question">Cocoa?</p><p class="year-answer-text">Marshmallows.</p>' +
+        '<p class="year-answer-by">— @elf-one</p></li></ol></section>',
+    );
+  });
 });

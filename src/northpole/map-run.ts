@@ -59,6 +59,7 @@ export function openRun(
     reduced: window.matchMedia('(prefers-reduced-motion: reduce)'),
     island,
     bounds: islandBounds(world),
+    // Stryker disable next-line ObjectLiteral: placed again below, before anything reads it
     player: { ...world.start },
     path: [],
     facing: 1,

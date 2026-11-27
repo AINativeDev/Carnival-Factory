@@ -103,3 +103,35 @@ describe("the Booths panel's / key", () => {
     expect(press(document.body, '/').defaultPrevented).toBe(false);
   });
 });
+
+describe("the Booths panel's keys and the map's", () => {
+  it('keeps the arrow keys and Esc it uses from the map, and passes the rest on', () => {
+    const { input, entry } = searching('a');
+    const heard: string[] = [];
+    const listen = (event: KeyboardEvent) => heard.push(event.key);
+    window.addEventListener('keydown', listen);
+    try {
+      press(input, 'ArrowDown');
+      press(document.activeElement ?? input, 'ArrowUp');
+      press(input, 'Escape');
+      press(entry('.hud-all', 'ana'), 'Escape');
+      press(input, 'q');
+      press(entry('.hud-all', 'ana').nextElementSibling ?? input, 'Escape');
+    } finally {
+      window.removeEventListener('keydown', listen);
+    }
+    expect(heard).toEqual(['q', 'Escape']);
+  });
+
+  it('leaves / to a text area or a list being typed in', () => {
+    openPanel();
+    for (const tag of ['textarea', 'select', 'input']) {
+      const field = document.createElement(tag);
+      document.body.append(field);
+      expect(press(field, '/').defaultPrevented, tag).toBe(false);
+    }
+    const label = document.createElement('label');
+    document.body.append(label);
+    expect(press(label, '/').defaultPrevented).toBe(true);
+  });
+});

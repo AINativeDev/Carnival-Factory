@@ -15,6 +15,7 @@ import { drawSpot } from './render';
 import { LANDMARKS, type Landmark, type NorthPoleSquare, type StallStyle } from './square';
 import { drawStall } from './stall';
 import { PAVILION } from './stall-plan';
+import { drawTower } from './tower';
 import type { Spot } from './world';
 
 const TIMES = [0, 4321];
@@ -88,6 +89,11 @@ describe('the landmarks', () => {
       LANDMARK_DRAWERS.tower(ctx, left, square(), () => undefined, 0);
     });
     expect(calls.filter(([name]) => name === 'fillText').length).toBeGreaterThan(0);
+    expect(calls).toEqual(
+      drawingOf((ctx) => {
+        drawTower(ctx, left, square(), () => undefined, 0, '');
+      }),
+    );
   });
 
   it('is an attraction’s alone: a booth asking for one stands as its stall', () => {

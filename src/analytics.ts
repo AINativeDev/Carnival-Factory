@@ -24,7 +24,9 @@ export interface AnalyticsConfig {
 /** The PostHog project to send to, or undefined (off) unless both are set. */
 export function analyticsConfig(env: Record<string, string | undefined>) {
   const key = env.VITE_POSTHOG_KEY ?? '';
-  const host = (env.VITE_POSTHOG_HOST ?? '').replace(/\/+$/, '');
+  // Stryker disable next-line StringLiteral: no host and any text that isn't an https address are both off
+  const given = env.VITE_POSTHOG_HOST ?? '';
+  const host = given.replace(/\/+$/, '');
   if (!key || !host.startsWith('https://')) return undefined;
   return { key, host } satisfies AnalyticsConfig;
 }
@@ -83,10 +85,12 @@ export function startAnalytics(
   });
   page.addEventListener('click', ({ target }) => {
     const event = target ? clickEvent(target as Clicked) : undefined;
+    // Stryker disable next-line ConditionalExpression: tracking no event throws before it sends, and track swallows that
     if (event) track(event);
   });
   page.addEventListener(INTRO_EVENT, ({ detail }) => {
     const event = introEvent(detail);
+    // Stryker disable next-line ConditionalExpression: tracking no event throws before it sends, and track swallows that
     if (event) track(event);
   });
 }
