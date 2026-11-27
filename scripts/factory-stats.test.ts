@@ -54,6 +54,11 @@ describe('labelledAt', () => {
     expect(labelledAt(request)).toBe('2026-11-20T09:30:00Z');
     expect(labelledAt(request, 'declined')).toBeUndefined();
     expect(labelledAt({ ...request, timelineItems: undefined })).toBeUndefined();
+    const withOtherEvents = {
+      ...request,
+      timelineItems: { nodes: [{ createdAt: '2026-11-19T09:00:00Z', label: null }] },
+    };
+    expect(labelledAt(withOtherEvents)).toBeUndefined();
   });
 });
 
@@ -89,6 +94,20 @@ describe('minutesToMap', () => {
       ],
     );
     expect(minutes.sort((a, b) => a - b)).toEqual([15, 42]);
+  });
+
+  it('counts a merge from the moment of acceptance, and none before it', () => {
+    const accepted = (number: number) =>
+      issue(number, ['booth-request', 'tessl'], [['tessl', '2026-11-20T09:00:00Z']]);
+    const minutes = minutesToMap(
+      [accepted(1), accepted(2)],
+      [
+        pull(10, 'tessl/issue-1', { mergedAt: '2026-11-20T09:00:00Z' }),
+        pull(11, 'tessl/issue-2', { mergedAt: '2026-11-20T08:00:00Z' }),
+        pull(12, 'tessl/issue-2', { mergedAt: '2026-11-20T10:00:00Z' }),
+      ],
+    );
+    expect(minutes).toEqual([0, 60]);
   });
 });
 
@@ -146,6 +165,15 @@ describe('factoryStats', () => {
       Object.entries(pull(10, 'tessl/issue-1')).filter(([key]) => key !== 'labels'),
     ) as RawPull;
     expect(factoryStats(issues, [unlabelled], 'now')).toMatchObject({ merged: 1, autoMerged: 0 });
+  });
+
+  it('counts a request the factory built as accepted, and only auto-merged labels', () => {
+    const stats = factoryStats(
+      [issue(1, ['booth-request']), issue(2, ['booth-request']), issue(3, ['booth-request'])],
+      [pull(10, 'tessl/issue-1', { labels: { nodes: [{ name: 'tessl' }] } })],
+      'now',
+    );
+    expect(stats).toMatchObject({ requests: 3, accepted: 1, autoMerged: 0 });
   });
 
   it('leaves out the time to the map when no request has merged', () => {

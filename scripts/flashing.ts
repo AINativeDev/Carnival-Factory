@@ -21,6 +21,7 @@ export interface Sample {
 export function luminance(r: number, g: number, b: number): number {
   const linear = (c: number) => {
     const v = c / 255;
+    // Stryker disable next-line EqualityOperator: the two curves meet at 0.04045, so either side gives the same there.
     return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
   };
   return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
@@ -53,8 +54,10 @@ export function flashTimes(samples: readonly Sample[]): number[] {
 export function maxFlashesPerSecond(samples: readonly Sample[]): number {
   const times = flashTimes(samples);
   let most = 0;
+  // Stryker disable next-line EqualityOperator: one more turn, past the last flash, counts none.
   for (let i = 0; i < times.length; i++) {
     let j = i;
+    // Stryker disable next-line ConditionalExpression,EqualityOperator: past the end the time is undefined, and NaN stops the loop there too.
     while (j < times.length && times[j] - times[i] < 1000) j++;
     most = Math.max(most, j - i);
   }

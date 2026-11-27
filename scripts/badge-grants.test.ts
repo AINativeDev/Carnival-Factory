@@ -95,4 +95,34 @@ describe('badgeHolders', () => {
       badgeHolders([record(1, 'octocat', [grant], ['badge-request', 'badge-granted', 'declined'])]),
     ).toEqual([]);
   });
+
+  it('goes by the time of each decision, not the order the comments come in', () => {
+    const grant = {
+      user: app,
+      body: grantMarker('octocat/workshop', 'gold'),
+      created_at: '2026-12-04T00:00:00Z',
+    };
+    const decline = {
+      user: app,
+      body: `\n  ${ASSESSMENT_MARKER}\nThanks for asking.`,
+      created_at: '2026-12-03T00:00:00Z',
+    };
+    expect(badgeHolders([record(1, 'octocat', [grant, decline])])).toEqual([
+      { login: 'octocat', repo: 'octocat/workshop', tier: 'gold' },
+    ]);
+    const laterDecline = { ...decline, created_at: '2026-12-05T00:00:00Z' };
+    expect(badgeHolders([record(1, 'octocat', [grant, laterDecline])])).toEqual([]);
+  });
+
+  it('passes over later comments that decide nothing', () => {
+    const grant = { user: app, body: grantMarker('elf/toys'), created_at: '2026-12-04T00:00:00Z' };
+    const later = '2026-12-05T00:00:00Z';
+    const chatter = [
+      { user: app, body: 'The deploy is running.', created_at: later },
+      { user: { login: 'elf', type: 'User' }, body: 'Thanks!', created_at: later },
+    ];
+    expect(badgeHolders([record(1, 'elf', [grant, ...chatter])])).toEqual([
+      { login: 'elf', repo: 'elf/toys' },
+    ]);
+  });
 });

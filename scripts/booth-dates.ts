@@ -38,6 +38,7 @@ export function readBoothAddedDates(root: string): Record<string, string> {
         'carnival/booths/*/booth.ts',
         'booths/*/booth.ts',
       ],
+      // Stryker disable next-line ArrayDeclaration,StringLiteral: where git's input and errors go never changes the log it writes.
       { cwd: root, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 16 * 1024 * 1024 },
     ).toString();
     return boothAddedDates(log);

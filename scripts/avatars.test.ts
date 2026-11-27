@@ -26,6 +26,16 @@ describe('build-time avatars', () => {
     expect(isAvatar(new TextEncoder().encode('GIx------'))).toBe(false);
     expect(isAvatar(new Uint8Array([0xff, 0xd8, 0, 0, 0, 0, 0, 0]))).toBe(false);
     expect(isAvatar(new TextEncoder().encode('<html>not found</html>'))).toBe(false);
+    const bytes = (...start: number[]) => new Uint8Array([...start, 0, 0, 0, 0, 0, 0]);
+    expect(isAvatar(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0]))).toBe(false);
+    for (const wrong of [bytes(0, 0xd8, 0xff), bytes(0xff, 0, 0xff), bytes(0, 0x49, 0x46)])
+      expect(isAvatar(wrong)).toBe(false);
+    expect(isAvatar(bytes(0x47, 0, 0x46))).toBe(false);
+    // Too short to be an image, whatever it starts with.
+    expect(isAvatar(new Uint8Array([0xff, 0xd8, 0xff, 0, 0, 0, 0]))).toBe(false);
+    const largest = new Uint8Array(AVATAR_MAX_BYTES);
+    largest.set(jpeg);
+    expect(isAvatar(largest)).toBe(true);
     const huge = new Uint8Array(AVATAR_MAX_BYTES + 1);
     huge.set(png);
     expect(isAvatar(huge)).toBe(false);

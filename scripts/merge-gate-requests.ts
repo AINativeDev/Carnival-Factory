@@ -15,6 +15,7 @@ export async function boothRequest(
   repository: string,
   pull: Pull,
 ): Promise<Issue | undefined> {
+  // Stryker disable next-line StringLiteral: any plain stand-in for no body links no issue.
   const number = linkedIssue(pull.body ?? '', repository);
   if (!number) return undefined;
   const issue = await get<Issue>(github, `issues/${String(number)}`);

@@ -23,7 +23,7 @@ const LOGIN = /^[a-z0-9](?:[a-z0-9-]{0,38})$/;
 /** `booth/<login>` when every changed file is inside that one booth's folder; otherwise undefined. */
 export function smokeScope(files: readonly string[]): string | undefined {
   const changed = files.map((file) => file.trim()).filter(Boolean);
-  if (changed.length === 0) return undefined;
+  // With nothing changed there is no owner, and so no one booth to play.
   const owners = new Set<string>();
   for (const file of changed) {
     const [top, kind, owner, ...rest] = file.split('/');

@@ -32,6 +32,7 @@ export async function toIstanbul(
     code: script.source,
     ...(sourceMap ? { sourceMap } : {}),
     // Vite's parser returns the same ESTree program the converter reads, under another type name.
+    // Stryker disable next-line StringLiteral: the name only tells the parser the language, and plain JavaScript is its default.
     ast: parse('bundle.js', script.source).then(({ program }) => program as never),
     coverage: { url: script.url, functions: script.functions },
   });
@@ -78,6 +79,7 @@ export function combinedLines(runs: CoverageMapData[]): LineCoverage {
 
 /** Where a script the preview server served was built, so its source map is found beside it. */
 export const builtFile = (root: string, url: string) =>
+  // Stryker disable next-line Regex: a pathname starts with its slashes, and join drops any it keeps.
   join(root, 'dist', new URL(url).pathname.replace(/^\/+/, ''));
 
 /** Only the map's own code counts: never a dependency the bundle carries along. */

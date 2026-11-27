@@ -58,6 +58,7 @@ export function entryBody(
   site: string | undefined,
 ): string {
   const who = safeInline(`@${login}`, 60);
+  // Stryker disable next-line StringLiteral: the path is only used when there is a repository.
   const path = (repo ?? '').split('/').map(encodeURIComponent).join('/');
   const [title, link, vote] =
     category === 'booth'

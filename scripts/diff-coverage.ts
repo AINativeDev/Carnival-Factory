@@ -33,7 +33,7 @@ export function addedLines(diff: string): Map<string, Set<number>> {
   const added = new Map<string, Set<number>>();
   let lines: Set<number> | undefined;
   for (const line of diff.split('\n')) {
-    const file = line.match(/^\+\+\+ b\/(.+)$/);
+    const file = line.match(/^\+\+\+ b\/(.+)/);
     if (file) {
       lines = new Set();
       added.set(file[1], lines);
@@ -70,7 +70,7 @@ export function diffCoverage(
 ): DiffCoverage {
   const result: DiffCoverage = { total: 0, covered: 0, missing: [] };
   for (const [file, lines] of added) {
-    if (!isGated(file) || lines.size === 0) continue;
+    if (!isGated(file)) continue;
     const data = coverage[file];
     for (const line of [...lines].sort((a, b) => a - b)) {
       const statements = data
@@ -99,12 +99,13 @@ export function diffBranchCoverage(
   const result: DiffCoverage = { total: 0, covered: 0, missing: [] };
   for (const [file, lines] of added) {
     const data = coverage[file];
-    if (!isGated(file) || !data?.branchMap || !data.b) continue;
+    const hits = data?.b;
+    if (!isGated(file) || !data?.branchMap || !hits) continue;
     for (const [id, branch] of Object.entries(data.branchMap)) {
       branch.locations.forEach((arm, index) => {
         if (!lines.has(arm.start.line)) return;
         result.total++;
-        if ((data.b?.[id]?.at(index) ?? 0) > 0) result.covered++;
+        if ((hits[id]?.at(index) ?? 0) > 0) result.covered++;
         else result.missing.push(`${file}:${arm.start.line} (a branch no test took)`);
       });
     }

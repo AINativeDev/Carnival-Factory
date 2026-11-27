@@ -17,28 +17,27 @@ import { readSquare, squareFolders } from './craft/check-square.ts';
 import { readSquareInfo } from './share-pages.ts';
 
 const readIfThere = (file: string | undefined): unknown =>
+  // Stryker disable next-line StringLiteral: JSON.parse reads a Buffer as UTF-8 text just the same.
   file && existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : undefined;
 
 /** The Elf Engineer badge holders, from the accepted badge requests (scripts/badge-holders.ts). */
 export function badgeHolders(file: string | undefined) {
-  const data = readIfThere(file);
-  return data === undefined ? [] : cleanHolders(data);
+  // With no file there's nothing to clean, and cleaning nothing gives no holders.
+  return cleanHolders(readIfThere(file));
 }
 
 /** How many advent challenges each participant has had accepted (scripts/write-advent.ts). */
 export function adventCounts(file: string | undefined) {
-  const data = readIfThere(file);
-  return data === undefined ? {} : cleanCounts(data);
+  return cleanCounts(readIfThere(file));
 }
 
 /** The People's Choice standings, without switched-off booths (scripts/write-peoples-choice.ts). */
 export function peoplesChoice(file: string | undefined, root: string) {
-  const data = readIfThere(file);
-  if (data === undefined) return undefined;
+  // With no file, cleanChoice finds no ballot and gives undefined.
   const disabled = JSON.parse(readFileSync(join(root, 'src/northpole/disabled.json'), 'utf8')) as {
     booths: string[];
   };
-  return cleanChoice(data, disabled.booths, REPO_URL);
+  return cleanChoice(readIfThere(file), disabled.booths, REPO_URL);
 }
 
 /** The Year in Review's accepted answers, cleaned again as the page cleans them (scripts/write-year-in-review.ts). */
@@ -66,10 +65,12 @@ export function squareCraft(root: string): Record<string, string[]> {
   const craft: Record<string, string[]> = {};
   for (const folder of squareFolders(root)) {
     // squareFolders gives only these three shapes of folder, so the key is a rename of it.
+    // Stryker disable Regex: every folder starts with carnival/, so no anchor can change a key.
     const key = folder
       .replace(/^carnival\/levels\/([^/]+)\/squares\//, 'level/$1/')
       .replace(/^carnival\/booths\//, 'booth/')
       .replace(/^carnival\/attractions\//, 'attraction/');
+    // Stryker restore Regex
     craft[key] = craftOf(readSquare(join(root, folder))).badges;
   }
   return craft;

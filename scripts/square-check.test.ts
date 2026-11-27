@@ -28,6 +28,12 @@ describe('checkScope', () => {
       expect(checkScope(files), files.join(' ')).toBeUndefined();
   });
 
+  it('reads each name without the space around it, and needs a file inside a folder', () => {
+    expect(checkScope(['  carnival/booths/ana/booth.ts  '])).toBe('booth/ana');
+    expect(checkScope(['north/booths/ana/booth.ts'])).toBeUndefined();
+    expect(checkScope(['carnival/booths/ana'])).toBeUndefined();
+  });
+
   it("prints the scope for git diff's list, or nothing for the full check", () => {
     expect(scopeOutput('carnival/levels/ana/level.ts\n')).toBe('level/ana\n');
     expect(scopeOutput('eslint.config.js\n')).toBe('');
@@ -62,8 +68,30 @@ describe('checkCommands', () => {
   });
 
   it('refuses a scope that is not one booth or level', () => {
-    expect(() => checkCommands('src/main')).toThrow();
-    expect(() => checkCommands('booth/../src')).toThrow();
+    for (const scope of [
+      'src/main',
+      'booth/../src',
+      'booth',
+      'booth/Ana',
+      'level/ana/x',
+      'constructor/ana',
+    ])
+      expect(() => checkCommands(scope), scope).toThrow(
+        `Not one booth's or level's folder: ${scope}`,
+      );
+  });
+
+  it('is these commands, in this order, for a booth', () => {
+    expect(checkCommands('booth/ana').map((command) => command.join(' '))).toEqual([
+      'npx eslint --config eslint.config.js --pass-on-unpruned-suppressions carnival/booths/ana',
+      'npx markdownlint-cli2 carnival/booths/ana/**/*.md',
+      'node scripts/check-json.ts',
+      'npx knip',
+      'npx prettier --check carnival/booths/ana',
+      'npx tsc --noEmit',
+      'node scripts/strict-types.ts',
+      'npx vitest run carnival/booths/ana src/northpole/booths.test.ts scripts/square-code.test.ts scripts/square-size.test.ts scripts/square-lint-reach.test.ts',
+    ]);
   });
 
   it('is what the full check does too: the one ESLint config, never one in a folder', () => {

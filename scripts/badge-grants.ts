@@ -13,8 +13,9 @@ export const grantMarker = (repo: string, tier?: BadgeTier) =>
 
 /** The grant a comment records, if it carries a well-formed marker. */
 export function readGrant(body: string): { repo: string; tier?: BadgeTier } | undefined {
-  const [, repo, tier] =
-    body.match(/<!-- elf-engineer-badge: ([^\s]+) (none|bronze|silver|gold) -->/) ?? [];
+  const match = body.match(/<!-- elf-engineer-badge: ([^\s]+) (none|bronze|silver|gold) -->/);
+  // Stryker disable next-line ArrayDeclaration: a made-up match with no groups names no repository either.
+  const [, repo, tier] = match ?? [];
   if (!repo || !isRepo(repo)) return undefined;
   return tier && tier !== 'none' ? { repo, tier: tier as BadgeTier } : { repo };
 }
@@ -36,6 +37,7 @@ export const ASSESSMENT_MARKER = '<!-- assess-badge-request -->';
  * labelled `declined`, is never published.
  */
 export function badgeHolders(records: readonly BadgeRequestRecord[]): BadgeHolder[] {
+  // Stryker disable next-line ArrayDeclaration: a made-up first grant has no holder, and cleaning drops it.
   const grants: { at: string; holder: BadgeHolder }[] = [];
   for (const { issue, comments } of records) {
     if (issue.labels?.some((label) => label.name === 'declined')) continue;
@@ -49,6 +51,7 @@ export function badgeHolders(records: readonly BadgeRequestRecord[]): BadgeHolde
       .sort((a, b) => a.created_at.localeCompare(b.created_at));
     const latest = decisions.at(-1);
     const grant = latest && readGrant(latest.body);
+    // Stryker disable next-line LogicalOperator: a decision with no grant gives a holder with no repository, which cleaning drops.
     if (latest && grant)
       grants.push({ at: latest.created_at, holder: { login: issue.user.login, ...grant } });
   }
