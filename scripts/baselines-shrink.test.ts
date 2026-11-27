@@ -29,7 +29,7 @@ describe('baselines only shrink', () => {
     ]);
   });
 
-  it('checks every baseline there is, and calls a new one a problem', () => {
+  it('checks every baseline there is, and lets a new one start as it is', () => {
     const now: Record<string, unknown> = {
       'lint/strict-types-baseline.json': { 'a.ts': 2 },
       'eslint-suppressions.json': { 'b.ts': { rule: { count: 1 } } },
@@ -37,7 +37,6 @@ describe('baselines only shrink', () => {
     const base: Record<string, unknown> = { 'lint/strict-types-baseline.json': { 'a.ts': 1 } };
     expect(problems({ now: (file) => now[file], atBase: (file) => base[file] })).toEqual([
       'lint/strict-types-baseline.json: a.ts: raised from 1 to 2',
-      'eslint-suppressions.json: a new baseline',
     ]);
   });
 
