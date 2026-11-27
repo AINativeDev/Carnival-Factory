@@ -58,7 +58,7 @@ describe('what falls short', () => {
 });
 
 describe('the files a change touched', () => {
-  it('are the code in src/, scripts/ and lint/, not tests, types or test support', () => {
+  it("are the code in src/, scripts/ and lint/, not tests, types or the tests' helpers", () => {
     expect(
       mutatedFiles([
         'src/route.ts',
@@ -67,6 +67,8 @@ describe('the files a change touched', () => {
         'src/route.test.ts',
         'src/env.d.ts',
         'src/test-support/map.ts',
+        'src/northpole/sandbox-fakes.ts',
+        'scripts/merge-gate-world.ts',
         'carnival/booths/ana/booth.ts',
         'docs/adr/0001.md',
         '',

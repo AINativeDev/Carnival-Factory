@@ -17,7 +17,15 @@ export default {
   plugins: ['@stryker-mutator/vitest-runner', './lint/stryker-ignore-glob.mjs'],
   ignorers: ['import-meta-glob'],
   vitest: { configFile: 'vitest.config.ts' },
-  mutate: ['{src,scripts,lint}/**/*.ts', '!**/*.test.ts', '!src/test-support/**', '!**/*.d.ts'],
+  mutate: [
+    '{src,scripts,lint}/**/*.ts',
+    '!**/*.test.ts',
+    '!**/*.d.ts',
+    // The tests' own helpers: what they fake is the tests' business, not the site's.
+    '!src/test-support/**',
+    '!src/northpole/sandbox-fakes.ts',
+    '!scripts/merge-gate-world.ts',
+  ],
   coverageAnalysis: 'perTest',
   // A change to a value set as a module loads needs every test run again: a
   // seventh of the mutants, but most of the time. Coverage still holds that code.

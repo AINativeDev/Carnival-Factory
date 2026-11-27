@@ -66,6 +66,8 @@ export function mutatedFiles(names: readonly string[]): string[] {
       /^(src|scripts|lint)\/.+\.ts$/.test(name) &&
       !name.endsWith('.test.ts') &&
       !name.endsWith('.d.ts') &&
-      !name.startsWith('src/test-support/'),
+      !name.startsWith('src/test-support/') &&
+      name !== 'src/northpole/sandbox-fakes.ts' &&
+      name !== 'scripts/merge-gate-world.ts',
   );
 }
