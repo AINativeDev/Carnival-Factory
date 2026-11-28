@@ -88,7 +88,11 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   `utm_campaign=christmas-edition` and `utm_medium=<the place's id>`, such as
   `the-studio`; the Year in Review's GitHub form is left as it is
   (`northPoleLinks` in `src/northpole/north-pole-links.ts`). The Factory's
-  panel has "Sign up for Tessl", and AI DevCon's room "Get tickets".
+  panel has "Sign up for Tessl" and the Academy's "Start the Academy", each
+  followed by the same ways on: "Ask for a booth", "Get AI DevCon tickets",
+  "Read the Tessl blog" and "Listen to the podcast"
+  ([ADR 0063](../adr/0063-factory-and-academy-explain.md)). AI DevCon's room
+  has "Get tickets".
 - AI DevCon is an attraction with no stall: the billboard by the road is its
   way in, and a click on it opens its room (`src/northpole/off-map.ts`).
 - The Gift shop shows the gifts of `plugins/north-pole-gifts/`: small factory

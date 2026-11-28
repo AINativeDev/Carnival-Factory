@@ -1,5 +1,7 @@
 import type { StallStyle } from './stall-style';
+export type { SquareKey } from './square-keys';
 import type { SquareAsk } from './square-ask';
+import type { SquareKey } from './square-keys';
 import { canvasFont, theme } from './theme';
 
 export {
@@ -23,7 +25,8 @@ export {
  * so nothing it draws can spill onto a neighbour. `time` is milliseconds since the page
  * loaded, for squares that animate. `pointer` is where the mouse or a finger is
  * over the square, for squares people can play with, or undefined when it isn't
- * over this square.
+ * over this square. `keys` are the arrows, Enter and Space pressed since the
+ * last frame while someone is inside it, in order (square-keys.ts).
  */
 export interface NorthPoleSquare {
   /**
@@ -36,7 +39,13 @@ export interface NorthPoleSquare {
   description: string;
   /** How its stall on the map looks. Leave it out for the usual market stall. */
   stall?: StallStyle;
-  draw(ctx: CanvasRenderingContext2D, size: number, time: number, pointer?: SquarePointer): void;
+  draw(
+    ctx: CanvasRenderingContext2D,
+    size: number,
+    time: number,
+    pointer?: SquarePointer,
+    keys?: readonly SquareKey[],
+  ): void;
   /** Asked after each frame: what the drawing asks of the page, such as a link to open (square-ask.ts). */
   ask?(): SquareAsk | undefined;
 }

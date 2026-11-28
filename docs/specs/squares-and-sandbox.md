@@ -6,22 +6,41 @@ page never runs a square's code: each runs in its own sandboxed frame and worker
 ## Behaviour
 
 - A square is a `NorthPoleSquare`: `id`, `name`, `description`, an optional
-  `stall`, and `draw(ctx, size, time, pointer?)`. It paints a `size` by `size`
+  `stall`, and `draw(ctx, size, time, pointer?, keys?)`. It paints a `size` by `size`
   square from the origin. `time` is milliseconds since the page loaded.
 - `pointer` is `{ x, y, down, presses }` while the mouse or a finger is over
   the square, in the square's own coordinates, and `undefined` otherwise.
   `presses` counts presses since the square's last frame. On the map the square
   under the pointer gets it, and a click still goes inside. Inside, the
   drawing fills the screen beside the panel and gets the pointer and taps.
+- `keys` lists the keys pressed since the square's last frame, in order, by
+  plain names: `left`, `right`, `up`, `down`, `enter` and `space`. The map
+  hears them only while the player is inside a square, where they no longer
+  walk the player or scroll the page; Enter on the panel's own buttons and
+  links stays theirs, and none carries over to the next square. At most 8 go
+  with a frame, the rest with the next, and the frame and the worker keep only
+  a list of those names (`readKeys` in `src/northpole/square-keys.ts`,
+  [ADR 0064](../adr/0064-keys-inside-a-square.md); enforced by:
+  src/northpole/square-keys.test.ts, src/northpole/map-input.test.ts,
+  src/northpole/sandbox-messages-edges.test.ts,
+  src/northpole/frame-protocol-draw.test.ts,
+  src/northpole/square-worker-draw.test.ts).
 - `ask()`, optional, is called after each frame: `{ open: n }` asks the page
   to open the square's `n`th link out, a whole number from 0 to 7, checked in
   the worker and again on the page (`readLinkAsk`). The page opens it only
   for a North Pole place with links (`northPoleLinks`) and only within 1.5
   seconds of a tap on the page, one tab a tap, so a booth, or a square asking
   on its own, opens nothing. What opens is the list's own copy of the address
-  (`allowedLinkOut`), so nothing from the page's address reaches a new tab (`src/visit-link-out.ts`; enforced by:
+  (`allowedLinkOut`), so nothing from the page's address reaches a new tab.
+  `{ visit: '<place id>' }` asks the page to go to another North Pole place,
+  an id of up to 40 lower-case letters, digits and dashes (`readVisitAsk`).
+  The page goes there under the same rules, and only to a place on its own
+  list, the Factory, the Academy, the Studio and AI DevCon
+  (`visitablePlace`), with the list's copy of the id, by `squareLink`
+  ([ADR 0063](../adr/0063-factory-and-academy-explain.md)). When an ask names
+  both, the link wins (`src/visit-link-out.ts`; enforced by:
   src/northpole/square-ask.test.ts, src/visit-link-out.test.ts,
-  src/northpole/square-worker.test.ts).
+  src/northpole/square-worker.test.ts, src/northpole/frame-protocol.test.ts).
 - `stall` is `{ shape, roof, trim?, landmark?, letters?, scene? }`: shape one of
   `STALL_SHAPES` (`stall`, `shed`, `tent`, `cabin`, `kiosk`, `igloo`,
   `gazebo`, `chalet`, `treehouse`, `windmill`, `lighthouse`, `food-truck`,

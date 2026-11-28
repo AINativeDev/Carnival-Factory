@@ -4,7 +4,7 @@
  * a loop can't freeze any other square. It has no DOM at all: it draws onto an
  * OffscreenCanvas and sends each frame to the frame as a bitmap.
  */
-import { readLinkAsk } from './square-ask';
+import { readAsk } from './square-ask';
 import { readDrawRequest, readFrameAddress, readStall } from './frame-protocol';
 import type { NorthPoleSquare } from './square';
 
@@ -64,7 +64,7 @@ addEventListener('message', (event: MessageEvent) => {
   }
   const request = readDrawRequest(event.data);
   if (!request || !square) return;
-  const { size, time, pointer } = request;
+  const { size, time, pointer, keys } = request;
   // A fresh size resets the canvas: its pixels, transform, clip and styles.
   if (!canvas || canvas.width !== size) canvas = new OffscreenCanvas(size, size);
   else canvas.width = size;
@@ -72,7 +72,7 @@ addEventListener('message', (event: MessageEvent) => {
   const start = performance.now();
   let ask: unknown;
   try {
-    square.draw(ctx, size, time, pointer);
+    square.draw(ctx, size, time, pointer, keys);
     ask = square.ask?.();
   } catch (error) {
     send({ type: 'error', message: String(error) });
@@ -80,8 +80,7 @@ addEventListener('message', (event: MessageEvent) => {
   }
   const drawMs = performance.now() - start;
   const bitmap = canvas.transferToImageBitmap();
-  const open = readLinkAsk(ask);
-  send({ type: 'frame', bitmap, drawMs, ...(open === undefined ? {} : { open }) }, [bitmap]);
+  send({ type: 'frame', bitmap, drawMs, ...readAsk(ask) }, [bitmap]);
 });
 
 // The worker's script has arrived and run: the frame starts timing from here.

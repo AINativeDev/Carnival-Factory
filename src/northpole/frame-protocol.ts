@@ -16,7 +16,8 @@ import {
   type StallStyle,
   type ThemeColor,
 } from './square';
-import { readLinkAsk } from './square-ask';
+import { readAsk, type SquareAsk } from './square-ask';
+import { readKeys, type SquareKey } from './square-keys';
 import { theme } from './theme';
 
 /** A booth, one of the North Pole's attractions, or one of a level's own squares. */
@@ -29,12 +30,14 @@ export interface DrawRequest {
   time: number;
   /** Where the pointer is over the square, if it is. */
   pointer?: SquarePointer;
+  /** The keys pressed since the last frame, while someone is inside. */
+  keys?: SquareKey[];
 }
 
 /** What a frame may send back, once checked. */
 export type FrameMessage =
   | { type: 'ready'; name: string; description: string; stall?: StallStyle }
-  | { type: 'frame'; bitmap: ImageBitmap; drawMs: number; open?: number }
+  | ({ type: 'frame'; bitmap: ImageBitmap; drawMs: number } & SquareAsk)
   | { type: 'error'; message: string };
 
 /** The largest square a frame draws, in pixels a side. */
@@ -72,8 +75,7 @@ export function readFrameMessage(
       if (!isBitmap(bitmap)) return undefined;
       if (bitmap.width !== expectedSize || bitmap.height !== expectedSize) return undefined;
       const ms = typeof drawMs === 'number' && Number.isFinite(drawMs) ? Math.max(0, drawMs) : 0;
-      const open = readLinkAsk(message);
-      return { type: 'frame', bitmap, drawMs: ms, ...(open === undefined ? {} : { open }) };
+      return { type: 'frame', bitmap, drawMs: ms, ...readAsk(message) };
     }
     case 'error':
       return { type: 'error', message: text(message.message, 200) };
@@ -161,14 +163,15 @@ export function readPointer(value: unknown, size: number): SquarePointer | undef
  */
 export function readDrawRequest(data: unknown): DrawRequest | undefined {
   if (typeof data !== 'object' || data === null) return undefined;
-  const { type, size, time, pointer } = data as Record<string, unknown>;
+  const { type, size, time, pointer, keys } = data as Record<string, unknown>;
   if (type !== 'draw') return undefined;
   if (typeof size !== 'number' || !Number.isInteger(size) || size < 1 || size > MAX_SIZE) {
     return undefined;
   }
   if (typeof time !== 'number' || !Number.isFinite(time)) return undefined;
   const checked = readPointer(pointer, size);
-  return checked ? { type, size, time, pointer: checked } : { type, size, time };
+  const heard = readKeys(keys);
+  return { type, size, time, ...(checked && { pointer: checked }), ...(heard && { keys: heard }) };
 }
 
 /**

@@ -28,9 +28,13 @@ afterEach(() => {
 
 describe("a square's panel, for the North Pole's own levels (ADR 0038)", () => {
   it("links out of a landmark's room", () => {
-    expect(linksOf('the-academy')).toEqual([
+    const academy = linksOf('the-academy');
+    expect(academy[0]).toBe(
       'https://tessl.io/academy?utm_source=carnival-factory&utm_medium=the-academy&utm_campaign=christmas-edition',
-    ]);
+    );
+    // Then the ways on: a booth of your own, AI DevCon, the blog and the podcast (ADR 0063).
+    expect(academy).toHaveLength(5);
+    expect(academy[1]).toMatch(/\/issues\/new\?template=01-your-booth\.yml$/);
   });
 
   it("links out of a North Pole level's stalls", () => {

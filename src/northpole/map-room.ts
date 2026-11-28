@@ -61,7 +61,8 @@ export function drawInside(m: MapRun, spot: Spot, square: NorthPoleSquare, frame
   ctx.scale(stage.w / size, stage.h / size);
   const pointer = pressed &&
     onStage && { ...onStage, down: pressed.down, presses: pressed.presses };
-  drawSquare(ctx, m.scratch, square, 0, 0, size, time, pointer);
+  // The keys heard since the last frame go to the square once, in order.
+  drawSquare(ctx, m.scratch, square, 0, 0, size, time, pointer, m.keys.splice(0));
   ctx.restore();
   drawScene(square.stall?.scene, { ctx, width, height, stage, scratch: m.scratch, size });
   tintFrame(m.frame, m.scratch, size, started);

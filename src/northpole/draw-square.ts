@@ -4,7 +4,7 @@
  * code meets the map's canvas, and so the one place that must keep a broken
  * square from spilling onto its neighbours.
  */
-import type { NorthPoleSquare, SquarePointer } from './square';
+import type { NorthPoleSquare, SquareKey, SquarePointer } from './square';
 import { canvasFont, theme } from './theme';
 
 const { colors } = theme;
@@ -27,12 +27,13 @@ export function drawSquare(
   size: number,
   time: number,
   pointer?: SquarePointer,
+  keys?: readonly SquareKey[],
 ) {
   // Setting the size resets the scratch canvas: its pixels, transform, clip and styles.
   scratch.width = size;
   scratch.height = size;
   try {
-    booth.draw(scratch.getContext('2d') as CanvasRenderingContext2D, size, time, pointer);
+    booth.draw(scratch.getContext('2d') as CanvasRenderingContext2D, size, time, pointer, keys);
     // The booth can resize its canvas, so copy exactly its square onto exactly its
     // own square. A canvas it emptied makes drawImage throw, which shows the placeholder.
     ctx.drawImage(scratch, 0, 0, size, size, x, y, size, size);

@@ -141,6 +141,8 @@ function visit(m: MapRun, kind: string, id: string) {
   m.path = [];
   m.claiming = undefined;
   m.held.clear();
+  // Keys heard for the last square never reach this one.
+  m.keys.length = 0;
   backToCarnival(m);
   if (!m.visiting) m.fading = performance.now();
   m.visiting = spot;

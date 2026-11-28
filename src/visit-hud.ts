@@ -25,7 +25,7 @@ import { showYearAnswers } from './year-in-review-panel';
 import { focusBack } from './focus-back';
 import { fullScreenPill } from './visit-full-screen';
 import { showBoothLinks } from './visit-links';
-import { followLinkAsks } from './visit-link-out';
+import { followAsks } from './visit-link-out';
 
 export interface VisitHudOptions {
   /** A square's kind, or `level` for the panel beside a level's own map (level-panel.ts). */
@@ -144,7 +144,7 @@ export function openVisitHud(frame: HTMLElement, options: VisitHudOptions): Visi
   // The North Pole's own levels link out, to the Academy or the podcast, right under what they are.
   showLevelLinks($('.visit-description'), linksHome(kind, square.id, level));
   // A North Pole place's game opens its links from inside too.
-  const linkOut = followLinkAsks(frame, square, kind, square.id, level);
+  const linkOut = followAsks(frame, square, kind, square.id, level);
   if ('onReady' in square)
     (square as SandboxedSquare).onReady(() => {
       if (card.isConnected) show();

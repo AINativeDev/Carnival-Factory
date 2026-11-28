@@ -78,6 +78,17 @@ describe('readFrameMessage', () => {
     expect(read('fast')).toMatchObject({ drawMs: 0 });
   });
 
+  it("keeps a frame's ask for a link or a place only when it can read it", () => {
+    const read = (ask: object) =>
+      readFrameMessage({ type: 'frame', bitmap: bitmap(10), ...ask }, 10, isBitmap);
+    expect(read({ open: 1, visit: 'the-academy' })).toMatchObject({
+      open: 1,
+      visit: 'the-academy',
+    });
+    expect(read({ open: 'one', visit: 'The Academy' })).not.toHaveProperty('visit');
+    expect(read({ open: 'one' })).not.toHaveProperty('open');
+  });
+
   it('reads an error as text, capped', () => {
     expect(readFrameMessage({ type: 'error', message: 'boom' }, 160, isBitmap)).toEqual({
       type: 'error',

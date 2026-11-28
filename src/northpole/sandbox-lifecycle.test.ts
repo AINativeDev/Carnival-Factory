@@ -93,15 +93,15 @@ describe('the stand-in picture', () => {
   });
 });
 
-describe("the page's listeners for links out", () => {
+describe("the page's listeners for a drawing's asks", () => {
   it('stops only the listener that asked to stop, however often it asks', async () => {
     const { sandboxedSquare } = await sandbox();
     const square = sandboxedSquare('attraction', 'the-studio');
     const { canvas } = fakeContext();
     const first = vi.fn();
     const second = vi.fn();
-    const stopFirst = square.onLink(first);
-    square.onLink(second);
+    const stopFirst = square.onAsk(first);
+    square.onAsk(second);
     stopFirst();
     stopFirst();
     square.draw(canvas, 100, 0);
@@ -110,6 +110,6 @@ describe("the page's listeners for links out", () => {
     square.draw(canvas, 100, 0);
     frame.send({ type: 'frame', bitmap: bitmap(100), drawMs: 1, open: 1 });
     expect(first).not.toHaveBeenCalled();
-    expect(second).toHaveBeenCalledExactlyOnceWith(1);
+    expect(second).toHaveBeenCalledExactlyOnceWith({ open: 1 });
   });
 });

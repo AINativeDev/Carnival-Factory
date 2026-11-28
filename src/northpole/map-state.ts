@@ -8,6 +8,7 @@
  */
 import type { islandCorners } from './camera';
 import type { PointerTracker } from './map-pointer';
+import type { SquareKey } from './square-keys';
 import type { MapTag } from './map-tag';
 import type { ZoomButtons } from './map-zoom-buttons';
 import type { MapOptions, StationEntry } from './map-options';
@@ -99,6 +100,8 @@ interface MapState {
   targets: { spot: Spot; box: Box }[];
   /** The keys held down now, by name, and which way each walks on screen. */
   held: Map<string, [number, number]>;
+  /** The keys heard for the square the player is inside, since its last frame (square-keys.ts). */
+  keys: SquareKey[];
   /** In a ride level, where the coaster's car is, with the player in it (ADR 0041). */
   ride: Ride | undefined;
   /** The frame asked for next, and how long frames took, for the smoke test's budget. */

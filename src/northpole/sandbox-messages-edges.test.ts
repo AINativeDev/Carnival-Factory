@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bitmap, FakeBitmap } from './sandbox-fakes';
 import { askForFrame, hearFrame } from './sandbox-messages';
-import { newRun, type SquareRun } from './sandbox-run';
+import { forgetFrame, newRun, type SquareRun } from './sandbox-run';
 
 /**
  * The map's side of a frame's messages at their edges (sandbox-messages.ts),
@@ -83,11 +83,11 @@ describe("the page's listeners", () => {
     expect(heard).toHaveBeenCalledOnce();
   });
 
-  it('tells the link listeners nothing for a frame that asks for no link', () => {
+  it('tells the ask listeners nothing for a frame that asks for nothing', () => {
     const run = readyRun();
     run.waitingFor = 100;
     const heard = vi.fn();
-    run.linkListeners.push(heard);
+    run.askListeners.push(heard);
     hearFrame(run, frameElement().iframe, { type: 'frame', bitmap: bitmap(100), drawMs: 1 });
     expect(heard).not.toHaveBeenCalled();
   });
@@ -119,6 +119,57 @@ describe('asking a frame for its next picture', () => {
     askForFrame(run, iframe, 100, 2, { x: 1, y: 1, down: false, presses: 0 });
     expect(postMessage).toHaveBeenLastCalledWith(
       { type: 'draw', size: 100, time: 2, pointer: { x: 1, y: 1, down: false, presses: 2 } },
+      '*',
+    );
+  });
+
+  it('sends the keys heard once, in order, keeping those heard while the frame was busy', () => {
+    const run = readyRun();
+    const { iframe, postMessage } = frameElement();
+    askForFrame(run, iframe, 100, 0, undefined, ['right']);
+    expect(postMessage).toHaveBeenLastCalledWith(
+      { type: 'draw', size: 100, time: 0, keys: ['right'] },
+      '*',
+    );
+    askForFrame(run, iframe, 100, 1, undefined, ['left', 'space']);
+    run.waitingFor = undefined;
+    askForFrame(run, iframe, 100, 2);
+    expect(postMessage).toHaveBeenLastCalledWith(
+      { type: 'draw', size: 100, time: 2, keys: ['left', 'space'] },
+      '*',
+    );
+    run.waitingFor = undefined;
+    askForFrame(run, iframe, 100, 3);
+    expect(postMessage).toHaveBeenLastCalledWith({ type: 'draw', size: 100, time: 3 }, '*');
+  });
+
+  it('forgets the keys owed to a frame that was let go', () => {
+    const run = readyRun();
+    run.waitingFor = 100;
+    askForFrame(run, frameElement().iframe, 100, 0, undefined, ['right']);
+    forgetFrame(run);
+    expect(run.owedKeys).toEqual([]);
+  });
+
+  it('sends at most eight keys a frame, and the rest with the next', () => {
+    const run = readyRun();
+    const { iframe, postMessage } = frameElement();
+    askForFrame(
+      run,
+      iframe,
+      100,
+      0,
+      undefined,
+      Array.from({ length: 10 }, () => 'up' as const),
+    );
+    expect(postMessage).toHaveBeenLastCalledWith(
+      { type: 'draw', size: 100, time: 0, keys: Array.from({ length: 8 }, () => 'up') },
+      '*',
+    );
+    run.waitingFor = undefined;
+    askForFrame(run, iframe, 100, 1);
+    expect(postMessage).toHaveBeenLastCalledWith(
+      { type: 'draw', size: 100, time: 1, keys: ['up', 'up'] },
       '*',
     );
   });

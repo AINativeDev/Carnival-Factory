@@ -16,7 +16,8 @@ import { drawPlaceholder, openFrame } from './sandbox-frame';
 import { askForFrame, hearFrame } from './sandbox-messages';
 import { forgetFrame, newRun, setState, type SquareInfo } from './sandbox-run';
 import { startRunning, stopRunning, type LiveFrame } from './sandbox-schedule';
-import type { NorthPoleSquare, SquarePointer } from './square';
+import type { SquareAsk } from './square-ask';
+import type { NorthPoleSquare, SquareKey, SquarePointer } from './square';
 
 export { framesToRelease, IDLE_RELEASE_MS, MAX_LIVE_FRAMES } from './sandbox-schedule';
 
@@ -28,8 +29,8 @@ export interface SandboxedSquare extends NorthPoleSquare {
   readonly kind: SquareKind;
   /** Calls `listener` once the frame has said its name, at once if it already has. */
   onReady(listener: (info: SquareInfo) => void): void;
-  /** Calls `listener` whenever the drawing asks for one of its links out; the result stops listening. */
-  onLink(listener: (link: number) => void): () => void;
+  /** Calls `listener` whenever the drawing asks for a link out or a place; the result stops listening. */
+  onAsk(listener: (ask: SquareAsk) => void): () => void;
 }
 
 /**
@@ -88,21 +89,27 @@ export function sandboxedSquare(kind: SquareKind, id: string, level?: string): S
       if (run.state === 'ready') listener(run.info);
       else run.listeners.push(listener);
     },
-    onLink(listener: (link: number) => void) {
-      run.linkListeners.push(listener);
+    onAsk(listener: (ask: SquareAsk) => void) {
+      run.askListeners.push(listener);
       return () => {
-        const at = run.linkListeners.indexOf(listener);
-        if (at >= 0) run.linkListeners.splice(at, 1);
+        const at = run.askListeners.indexOf(listener);
+        if (at >= 0) run.askListeners.splice(at, 1);
       };
     },
-    draw(ctx: CanvasRenderingContext2D, size: number, time: number, pointer?: SquarePointer) {
+    draw(
+      ctx: CanvasRenderingContext2D,
+      size: number,
+      time: number,
+      pointer?: SquarePointer,
+      keys?: readonly SquareKey[],
+    ) {
       if (live) live.lastDrawn = performance.now();
       if (run.state === 'broken') {
         // Its frame already said why, once: draw the placeholder, quietly.
         drawPlaceholder(ctx, size, 'surface', 'Under construction');
         return;
       }
-      askForFrame(run, run.iframe ?? start(), size, time, pointer);
+      askForFrame(run, run.iframe ?? start(), size, time, pointer, keys);
       if (run.latest) ctx.drawImage(run.latest, 0, 0, size, size);
       else drawPlaceholder(ctx, size, 'snow', 'Opening…');
     },
