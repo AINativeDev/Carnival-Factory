@@ -42,16 +42,13 @@ jobs:
             npm run check
           fi
       # New and changed lines need 99% unit-test coverage (docs/adr/0025).
-      # The pull request's merge commit is compared with its base branch.
+      # The pull request's merge commit is compared with its own base (HEAD^1),
+      # as the Check step reads it: a newer main's lines aren't this change's.
       # A booth's or level's folder check changes no lines of src/, scripts/ or
       # lint/, and records no coverage, so there's nothing for this to measure.
       - name: Coverage of changed lines
         if: github.event_name == 'pull_request' && env.SQUARE_SCOPE == ''
-        env:
-          BASE: ${{ github.base_ref }}
-        run: |
-          git fetch --no-tags --depth=1 origin "$BASE"
-          node scripts/diff-coverage.ts "origin/$BASE"
+        run: node scripts/diff-coverage.ts HEAD^1
       # The code a pull request changes in src/, scripts/ and lint/ needs a
       # mutation score of 90%: its tests must catch most small changes to it,
       # not just run it (docs/adr/0061-mutation-testing.md).
@@ -60,16 +57,12 @@ jobs:
         # Against the merge commit's own base (HEAD^1), as the Check step reads it:
         # a newer main would count its own changes as this pull request's.
         run: node scripts/mutation-check.ts --changed HEAD^1
-      # Baselines only shrink: no debt added or raised (AGENTS.md).
+      # Baselines only shrink: no debt added or raised (AGENTS.md). Against the
+      # merge commit's own base (HEAD^1): a debt main lowered since this branched
+      # would otherwise look raised here.
       - name: Baselines only shrink
         if: github.event_name == 'pull_request'
-        env:
-          BASE: ${{ github.base_ref }}
-        # It fetches the base itself: the coverage step that also fetches it is
-        # skipped on a booth's or level's folder check.
-        run: |
-          git fetch --no-tags --depth=1 origin "$BASE"
-          node scripts/baselines-shrink.ts "origin/$BASE"
+        run: node scripts/baselines-shrink.ts HEAD^1
       - run: npm run build
 
   shell:

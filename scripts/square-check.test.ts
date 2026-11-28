@@ -112,9 +112,12 @@ describe('CI with a folder-scoped check', () => {
     expect(ci).toContain("if: github.event_name == 'pull_request' && env.SQUARE_SCOPE == ''");
   });
 
-  it('still fetches the base for the baselines check, which runs on every pull request', () => {
+  it('runs the baselines check on every pull request, against the base the checkout already has', () => {
     const step = ci.slice(ci.indexOf('- name: Baselines only shrink'));
     const run = step.slice(0, step.indexOf('\n      - '));
-    expect(run).toContain('git fetch --no-tags --depth=1 origin "$BASE"');
+    // HEAD^1, the merge commit's own base, is in the two commits the checkout fetches.
+    expect(run).toContain('node scripts/baselines-shrink.ts HEAD^1');
+    expect(run).not.toContain('SQUARE_SCOPE');
+    expect(ci).toContain('fetch-depth: 2');
   });
 });
