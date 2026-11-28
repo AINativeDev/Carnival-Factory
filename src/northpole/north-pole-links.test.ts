@@ -33,7 +33,7 @@ describe("the North Pole's own links out", () => {
       label: 'Start the Academy',
       href: 'https://tessl.io/academy?utm_source=carnival-factory&utm_medium=the-academy&utm_campaign=christmas-edition',
     });
-    expect(academy.slice(1)).toEqual(waysOn('the-academy'));
+    expect(academy.slice(1, 5)).toEqual(waysOn('the-academy'));
   });
 
   it("keeps the order the explainers' games ask by", () => {
@@ -41,7 +41,7 @@ describe("the North Pole's own links out", () => {
       expect(
         northPoleLinks(place)
           .map(({ label }) => label)
-          .slice(1),
+          .slice(1, 5),
       ).toEqual([
         'Ask for a booth',
         'Get AI DevCon tickets',
@@ -145,5 +145,41 @@ describe('the places a game may send a visitor on to', () => {
     }
     for (const place of ['ferris-wheel', 'the-year-in-review', 'jedi4ever', 'constructor', ''])
       expect(visitablePlace(place)).toBeUndefined();
+  });
+});
+
+describe("the Academy's pretend booths", () => {
+  const academy = () => northPoleLinks('the-academy');
+  const fields = (n: number) => new URL(academy().at(n)?.href ?? 'https://x.invalid').searchParams;
+
+  it('follow its five ways on, booth by booth, three looks each, kept off its panel', () => {
+    const ideas = academy().slice(5);
+    expect(ideas.map(({ label }) => label)).toEqual([
+      ...Array.from({ length: 3 }, () => 'Ask for a Penguin DJ'),
+      ...Array.from({ length: 3 }, () => 'Ask for a Cocoa volcano'),
+      ...Array.from({ length: 3 }, () => 'Ask for a Snowball cannon'),
+    ]);
+    for (const idea of ideas) {
+      expect(idea.panel).toBe(false);
+      expect(idea.href.startsWith(`${BOOTH_REQUEST_URL}&`)).toBe(true);
+      expect(allowedLinkOut(idea.href)).toBe(idea.href);
+    }
+    expect(
+      academy()
+        .slice(0, 5)
+        .some((link) => 'panel' in link),
+    ).toBe(false);
+  });
+
+  it('open the booth form filled in with the booth, its look and its name', () => {
+    expect(fields(5).get('template')).toBe('01-your-booth.yml');
+    expect(fields(5).get('title')).toBe('My booth: Penguin DJ');
+    expect(fields(5).get('name')).toBe('Penguin DJ');
+    expect(fields(5).get('what')).toMatch(
+      /^A penguin DJ .* diorama style\.\n\nStarted from my ticket in the Academy\. $/s,
+    );
+    expect(fields(9).get('what')).toContain('Drawn as pixel art.');
+    expect(fields(13).get('title')).toBe('My booth: Snowball cannon');
+    expect(fields(13).get('what')).toContain('Drawn as papercut, like layers of cut paper.');
   });
 });

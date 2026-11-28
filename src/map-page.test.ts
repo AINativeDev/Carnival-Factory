@@ -3,7 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderMap } from './map-page';
 import { switchFlags } from './test-support/feature-flags';
 import { whenNamed } from './map-page-markup';
-import { visit } from './page';
+import { NUDGE } from './nudge';
+import { closeCard, visit } from './page';
 import {
   lastHud,
   lastMap,
@@ -116,6 +117,26 @@ describe('renderMap', () => {
     expect(panel?.stop).toHaveBeenCalled();
     expect(pending.stop).toHaveBeenCalled();
     expect(page.panel).toBeUndefined();
+  });
+});
+
+describe('the nudge to build your own, on the map', () => {
+  it('walks the player to the nearest free spot from its Show me, after a booth enjoyed', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    localStorage.clear();
+    const page = newPage();
+    renderMap(page);
+    vi.advanceTimersByTime(NUDGE.settle);
+    visit(page, 'booth', 'ana', false);
+    vi.advanceTimersByTime(NUDGE.inside);
+    closeCard(page, false);
+    vi.advanceTimersByTime(NUDGE.delay);
+    page.app.querySelector<HTMLButtonElement>('.nudge-go')?.click();
+    expect(lastMap().claimNextDoor).toHaveBeenCalledOnce();
+    expect(document.activeElement).toBe(page.app.querySelector('canvas'));
+    page.stop?.();
+    expect(page.nudge).toBeUndefined();
+    vi.useRealTimers();
   });
 });
 

@@ -4,8 +4,8 @@ import { readAsk, readLinkAsk, readVisitAsk } from './square-ask';
 describe("a drawing's ask for a link out", () => {
   it('is a whole number of one of its links, and nothing else', () => {
     expect(readLinkAsk({ open: 0 })).toBe(0);
-    expect(readLinkAsk({ open: 7 })).toBe(7);
-    for (const open of [8, -1, 1.5, Number.NaN, '0', undefined])
+    expect(readLinkAsk({ open: 15 })).toBe(15);
+    for (const open of [16, -1, 1.5, Number.NaN, '0', undefined])
       expect(readLinkAsk({ open })).toBeUndefined();
     expect(readLinkAsk(undefined)).toBeUndefined();
     expect(readLinkAsk(null)).toBeUndefined();
@@ -38,7 +38,7 @@ describe("a drawing's whole ask", () => {
       open: 0,
       visit: 'the-studio',
     });
-    expect(readAsk({ open: 9, visit: '' })).toBeUndefined();
+    expect(readAsk({ open: 16, visit: '' })).toBeUndefined();
     expect(readAsk(undefined)).toBeUndefined();
   });
 });

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BUGS, bugPlace } from './bugs';
 import { advance, kindOf, LIVE_GUARD } from './journey';
 import { ACTION, BACK, type Box, CHOICES, LIVE_NEXT, SCENE } from './layout';
-import { BIG_NUDGES, QUIET_NUDGES } from './nudges';
+import { BIG_NUDGES, ideaLink, QUIET_NUDGES } from './nudges';
 import { IDLE_RESET, newVisit, type Visit } from './state';
 import { STEPS } from './steps';
 
@@ -136,7 +136,7 @@ describe('the nudges', () => {
     expect(play(live, on(BIG_NUDGES[0]?.box ?? NOWHERE), 10).ask).toBeUndefined();
     const asks = BIG_NUDGES.map((nudge) => play(live, on(nudge.box), LIVE_GUARD).ask);
     expect(asks).toEqual([
-      { open: 1 },
+      { open: 5 },
       { open: 0 },
       { visit: 'the-factory' },
       { open: 2 },
@@ -153,5 +153,15 @@ describe('the nudges', () => {
     ]);
     expect(BIG_NUDGES.at(0)?.label).toBe('Want a real one? Ask for a booth ↗');
     expect(BIG_NUDGES.find((n) => 'visit' in n.ask)?.label).toBe('Why a factory? →');
+  });
+
+  it("open the booth form filled in with the ticket's own booth in its own look", () => {
+    const hero = on(BIG_NUDGES[0]?.box ?? NOWHERE);
+    const ask = (booth: number, look: number) =>
+      play(visitAt('live', { at: 0, booth, look }), hero, LIVE_GUARD).ask;
+    expect(ask(0, 2)).toEqual({ open: 7 });
+    expect(ask(1, 0)).toEqual({ open: 8 });
+    expect(ask(2, 1)).toEqual({ open: 12 });
+    expect([ideaLink(0, 0), ideaLink(2, 2)]).toEqual([5, 13]);
   });
 });

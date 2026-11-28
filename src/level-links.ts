@@ -8,7 +8,8 @@ import { northPoleLinks } from './northpole/north-pole-links';
 
 /** Puts the links of `home`, if it's a North Pole level with any, right after `description`. */
 export function showLevelLinks(description: Element, home: string | undefined) {
-  const links = home ? northPoleLinks(home) : [];
+  // A link only the place's game opens, such as the Academy's pretend booths, stays off the panel.
+  const links = (home ? northPoleLinks(home) : []).filter((link) => link.panel !== false);
   if (!links.length) return;
   const row = document.createElement('p');
   row.className = 'level-links';

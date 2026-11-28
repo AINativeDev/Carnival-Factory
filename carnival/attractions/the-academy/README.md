@@ -90,7 +90,9 @@ or `{ visit: 'the-factory' }`, and moves nothing.
   the Academy ↗** (`{ open: 0 }`).
 - On the "you're on the map" card, once it has been up for a moment (so a
   quick double tap or key can't hit one): the gold hero, **Want a real one?
-  Ask for a booth ↗** (`{ open: 1 }`); two secondary buttons side by side,
+  Ask for a booth ↗**, which opens the booth form filled in with the ticket's
+  own booth in its own look (`{ open: 5 + booth × 3 + look }`, the page's
+  fixed list in `src/northpole/booth-ideas.ts`); two secondary buttons side by side,
   **Start the Academy ↗** (`{ open: 0 }`) and **Why a factory? →**
   (`{ visit: 'the-factory' }`); and a quiet line of links, **Keep in touch:
   AI DevCon · Blog · Podcast** (`{ open: 2 }`, `{ open: 3 }`, `{ open: 4 }`).

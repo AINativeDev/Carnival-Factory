@@ -65,6 +65,13 @@ export const BIG_NUDGES: readonly Nudge[] = [
   { box: { x: 77, y: 87.5, w: 16, h: 9 }, label: 'Podcast', ask: { open: 4 }, rank: 'link' },
 ];
 
+/**
+ * The page's link for the booth form filled in with the ticket's own booth in
+ * its look: the Academy's pretend booths follow its five ways on, booth by
+ * booth, three looks each (src/northpole/booth-ideas.ts, ADR 0065).
+ */
+export const ideaLink = (booth: number, look: number) => 5 + booth * 3 + look;
+
 /** The nudges on show: the ways on on the "you're on the map" card, the quiet link otherwise. */
 export const nudgesFor = (big: boolean): readonly Nudge[] => (big ? BIG_NUDGES : QUIET_NUDGES);
 

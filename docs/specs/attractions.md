@@ -91,8 +91,12 @@ the ferris wheel. Nobody owns them, and only maintainers change them.
   panel has "Sign up for Tessl" and the Academy's "Start the Academy", each
   followed by the same ways on: "Ask for a booth", "Get AI DevCon tickets",
   "Read the Tessl blog" and "Listen to the podcast"
-  ([ADR 0063](../adr/0063-factory-and-academy-explain.md)). AI DevCon's room
-  has "Get tickets".
+  ([ADR 0063](../adr/0063-factory-and-academy-explain.md)). After them, the
+  Academy has nine links its panel leaves out: the booth form filled in with
+  each of its game's pretend booths in each look, which its "Ask for a booth"
+  opens for the ticket the visitor wrote (`src/northpole/booth-ideas.ts`,
+  [ADR 0065](../adr/0065-nudge-to-build-your-own.md)). AI DevCon's room has
+  "Get tickets".
 - AI DevCon is an attraction with no stall: the billboard by the road is its
   way in, and a click on it opens its room (`src/northpole/off-map.ts`).
 - The Gift shop shows the gifts of `plugins/north-pole-gifts/`: small factory

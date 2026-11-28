@@ -7,6 +7,7 @@
  * participant's level can ever carry one (ADR 0038).
  */
 import { SETTINGS } from '../settings';
+import { ACADEMY_IDEAS } from './booth-ideas';
 import { BOOTH_REQUEST_URL, withUtm, YEAR_IN_REVIEW_URL } from './links';
 import { landmarkLevel } from './north-pole-levels';
 
@@ -14,6 +15,8 @@ import { landmarkLevel } from './north-pole-levels';
 export interface OutboundLink {
   readonly label: string;
   readonly href: string;
+  /** False for a link only the place's game opens, which its panel leaves out. */
+  readonly panel?: false;
 }
 
 /** After an explainer: ask for your own booth, then keep in touch through AI DevCon, the blog and the podcast. */
@@ -30,7 +33,12 @@ export const NORTH_POLE_LINKS: Readonly<Record<string, readonly OutboundLink[]>>
   // a booth, then keep in touch (ADR 0063). Their games ask by number, so the
   // order is theirs too.
   'the-factory': [{ label: 'Sign up for Tessl', href: SETTINGS.tessl.signup }, ...KEEP_GOING],
-  'the-academy': [{ label: 'Start the Academy', href: SETTINGS.tessl.academy }, ...KEEP_GOING],
+  // Then its pretend booths, each opening the booth form filled in (ADR 0065).
+  'the-academy': [
+    { label: 'Start the Academy', href: SETTINGS.tessl.academy },
+    ...KEEP_GOING,
+    ...ACADEMY_IDEAS,
+  ],
   'the-studio': [
     { label: 'Listen to the podcast', href: SETTINGS.tessl.podcast },
     { label: 'Watch on YouTube', href: SETTINGS.tessl.youtube },
@@ -66,9 +74,7 @@ export const httpsOnly = (links: readonly OutboundLink[]) =>
 export function northPoleLinks(level: string): readonly OutboundLink[] {
   // Only the list's own keys are looked up, so a name like "constructor" never reaches the object.
   const links = Object.hasOwn(NORTH_POLE_LINKS, level) ? NORTH_POLE_LINKS[level] : undefined;
-  return links
-    ? httpsOnly(links).map(({ label, href }) => ({ label, href: tagged(href, level) }))
-    : [];
+  return links ? httpsOnly(links).map((link) => ({ ...link, href: tagged(link.href, level) })) : [];
 }
 
 /**

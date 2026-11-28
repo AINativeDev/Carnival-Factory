@@ -50,6 +50,15 @@ square stands on a numbered spot, and the page's hash decides what is shown.
   (`src/northpole/billboard.ts`).
 - "Get a booth" walks the player to the nearest free spot. "Show the whole
   island" toggles the overview.
+- One nudge to build your own: coming out of a square on the North Pole, a
+  minute or more after the page opened and after 20 seconds inside or a third
+  square visited, a quiet line over the map's foot says "Liked that one?
+  There's a free spot nearby for a booth of your own." "Show me →" walks the
+  player to the nearest free spot, and "Not now" closes it for good, in the
+  page's own storage. It shows once a page load, goes by itself after 15
+  seconds, and never for someone who said which booth is theirs or is claiming
+  a spot ([ADR 0065](../adr/0065-nudge-to-build-your-own.md); enforced by:
+  src/nudge.test.ts, smoke/nudge.spec.ts).
 - Zoom, on every device and on levels too: a "+" and "−" pair of buttons
   ("Zoom in", "Zoom out") to the left of "Show the whole island", above "Get
   a booth" on a phone, and in the bottom-right corner on a level; the `+` or
