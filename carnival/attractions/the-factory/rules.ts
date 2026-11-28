@@ -1,6 +1,6 @@
 /**
  * The plain facts Feed the Loop is played on: the four skills and their cards
- * down the left of the drawing, where each station stands round the loop, which
+ * down the left of the drawing, where a tap lands in a box, where each station stands round the loop, which
  * skill each leg asks for, and the floating words a tap or a station leaves.
  */
 import { theme } from '../../../src/northpole/theme';
@@ -16,7 +16,7 @@ export const SKILLS = [
 ] as const;
 
 /** The skill cards down the left of the drawing: their left, top, size and the gap between them. */
-export const CARDS = { x: 3, y: 16, w: 22, h: 8.4, gap: 2 };
+export const CARDS = { x: 4, y: 17, w: 24, h: 8.4, gap: 2 };
 
 /** Where each station stands round the loop, as a fraction of a lap from request. */
 export const STATIONS = [0, 0.25, 0.5, 0.75] as const;
@@ -32,20 +32,9 @@ export interface Box {
   h: number;
 }
 
-/** The sign-up buttons: a small one in the top right during the game, a big one on the round's last card. */
-export const SIGN_UP = {
-  corner: { x: 66, y: 27, w: 31, h: 6.5 },
-  card: { x: 27, y: 50, w: 46, h: 9 },
-} as const;
-
 /** Whether `x`, `y` is inside `box`. */
 export const inBox = (box: Box, x: number, y: number) =>
   x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h;
-
-/** Whether a tap at `x`, `y` hits the sign-up button showing in `mode`: the card's once a round is over, else the corner's. */
-export function signUpAt(mode: 'demo' | 'play' | 'over', x: number, y: number): boolean {
-  return inBox(mode === 'over' ? SIGN_UP.card : SIGN_UP.corner, x, y);
-}
 
 /** The top of card `n`. */
 export const cardTop = (n: number) => CARDS.y + n * (CARDS.h + CARDS.gap);

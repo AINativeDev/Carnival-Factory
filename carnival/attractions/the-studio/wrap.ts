@@ -1,16 +1,17 @@
 /**
- * After the recording: the take played back as a waveform built from the words
- * said, with a playhead running over it, and then the wrap-up card with the
- * episode's grade and score, the buttons out to the real podcast and the tap
- * to record the next episode.
+ * After the recording: the take played back on the screen as a waveform built
+ * from the words said, a playhead running over it; then the end card, in the
+ * Tessl places' shared shape: an eyebrow, the grade as the title, a one-line
+ * result, the podcast as the hero, YouTube and "Play again ▶" side by side,
+ * and one quiet line naming the keys.
  */
 import { theme } from '../../../src/northpole/theme';
-import { button } from './board';
 import { buttonsFor } from './buttons';
 import { LISTEN, type Game } from './game';
-import { LANE } from './lane';
-import { letter, rounded } from './lettering';
-import { grade, SLOTS, waveOf } from './score';
+import { button } from './footer';
+import { LANE, SCENE } from './layout';
+import { caps, letter, rounded, TYPE } from './lettering';
+import { grade, grouped, saidCount, SLOTS, waveOf } from './score';
 
 const { colors } = theme;
 
@@ -23,66 +24,97 @@ export function playbackLoudness(game: Game, time: number): number {
   return waveOf(game).at(Math.min(SLOTS - 1, Math.floor(played(game, time) * SLOTS))) ?? 0;
 }
 
-/** The waveform of the take on the track, lit up to the playhead, at `on` from 0 to 1. */
+/** The waveform of the take on the screen, lit up to the playhead, at `on` from 0 to 1. */
 export function playback(ctx: CanvasRenderingContext2D, game: Game, time: number, on: number) {
   if (on <= 0) return;
-  const [x, y, w, h] = [LANE.left, LANE.y - 6.5, LANE.right - LANE.left, 13];
+  const [x, w, h] = [LANE.left + 3, LANE.right - LANE.left - 6, LANE.half * 2 - 4];
   ctx.save();
   ctx.globalAlpha = on;
-  ctx.fillStyle = colors.ink;
-  rounded(ctx, x, y, w, h, 3);
-  ctx.fill();
   const done = played(game, time);
-  const step = (w - 4) / SLOTS;
+  const step = w / SLOTS;
   waveOf(game).forEach((level, n) => {
     ctx.fillStyle = n / SLOTS <= done ? colors.aurora : colors.slabShade;
-    const tall = Math.max(0.6, level * (h - 3));
-    rounded(ctx, x + 2 + n * step + step * 0.15, LANE.y - tall / 2, step * 0.7, tall, step * 0.3);
+    const tall = Math.max(0.6, level * h);
+    rounded(ctx, x + n * step + step * 0.15, LANE.y - tall / 2, step * 0.7, tall, step * 0.3);
     ctx.fill();
   });
   ctx.fillStyle = colors.gold;
-  ctx.fillRect(x + 2 + done * (w - 4) - 0.3, y + 1, 0.6, h - 2);
-  const who = game.lost
-    ? 'Signal lost! Here’s what made it on air'
-    : game.visitor
-      ? 'Your take, played back'
-      : 'The host’s take, played back';
-  letter(ctx, who, { x: x + w / 2, y: y - 3, height: 3, colour: colors.snowLit, width: w - 2 });
+  ctx.fillRect(x + done * w - 0.3, LANE.y - h / 2 - 0.5, 0.6, h + 1);
   ctx.restore();
 }
 
-/** The wrap-up card: the grade, the score, the buttons out and the tap to go again, at `on`. */
-export function wrapCard(ctx: CanvasRenderingContext2D, game: Game, best: number, on: number) {
-  if (on <= 0) return;
-  const [x, y, w, h] = [46, 19, 51, 38.5];
-  ctx.save();
-  ctx.globalAlpha = on;
-  ctx.fillStyle = colors.ink;
-  rounded(ctx, x - 0.8, y - 0.8, w + 1.6, h + 1.6, 3.4);
-  ctx.fill();
-  ctx.fillStyle = colors.surface;
-  rounded(ctx, x, y, w, h, 3);
-  ctx.fill();
+/** The card's box, over the scene. */
+const CARD = { x: 8, y: 20, w: 84, h: 63 } as const;
+
+/** The card's eyebrow, title and result line for `game`. */
+function wording(game: Game, best: number) {
   const { letter: mark, title } = grade(game);
+  const said = `${String(saidCount(game))} of ${String(game.beats.length)} words`;
+  const points = `${grouped(game.score)} points`;
+  const record = game.visitor && best > 0 && game.score >= best ? 'New best · ' : '';
+  const eyebrow = !game.visitor
+    ? 'HOST’S DEMO'
+    : `EPISODE ${String(game.episode)} ${game.lost ? 'OFF AIR' : 'RECORDED'}`;
+  return { mark, title, eyebrow, result: `${record}${points} · ${said}` };
+}
+
+/** The end card, rising a unit as it fades in by `on`, with its buttons drawn at `time`. */
+export function wrapCard(
+  ctx: CanvasRenderingContext2D,
+  game: Game,
+  best: number,
+  time: number,
+  on: number,
+) {
+  if (on <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = on * 0.55;
+  ctx.fillStyle = colors.night;
+  rounded(ctx, SCENE.x, SCENE.y, SCENE.w, SCENE.h, 2.2);
+  ctx.fill();
+  ctx.globalAlpha = on;
+  ctx.translate(0, 1 - on);
+  ctx.globalAlpha = on * 0.7;
+  ctx.fillStyle = colors.shadow;
+  rounded(ctx, CARD.x, CARD.y + 0.6, CARD.w, CARD.h, 2.2);
+  ctx.fill();
+  ctx.globalAlpha = on * 0.92;
+  ctx.fillStyle = colors.night;
+  rounded(ctx, CARD.x, CARD.y, CARD.w, CARD.h, 2.2);
+  ctx.fill();
+  ctx.globalAlpha = on;
+  const text = wording(game, best);
+  const left = CARD.x + 6;
+  caps(ctx, text.eyebrow, { x: left, y: CARD.y + 6, height: TYPE.micro, colour: colors.muted });
+  ctx.fillStyle = colors.gold;
+  ctx.fillRect(left, CARD.y + 8.4, 8, 0.5);
   ctx.fillStyle = game.lost ? colors.berry : colors.gold;
   ctx.beginPath();
-  ctx.arc(x + 7.5, y + 10, 5.2, 0, Math.PI * 2);
+  ctx.arc(left + 5, CARD.y + 18.5, 5, 0, Math.PI * 2);
   ctx.fill();
-  letter(ctx, mark, { x: x + 7.5, y: y + 10.4, height: 6.4, colour: colors.ink });
-  const left = { x: x + 15, align: 'left' as const, width: w - 17 };
-  letter(ctx, title, { ...left, y: y + 7.6, height: 4.4, colour: colors.snowLit });
-  const record = best > 0 && game.score >= best && game.visitor ? '  ·  NEW BEST!' : '';
-  const tally = `${String(game.score)} points${record}`;
-  letter(ctx, tally, { ...left, y: y + 13, height: 2.8, colour: colors.gold });
-  letter(ctx, 'Hear the real podcast, on air now:', {
-    ...{ x: x + w / 2, y: y + 17.5, height: 2.5, colour: colors.muted },
+  letter(ctx, text.mark, {
+    x: left + 5,
+    y: CARD.y + 18.8,
+    height: TYPE.title,
+    colour: colors.night,
   });
-  for (const b of buttonsFor('wrap')) button(ctx, b);
-  const again = !game.visitor
-    ? 'Tap anywhere to record your own episode'
-    : game.lost
-      ? 'Tap anywhere to try episode 1 again'
-      : `Tap anywhere to record episode ${String(game.episode + 1)}`;
-  letter(ctx, again, { x: x + w / 2, y: y + h - 2.6, height: 2.4, colour: colors.snowShade });
+  const words = { x: left + 13, align: 'left' as const, width: CARD.w - 25 };
+  letter(ctx, text.title, { ...words, y: CARD.y + 16, height: TYPE.title, colour: colors.snowLit });
+  letter(ctx, text.result, {
+    ...words,
+    y: CARD.y + 22.4,
+    height: TYPE.body,
+    colour: colors.muted,
+    bold: false,
+  });
+  for (const b of buttonsFor('wrap', game.visitor)) button(ctx, b, time);
+  const keys = game.visitor ? 'Space or Enter plays again' : 'Space or Enter goes on air';
+  letter(ctx, keys, {
+    x: 50,
+    y: CARD.y + CARD.h - 5,
+    height: TYPE.body,
+    colour: colors.muted,
+    bold: false,
+  });
   ctx.restore();
 }

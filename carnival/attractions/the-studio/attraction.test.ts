@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import theStudio from './attraction';
 import { buttonsFor, linkAt, LINKS } from './buttons';
 import { chart, pace, TRAVEL, WORDS } from './chart';
-import { CHEER, ease, FADE, hop, pop } from './cues';
+import { APPEAR, appear, breath, CHEER, ease, FADE, hop, pop } from './cues';
 import { newGame, LISTEN } from './game';
-import { accuracy, grade, voice, waveOf, wobble } from './score';
+import { accuracy, grade, grouped, saidCount, voice, waveOf, wobble } from './score';
 import { played } from './wrap';
 
 /** A stand-in canvas context that takes every call the studio makes and draws nothing. */
@@ -30,20 +30,40 @@ describe('the studio', () => {
     expect(theStudio.ask?.()).toBeUndefined();
   });
 
-  it('asks for the podcast once, on the frame its Listen button is tapped', () => {
-    theStudio.draw(quiet, 200, 50_000, { x: 176, y: 186, down: true, presses: 1 });
+  it('asks for the podcast once, on the frame its link is tapped', () => {
+    theStudio.draw(quiet, 200, 50_000, { x: 20, y: 60, down: true, presses: 1 });
+    theStudio.draw(quiet, 200, 50_100, { x: 180, y: 179, down: true, presses: 1 });
     expect(theStudio.ask?.()).toEqual({ open: LINKS.podcast });
+    expect(theStudio.ask?.()).toBeUndefined();
+  });
+
+  it('plays a whole episode from the keys, through its end card', () => {
+    for (let time = 60_000; time < 100_000; time += 100)
+      theStudio.draw(quiet, 300, time, undefined, time % 1_000 ? [] : ['space']);
     expect(theStudio.ask?.()).toBeUndefined();
   });
 });
 
 describe('the buttons', () => {
   it('finds the link under a tap, or none', () => {
-    const card = buttonsFor('wrap');
+    const card = buttonsFor('wrap', true);
     for (const b of card) expect(linkAt(card, b.x + 1, b.y + 1)).toBe(b.link);
-    expect(card.map((b) => b.link)).toEqual([LINKS.podcast, LINKS.youtube]);
-    expect(linkAt(buttonsFor('record'), 10, 10)).toBeNull();
-    expect(linkAt(buttonsFor('listen'), 90, 93)).toBe(LINKS.podcast);
+    expect(card.map((b) => b.link)).toEqual([LINKS.podcast, LINKS.youtube, null]);
+    expect(linkAt(buttonsFor('record', true), 10, 10)).toBeNull();
+    expect(linkAt(buttonsFor('listen', true), 90, 89.5)).toBe(LINKS.podcast);
+    expect(linkAt(buttonsFor('record', false), 90, 89.5)).toBeNull();
+  });
+
+  it('has exactly one primary on every screen, each big enough for a finger', () => {
+    for (const visitor of [true, false])
+      for (const phase of ['record', 'listen', 'wrap'] as const) {
+        const buttons = buttonsFor(phase, visitor);
+        const primaries = buttons.filter((b) => b.weight === 'primary').length;
+        expect(primaries).toBe(visitor && phase !== 'wrap' ? 0 : 1);
+        for (const b of buttons) expect(b.h).toBeGreaterThanOrEqual(9);
+      }
+    expect(buttonsFor('wrap', false).at(-1)?.label).toBe('Go on air ▶');
+    expect(buttonsFor('wrap', true).at(-1)?.label).toBe('Play again ▶');
   });
 });
 
@@ -66,8 +86,12 @@ describe('the cues', () => {
     expect(FADE).toBeLessThan(1_000);
     expect(hop(0, CHEER / 2)).toBeCloseTo(1);
     expect(hop(0, CHEER * 2)).toBe(0);
-    expect(pop(0)).toBe(0);
-    expect(pop(1)).toBeCloseTo(1);
+    expect(pop(0)).toBeCloseTo(0.7);
+    expect(Math.max(...[60, 120, 180, 240].map(pop))).toBeGreaterThan(1);
+    expect(pop(1_000)).toBeCloseTo(1);
+    expect(appear(0)).toBe(0);
+    expect(appear(APPEAR)).toBe(1);
+    expect(breath(500)).toBeCloseTo(1);
   });
 });
 
@@ -87,8 +111,11 @@ describe('the score', () => {
     );
     expect(grade(game).letter).toBe('B');
     game.lost = true;
-    expect(grade(game).title).toBe('Signal lost!');
+    expect(grade(game).title).toBe('Signal lost');
     expect(accuracy({ ...game, beats: [] })).toBe(0);
+    expect(saidCount(game)).toBe(game.beats.length - 4);
+    expect(grouped(12_400)).toBe('12,400');
+    expect(grouped(950)).toBe('950');
   });
 
   it('plays back loud where words were said and quiet where they were missed', () => {

@@ -1,18 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { chart, ending, GOOD, LEAD, PERFECT } from './chart';
-import {
-  advance,
-  DEMO_WRAP,
-  IDLE,
-  LISTEN,
-  multiplier,
-  newGame,
-  newStudio,
-  phaseOf,
-  settle,
-  SIGNAL,
-  tap,
-} from './game';
+import { DEMO_WRAP, IDLE, LISTEN, multiplier, newGame, phaseOf, settle, SIGNAL, tap } from './game';
+import { advance, keyPresses, newStudio } from './studio';
 
 const press = (x = 30, y = 60) => ({ x, y, down: true, presses: 1 });
 const SIZE = 100;
@@ -126,7 +115,7 @@ describe('the studio', () => {
     expect(studio.best).toBe(300);
     studio = advance(studio, end + 100, press(), SIZE);
     expect(studio.cheer).toBe(end + 100);
-    studio = advance(studio, end + LISTEN + 100, press(), SIZE);
+    studio = advance(studio, end + LISTEN + 100, press(5, 95), SIZE);
     expect(studio.game.episode).toBe(2);
   });
 
@@ -142,9 +131,52 @@ describe('the studio', () => {
     expect(studio.game.visitor).toBe(false);
   });
 
-  it('asks for the podcast when a tap lands on the Listen button, and does not play', () => {
-    const studio = advance(newStudio(0), 0, press(88, 93), SIZE);
+  it('asks for the podcast when a tap lands on its link, and does not play', () => {
+    let studio = advance(newStudio(0), 0, press(), SIZE);
+    studio = advance(studio, 100, press(90, 89.5), SIZE);
     expect(studio.open).toBe(0);
-    expect(studio.game.visitor).toBe(false);
+    expect(studio.game.hits.every((hit) => hit === null)).toBe(true);
+  });
+
+  it('goes on air from the demo with a tap on its primary, which opens nothing', () => {
+    const studio = advance(newStudio(0), 0, press(80, 89.5), SIZE);
+    expect(studio.open).toBeNull();
+    expect(studio.game.visitor).toBe(true);
+  });
+});
+
+describe('the keys', () => {
+  it('count Space and Enter as taps, and → only while no word is due', () => {
+    expect(keyPresses(['space', 'enter', 'right', 'up'], true)).toBe(2);
+    expect(keyPresses(['right', 'left'], false)).toBe(1);
+    expect(keyPresses(undefined, true)).toBe(0);
+  });
+
+  it('go on air, say a word on the beat, and play again', () => {
+    let studio = advance(newStudio(0), 0, undefined, SIZE, ['space']);
+    expect(studio.game.visitor).toBe(true);
+    studio = advance(studio, LEAD, undefined, SIZE, ['enter']);
+    expect(studio.game.hits[0]?.judge).toBe('perfect');
+    studio = advance(studio, LEAD + 50, undefined, SIZE, ['right']);
+    expect(studio.game.hits[1]).toBeNull();
+    studio.game.ended = LEAD;
+    studio = advance(studio, LEAD + LISTEN, undefined, SIZE, ['right']);
+    expect(studio.game.episode).toBe(2);
+  });
+
+  it('say a long word in full, since a key cannot be held', () => {
+    let studio = advance(newStudio(0), 0, undefined, SIZE, ['space']);
+    const long = studio.game.beats.at(3) ?? { at: 0, hold: 1 };
+    studio.game.hits = studio.game.hits.map((hit, n) =>
+      n < 3 ? { judge: 'perfect' as const, at: 0, held: 0 } : hit,
+    );
+    studio = advance(studio, long.at, undefined, SIZE, ['space']);
+    expect(studio.game.holding).toBe(3);
+    studio = advance(studio, long.at + long.hold / 2, undefined, SIZE);
+    expect(studio.game.holding).toBe(3);
+    studio = advance(studio, long.at + long.hold, undefined, SIZE);
+    expect(studio.game.holding).toBeNull();
+    expect(studio.game.hits[3]?.held).toBe(1);
+    expect(studio.keyHold).toBe(false);
   });
 });

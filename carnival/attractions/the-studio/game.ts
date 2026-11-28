@@ -6,11 +6,8 @@
  * back, scored, and the next episode is quicker. With nobody playing, the host
  * records a demo episode, perfectly, on a loop.
  *
- * The attraction keeps one `Studio` between frames, the only state it has, and
- * `advance` moves it on from `time`.
+ * `studio.ts` keeps the visit's one `Studio` and moves it on each frame.
  */
-import type { SquarePointer } from '../../../src/northpole/square';
-import { buttonsFor, linkAt } from './buttons';
 import { chart, ending, GOOD, PERFECT, type Beat } from './chart';
 
 /** How long the recorded episode plays back, in ms. */
@@ -49,15 +46,6 @@ export interface Game {
   lost: boolean;
 }
 
-/** All the studio remembers, for one visit. */
-export interface Studio {
-  game: Game;
-  best: number;
-  cheer: number;
-  /** The link a tap on a button asked to open, until the page is told. */
-  open: number | null;
-}
-
 /** What a word earns before the combo: a perfect one twice a good one. */
 const points = (judge: Judge) => (judge === 'perfect' ? 100 : judge === 'good' ? 50 : 0);
 /** How much a word moves the ON AIR signal. */
@@ -73,11 +61,6 @@ export function newGame(time: number, episode: number, visitor: boolean): Game {
     ...{ start: time, episode, beats, visitor, hits: beats.map(() => null), holding: null },
     ...{ score: 0, combo: 0, signal: SIGNAL, ended: null, lost: false },
   };
-}
-
-/** The studio at the start of a visit: the host recording a demo episode. */
-export function newStudio(time: number): Studio {
-  return { game: newGame(time, 1, false), best: 0, cheer: -Infinity, open: null };
 }
 
 /** Which part of its episode `time` is in: recording, playing back, or the wrap-up. */
@@ -136,47 +119,8 @@ export function settle(game: Game, time: number, down: boolean) {
 }
 
 /** The host's demo: every word said right on its beat, and every long word held to its end. */
-function autoplay(game: Game, time: number) {
+export function autoplay(game: Game, time: number) {
   game.beats.forEach((beat, n) => {
     if (game.hits[n] === null && time - game.start >= beat.at) judge(game, n, 'perfect', time);
   });
-}
-
-/**
- * Moves the studio on to `time`, with what the pointer did since the last
- * frame, over a square `size` across. A tap on a button asks for its link
- * instead of playing.
- */
-export function advance(
-  studio: Studio,
-  time: number,
-  pointer: SquarePointer | undefined,
-  size: number,
-): Studio {
-  let { game, best, cheer, open } = studio;
-  const phase = phaseOf(game, time);
-  const since = game.ended === null ? 0 : time - game.ended;
-  if (!game.visitor && phase === 'wrap' && since >= LISTEN + DEMO_WRAP)
-    game = newGame(time, 1, false);
-  if (game.visitor && phase === 'wrap' && since >= LISTEN + IDLE) game = newGame(time, 1, false);
-  let presses = pointer?.presses ?? 0;
-  if (pointer && presses > 0) {
-    const link = linkAt(
-      buttonsFor(phaseOf(game, time)),
-      (pointer.x * 100) / size,
-      (pointer.y * 100) / size,
-    );
-    if (link !== null) [open, presses] = [link, 0];
-  }
-  if (presses > 0) {
-    if (!game.visitor) game = newGame(time, 1, true);
-    else if (phase === 'listen') cheer = time;
-    else if (phase === 'wrap') game = newGame(time, game.lost ? 1 : game.episode + 1, true);
-    else for (let n = 0; n < presses; n++) tap(game, time);
-  }
-  if (!game.visitor) autoplay(game, time);
-  const wasRecording = game.ended === null;
-  settle(game, time, !game.visitor || (pointer?.down ?? false));
-  if (wasRecording && game.ended !== null && game.visitor) best = Math.max(best, game.score);
-  return { game, best, cheer, open };
 }

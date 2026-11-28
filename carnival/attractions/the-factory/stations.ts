@@ -8,7 +8,7 @@ import { glow } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
 import { type Game, progressOf } from './game';
 import { SKILLS, STATION_NAMES, STATIONS } from './rules';
-import { words } from './text';
+import { eyebrow, words } from './text';
 import { LOOP, LOOP_MIDDLE, onLoop } from './track';
 
 const { colors } = theme;
@@ -74,33 +74,28 @@ export function arches(ctx: CanvasRenderingContext2D, game: Game, back: boolean)
 export function needBubble(ctx: CanvasRenderingContext2D, game: Game) {
   const tail = onLoop(STATIONS.at(game.leg) ?? 0, 0, HIGH + 9.5);
   // Kept clear of the skill cards on the left; its tail still points at the station.
-  const sign = { x: Math.max(tail.x, 36), y: tail.y };
+  const sign = { x: Math.max(tail.x, 40), y: tail.y };
   const skill = SKILLS.at(game.need) ?? SKILLS[0];
   const color = skill.color;
-  const w = 17;
-  const h = 7;
+  const w = 21;
+  const h = 9;
   ctx.fillStyle = colors.night;
-  ctx.globalAlpha = 0.92;
+  ctx.globalAlpha = 0.9;
   ctx.beginPath();
-  ctx.roundRect(sign.x - w / 2, sign.y - h / 2, w, h, 1.6);
+  ctx.roundRect(sign.x - w / 2, sign.y - h / 2, w, h, 2.2);
   ctx.moveTo(tail.x - 1.4, sign.y + h / 2);
   ctx.lineTo(tail.x, sign.y + h / 2 + 2);
   ctx.lineTo(tail.x + 1.4, sign.y + h / 2);
   ctx.fill();
   ctx.globalAlpha = 1;
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 0.6;
-  ctx.beginPath();
-  ctx.roundRect(sign.x - w / 2, sign.y - h / 2, w, h, 1.6);
-  ctx.stroke();
   if (game.answer === 'right') {
-    words(ctx, '✓ ' + skill.name, sign.x, sign.y - 0.2, 2.8, colors.mint, 'center', w - 2);
+    words(ctx, '✓ ' + skill.name, sign.x, sign.y, 3.6, colors.mint, 'center', w - 3);
     return;
   }
-  words(ctx, 'NEEDS', sign.x, sign.y - 1.8, 1.6, colors.muted);
-  words(ctx, skill.name, sign.x, sign.y + 0.7, 3, color, 'center', w - 2);
+  eyebrow(ctx, 'Needs', sign.x, sign.y - 2.4, colors.muted, 'center');
+  words(ctx, skill.name, sign.x, sign.y + 0.9, 3.6, color, 'center', w - 3);
   // The time left, running down as the parcel nears the station.
   const left = 1 - progressOf(game);
   ctx.fillStyle = left < 0.3 ? colors.berry : color;
-  ctx.fillRect(sign.x - w / 2 + 1.5, sign.y + h / 2 - 1.3, (w - 3) * left, 0.6);
+  ctx.fillRect(sign.x - w / 2 + 2, sign.y + h / 2 - 1.5, (w - 4) * left, 0.6);
 }

@@ -2,19 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GIFT_FLIGHT, giftFlight, SLEIGH } from './effects';
 import { newGame } from './game';
 import { pressOf } from './hud';
-import {
-  alongOf,
-  cardAt,
-  CARDS,
-  cardTop,
-  inBox,
-  needFor,
-  POP_LIFE,
-  SIGN_UP,
-  signUpAt,
-  SKILLS,
-  stepPops,
-} from './rules';
+import { alongOf, cardAt, CARDS, cardTop, needFor, POP_LIFE, SKILLS, stepPops } from './rules';
 import { stationLight } from './stations';
 import { sparkAt } from './text';
 import { COG, cogTurn, fountainGift, LETTERS, letterPop, litOf } from './tower';
@@ -26,15 +14,6 @@ describe('the cards', () => {
     expect(cardAt(CARDS.x + CARDS.w + 1, cardTop(0) + 1)).toBe(-1);
     expect(cardAt(CARDS.x + 1, CARDS.y - 1)).toBe(-1);
     expect(cardAt(CARDS.x + 1, cardTop(SKILLS.length) + 1)).toBe(-1);
-  });
-});
-
-describe('the sign-up buttons', () => {
-  it('is the corner one during the game and the card one once it is over', () => {
-    expect(inBox(SIGN_UP.corner, SIGN_UP.corner.x, SIGN_UP.corner.y)).toBe(true);
-    expect(signUpAt('play', SIGN_UP.corner.x + 1, SIGN_UP.corner.y + 1)).toBe(true);
-    expect(signUpAt('demo', SIGN_UP.card.x + 1, SIGN_UP.card.y + 1)).toBe(false);
-    expect(signUpAt('over', SIGN_UP.card.x + 1, SIGN_UP.card.y + 1)).toBe(true);
   });
 });
 

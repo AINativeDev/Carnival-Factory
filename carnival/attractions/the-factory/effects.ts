@@ -53,7 +53,7 @@ export function sleigh(ctx: CanvasRenderingContext2D, shipped: number) {
   ctx.fill();
   ctx.fillStyle = colors.gold;
   ctx.fillRect(x - 5, y - 3.2, 8.5, 0.5);
-  if (shipped > 0) words(ctx, `${String(shipped)} shipped`, x, y + 3.6, 2.2, colors.ink);
+  if (shipped > 0) words(ctx, `${String(shipped)} shipped`, x, y + 3.8, 3, colors.ink);
 }
 
 /** The booths still in flight from merge to the sleigh. */
