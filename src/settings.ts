@@ -13,12 +13,13 @@ export const SETTINGS = {
   repo: 'AINativeDev/Carnival-Factory',
   /** How a link out is tagged, so Tessl can tell the carnival sent the visit; the medium is the link's place. */
   utm: { source: 'carnival-factory', campaign: 'christmas-edition' },
-  /** Tessl's own places: its site, signing up, the Academy, the podcast and its channel. */
+  /** Tessl's own places: its site, signing up, the Academy, the podcast, the blog and its channel. */
   tessl: {
     home: 'https://tessl.io',
     signup: 'https://tessl.io/login',
     academy: 'https://tessl.io/academy',
     podcast: 'https://tessl.io/podcast/',
+    blog: 'https://tessl.io/blog',
     youtube: 'https://www.youtube.com/@tessl-ai',
   },
   /** What's on next, as the billboard says it, and where its tickets are. */

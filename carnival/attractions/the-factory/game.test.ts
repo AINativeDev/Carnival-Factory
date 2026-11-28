@@ -10,11 +10,9 @@ import {
   levelOf,
   LIVES,
   newGame,
-  OVER_GUARD,
-  OVER_IDLE,
   SHIP_POINTS,
 } from './game';
-import { CARDS, cardTop, needFor, SIGN_UP } from './rules';
+import { CARDS, cardTop, needFor } from './rules';
 
 const SIZE = 200;
 
@@ -116,46 +114,22 @@ describe('a round', () => {
     expect(game.pops.at(-1)?.kind).toBe('tap');
   });
 
-  it('ends on the last jam, and a tap after the guard plays again', () => {
+  it('ends on the last jam, keeping the best, and takes no more taps', () => {
     const last = { ...newGame(0, 'play'), lives: 1, score: 70, best: 40 };
     const over = advance(last, 10, onCard((last.need + 1) % 4), SIZE);
     expect(over.mode).toBe('over');
     expect(over.best).toBe(70);
-    expect(advance(over, 10 + OVER_GUARD / 2, press(50, 90), SIZE).mode).toBe('over');
-    const again = advance(over, 10 + OVER_GUARD + 1, press(50, 90), SIZE);
-    expect(again.mode).toBe('play');
-    expect(again.best).toBe(70);
+    expect(over.overAt).toBe(10);
+    const tapped = advance(over, 2_000, onCard(over.need), SIZE);
+    expect(tapped.mode).toBe('over');
+    expect(tapped.score).toBe(70);
+    expect(tapped.pops.at(-1)?.kind).toBe('tap');
   });
 
-  it('keeps the round still under its last card', () => {
+  it('keeps an ended round still, for its end card', () => {
     const over: Game = { ...newGame(0, 'play'), mode: 'over', overAt: 0, shipped: 2 };
     const later = run(over, 0, legTime(1) * 4);
     expect(later.shipped).toBe(2);
     expect(later.ridden).toBe(0);
-  });
-
-  it('gives the last card back to the demo when nobody taps it', () => {
-    const over: Game = { ...newGame(0, 'play'), mode: 'over', overAt: 0, best: 30 };
-    const game = advance({ ...over, last: OVER_IDLE }, OVER_IDLE + 10, undefined, SIZE);
-    expect(game.mode).toBe('demo');
-    expect(game.best).toBe(30);
-  });
-});
-
-describe('the sign-up buttons', () => {
-  const corner = press(SIGN_UP.corner.x + 2, SIGN_UP.corner.y + 2);
-  const card = press(SIGN_UP.card.x + 2, SIGN_UP.card.y + 2);
-
-  it('ask for the link on the frame of the tap only, and start nothing', () => {
-    const game = advance(newGame(0), 10, corner, SIZE);
-    expect(game.link).toBe(true);
-    expect(game.mode).toBe('demo');
-    expect(advance(game, 20, undefined, SIZE).link).toBe(false);
-  });
-
-  it('is the big one on the last card', () => {
-    const over: Game = { ...newGame(0, 'play'), mode: 'over', overAt: 0 };
-    expect(advance(over, 10, card, SIZE).link).toBe(true);
-    expect(advance(over, 10, corner, SIZE).link).toBe(false);
   });
 });

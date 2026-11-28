@@ -411,7 +411,7 @@ uses any of it:
    `src/northpole/square.ts`, with `id` set to the folder name.
    `src/northpole/booths.ts` finds it from there, so a new booth needs no change
    anywhere else.
-2. A `draw(ctx, size, time, pointer?)` that paints a `size` by `size` square
+2. A `draw(ctx, size, time, pointer?, keys?)` that paints a `size` by `size` square
    from the origin. Scale everything by `size`, because the map and the preview
    draw at different sizes. Animate from `time`, not from state kept between
    calls. A booth may react to hover and taps: `pointer` is
@@ -421,7 +421,11 @@ uses any of it:
    last frame, so a game counts every tap with `presses`; `pointer` is
    `undefined` otherwise. On the map a click on a square still goes inside
    it, so play with `down` and `presses` inside, where the drawing fills the
-   screen beside the panel. Ignoring `pointer` is fine. What a booth remembers of the pointer, such as when a snowball was
+   screen beside the panel. Ignoring `pointer` is fine. While someone is
+   inside, `keys` lists the arrows, Enter and Space pressed since the last
+   frame, in order, as `'left'`, `'right'`, `'up'`, `'down'`, `'enter'` and
+   `'space'` ([ADR 0064](docs/adr/0064-keys-inside-a-square.md)); ignoring it
+   is fine too. What a booth remembers of the pointer, such as when a snowball was
    thrown or a score, is the one state it keeps between calls: keep it small,
    and still move from `time`. A square may also have an `ask()`, which the
    map calls after each frame: it returns `{ open: n }` on the frame a tap
@@ -492,7 +496,8 @@ with a strict content security policy (no network, no storage, no access to the
 page), inside a worker the frame stops if it hangs, and sends the map a bitmap
 each frame. The map's draw request carries the pointer, which the frame checks
 (`readPointer` in `src/northpole/frame-protocol.ts`, with `presses` a whole number
-from 0 to 20) and passes on as plain values, never the page's own events. So
+from 0 to 20) and the keys heard inside (`readKeys`, at most 8 plain names),
+and passes them on as plain values, never the page's own events. So
 `draw` gets an `OffscreenCanvasRenderingContext2D`-like context
 with no `ctx.canvas` DOM element, and a square that throws, hangs or never
 loads shows "Under construction" without touching anything else.

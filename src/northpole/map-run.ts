@@ -92,6 +92,7 @@ export function openRun(
     recent: [],
     targets: [],
     held: new Map(),
+    keys: [],
     pointer: trackPointer(canvas),
     ride,
     rideButton: ride && makeRideButton(frame),

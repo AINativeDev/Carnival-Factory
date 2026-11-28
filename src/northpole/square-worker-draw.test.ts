@@ -117,7 +117,17 @@ describe('drawing a frame', () => {
     say({ type: 'draw', size: 48, time: 5, pointer });
     expect(canvases.map((canvas) => [canvas.width, canvas.height])).toEqual([[48, 48]]);
     expect(canvases[0]?.contexts).toEqual(['2d']);
-    expect(drawn).toEqual([[{ kind: '2d' }, 48, 5, pointer]]);
+    expect(drawn).toEqual([[{ kind: '2d' }, 48, 5, pointer, undefined]]);
+  });
+
+  it('passes on the keys heard, and drops a list it cannot read', async () => {
+    await loadedWorker('#booth/jedi4ever');
+    say({ type: 'draw', size: 48, time: 5, keys: ['right', 'space'] });
+    say({ type: 'draw', size: 48, time: 6, keys: ['right', 'Escape'] });
+    expect(drawn).toEqual([
+      [{ kind: '2d' }, 48, 5, undefined, ['right', 'space']],
+      [{ kind: '2d' }, 48, 6, undefined, undefined],
+    ]);
   });
 
   it('says how long the drawing took, and asks for no link when the square has no ask', async () => {

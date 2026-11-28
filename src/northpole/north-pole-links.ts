@@ -1,13 +1,13 @@
 /**
- * Links out of the map for the North Pole's own places: the Factory's
- * signup, the Academy's lessons, the podcast and the YouTube channel, and AI
- * DevCon's tickets. A square runs sandboxed and
+ * Links out of the map for the North Pole's own places: Tessl's signup, the
+ * Academy's lessons, the booth form, the blog, the podcast and the YouTube
+ * channel, and AI DevCon's tickets. A square runs sandboxed and
  * can't link anywhere, and a level is a participant's plain data, so these
  * live here, in maintainer code, keyed by a North Pole level's id: no
  * participant's level can ever carry one (ADR 0038).
  */
 import { SETTINGS } from '../settings';
-import { withUtm, YEAR_IN_REVIEW_URL } from './links';
+import { BOOTH_REQUEST_URL, withUtm, YEAR_IN_REVIEW_URL } from './links';
 import { landmarkLevel } from './north-pole-levels';
 
 /** One link out: what its button says, and where it goes. */
@@ -16,10 +16,21 @@ export interface OutboundLink {
   readonly href: string;
 }
 
+/** After an explainer: ask for your own booth, then keep in touch through AI DevCon, the blog and the podcast. */
+const KEEP_GOING: readonly OutboundLink[] = [
+  { label: 'Ask for a booth', href: BOOTH_REQUEST_URL },
+  { label: 'Get AI DevCon tickets', href: SETTINGS.aiDevcon.tickets },
+  { label: 'Read the Tessl blog', href: SETTINGS.tessl.blog },
+  { label: 'Listen to the podcast', href: SETTINGS.tessl.podcast },
+];
+
 /** Each North Pole place's links, by its level's or attraction's id, in the order its panel shows them. */
 export const NORTH_POLE_LINKS: Readonly<Record<string, readonly OutboundLink[]>> = {
-  'the-factory': [{ label: 'Sign up for Tessl', href: SETTINGS.tessl.signup }],
-  'the-academy': [{ label: 'Start the Academy', href: SETTINGS.tessl.academy }],
+  // The Factory's and the Academy's explainers end on the same ways on: ask for
+  // a booth, then keep in touch (ADR 0063). Their games ask by number, so the
+  // order is theirs too.
+  'the-factory': [{ label: 'Sign up for Tessl', href: SETTINGS.tessl.signup }, ...KEEP_GOING],
+  'the-academy': [{ label: 'Start the Academy', href: SETTINGS.tessl.academy }, ...KEEP_GOING],
   'the-studio': [
     { label: 'Listen to the podcast', href: SETTINGS.tessl.podcast },
     { label: 'Watch on YouTube', href: SETTINGS.tessl.youtube },
@@ -85,3 +96,15 @@ const EVERY_LINK_OUT: readonly string[] = Object.keys(NORTH_POLE_LINKS).flatMap(
 /** The list's own copy of `href`, if it's one of the North Pole's links out, else undefined. */
 export const allowedLinkOut = (href: string): string | undefined =>
   EVERY_LINK_OUT.find((allowed) => allowed === href);
+
+/** The North Pole's places a game may send a visitor on to: its attractions with links of their own (ADR 0063). */
+const VISITABLE_PLACES: readonly string[] = [
+  'the-factory',
+  'the-academy',
+  'the-studio',
+  'ai-devcon',
+];
+
+/** The list's own copy of `id`, if a game may send a visitor there, else undefined. */
+export const visitablePlace = (id: string): string | undefined =>
+  VISITABLE_PLACES.find((place) => place === id);

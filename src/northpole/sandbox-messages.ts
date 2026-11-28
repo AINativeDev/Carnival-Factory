@@ -5,6 +5,7 @@
  */
 import { readFrameMessage, stallFor } from './frame-protocol';
 import { rescale, withOwedPress } from './pointer';
+import { MAX_KEYS, type SquareKey } from './square-keys';
 import { fail, setState, type SquareRun } from './sandbox-run';
 import { MAX_PRESSES, type SquarePointer } from './square';
 
@@ -49,8 +50,14 @@ export function hearFrame(run: SquareRun, iframe: HTMLIFrameElement, data: unkno
       // The slowest frame after warming up, for the smoke test's budget.
       if (++run.frames > WARM_UP_FRAMES) run.slowest = Math.max(run.slowest, message.drawMs);
       iframe.dataset.slowestDrawMs = String(Math.round(run.slowest * 10) / 10);
-      if (message.open !== undefined)
-        for (const listener of run.linkListeners) listener(message.open);
+      if (message.open !== undefined || message.visit !== undefined) {
+        const { open, visit } = message;
+        const ask = {
+          ...(open === undefined ? {} : { open }),
+          ...(visit === undefined ? {} : { visit }),
+        };
+        for (const listener of run.askListeners) listener(ask);
+      }
       break;
     case 'error':
       if (run.state === 'loading') setState(run, iframe, 'broken');
@@ -69,11 +76,13 @@ export function askForFrame(
   size: number,
   time: number,
   pointer?: SquarePointer,
+  keys: readonly SquareKey[] = [],
 ) {
   const hung = run.waitingFor !== undefined && performance.now() - run.waitingSince > FRAME_TIMEOUT;
   if (run.state === 'ready' && hung) fail(run, iframe, 'it stopped answering');
   if (pointer?.down) run.owedPress = { pointer, size };
   run.owedPresses += pointer?.presses ?? 0;
+  run.owedKeys.push(...keys);
   if (run.state !== 'ready' || run.waitingFor !== undefined) return;
   const asked = Math.round(size);
   run.waitingFor = asked;
@@ -88,10 +97,15 @@ export function askForFrame(
   );
   run.owedPress = undefined;
   if (sent) run.owedPresses -= presses;
+  const heard = run.owedKeys.splice(0, MAX_KEYS);
   // The frame checks the pointer again: it only ever passes on x, y, down and presses.
-  const request = sent
-    ? { type: 'draw', size: asked, time, pointer: sent }
-    : { type: 'draw', size: asked, time };
+  const request = {
+    type: 'draw',
+    size: asked,
+    time,
+    ...(sent && { pointer: sent }),
+    ...(heard.length && { keys: heard }),
+  };
   // The square's frame is sandboxed with an opaque origin ("null"), so there's no
   // origin to name: '*' is the only way to reach it. What's sent is a size, a time
   // and the pointer, nothing private, and the frame checks it (readDrawRequest).

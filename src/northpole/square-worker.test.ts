@@ -18,7 +18,14 @@ vi.mock('../../carnival/booths/jedi4ever/booth.ts', () => ({
     stall: { shape: 'shed', roof: 'gold', extra: 'dropped' },
     draw: (_ctx: unknown, _size: number, time: number) => {
       if (time === 13) throw new Error('melted');
-      asked = time === 7 ? { open: 0 } : time === 8 ? { open: 2.5 } : undefined;
+      asked =
+        time === 7
+          ? { open: 0 }
+          : time === 8
+            ? { open: 2.5, visit: 'The Academy' }
+            : time === 9
+              ? { visit: 'the-academy' }
+              : undefined;
     },
     ask: () => asked,
   },
@@ -153,7 +160,7 @@ describe('drawing a square', () => {
     );
   });
 
-  it("passes on a link the drawing asks for with its frame, and drops an ask it can't read", async () => {
+  it("passes on a link or place the drawing asks for with its frame, and drops an ask it can't read", async () => {
     await loaded();
     const drawMs = expect.any(Number) as number;
     say({ type: 'draw', size: 64, time: 7 });
@@ -165,6 +172,11 @@ describe('drawing a square', () => {
     expect(frame).toHaveBeenLastCalledWith({ type: 'frame', bitmap: { from: 64 }, drawMs }, [
       { from: 64 },
     ]);
+    say({ type: 'draw', size: 64, time: 9 });
+    expect(frame).toHaveBeenLastCalledWith(
+      { type: 'frame', bitmap: { from: 64 }, drawMs, visit: 'the-academy' },
+      [{ from: 64 }],
+    );
   });
 
   it('keeps its canvas while the size stays, and makes a new one when it changes', async () => {

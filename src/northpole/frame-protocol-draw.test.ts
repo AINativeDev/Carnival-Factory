@@ -62,6 +62,30 @@ describe('readDrawRequest', () => {
   });
 });
 
+describe("readDrawRequest's keys", () => {
+  it('passes on the keys heard, beside a pointer or alone, and drops a list it cannot read', () => {
+    const pointer = { x: 1, y: 2, down: false, presses: 0 };
+    expect(readDrawRequest({ type: 'draw', size: 10, time: 1, keys: ['left'] })).toEqual({
+      type: 'draw',
+      size: 10,
+      time: 1,
+      keys: ['left'],
+    });
+    expect(readDrawRequest({ type: 'draw', size: 10, time: 1, pointer, keys: ['up'] })).toEqual({
+      type: 'draw',
+      size: 10,
+      time: 1,
+      pointer,
+      keys: ['up'],
+    });
+    expect(readDrawRequest({ type: 'draw', size: 10, time: 1, keys: ['ArrowUp'] })).toEqual({
+      type: 'draw',
+      size: 10,
+      time: 1,
+    });
+  });
+});
+
 describe('readPointer', () => {
   it('keeps only x, y, down and presses', () => {
     const pointer = { x: 1, y: 2, down: false, presses: 3, event: {}, toString: () => 'x' };

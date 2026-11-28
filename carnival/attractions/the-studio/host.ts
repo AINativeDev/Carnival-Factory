@@ -5,14 +5,10 @@
  */
 import { glow } from '../../../src/northpole/diorama';
 import { theme } from '../../../src/northpole/theme';
+import { DESK, HEAD, MIC } from './layout';
 import { rounded } from './lettering';
 
 const { colors } = theme;
-
-/** Where the host's head is, and how big. */
-const HEAD = { x: 25, y: 47, r: 7.5 };
-/** Where the mic's grille is. */
-const MIC = { x: 43, y: 43 };
 
 /** How the host is at a moment: how loud, how far the headphones are on, and the time. */
 export interface Mood {
@@ -22,10 +18,10 @@ export interface Mood {
   time: number;
 }
 
-/** The elf's pointed hat, its tip swaying, with a snowy band and a pom. */
-function hat(ctx: CanvasRenderingContext2D, time: number) {
+/** The elf's pointed hat, with a snowy band and a pom. */
+function hat(ctx: CanvasRenderingContext2D) {
   const { x, y, r } = HEAD;
-  const tip = { x: x + 7 + Math.sin(time / 900) * 1.2, y: y - r - 10 };
+  const tip = { x: x + 7, y: y - r - 9.5 };
   ctx.fillStyle = colors.pine;
   ctx.beginPath();
   ctx.moveTo(x - r - 0.5, y - r * 0.35);
@@ -115,7 +111,7 @@ export function host(ctx: CanvasRenderingContext2D, mood: Mood) {
   rounded(ctx, x - 10, y + r - 1, 20, 14, 5);
   ctx.fill();
   ctx.fillStyle = colors.snow;
-  for (const stripe of [3.5, 7.5]) ctx.fillRect(x - 10, y + r - 1 + stripe, 20, 1.3);
+  for (const stripe of [2, 6]) ctx.fillRect(x - 10, y + r - 1 + stripe, 20, 1.3);
   ctx.save();
   // A nod while listening, a bob while talking: both about the neck.
   const nod = mood.headphones * Math.sin(mood.time / 240) * 0.09 + mood.loud * 0.05;
@@ -123,7 +119,7 @@ export function host(ctx: CanvasRenderingContext2D, mood: Mood) {
   ctx.rotate(nod);
   ctx.translate(-x, -y - r);
   face(ctx, mood);
-  hat(ctx, mood.time);
+  hat(ctx);
   headphones(ctx, mood.headphones);
   ctx.restore();
 }
@@ -134,16 +130,15 @@ export function mic(ctx: CanvasRenderingContext2D, hears: number) {
   ctx.strokeStyle = colors.ink;
   ctx.lineWidth = 1.2;
   ctx.beginPath();
-  ctx.moveTo(x + 1, y + 7);
-  ctx.lineTo(x + 6, y + 14);
-  ctx.lineTo(x + 7, y + 23);
+  ctx.moveTo(x + 1, y + 6);
+  ctx.lineTo(x + 2.5, DESK.top - 0.3);
   ctx.stroke();
   if (hears > 0) {
-    glow(ctx, x, y, 9, hears);
+    glow(ctx, x, y - 4, 9, hears);
     ctx.fillStyle = colors.berry;
-    ctx.globalAlpha = 0.35 * hears;
+    ctx.globalAlpha = 0.3 * hears;
     ctx.beginPath();
-    ctx.arc(x, y - 1, 6.5, 0, Math.PI * 2);
+    ctx.arc(x - 0.6, y - 4, 5.4, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
   }
@@ -173,7 +168,7 @@ export function mic(ctx: CanvasRenderingContext2D, hears: number) {
   ctx.strokeStyle = colors.ink;
   ctx.lineWidth = 0.8;
   ctx.beginPath();
-  ctx.ellipse(x - 5.2, y + 1, 1.5, 4.4, 0.1, 0, Math.PI * 2);
+  ctx.ellipse(x - 5, y - 3, 1.4, 4.2, 0.1, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1;
   ctx.stroke();

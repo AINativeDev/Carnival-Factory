@@ -5,6 +5,8 @@
  * (sandbox.ts) and its messages (sandbox-messages.ts) share this one record.
  */
 import type { SquareKind } from './frame-protocol';
+import type { SquareAsk } from './square-ask';
+import type { SquareKey } from './square-keys';
 import type { SquarePointer, StallStyle } from './square';
 
 /** Errors in a row after which a square counts as broken. */
@@ -27,8 +29,8 @@ export interface SquareRun {
   info: SquareInfo;
   /** The page's listeners still waiting for the square's name. */
   readonly listeners: ((info: SquareInfo) => void)[];
-  /** The page's listeners for the links out the square's drawing asks for (square-ask.ts). */
-  readonly linkListeners: ((link: number) => void)[];
+  /** The page's listeners for what the square's drawing asks for: a link out or a place (square-ask.ts). */
+  readonly askListeners: ((ask: SquareAsk) => void)[];
   iframe?: HTMLIFrameElement | undefined;
   latest?: ImageBitmap | undefined;
   /** The size of the frame asked for and not yet sent, if one is. */
@@ -38,6 +40,8 @@ export interface SquareRun {
   owedPress?: { pointer: SquarePointer; size: number } | undefined;
   /** The presses the map has drawn since the last request, kept until one carries them. */
   owedPresses: number;
+  /** The keys the map has heard since the last request, kept until one carries them. */
+  owedKeys: SquareKey[];
   errors: number;
   /** Frames drawn so far, and the slowest of them after warming up. */
   frames: number;
@@ -51,9 +55,10 @@ export const newRun = (kind: SquareKind, id: string): SquareRun => ({
   state: 'loading',
   info: { name: id, description: '' },
   listeners: [],
-  linkListeners: [],
+  askListeners: [],
   waitingSince: 0,
   owedPresses: 0,
+  owedKeys: [],
   errors: 0,
   frames: 0,
   slowest: 0,
@@ -81,6 +86,7 @@ export function forgetFrame(run: SquareRun) {
   run.waitingFor = undefined;
   run.owedPress = undefined;
   run.owedPresses = 0;
+  run.owedKeys = [];
   run.errors = 0;
   if (run.state !== 'broken') run.state = 'loading';
 }

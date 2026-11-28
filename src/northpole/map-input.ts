@@ -13,6 +13,7 @@ import type { MapRun } from './map-state';
 import { KEYS, walkToward } from './map-walk';
 import { inviteFor } from './owners';
 import { rideKey, rideOnward } from './ride-map';
+import { MAX_KEYS, squareKey } from './square-keys';
 import { toScreen, toTile, type Tile } from './world';
 import { tileOf } from './walking';
 
@@ -45,10 +46,14 @@ export const billboardUnder = (m: MapRun, point: Tile) =>
 /** Walk with the keys, open what's invited into with E or Enter, and let go of it with Escape. */
 export function onKeyDown(m: MapRun, event: KeyboardEvent) {
   if (typing(event.target) || event.metaKey || event.ctrlKey || event.altKey) return;
+  if (m.visiting) {
+    hearInside(m, event);
+    return;
+  }
   const name = event.key.toLowerCase();
   const step = KEYS[name];
   // In a ride the walking keys don't walk, so nobody walks off the track (ADR 0041).
-  if (m.ride && !m.visiting && (rideKey(m, name, pressable(event.target)) || step)) {
+  if (m.ride && (rideKey(m, name, pressable(event.target)) || step)) {
     event.preventDefault();
     return;
   }
@@ -57,12 +62,23 @@ export function onKeyDown(m: MapRun, event: KeyboardEvent) {
     m.held.set(name, step);
     event.preventDefault();
   } else if ((name === 'e' || (name === 'enter' && !pressable(event.target))) && invited) {
-    if (m.visiting) return;
     event.preventDefault();
     enter(m, invited);
-  } else if (name === 'escape' && m.selected && !m.visiting) {
+  } else if (name === 'escape' && m.selected) {
     select(m, undefined);
   }
+}
+
+/**
+ * Inside a square, the arrows, Enter and Space are the square's (ADR 0064):
+ * kept for its next frame, at most a few, and not walking or scrolling the
+ * page. Enter on the panel's own buttons and links stays theirs.
+ */
+function hearInside(m: MapRun, event: KeyboardEvent) {
+  const key = squareKey(event.key);
+  if (!key || (key === 'enter' && pressable(event.target))) return;
+  event.preventDefault();
+  if (m.keys.length < MAX_KEYS) m.keys.push(key);
 }
 
 /** The call to action, clicked: opens what it invites into. */

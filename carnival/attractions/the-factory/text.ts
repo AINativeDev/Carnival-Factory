@@ -8,7 +8,8 @@ const { colors } = theme;
 
 /**
  * `text` drawn `height` units tall at `x`, `y` (its middle), in the theme's
- * bold title face, squeezed to `maxWidth` units if it would run wider.
+ * bold title face, squeezed to `maxWidth` units if it would run wider, `spacing`
+ * units between letters. Returns how wide it came out, for an underline.
  */
 export function words(
   ctx: CanvasRenderingContext2D,
@@ -19,17 +20,35 @@ export function words(
   color: string,
   align: CanvasTextAlign = 'center',
   maxWidth = 100,
-) {
+  spacing = 0,
+): number {
   ctx.save();
   ctx.font = canvasFont('title', 'bold');
   const k = height / theme.font.title;
   ctx.translate(x, y);
   ctx.scale(k, k);
+  // Letter-spacing is in the scaled font's pixels; a browser without it just draws the letters closer.
+  if (spacing) ctx.letterSpacing = `${String(spacing / k)}px`;
   ctx.textAlign = align;
   ctx.textBaseline = 'middle';
   ctx.fillStyle = color;
   ctx.fillText(text, 0, 0, maxWidth / k);
+  const wide = Math.min(maxWidth, ctx.measureText(text).width * k);
   ctx.restore();
+  return wide;
+}
+
+/** A micro label, such as an eyebrow: `text` in capitals, 2.4 units tall and spaced out, the smallest type drawn. */
+export function eyebrow(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  color: string,
+  align: CanvasTextAlign = 'left',
+  maxWidth = 100,
+) {
+  return words(ctx, text.toUpperCase(), x, y, 2.4, color, align, maxWidth, 0.35);
 }
 
 /** Where spark `n` of a burst is once it's `t` of the way out, from 0 to 1: spread round, slowing as it goes. */

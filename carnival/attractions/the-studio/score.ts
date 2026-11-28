@@ -23,12 +23,19 @@ export function accuracy(game: Game): number {
   return game.beats.length ? total / game.beats.length : 0;
 }
 
+/** `points` with a comma between each three digits, as the scoreboard shows it: 12,400. */
+export const grouped = (points: number) => String(points).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+/** How many of the episode's words were said, good or perfect. */
+export const saidCount = (game: Game) =>
+  game.hits.filter((hit) => hit !== null && hit.judge !== 'miss').length;
+
 /** The episode's grade, its letter and what the studio calls it. */
 export function grade(game: Game): { letter: string; title: string } {
-  if (game.lost) return { letter: '✕', title: 'Signal lost!' };
+  if (game.lost) return { letter: '✕', title: 'Signal lost' };
   const score = accuracy(game);
-  if (score >= 0.9) return { letter: 'S', title: 'Chart-topper!' };
-  if (score >= 0.75) return { letter: 'A', title: 'Fan favourite' };
+  if (score >= 0.9) return { letter: 'S', title: 'Chart-topper' };
+  if (score >= 0.75) return { letter: 'A', title: 'Fan favorite' };
   if (score >= 0.55) return { letter: 'B', title: 'Solid episode' };
   return { letter: 'C', title: 'Needs an edit' };
 }

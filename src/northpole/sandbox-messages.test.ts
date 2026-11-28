@@ -117,19 +117,26 @@ describe('what a sandboxed square hears from its frame', () => {
   });
 });
 
-describe('the links out a drawing asks for', () => {
-  it("tells the page's listeners which link, until they stop listening", async () => {
+describe('what a drawing asks for', () => {
+  it("tells the page's listeners which link or place, until they stop listening", async () => {
     const { square, frame, canvas } = await readySquare();
     const heard = vi.fn();
-    const stop = square.onLink(heard);
+    const stop = square.onAsk(heard);
     square.draw(canvas, 100, 1);
     frame.send({ type: 'frame', bitmap: bitmap(100), drawMs: 1, open: 1 });
-    expect(heard).toHaveBeenCalledExactlyOnceWith(1);
+    expect(heard).toHaveBeenCalledExactlyOnceWith({ open: 1 });
+    square.draw(canvas, 100, 1);
+    frame.send({ type: 'frame', bitmap: bitmap(100), drawMs: 1, visit: 'the-academy' });
+    expect(heard).toHaveBeenLastCalledWith({ visit: 'the-academy' });
+    square.draw(canvas, 100, 1);
+    frame.send({ type: 'frame', bitmap: bitmap(100), drawMs: 1, open: 2, visit: 'the-studio' });
+    expect(heard).toHaveBeenLastCalledWith({ open: 2, visit: 'the-studio' });
+    heard.mockClear();
     stop();
     stop();
     square.draw(canvas, 100, 2);
     frame.send({ type: 'frame', bitmap: bitmap(100), drawMs: 1, open: 0 });
-    expect(heard).toHaveBeenCalledOnce();
+    expect(heard).not.toHaveBeenCalled();
   });
 });
 
