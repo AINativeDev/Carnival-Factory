@@ -26,7 +26,7 @@ page never runs a square's code: each runs in its own sandboxed frame and worker
   src/northpole/frame-protocol-draw.test.ts,
   src/northpole/square-worker-draw.test.ts).
 - `ask()`, optional, is called after each frame: `{ open: n }` asks the page
-  to open the square's `n`th link out, a whole number from 0 to 7, checked in
+  to open the square's `n`th link out, a whole number from 0 to 15, checked in
   the worker and again on the page (`readLinkAsk`). The page opens it only
   for a North Pole place with links (`northPoleLinks`) and only within 1.5
   seconds of a tap on the page, one tab a tap, so a booth, or a square asking

@@ -10,7 +10,7 @@
 import type { SquareKey, SquarePointer } from '../../../src/northpole/square';
 import { bugAt, nextBug } from './bugs';
 import { actionFor, BACK, choiceAt, END_SCENE, hasBack, inside, LIVE_NEXT, SCENE } from './layout';
-import { nudgeAt, type SquareAsk } from './nudges';
+import { ideaLink, nudgeAt, type SquareAsk } from './nudges';
 import { IDLE_RESET, newVisit, type Visit } from './state';
 import { STEPS, type StepKind } from './steps';
 
@@ -112,7 +112,9 @@ interface Played {
 /** What a tap at `x`, `y` asks of the page at `time`: a nudge, once the big ones are ready to take one. */
 function nudgeOf(visit: Visit, x: number, y: number, time: number): SquareAsk | undefined {
   if (guarded(visit, time)) return undefined;
-  return nudgeAt(kindOf(visit) === 'live', x, y);
+  const ask = nudgeAt(kindOf(visit) === 'live', x, y);
+  // "Ask for a booth" opens the form with the ticket's own idea already in it.
+  return ask?.open === 1 ? { open: ideaLink(visit.booth, visit.look) } : ask;
 }
 
 /**

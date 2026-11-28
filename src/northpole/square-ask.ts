@@ -8,8 +8,8 @@
  * (ADR 0058, ADR 0063).
  */
 
-/** The most links out a place has; an ask past it is ignored. */
-const MOST_LINKS = 8;
+/** The most links out a place has, the Academy's pretend booths included; an ask past it is ignored. */
+const MOST_LINKS = 16;
 
 /** What a square's `ask()` may answer. */
 export interface SquareAsk {

@@ -135,7 +135,8 @@ describe('The Academy', () => {
     for (let n = 0; n < toLive; n++) draw(tapOn(ACTION));
     time += 1_000;
     draw(tapOn(BIG_NUDGES[0]?.box ?? NOWHERE));
-    expect(theAcademy.ask?.()).toEqual({ open: 1 });
+    // The booth form, filled in with the Penguin DJ in the diorama look.
+    expect(theAcademy.ask?.()).toEqual({ open: 5 });
     draw(tapOn(BIG_NUDGES[2]?.box ?? NOWHERE));
     expect(theAcademy.ask?.()).toEqual({ visit: 'the-factory' });
     draw(tapOn(BIG_NUDGES[5]?.box ?? NOWHERE));

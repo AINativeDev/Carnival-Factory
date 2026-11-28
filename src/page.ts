@@ -17,6 +17,7 @@ import { boothRegistry } from './northpole/booths';
 import { levelOf } from './northpole/levels';
 import type { MapControls, SquareKind } from './northpole/map';
 import { levelLink } from './route';
+import type { Nudge } from './nudge';
 import { openVisitHud, type VisitHud } from './visit-hud';
 
 export interface Page {
@@ -39,6 +40,8 @@ export interface Page {
   ignoreNextRoute: boolean;
   /** The booth a shared link brought this visitor to, invited to build their own until they close or claim. */
   invite: string | undefined;
+  /** The one nudge to build your own, on the North Pole's map (src/nudge.ts). */
+  nudge?: Nudge | undefined;
 }
 
 /** Leaves the square the player is inside, or the factory's numbers or the advent calendar. `address` says to take the address back off it, too. */
@@ -47,6 +50,7 @@ export function closeCard(page: Page, address: boolean) {
   page.card.close();
   page.card = undefined;
   page.map?.leave();
+  page.nudge?.left();
   page.invite = undefined;
   if (!address) return;
   if (page.cardFromHistory) {
@@ -78,6 +82,7 @@ export function visit(page: Page, kind: SquareKind, id: string, fromHistory: boo
     return;
   }
   the(app, '.map-note', HTMLElement).hidden = true;
+  page.nudge?.entered(`${kind}:${id}`);
   page.cardFromHistory = fromMap;
   page.card = openVisitHud(the(app, '.map-frame', HTMLElement), {
     kind,
@@ -93,6 +98,7 @@ export function visit(page: Page, kind: SquareKind, id: string, fromHistory: boo
       closeCard(page, true);
     },
     onClaim: () => {
+      page.nudge?.skip();
       closeCard(page, true);
       page.map?.claimNextDoor();
       app.querySelector<HTMLElement>('.map-canvas')?.focus({ preventScroll: true });

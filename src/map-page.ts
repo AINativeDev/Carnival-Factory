@@ -8,6 +8,7 @@ import { isOn } from './feature-flags';
 import { startBoothsPanel } from './booths-hud';
 import { the } from './dom';
 import { renderUnknown } from './map-notes';
+import { startNudge } from './nudge';
 import { NORTH_POLE_MAP, renderGuide, whenNamed } from './map-page-markup';
 import { closeCard, type Page } from './page';
 import { followPending, knownPending, loadSites, saveSites } from './pending';
@@ -123,8 +124,17 @@ export function renderMap(page: Page, focus?: { kind: SquareKind; id: string }) 
     },
   );
   const stopPending = followBuilding(started);
+  page.nudge = startNudge(the(app, '.map-frame', HTMLElement), {
+    showSpot: () => {
+      started.claimNextDoor();
+      canvas.focus({ preventScroll: true });
+    },
+    mine: () => page.panel?.me !== undefined,
+  });
   page.stop = () => {
     closeCard(page, false);
+    page.nudge?.stop();
+    page.nudge = undefined;
     stopPending();
     started.stop();
     page.panel?.stop();

@@ -110,3 +110,4 @@ way, so a later change can tell a deliberate choice from an accident.
 | [0062](0062-frame-budget-slack.md) | A little more slack for a square's frame on CI | Accepted |
 | [0063](0063-factory-and-academy-explain.md) | The Factory and the Academy explain, and send the visitor on | Accepted |
 | [0064](0064-keys-inside-a-square.md) | A square hears the arrows, Enter and Space while someone is inside | Accepted |
+| [0065](0065-nudge-to-build-your-own.md) | A well-timed nudge to build your own, and the Academy's ticket as a real request | Accepted |
